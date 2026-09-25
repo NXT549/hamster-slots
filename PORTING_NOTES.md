@@ -13,7 +13,7 @@ One codebase: TypeScript + Vite (D107). The build makes a static site (`dist/`: 
 
 | # | Platform | How it ships | Needs | Status |
 |---|---|---|---|---|
-| 1 | **Web: GitHub Pages** | A GitHub Actions workflow runs the tests and the build on every push to `main`, then publishes `dist/` to Pages. Friends play from a link. | The TS + Vite migration, a GitHub repo, Vite `base` set for the repo's sub-path | **Planned** (Steps 2–4) |
+| 1 | **Web: GitHub Pages** | A GitHub Actions workflow runs the tests and the build on every push to `main`, then publishes `dist/` to Pages. Friends play from a link. | The TS + Vite migration (done, 0.2.0), a GitHub repo, a build that works from the repo's sub-path (done: `base: './'`) | **In progress** (Step 4: the workflow is written, D118; waiting for the repo) |
 | 2 | **itch.io** | `dist/` uploaded as a zip, as an HTML5 game played in the browser on itch | Relative paths in the build; export/import saves | Later |
 | 3 | **Steam** | `dist/` inside a desktop wrapper: **Electron or Tauri** (not decided yet) | A desktop platform layer (file saves, Steam Cloud, maybe achievements), a store page, content ratings | Later |
 | 4 | **Mobile** (maybe) | `dist/` inside **Capacitor** (iOS and Android apps) | A mobile platform layer (native storage, app pause/resume), touch-friendly controls, store review | Maybe, later |
@@ -55,6 +55,8 @@ The save backup (`src/platform/savecode.ts`, 3.8) needed no new service: it only
 - A project site lives at `https://<user>.github.io/<repo>/`, so the build must work from a sub-path (Vite's `base`: `'./'` or `'/<repo>/'`).
 - Vite gives built files hashed names, so a browser never mixes old and new files. The dev server always serves fresh files too, so the no-cache Python server (D48) was removed in 3.1.
 - `main` deploys itself, so `main` must always be playable (AGENTS → Git and releases).
+- The workflow (`.github/workflows/deploy.yml`, D118): on a push to `main` (or by hand: Actions → Run workflow), job 1 runs `npm ci`, `npm test` and `npm run build` on Linux with Node 24, and uploads `dist/`; job 2 deploys it, only if job 1 passed. One deploy at a time.
+- The site is `https://nxt549.github.io/<repo>/`: its own address, so its save is separate from play.bat's (`localhost:8765`). Moving a save there = Menu → Save backup.
 
 **itch.io**
 - An HTML5 game is a zip with `index.html` at its root. itch plays it inside an iframe on its own domain, so the build must use relative paths (Vite `base: './'`).
@@ -93,8 +95,8 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 | 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform (D114) | **Done** (the user said to continue) |
 | 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× (D115) | **Done** (the user OK'd it) |
 | 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations (D116) | **Done** (the user OK'd it) |
-| 3.9 | Bundled fonts, the debug-panel rule, cleanup, docs; release **0.2.0**; merge into `main` (D117) | **Done**, waiting for the user's OK (then merged and tagged `v0.2.0`) |
-| Step 4 | GitHub Pages: the user creates the repo (`NXT549`) and sets Pages → Source = GitHub Actions; `.github/workflows/deploy.yml` tests, builds and deploys on every push to `main` | |
+| 3.9 | Bundled fonts, the debug-panel rule, cleanup, docs; release **0.2.0**; merge into `main` (D117) | **Done** (the user OK'd it; merged into `main`, tagged `v0.2.0`) |
+| Step 4 | GitHub Pages: the user creates the repo (`NXT549`) and sets Pages → Source = GitHub Actions; `.github/workflows/deploy.yml` tests, builds and deploys on every push to `main` | **In progress:** the workflow is written (D118); waiting for the user's repo |
 
 ## Invariants any rewrite must keep
 
@@ -471,6 +473,13 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Cleanup:** the "Until migrated" notes are gone from AGENTS (the stack is in place); comments that still named `.js` files now name the `.ts` ones; index.html's comments too.
 - **Release 0.2.0** (a minor version: a new feature, the save backup): `package.json` 0.2.0, CHANGELOG `[0.2.0] - 2026-09-26`. Tagged `v0.2.0` on `main` when merged.
 - **Checked:** 1,231 tests and the build; in the built game (`npm run preview`): the fonts came from `/assets/` (no request to Google), no debug panel, button or key without `?debug`, all of them with it ("Reload data.json" hidden, as in any build); `npm run dev` still has the panel; no errors.
+
+**D118 — GitHub Pages: one workflow that tests before it deploys** (Step 4). `.github/workflows/deploy.yml`, on every push to `main` and by hand (`workflow_dispatch`).
+- **Two jobs.** `test-and-build` (Linux, Node 24 like the user's PC, `npm ci` for the exact locked versions, `npm test`, `npm run build`, upload `dist/`), then `deploy`, which only runs if the first passed. So a failing test or type error never reaches players: the site keeps the last good version. *Rejected: deploying from a `gh-pages` branch* (the older way: a second branch to keep in step, and build output in git).
+- **The actions at their newest major versions** (checked 2026-09-26 with `git ls-remote`): `checkout@v7`, `setup-node@v7`, `configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5`. Permissions are only what Pages needs (read the code, write Pages, an id token); one deploy at a time, and a newer push waits rather than cancelling a running one.
+- **Linux differs from Windows** in two ways that could break a build that works here: file names are case-sensitive (all 170 relative imports and paths match their files' case exactly: checked), and files check out with LF line endings (a fresh LF checkout ran `npm ci`, the 1,231 tests and the build: all passed). Every file is stored with LF in git (`.gitattributes`), so Windows checkouts still get CRLF.
+- **`base: './'`** (3.1) means the build works at any sub-path, so the repo's name doesn't need to be written anywhere in the code.
+- Pushing needs the user: they create the repo on github.com (owner `NXT549`), set Settings → Pages → Source = GitHub Actions, and may have to sign in when git first pushes (`gh` isn't installed; git's own credential manager asks).
 
 ---
 

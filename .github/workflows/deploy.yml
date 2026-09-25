@@ -1,0 +1,50 @@
+# deploy.yml — GitHub Actions: on every push to main, run the tests, build the
+# game and put it on GitHub Pages (https://nxt549.github.io/<repo>/).
+# If a test or the build fails, nothing is deployed: the site keeps the last
+# good version, and the Actions tab on GitHub shows what failed.
+# Needs, once: the repo's Settings → Pages → Source = "GitHub Actions".
+
+name: Test and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # adds a "Run workflow" button on the Actions tab, to redeploy by hand
+
+# What this workflow may do: read the code and publish to Pages. Nothing else.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time. A push that comes in meanwhile waits for it (and isn't cancelled).
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24 # the same Node as on the user's PC (the tools need Node 24)
+          cache: npm
+      - run: npm ci # exactly the package versions in package-lock.json
+      - run: npm test # every test (Vitest)
+      - run: npm run build # type-checks, then builds dist/ (relative paths, so it works under /<repo>/)
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: test-and-build # only runs if the tests and the build passed
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
