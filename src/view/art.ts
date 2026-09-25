@@ -1,4 +1,4 @@
-// art.js — VIEW layer. All pixel-art sprites, drawn as text.
+// art.ts — VIEW layer. All pixel-art sprites, drawn as text.
 //
 // Each sprite is a list of strings. Each character is one pixel, and its colour
 // comes from PALETTE ("." = transparent). At startup each sprite is painted once
@@ -6,8 +6,7 @@
 // unblurred pixels (image-rendering: pixelated).
 //
 // Why text? Anyone can edit a sprite in a text editor, and a SKIN can be as small
-// as a different set of colours for some letters (see src/view/skins.js). For Godot,
-// these same grids can be exported to PNG files and imported as textures.
+// as a different set of colours for some letters (see src/view/skins.ts).
 // See every sprite big: tools/sprites.html (with the game's server running).
 //
 // Style guide (keep new sprites consistent):
@@ -19,12 +18,16 @@
 //   · Light comes from the top-left.
 //   · UI frames (frameCard, framePaper, frameButton …) are 12×12 "9-slice" pictures:
 //     4 px corners, and the middle 4 px of every edge are the same all along, so
-//     CSS (border-image) can stretch them to any size. src/view/theme.js turns them into
+//     CSS (border-image) can stretch them to any size. src/view/theme.ts turns them into
 //     CSS variables. Tiles (bedding) repeat seamlessly: their edges wrap around.
 //
 // Rule: art never goes in data.json (that file is balance only).
 
-export const PALETTE = {
+// Palette letter → colour, e.g. { t: '#d9895a' }. Fur skins and repainted frames
+// pass a few of these to swap colours for one drawing.
+export type Colors = Record<string, string>;
+
+export const PALETTE: Colors = {
   // ink + neutrals
   k: '#4a3428', // ink: eyes and tiny details
   w: '#fffdf8', // white
@@ -104,7 +107,7 @@ export const PALETTE = {
 };
 
 // Returns a copy of a sprite with some letters swapped, e.g. { d: 'Y' }.
-function recolor(rows, map) {
+function recolor(rows: string[], map: Colors): string[] {
   return rows.map((row) => [...row].map((ch) => map[ch] || ch).join(''));
 }
 
@@ -1364,7 +1367,7 @@ const bubbleTail = [
   '............',
 ];
 
-export const SPRITES = {
+export const SPRITES: Record<string, string[]> = {
   seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple, hamster, hamster2, coin, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
   cheeks, wheel, oilcan, gear, reel, paylinesIcon, heart, star, bolt, scooter, backpack, parcel, pouch, goldenIcon, carrotIcon,
   machineClunky, machineStacker, machineBonanza, machinePalace, bottle, bowl, bedding,
@@ -1373,67 +1376,67 @@ export const SPRITES = {
   frameCard, framePaper, frameTab, frameButton, bubbleTail,
 };
 
-// Which sprite to draw for each card suit id (from game.js SUITS).
-export const SUIT_SPRITES = { hearts: 'suitHearts', diamonds: 'suitDiamonds', clubs: 'suitClubs', spades: 'suitSpades' };
+// Which sprite to draw for each card suit id (from game.ts SUITS).
+export const SUIT_SPRITES: Record<string, string> = { hearts: 'suitHearts', diamonds: 'suitDiamonds', clubs: 'suitClubs', spades: 'suitSpades' };
 
 // Which capsule sprite to draw for each capsule rarity id (from data.json).
-export const CAPSULE_SPRITES = { common: 'capsule', rare: 'capsuleRare', epic: 'capsuleEpic' };
+export const CAPSULE_SPRITES: Record<string, string> = { common: 'capsule', rare: 'capsuleRare', epic: 'capsuleEpic' };
 
 // Which sprite to draw for each slot symbol id (from data.json).
 // A symbol without an entry falls back to a letter tile, so new symbols still work.
-export const SYMBOL_SPRITES = {
+export const SYMBOL_SPRITES: Record<string, string> = {
   seed: 'seed', carrot: 'carrot', golden: 'golden', blueberry: 'blueberry', strawberry: 'strawberry',
   wild: 'wild', ball: 'ball', pouch: 'pouch24', corn: 'corn', apple: 'apple', blank: 'shaving',
 };
 
 // Which sprite to draw for each machine id (from data.json), e.g. on the machine cards.
-export const MACHINE_SPRITES = { clunky: 'machineClunky', stacker: 'machineStacker', bonanza: 'machineBonanza', palace: 'machinePalace' };
+export const MACHINE_SPRITES: Record<string, string> = { clunky: 'machineClunky', stacker: 'machineStacker', bonanza: 'machineBonanza', palace: 'machinePalace' };
 
 // Upgrade icons: by upgrade id first, then by effect type, so a new upgrade
 // of an existing type gets a sensible icon automatically.
-const UPGRADE_ICONS_BY_ID = {
+const UPGRADE_ICONS_BY_ID: Record<string, string> = {
   cheeks: 'cheeks', wheel: 'wheel', lever: 'oilcan', thirdReel: 'reel', gears: 'gear', paylines: 'paylinesIcon', fourthReel: 'reel',
   tunnelGrease: 'oilcan', velvetGears: 'gear',
   clover: 'clover', // Hamster Luck is the clover; every Machine Luck upgrade is a horseshoe (by type, below)
 };
-const UPGRADE_ICONS_BY_TYPE = {
+const UPGRADE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'cheeks', autoSpin: 'wheel', spinCostMultiplier: 'oilcan', extraReel: 'reel', extraPayline: 'paylinesIcon',
   betSteps: 'highRollerIcon', winStreak: 'flame', symbolWeight: 'wildIcon', extraFreeSpins: 'ballIcon', jackpotGrowth: 'pouchPolish',
   luck: 'horseshoe', unlockSymbol: 'seedPacket',
 };
-export function upgradeIcon(def) {
+export function upgradeIcon(def: { id: string; effect: { type: string } }): string | null {
   return UPGRADE_ICONS_BY_ID[def.id] || UPGRADE_ICONS_BY_TYPE[def.effect.type] || null;
 }
 
 // Family tree icons work the same way: by node id, then by effect type.
-const TREE_ICONS_BY_ID = {
+const TREE_ICONS_BY_ID: Record<string, string> = {
   familyPride: 'heart', familyFortune: 'pouch', luckyWhiskers: 'goldenIcon', carrotPatch: 'carrotIcon',
   warmUpLaps: 'wheel', heirloomReel: 'reel',
 };
-const TREE_ICONS_BY_TYPE = {
+const TREE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'heart', shiftWeight: 'goldenIcon', fullLineMultiplier: 'star', startingLevel: 'wheel',
   spinSpeed: 'bolt', deliveryTime: 'scooter', deliveryPayoutBonus: 'backpack', autoDelivery: 'parcel',
 };
-export function treeIcon(def) {
+export function treeIcon(def: { id: string; effect: { type: string } }): string | null {
   return TREE_ICONS_BY_ID[def.id] || TREE_ICONS_BY_TYPE[def.effect.type] || null;
 }
 
 // ── Drawing (browser only; everything above also loads fine in Node for tests) ──
 
-const urlCache = new Map();
+const urlCache = new Map<string, string>();
 
 // Paint a sprite onto a canvas once and cache the resulting image URL.
 // `colors` (optional) swaps palette letters for this drawing only, e.g.
 // { t: '#d9895a' } paints the hamster's fur cinnamon. This is how fur skins work.
-export function spriteURL(name, colors = null) {
+export function spriteURL(name: string, colors: Colors | null = null): string | null {
   const key = colors ? `${name}|${JSON.stringify(colors)}` : name;
-  if (urlCache.has(key)) return urlCache.get(key);
+  if (urlCache.has(key)) return urlCache.get(key)!;
   const rows = SPRITES[name];
   if (!rows) return null;
   const canvas = document.createElement('canvas');
   canvas.width = rows[0].length;
   canvas.height = rows.length;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d')!;
   rows.forEach((row, y) => {
     [...row].forEach((ch, x) => {
       const colour = (colors && colors[ch]) || PALETTE[ch];
@@ -1450,14 +1453,14 @@ export function spriteURL(name, colors = null) {
 // Sizes are asked for in CSS pixels, but a sprite is only ever scaled by a WHOLE
 // number, so every pixel stays a crisp square: the biggest whole scale that fits.
 // e.g. a 24-pixel sprite asked for at 48 → 2×; at 40 → 1× (24 px).
-export function spriteScale(name, size) {
+export function spriteScale(name: string, size: number): number {
   const rows = SPRITES[name];
   return rows ? Math.max(1, Math.floor(size / rows[0].length)) : 1;
 }
 
 // An <img> of a sprite about `size` CSS pixels wide.
 // Missing sprite → a letter tile, so the game never shows a broken image.
-export function spriteImg(name, size = 48, fallbackText = '?', colors = null) {
+export function spriteImg(name: string | null | undefined, size = 48, fallbackText = '?', colors: Colors | null = null): HTMLImageElement | HTMLSpanElement {
   const url = name ? spriteURL(name, colors) : null;
   if (!url) {
     const tile = document.createElement('span');
@@ -1465,8 +1468,8 @@ export function spriteImg(name, size = 48, fallbackText = '?', colors = null) {
     tile.textContent = fallbackText;
     return tile;
   }
-  const rows = SPRITES[name];
-  const scale = spriteScale(name, size);
+  const rows = SPRITES[name!];
+  const scale = spriteScale(name!, size);
   const img = new Image(rows[0].length * scale, rows.length * scale);
   img.src = url;
   img.alt = '';
@@ -1476,17 +1479,17 @@ export function spriteImg(name, size = 48, fallbackText = '?', colors = null) {
 }
 
 // Fill an existing <img> in the HTML (e.g. <img data-sprite="coin" data-size="24">).
-export function applySprite(img, name, size = 48, colors = null) {
+export function applySprite(img: HTMLImageElement, name: string, size = 48, colors: Colors | null = null): void {
   const rows = SPRITES[name];
   if (!rows) return;
   // Only write when something changed: this runs every frame for animated sprites.
   const url = spriteURL(name, colors);
-  if (img.getAttribute('src') !== url) img.src = url;
+  if (img.getAttribute('src') !== url) img.src = url!;
   const scale = spriteScale(name, size);
   if (img.width !== rows[0].length * scale) img.width = rows[0].length * scale;
   if (img.height !== rows.length * scale) img.height = rows.length * scale;
 }
 
-export function symbolImg(symbolId, size = 48) {
+export function symbolImg(symbolId: string, size = 48) {
   return spriteImg(SYMBOL_SPRITES[symbolId], size, symbolId ? symbolId[0].toUpperCase() : '?');
 }

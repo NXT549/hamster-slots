@@ -1,8 +1,8 @@
-// skins.js — VIEW layer. What each skin LOOKS like.
+// skins.ts — VIEW layer. What each skin LOOKS like.
 //
-// data.json lists the skins (id, name, category, rarity): that's game content
-// shared with Godot. The colours live here, because data.json never holds art.
-//   Fur skins                → new colours for the hamster's palette letters (art.js)
+// data.json lists the skins (id, name, category, rarity): that's game content,
+// the same on every platform. The colours live here, because data.json never holds art.
+//   Fur skins                → new colours for the hamster's palette letters (art.ts)
 //   Wheel / machine / room   → new values for CSS theme tokens (style.css :root)
 //
 // A "room" skin colours the cage: the wall behind the bars (--wall-*), the wire
@@ -13,12 +13,20 @@
 // The equipped wheel/machine/room tokens are set on the STAGE element, so they
 // only recolour the cage. A Wardrobe swatch sets its own tokens on itself, and
 // anything it doesn't set falls back to the :root defaults, i.e. the classic look.
-// Godot: fur = a palette-swap shader parameter; the rest = Theme/Material overrides.
 
-import { spriteImg } from './art.js';
-import { mix } from './dom.js';
+import { spriteImg } from './art.ts';
+import { mix } from './dom.ts';
+import type { Colors } from './art.ts';
+import type { Game } from '../logic/game.ts';
+import type { SkinDef } from '../logic/types.ts';
 
-export const SKIN_ART = {
+// What a skin looks like: fur colours (palette letters) or CSS token values.
+export interface SkinArt {
+  colors?: Colors;
+  tokens?: Record<string, string>;
+}
+
+export const SKIN_ART: Record<string, SkinArt> = {
   // Fur: t = fur, T = fur shade, c = cream belly/cheeks, p = pink ears/nose/feet
   furClassic: {},
   furCinnamon: { colors: { t: '#dc8b58', T: '#b5663a', c: '#fbe0c8' } },
@@ -70,11 +78,11 @@ export const SKIN_TOKENS = [...new Set(Object.values(SKIN_ART).flatMap((art) => 
 // The hamster sprite also uses a light fur (a), an outline (A), a cream shade (C)
 // and pink shades (P, Z), so work those out from the main colours. That way a new
 // fur skin needs just 3 colours and still matches the sprite's style.
-export function furPalette(skinId) {
-  const art = SKIN_ART[skinId];
+export function furPalette(skinId: string | null): Colors | null {
+  const art = skinId ? SKIN_ART[skinId] : undefined;
   if (!art || !art.colors) return null;
   const { t, T, c } = art.colors;
-  const out = { ...art.colors, a: mix(t, '#ffffff', 0.4), A: mix(T, '#2b1a10', 0.45), C: mix(c, T, 0.22) };
+  const out: Colors = { ...art.colors, a: mix(t, '#ffffff', 0.4), A: mix(T, '#2b1a10', 0.45), C: mix(c, T, 0.22) };
   if (art.colors.p) {
     out.P = mix(art.colors.p, '#2b1a10', 0.2);
     out.Z = mix(art.colors.p, '#2b1a10', 0.5);
@@ -83,31 +91,32 @@ export function furPalette(skinId) {
 }
 
 // The palette colours to draw the hamster with (null = classic fur).
-export function furColors(game) {
+export function furColors(game: Game): Colors | null {
   return furPalette(game.getEquippedSkin('fur'));
 }
 
 // Put the equipped wheel / machine / room tokens on the stage element.
-export function applyStageSkins(game, stage) {
+export function applyStageSkins(game: Game, stage: HTMLElement): void {
   for (const name of SKIN_TOKENS) stage.style.removeProperty(name);
   for (const cat of game.data.skinCategories || []) {
     if (cat.id === 'fur') continue; // fur is a sprite palette, drawn by ui.js
-    const art = SKIN_ART[game.getEquippedSkin(cat.id)] || {};
+    const id = game.getEquippedSkin(cat.id);
+    const art: SkinArt = (id && SKIN_ART[id]) || {};
     for (const [name, value] of Object.entries(art.tokens || {})) stage.style.setProperty(name, value);
   }
 }
 
 // A small preview of a skin (about `size` px), for the Wardrobe and the capsule reveal.
-export function skinPreview(def, size = 48) {
-  const art = SKIN_ART[def.id] || {};
+export function skinPreview(def: SkinDef, size = 48): HTMLElement {
+  const art: SkinArt = SKIN_ART[def.id] || {};
   if (def.category === 'fur') return spriteImg('hamster', size, def.name[0], furPalette(def.id));
   const swatch = document.createElement('div');
   swatch.className = `swatch swatch-${def.category}`;
   for (const [name, value] of Object.entries(art.tokens || {})) swatch.style.setProperty(name, value);
-  swatch.innerHTML = {
+  swatch.innerHTML = ({
     wheel: '<span class="sw-spokes"></span>',
     machine: '<span class="sw-marquee"></span><span class="sw-window"></span>',
     room: '<span class="sw-bars"></span><span class="sw-floor"></span>',
-  }[def.category] || '';
+  } as Record<string, string>)[def.category] || '';
   return swatch;
 }

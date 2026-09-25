@@ -1,4 +1,4 @@
-// theme.js — VIEW layer. Turns the pixel-art frame sprites (src/view/art.js) into CSS
+// theme.ts — VIEW layer. Turns the pixel-art frame sprites (src/view/art.ts) into CSS
 // variables, so style.css can use them as crisp pixel borders:
 //   .btn-primary { --btn-frame: var(--frame-btn-primary); }
 //
@@ -9,13 +9,13 @@
 // Every button is ONE sprite (frameButton) repainted in that button's colours.
 // The colours are read from the theme tokens in style.css :root (e.g. --primary
 // and --primary-dark), so colours still live in one place.
-// Godot: a NinePatchRect or a StyleBoxTexture per frame.
 
-import { spriteURL } from './art.js';
-import { mix } from './dom.js';
+import { spriteURL } from './art.ts';
+import type { Colors } from './art.ts';
+import { mix } from './dom.ts';
 
 // Button colour sets: the face colour and the darker lip under it (both tokens).
-const BUTTONS = {
+const BUTTONS: Record<string, [string, string]> = {
   primary: ['--primary', '--primary-dark'],
   soft: ['--soft', '--soft-dark'],
   buy: ['--buy', '--buy-dark'],
@@ -30,23 +30,23 @@ const BUTTONS = {
 
 const INK = '#2b1a10'; // what outlines are darkened towards
 
-// The 9-slice frames, for tools/test_art.mjs (it checks their edges really repeat).
+// The 9-slice frames, for tests/art.test.js (it checks their edges really repeat).
 export const FRAME_SPRITES = ['frameCard', 'framePaper', 'frameTab', 'frameButton'];
 
 // Every token this file reads. They must exist in style.css :root as "#rrggbb"
-// colours, because mix() works on hex colours (tools/test_art.mjs checks).
+// colours, because mix() works on hex colours (tests/art.test.js checks).
 export const THEME_TOKENS = [
   ...new Set([...Object.values(BUTTONS).flat(), '--buy-dark', '--buy', '--gold-dark', '--gold', '--heirloom-dark', '--heirloom',
     '--soft-dark', '--soft', '--kraft', '--kraft-dark', '--kraft-edge']),
 ];
 
-export function applyTheme(root = document.documentElement) {
+export function applyTheme(root: HTMLElement = document.documentElement): void {
   const css = getComputedStyle(root);
-  const token = (name) => css.getPropertyValue(name).trim();
-  const url = (sprite, colors = null) => `url("${spriteURL(sprite, colors)}")`;
-  const set = (name, value) => root.style.setProperty(name, value);
+  const token = (name: string) => css.getPropertyValue(name).trim();
+  const url = (sprite: string, colors: Colors | null = null) => `url("${spriteURL(sprite, colors)}")`;
+  const set = (name: string, value: string) => root.style.setProperty(name, value);
   // A paper frame with a coloured edge (letters 2 and 3 are paper shade + outline).
-  const edged = (sprite, edge, tint) => url(sprite, { 3: token(edge), 2: mix(token(tint), '#ffffff', 0.45) });
+  const edged = (sprite: string, edge: string, tint: string) => url(sprite, { 3: token(edge), 2: mix(token(tint), '#ffffff', 0.45) });
 
   set('--frame-card', url('frameCard'));
   set('--frame-paper', url('framePaper'));

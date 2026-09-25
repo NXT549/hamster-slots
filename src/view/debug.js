@@ -4,7 +4,7 @@
 // object from main.js for time speed. Godot: a DebugPanel scene on a CanvasLayer,
 // using Engine.time_scale for speed-up.
 
-import { formatCoins } from './dom.js';
+import { formatCoins } from './dom.ts';
 
 const SPEEDS = [1, 2, 5, 10, 50];
 const WINDOW = 10; // seconds of game time used for "measured coins/s"

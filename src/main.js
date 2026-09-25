@@ -11,8 +11,8 @@ import bundledData from '../data.json';
 import { createRng } from './logic/rng.ts';
 import { createGame } from './logic/game.ts';
 import { saveGame, loadGame, clearSave, loadSettings, saveSettings } from './platform/save.js';
-import { createSound } from './view/sound.js';
-import { applyTheme } from './view/theme.js';
+import { createSound } from './view/sound.ts';
+import { applyTheme } from './view/theme.ts';
 import { createUI } from './view/ui.js';
 import { createDebugPanel } from './view/debug.js';
 

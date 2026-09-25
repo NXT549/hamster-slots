@@ -18,7 +18,7 @@
 // (still inside the same spin time, so the game's timing never changes).
 // (Godot: a Reel scene per reel, and a Line2D per winning payline.)
 
-import { symbolImg } from './art.js';
+import { symbolImg } from './art.ts';
 
 export const CELL = 72; // height in px of one symbol cell (keep in sync with --cell in style.css)
 const VISIBLE = 3; // rows you can see in the window

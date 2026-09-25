@@ -12,7 +12,7 @@
 // Godot: an AnimationPlayer (or a Tween chain) on the machine scene.
 
 import { lineClass } from './reels.js';
-import { formatCoins } from './dom.js';
+import { formatCoins } from './dom.ts';
 
 // Real seconds the meter takes to count up, by win tier (see WIN_FX in ui.js).
 const COUNT_SECONDS = { win: 0.5, nice: 0.9, big: 1.4, jackpot: 2.2 };

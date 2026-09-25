@@ -1,4 +1,4 @@
-// sound.js — VIEW layer. Little synthesized sound effects: no audio files.
+// sound.ts — VIEW layer. Little synthesized sound effects: no audio files.
 //
 // It uses the browser's Web Audio API. Each sound is a few short "notes": an
 // oscillator (a simple waveform) whose volume jumps up and quickly fades out.
@@ -6,18 +6,29 @@
 //
 // Browsers only allow sound after the player has clicked or pressed a key, so
 // the audio is switched on by the first input (see unlock()).
-// Godot: AudioStreamPlayer nodes with small .wav files (these recipes describe them).
 
 // Musical notes (Hz) used by the chimes.
 const NOTE = { C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880, C6: 1046.5, E6: 1318.5, G6: 1568 };
 
-export function createSound({ volume = 0.6, muted = false } = {}) {
-  let ctx = null; // the AudioContext, created on the first click/key
-  let master = null; // one volume knob for everything
+// How one note sounds: the waveform, how loud, and where its pitch slides to.
+interface NoteOptions {
+  type?: OscillatorType;
+  gain?: number;
+  to?: number | null;
+}
+
+// A sound recipe. Each takes its own few arguments (a reel's index, bet up/down …).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Recipe = (...args: any[]) => void;
+
+export function createSound({ volume = 0.6, muted = false }: { volume?: number; muted?: boolean } = {}) {
+  let ctx: AudioContext | null = null; // the AudioContext, created on the first click/key
+  let master: GainNode | null = null; // one volume knob for everything
   let lastCoin = 0; // coin blips are rate-limited so a burst isn't a buzz
 
   function unlock() {
-    const AC = window.AudioContext || window.webkitAudioContext;
+    // Older Safari only has the "webkit" version.
+    const AC = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AC) return;
     if (!ctx) {
       ctx = new AC();
@@ -36,10 +47,11 @@ export function createSound({ volume = 0.6, muted = false } = {}) {
 
   // One note: a waveform at `freq` Hz starting `at` seconds from now, fading over `dur`.
   // `to` slides the pitch (a "boing" or a "swoosh").
-  function note(freq, at, dur, { type = 'sine', gain = 0.3, to = null } = {}) {
-    const t0 = ctx.currentTime + at;
-    const osc = ctx.createOscillator();
-    const amp = ctx.createGain();
+  // (Only called through play(), which checks the audio is on: ctx and master exist.)
+  function note(freq: number, at: number, dur: number, { type = 'sine', gain = 0.3, to = null }: NoteOptions = {}) {
+    const t0 = ctx!.currentTime + at;
+    const osc = ctx!.createOscillator();
+    const amp = ctx!.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(freq, t0);
     if (to) osc.frequency.exponentialRampToValueAtTime(to, t0 + dur);
@@ -47,15 +59,15 @@ export function createSound({ volume = 0.6, muted = false } = {}) {
     amp.gain.exponentialRampToValueAtTime(gain, t0 + 0.008); // quick attack (no click)
     amp.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); // then fade out
     osc.connect(amp);
-    amp.connect(master);
+    amp.connect(master!);
     osc.start(t0);
     osc.stop(t0 + dur + 0.02);
   }
 
-  const chord = (freqs, at, dur, opts) => freqs.forEach((f) => note(f, at, dur, opts));
+  const chord = (freqs: number[], at: number, dur: number, opts?: NoteOptions) => freqs.forEach((f) => note(f, at, dur, opts));
 
   // The recipes. Keep them short: this is a cozy game, not a casino.
-  const SOUNDS = {
+  const SOUNDS: Record<string, Recipe> = {
     lever: () => note(220, 0, 0.12, { type: 'triangle', gain: 0.18, to: 140 }),
     // One clunk per reel as it lands (one at a time since M7), a little lower each reel.
     // `soft` = an auto-spin: the same clunk, quieter.
@@ -117,7 +129,7 @@ export function createSound({ volume = 0.6, muted = false } = {}) {
     },
   };
 
-  function play(name, ...args) {
+  function play(name: string, ...args: unknown[]): void {
     if (!ctx || muted || volume <= 0 || ctx.state !== 'running') return;
     const recipe = SOUNDS[name];
     if (recipe) recipe(...args);
@@ -128,7 +140,7 @@ export function createSound({ volume = 0.6, muted = false } = {}) {
     get ready() { return !!ctx && ctx.state === 'running'; }, // true once a click/key switched audio on
     get muted() { return muted; },
     get volume() { return volume; },
-    setMuted(value) { muted = !!value; applyVolume(); },
-    setVolume(value) { volume = Math.min(1, Math.max(0, value)); applyVolume(); },
+    setMuted(value: unknown) { muted = !!value; applyVolume(); },
+    setVolume(value: number) { volume = Math.min(1, Math.max(0, value)); applyVolume(); },
   };
 }

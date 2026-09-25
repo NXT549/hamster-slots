@@ -8,8 +8,8 @@
 //      View only: it's not saved, and it starts empty every session.
 // Godot: InfoPanel.tscn (a ItemList for the log, a GridContainer per line).
 
-import { symbolImg, MACHINE_SPRITES, SYMBOL_SPRITES } from './art.js';
-import { formatCoins, iconHTML, setHTML, createSubTabs } from './dom.js';
+import { symbolImg, MACHINE_SPRITES, SYMBOL_SPRITES } from './art.ts';
+import { formatCoins, iconHTML, setHTML, createSubTabs } from './dom.ts';
 
 const LOG_SIZE = 10;
 const TIER_NAMES = { nice: 'Nice', big: 'Big win', jackpot: 'Jackpot' };

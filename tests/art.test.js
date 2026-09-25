@@ -1,4 +1,4 @@
-// art.test.js — checks the text sprites in src/view/art.js are well-formed, and
+// art.test.js — checks the text sprites in src/view/art.ts are well-formed, and
 // that every skin and theme token they rely on exists. Runs with `npm test`.
 // (Moved from tools/test_art.mjs in migration step 3.3; the checks are unchanged.)
 //
@@ -7,9 +7,9 @@
 
 import { readFileSync } from 'node:fs';
 import { check } from './check.js';
-import { SPRITES, PALETTE, SYMBOL_SPRITES, CAPSULE_SPRITES, MACHINE_SPRITES, upgradeIcon, treeIcon } from '../src/view/art.js';
-import { SKIN_ART, SKIN_TOKENS } from '../src/view/skins.js';
-import { FRAME_SPRITES, THEME_TOKENS } from '../src/view/theme.js';
+import { SPRITES, PALETTE, SYMBOL_SPRITES, CAPSULE_SPRITES, MACHINE_SPRITES, upgradeIcon, treeIcon } from '../src/view/art.ts';
+import { SKIN_ART, SKIN_TOKENS } from '../src/view/skins.ts';
+import { FRAME_SPRITES, THEME_TOKENS } from '../src/view/theme.ts';
 
 const data = JSON.parse(readFileSync(new URL('../data.json', import.meta.url), 'utf8'));
 
@@ -22,7 +22,7 @@ for (const [name, rows] of Object.entries(SPRITES)) {
   check(`${name}: every pixel letter has a palette colour`, unknown.length === 0, `unknown: ${unknown.join(' ')}`);
 }
 
-// Style guide (see the top of src/view/art.js): square sprites of 24, 16 or 12 pixels.
+// Style guide (see the top of src/view/art.ts): square sprites of 24, 16 or 12 pixels.
 for (const [name, rows] of Object.entries(SPRITES)) {
   check(`${name}: is a square 24, 16 or 12 px sprite`, rows.length === rows[0].length && [24, 16, 12].includes(rows.length),
     `${rows[0].length}x${rows.length}`);
@@ -58,10 +58,10 @@ for (const r of data.capsules.rarities) {
   check(`capsule rarity "${r.id}" has a capsule sprite`, CAPSULE_SPRITES[r.id] in SPRITES);
 }
 
-// Skins: data.json lists them, src/view/skins.js says what they look like.
+// Skins: data.json lists them, src/view/skins.ts says what they look like.
 for (const skin of data.skins) {
   const art = SKIN_ART[skin.id];
-  check(`skin "${skin.id}" has art in src/view/skins.js`, !!art);
+  check(`skin "${skin.id}" has art in src/view/skins.ts`, !!art);
   if (!art) continue;
   if (skin.category === 'fur') {
     const letters = Object.keys(art.colors || {});

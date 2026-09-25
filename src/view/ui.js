@@ -9,15 +9,15 @@
 // (Capsules), payouts.js (Info). Skin colours live in skins.js, the pixel frames
 // for the cardboard/paper look are made in theme.js, and the particles in fx.js.
 
-import { applySprite, spriteImg, treeIcon, MACHINE_SPRITES, SUIT_SPRITES } from './art.js';
+import { applySprite, spriteImg, treeIcon, MACHINE_SPRITES, SUIT_SPRITES } from './art.ts';
 import { createReels } from './reels.js';
 import { createWinShow } from './winshow.js';
-import { formatCoins, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle } from './dom.js';
-import { furColors, applyStageSkins } from './skins.js';
+import { formatCoins, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle } from './dom.ts';
+import { furColors, applyStageSkins } from './skins.ts';
 import { createCapsulesView } from './capsules.js';
 import { createShopView, describeEffect } from './shop.js';
 import { createPayoutsView } from './payouts.js';
-import { createFx } from './fx.js';
+import { createFx } from './fx.ts';
 
 // The jackpot wheel's four segments, clockwise from the top (the colours are
 // theme tokens). The wheel turns so the pot the game already picked ends up

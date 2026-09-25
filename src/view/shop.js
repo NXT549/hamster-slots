@@ -7,8 +7,8 @@
 // Like ui.js, it only calls game actions (buyUpgrade, buyMachine, switchMachine)
 // and reads state. Godot: ShopPanel.tscn with MachineCard and UpgradeTile scenes.
 
-import { spriteImg, upgradeIcon, MACHINE_SPRITES } from './art.js';
-import { formatCoins, formatSeconds, formatWait, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.js';
+import { spriteImg, upgradeIcon, MACHINE_SPRITES } from './art.ts';
+import { formatCoins, formatSeconds, formatWait, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
 
 // How each effect type is shown on a tile: [label, value format].
 // Shared by upgrade tiles and family tree nodes (ui.js uses describeEffect too).

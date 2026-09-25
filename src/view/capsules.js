@@ -5,9 +5,9 @@
 // Like ui.js, it only calls game actions (pullCapsule, equipSkin) and reads state.
 // Godot: CapsulesPanel.tscn with CapsuleMachine, Wardrobe (GridContainers) and Diary (VBoxContainer).
 
-import { CAPSULE_SPRITES } from './art.js';
-import { formatCoins, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.js';
-import { skinPreview } from './skins.js';
+import { CAPSULE_SPRITES } from './art.ts';
+import { formatCoins, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
+import { skinPreview } from './skins.ts';
 
 // The capsule wobbles this long before it opens. View only: the game already
 // decided what's inside the moment you pulled.
