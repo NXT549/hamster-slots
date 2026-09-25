@@ -259,7 +259,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 
 - Autosave every 10 s, and also when the tab is hidden or closed. On the web the save lives in `localStorage`; saving goes through the platform layer, so Steam and mobile can store it their own way (PORTING_NOTES → The platform layer).
 - **Export / import (planned, not built yet):** the save as a text string you can copy out and paste back in, as a backup and to move a save between sites or devices (the user asked for it with the web-first plan, 2026-09-25; AGENTS → Saves).
-- The save holds **player state only**: coins, upgrade levels, any in-progress spin or delivery, this life's totals, the family (generation, Heirloom Seeds, seeds ever earned, tree levels), lifetime stats, and a `saveVersion` number. It never holds balance values. That way, a change to `data.json` applies straight away to an existing save.
+- The save holds **player state only**: coins, upgrade levels, any in-progress spin or delivery, this life's totals, the family (generation, Heirloom Seeds, seeds ever earned, tree levels), lifetime stats, and a `saveVersion` number. Amounts of money are saved as text ("1.5e400"), so they can grow without limit (save v8). It never holds balance values. That way, a change to `data.json` applies straight away to an existing save.
 - When a save loads, unknown upgrades and tree nodes are dropped and levels are capped at the current max, in case `data.json` changed.
 - **Save version 2** (milestone 2) added the family. A version 1 save is migrated: the hamster becomes generation 1, and everything it had already earned counts towards its first seeds.
 - **Save version 3** (milestone 3) added Hamster Tokens, the diary, owned/equipped skins and the pity counter. A v2 save starts with no tokens, then gets every diary sticker it had already reached.
@@ -437,7 +437,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 - **Stage outlines** are 3 px (2 px for small parts) in a slightly softer ink (`--outline`, `--outline-thin`, `--outline-ink`). Small flat things (bars, chips, strips) get notched "pixel" corners (`--notch`) instead of round ones.
 - Feedback: the win glow sits *behind* the symbols (never tint the symbol itself), plus a "+N" popup, and the coin tag pops when coins come in. Bigger wins add more (§15), and pixel particles add sparkle (§20).
 - Works from phone width up. On narrow screens the machine rig **zooms out just enough to fit** (measured by `ui.ts`), so every reel and the lever always show. The speech bubble text is scaled back up so it stays readable.
-- Numbers from a thousand up are **short by default** (47.27K, 1.5M; Menu → Numbers can switch to 47,275).
+- Numbers from a thousand up are **short by default** (47.27K, 1.5M; Menu → Numbers can switch to 47,275). From a quadrillion up they're written like **1.23e15** (coins, seeds and tokens alike), and there's no upper limit (big numbers, PORTING_NOTES D115).
 - **Skins** recolour the cage through theme tokens set on the stage element: wheel skins (`--wheel-*`); machine skins recolour **Old Clunky** (`--machine*`, `--marquee`; their names say "Clunky"); room skins recolour the wall, the wire and the **plastic base** (`--wall-*`, `--wire*`, `--floor`, `--floor-dark`, `--floor-ink`). Fur skins are a palette swap for the hamster sprite. Everything outside the stage keeps the classic tokens.
 
 ---
@@ -898,7 +898,7 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 |---|---|---|
 | **Motion** | Auto · Less · Full | *Less* turns off flying coins, hops, shakes, bobbing and flashing (banners just fade). *Auto* follows the system's reduced-motion setting. |
 | **Reels** | Scroll · Quick | *Quick* makes the reels drop a few symbols and land early instead of scrolling. **A spin still takes the same game time** (view only), so it's calmer, not faster: faster spins are a paid trait (Quick Paws). |
-| **Numbers** | 47.2K · 47,275 | Short numbers (default) or full numbers below a million. From a million up it's always 1.5M. |
+| **Numbers** | 47.2K · 47,275 | Short numbers (default) or full numbers below a million. From a million up it's always 1.5M, and from a quadrillion up 1.23e15. |
 
 - **Coins in the browser tab's title** ("47.27K coins · Hamster Slots"), so you can peek from another tab.
 - **Recent wins** (Info → Recent wins since M6): the last 10 wins on any machine (machine, symbol × count for every winning line, the bet, tier, coins, how long ago), plus free-spin totals, jackpot pots and gambles (M6). View only: it's not saved and starts empty each visit.

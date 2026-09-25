@@ -5,7 +5,7 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -20,11 +20,11 @@ describe('machines: collect & switch', () => {
   g.on('machineBought', (e) => log.push(`bought:${e.id}:${e.cost}`));
   g.on('machineSwitched', (e) => log.push(`switched:${e.from}>${e.id}`));
   check('buy the Snack Stacker', g.buyMachine('stacker') === true);
-  check('buying costs unlockCost and switches to it', g.state.coins === 100 && g.getMachineData().id === 'stacker'
+  check('buying costs unlockCost and switches to it', num(g.state.coins) === 100 && g.getMachineData().id === 'stacker'
     && log.join() === `bought:stacker:${stacker.unlockCost},switched:clunky>stacker`, log.join());
   check('cannot buy the same machine twice', g.canBuyMachine('stacker') === false);
   check('the Snack Stacker starts with 3 reels, 3 rows, 3 lines', g.getReelCount() === 3 && g.getRowCount() === 3 && g.getLineCount() === 3);
-  check(`a Snack Stacker spin costs ${stacker.spinCost}`, g.getSpinCost() === stacker.spinCost);
+  check(`a Snack Stacker spin costs ${stacker.spinCost}`, num(g.getSpinCost()) === stacker.spinCost);
   check('stats.machinesBought counts it, and "Snack Time" is awarded', g.state.stats.machinesBought === 1 && g.state.diary.secondMachine === true);
 
   // Machine upgrades belong to one machine; hamster upgrades work everywhere.
@@ -37,16 +37,16 @@ describe('machines: collect & switch', () => {
   check('Old Clunky\'s Third Reel cannot be bought on the Stacker', g.buyUpgrade('thirdReel') === false);
   g.buyUpgrade('gears');
   g.buyUpgrade('cheeks');
-  check('Smooth Gears lowers the Stacker\'s spin cost', g.getSpinCost() === roundMoney(stacker.spinCost * 0.9));
+  check('Smooth Gears lowers the Stacker\'s spin cost', num(g.getSpinCost()) === roundMoney(stacker.spinCost * 0.9));
   check('switch back to Old Clunky', g.switchMachine('clunky') === true && g.getMachineData().id === 'clunky');
-  check('Old Clunky keeps its own spin cost and has no Gears', g.getSpinCost() === clunky.spinCost && g.getUpgradeLevel('gears') === 0);
-  check('Chubby Cheeks (a hamster upgrade) works on both', g.getPayoutMultiplier() === 1.25);
+  check('Old Clunky keeps its own spin cost and has no Gears', num(g.getSpinCost()) === clunky.spinCost && g.getUpgradeLevel('gears') === 0);
+  check('Chubby Cheeks (a hamster upgrade) works on both', num(g.getPayoutMultiplier()) === 1.25);
   check('switching to the machine you are on does nothing', g.switchMachine('clunky') === false);
   const info = g.getMachineInfo('stacker');
-  check('getMachineInfo describes a machine you are not using', info.owned && !info.active && info.spinCost === roundMoney(stacker.spinCost * 0.9)
+  check('getMachineInfo describes a machine you are not using', info.owned && !info.active && num(info.spinCost) === roundMoney(stacker.spinCost * 0.9)
     && info.lines === 3 && info.maxLines === 5 && info.rows === 3);
   const unowned = newGame().getMachineInfo('stacker');
-  check('getMachineInfo describes a machine you do not own yet', !unowned.owned && unowned.cost === stacker.unlockCost && unowned.reels === 3);
+  check('getMachineInfo describes a machine you do not own yet', !unowned.owned && num(unowned.cost) === stacker.unlockCost && unowned.reels === 3);
 
   // Extra Paylines and the Fourth Reel.
   g.switchMachine('stacker');
@@ -70,8 +70,8 @@ describe('machines: collect & switch', () => {
     spins++;
     if (e.result.length !== 4 || !e.result.every((c) => c.length === 3)) ok = false;
     const expected = evaluateGrid(e.result, g.getPaylines(), stacker.payouts, symbolRules(stacker));
-    const pay = roundMoney(expected.wins.reduce((sum, w) => sum + roundMoney(w.basePayout * g.getPayoutMultiplier()), 0));
-    if (pay !== e.payout || expected.wins.length !== e.wins.length) ok = false;
+    const pay = roundMoney(expected.wins.reduce((sum, w) => sum + roundMoney(w.basePayout * num(g.getPayoutMultiplier())), 0));
+    if (pay !== num(e.payout) || expected.wins.length !== e.wins.length) ok = false;
     if (e.tier !== g.getWinTier(expected.basePayout)) ok = false;
     if (e.wins.length >= 3) multiLine++;
   });
@@ -164,49 +164,49 @@ describe('bets (denoms) and High Roller', () => {
   g.on('betChanged', (e) => changes.push(e));
   check('High Roller Lv 1 unlocks the next bet (x2)', g.getMaxBetIndex() === 1 && g.setBet(1) === true && g.getBet() === 2 && changes[0].bet === 2);
   check('setBet never goes past what is unlocked', g.setBet(99) === false && g.getBet() === 2);
-  check('a x2 spin costs twice the x1 cost', g.getBetCost() === roundMoney(g.getSpinCost() * 2));
+  check('a x2 spin costs twice the x1 cost', num(g.getBetCost()) === roundMoney(num(g.getSpinCost()) * 2));
   const prev = g.previewUpgrade('highRoller');
   check('the High Roller card shows the max bet going up (x2 -> x3)', prev.now === 2 && prev.next === 3);
   let ok = true;
   let wins = 0;
   let spent = 0;
-  g.on('spinStarted', (e) => { spent += e.cost; if (e.bet !== 2) ok = false; });
+  g.on('spinStarted', (e) => { spent += num(e.cost); if (e.bet !== 2) ok = false; });
   g.on('spinResolved', (e) => {
     const base = evaluate(row0(e.result), clunky.payouts, symbolRules(clunky)).basePayout;
-    if (e.payout !== roundMoney(base * (g.getPayoutMultiplier() * 2))) ok = false;
+    if (num(e.payout) !== roundMoney(base * (num(g.getPayoutMultiplier()) * 2))) ok = false;
     if (e.tier !== g.getWinTier(base)) ok = false; // the tier ignores the bet
-    if (e.payout > 0) wins++;
+    if (num(e.payout) > 0) wins++;
   });
   for (let i = 0; i < 300; i++) { g.spin(); land(g); }
-  check('300 x2 spins: each costs 2x and pays base x multiplier x 2 (tier from the base payout)', ok && wins > 0 && near(spent, 300 * g.getSpinCost() * 2, 1e-6));
+  check('300 x2 spins: each costs 2x and pays base x multiplier x 2 (tier from the base payout)', ok && wins > 0 && near(spent, 300 * num(g.getSpinCost()) * 2, 1e-6));
   g.setBet(0);
   const e1 = g.getEconomy();
   g.setBet(1);
   const e2 = g.getEconomy();
-  check('the RTP is the same at every bet; profit per spin scales with it', near(e1.rtp, e2.rtp, 1e-12) && near(e2.profitPerSpin, 2 * e1.profitPerSpin, 1e-9));
+  check('the RTP is the same at every bet; profit per spin scales with it', near(e1.rtp, e2.rtp, 1e-12) && near(num(e2.profitPerSpin), 2 * num(e1.profitPerSpin), 1e-9));
 
   // Stepping down when you can't afford your bet.
   const s = newGame(82);
   s.addCoins(1e5);
   s.buyUpgrade('highRoller', 2);
   s.setBet(2); // x3
-  s.addCoins(12 - s.state.coins); // 12 coins: x3 costs 15, x2 costs 10
+  s.addCoins(12 - num(s.state.coins)); // 12 coins: x3 costs 15, x2 costs 10
   const started = [];
   s.on('spinStarted', (e) => started.push(e));
-  check('too poor for x3: the spin steps down to x2', s.getSpinBet() === 2 && s.spin() === true && started[0].bet === 2 && started[0].cost === 10);
+  check('too poor for x3: the spin steps down to x2', s.getSpinBet() === 2 && s.spin() === true && started[0].bet === 2 && num(started[0].cost) === 10);
   check('the chosen bet stays x3', s.getBet() === 3);
   land(s);
-  s.addCoins(4 - s.state.coins);
+  s.addCoins(4 - num(s.state.coins));
   const reasons = [];
   s.on('spinBlocked', (e) => reasons.push(e));
-  check('below x1 the spin is refused ("coins", with the x1 cost)', s.getSpinBet() === null && s.spin() === false && reasons[0].reason === 'coins' && reasons[0].cost === clunky.spinCost);
+  check('below x1 the spin is refused ("coins", with the x1 cost)', s.getSpinBet() === null && s.spin() === false && reasons[0].reason === 'coins' && num(reasons[0].cost) === clunky.spinCost);
 
   const a = newGame(83);
   a.addCoins(1e6);
   a.buyUpgrade('wheel');
   a.buyUpgrade('highRoller', Infinity);
   a.setBet(data.betSteps.length - 1);
-  a.addCoins(30 - a.state.coins);
+  a.addCoins(30 - num(a.state.coins));
   a.update(10);
   check('auto-spin never stalls at a high bet: it steps down', a.state.stats.autoSpins > 0);
 
@@ -245,8 +245,8 @@ describe('Hamster Wild (the Snack Stacker)', () => {
   let wildSeen = false;
   g.on('spinResolved', (e) => {
     const r = evaluateGrid(e.result, g.getPaylines(), stacker.payouts, symbolRules(stacker));
-    const pay = roundMoney(r.wins.reduce((sum, w) => sum + roundMoney(w.basePayout * g.getPayoutMultiplier()), 0));
-    if (pay !== e.payout) ok = false;
+    const pay = roundMoney(r.wins.reduce((sum, w) => sum + roundMoney(w.basePayout * num(g.getPayoutMultiplier())), 0));
+    if (pay !== num(e.payout)) ok = false;
     if (e.result.some((c) => c.includes('wild'))) wildSeen = true;
   });
   for (let i = 0; i < 2000; i++) { g.spin(); land(g); }

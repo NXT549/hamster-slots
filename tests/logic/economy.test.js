@@ -5,7 +5,7 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ describe('upgrade cost formula: floor(baseCost x growthRate ^ owned)', () => {
   const costs = (id, n) => {
     const out = [];
     for (let i = 0; i < n; i++) {
-      out.push(g.getUpgradeCost(id));
+      out.push(num(g.getUpgradeCost(id)));
       g.buyUpgrade(id);
     }
     return out;
@@ -32,21 +32,21 @@ describe('upgrade cost formula: floor(baseCost x growthRate ^ owned)', () => {
   check(`Oiled Lever's 8 levels total ${byHand('lever', 8).reduce((a, b) => a + b)}`, lever.reduce((a, b) => a + b) === byHand('lever', 8).reduce((a, b) => a + b), JSON.stringify(lever));
   const seeds = costs('newSeeds', 2);
   check(`New Seeds (the symbol unlocks) use the same formula: ${byHand('newSeeds', 2).join(', ')}`, JSON.stringify(seeds) === JSON.stringify(byHand('newSeeds', 2)));
-  check('costAtLevel is that formula', costAtLevel(upgrade('clover'), 3) === byHand('clover', 4)[3]);
+  check('costAtLevel is that formula', num(costAtLevel(upgrade('clover'), 3)) === byHand('clover', 4)[3]);
 });
 
 // ─────────────────────────────────────────────────────────────
 describe('buying upgrades', () => {
   const g = newGame();
-  check('start with startCoins', g.state.coins === data.startCoins);
-  check('cannot buy when too poor', g.buyUpgrade('cheeks') === false && g.state.coins === data.startCoins);
+  check('start with startCoins', num(g.state.coins) === data.startCoins);
+  check('cannot buy when too poor', g.buyUpgrade('cheeks') === false && num(g.state.coins) === data.startCoins);
   check('unknown upgrade id is refused', g.buyUpgrade('nope') === false);
   const reelCost = upgrade('thirdReel').baseCost;
   g.addCoins(reelCost);
   check('Third Reel: 2 reels before', g.getReelCount() === 2);
   const evBefore = g.getEconomy().ev;
   check('Third Reel purchase succeeds', g.buyUpgrade('thirdReel') === true);
-  check(`Third Reel: coins reduced by exactly ${reelCost}`, g.state.coins === data.startCoins);
+  check(`Third Reel: coins reduced by exactly ${reelCost}`, num(g.state.coins) === data.startCoins);
   check('Third Reel: 3 reels after', g.getReelCount() === 3);
   check('Third Reel: EV goes up', g.getEconomy().ev > evBefore);
   g.addCoins(1e5);
@@ -58,12 +58,12 @@ describe('buying upgrades', () => {
   check(`Wheel Training Lv ${w.maxLevel}: interval = max(formula ${formula.toFixed(2)} s, spin time + rest ${(clunky.spinDuration + w.effect.rest).toFixed(2)} s)`,
     near(g.getAutoInterval(), Math.max(formula, clunky.spinDuration + w.effect.rest), 1e-9), g.getAutoInterval());
   g.buyUpgrade('lever');
-  check('Oiled Lever L1 spin cost 5 -> 4.5', g.getSpinCost() === 4.5);
+  check('Oiled Lever L1 spin cost 5 -> 4.5', num(g.getSpinCost()) === 4.5);
   g.buyUpgrade('cheeks');
   g.buyUpgrade('cheeks');
-  check('Chubby Cheeks L2 multiplier 1.5', g.getPayoutMultiplier() === 1.5);
+  check('Chubby Cheeks L2 multiplier 1.5', num(g.getPayoutMultiplier()) === 1.5);
   const prev = g.previewUpgrade('cheeks');
-  check('shop preview: cheeks now 1.5 -> next 1.75', prev.now === 1.5 && prev.next === 1.75);
+  check('shop preview: cheeks now 1.5 -> next 1.75', num(prev.now) === 1.5 && num(prev.next) === 1.75);
   check('shop preview: maxed upgrade has next = null', g.previewUpgrade('wheel').next === null);
   check('machine-scoped levels stored on the machine', g.state.machines[0].upgrades.lever === 1 && !('lever' in g.state.upgrades));
 });
@@ -74,7 +74,7 @@ describe('spinning, spin cost and timing', () => {
   const blocked = [];
   g.on('spinBlocked', (e) => blocked.push(e.reason));
   check('spin succeeds with enough coins', g.spin() === true);
-  check('spin cost is paid up front', g.state.coins === data.startCoins - clunky.spinCost);
+  check('spin cost is paid up front', num(g.state.coins) === data.startCoins - clunky.spinCost);
   check('cannot start another spin while spinning', g.spin() === false && g.state.stats.spins === 1);
   g.update(clunky.spinDuration - 0.02);
   check('still spinning just before spinDuration', g.state.machines[0].spinning === true);
@@ -104,7 +104,7 @@ describe('spinning, spin cost and timing', () => {
   g2.on('spinBlocked', (e) => blocked2.push(e.reason));
   g2.spin();
   check('refused spin emits spinBlocked "coins"', blocked2[0] === 'coins');
-  check('coins never go negative', g2.state.coins === 2);
+  check('coins never go negative', num(g2.state.coins) === 2);
 
   // Payouts include the Chubby Cheeks multiplier, rounded to cents.
   const g3 = newGame(5);
@@ -116,10 +116,10 @@ describe('spinning, spin cost and timing', () => {
   let lockedSeen = 0;
   const locked = clunky.symbols.filter((s) => s.locked).map((s) => s.id);
   g3.on('spinResolved', (e) => {
-    const expected = roundMoney(evaluate(row0(e.result), clunky.payouts, symbolRules(clunky)).basePayout * g3.getPayoutMultiplier());
-    if (e.payout !== expected) allCorrect = false;
-    if (e.payout > 0) wins++;
-    if (row0(e.result).every((id) => id === 'blank') && e.payout !== 0) allCorrect = false;
+    const expected = roundMoney(evaluate(row0(e.result), clunky.payouts, symbolRules(clunky)).basePayout * num(g3.getPayoutMultiplier()));
+    if (num(e.payout) !== expected) allCorrect = false;
+    if (num(e.payout) > 0) wins++;
+    if (row0(e.result).every((id) => id === 'blank') && num(e.payout) !== 0) allCorrect = false;
     if (row0(e.result).includes('blank')) blanks++;
     if (row0(e.result).some((id) => locked.includes(id))) lockedSeen++;
   });
@@ -135,7 +135,7 @@ describe('spinning, spin cost and timing', () => {
 describe('food delivery (the soft-lock safety net)', () => {
   const g = newGame(6);
   g.addCoins(-data.startCoins);
-  check('broke: 0 coins', g.state.coins === 0);
+  check('broke: 0 coins', num(g.state.coins) === 0);
   check('broke: cannot spin', g.spin() === false);
   check('delivery can start at 0 coins', g.startDelivery() === true);
   check('only one delivery at a time', g.startDelivery() === false);
@@ -146,9 +146,9 @@ describe('food delivery (the soft-lock safety net)', () => {
   check('no spinning while the hamster is delivering', reasons[0] === 'delivery' && g.state.stats.spins === 0);
   g.addCoins(-100);
   g.update(data.delivery.duration - 0.1);
-  check('delivery not finished early', g.state.delivery.active === true && g.state.coins === 0);
+  check('delivery not finished early', g.state.delivery.active === true && num(g.state.coins) === 0);
   g.update(0.2);
-  check('delivery pays its reward', g.state.coins === data.delivery.reward && g.state.delivery.active === false);
+  check('delivery pays its reward', num(g.state.coins) === data.delivery.reward && g.state.delivery.active === false);
   check('after a delivery you can spin again', g.spin() === true);
 
   const g2 = newGame(7);
@@ -253,8 +253,8 @@ describe('balance rules (DESIGN.md section 9)', () => {
   g.addCoins(1e6);
   g.buyUpgrade('wheel');
   const econ = g.getEconomy();
-  check(`rule 2: delivery ${econ.deliveryPerSecond.toFixed(2)}/s < auto-spin profit at Wheel L1 ${econ.expectedAutoProfitPerSecond.toFixed(2)}/s`,
-    econ.deliveryPerSecond < econ.expectedAutoProfitPerSecond);
+  const [delivery, auto] = [num(econ.deliveryPerSecond), num(econ.expectedAutoProfitPerSecond)];
+  check(`rule 2: delivery ${delivery.toFixed(2)}/s < auto-spin profit at Wheel L1 ${auto.toFixed(2)}/s`, delivery < auto);
   check(`rule 3: one delivery (${data.delivery.reward}) covers a base spin on the free first machine (${clunky.spinCost})`,
     data.delivery.reward >= clunky.spinCost);
 
@@ -264,12 +264,13 @@ describe('balance rules (DESIGN.md section 9)', () => {
   t.addSeeds(10000);
   for (const id of nodeIds) if (id !== 'heirloomReel') t.buyTreeNode(id);
   const tEcon = t.getEconomy();
-  check(`rule 2 with the whole tree (2 reels): delivery ${tEcon.deliveryPerSecond.toFixed(2)}/s < auto-spin ${tEcon.expectedAutoProfitPerSecond.toFixed(2)}/s`,
-    t.getAutoInterval() !== null && tEcon.reels === 2 && tEcon.deliveryPerSecond < tEcon.expectedAutoProfitPerSecond);
+  const [tDelivery, tAuto] = [num(tEcon.deliveryPerSecond), num(tEcon.expectedAutoProfitPerSecond)];
+  check(`rule 2 with the whole tree (2 reels): delivery ${tDelivery.toFixed(2)}/s < auto-spin ${tAuto.toFixed(2)}/s`,
+    t.getAutoInterval() !== null && tEcon.reels === 2 && tDelivery < tAuto);
   const w = gameWithWholeTree();
   const wEcon = w.getEconomy();
-  check(`rule 2 with the whole tree (3 reels): delivery ${wEcon.deliveryPerSecond.toFixed(2)}/s < auto-spin ${wEcon.expectedAutoProfitPerSecond.toFixed(2)}/s`,
-    wEcon.deliveryPerSecond < wEcon.expectedAutoProfitPerSecond);
+  const [wDelivery, wAuto] = [num(wEcon.deliveryPerSecond), num(wEcon.expectedAutoProfitPerSecond)];
+  check(`rule 2 with the whole tree (3 reels): delivery ${wDelivery.toFixed(2)}/s < auto-spin ${wAuto.toFixed(2)}/s`, wDelivery < wAuto);
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -297,35 +298,35 @@ describe('win tiers (how big a win feels)', () => {
   let biggest = 0;
   u.on('spinResolved', (e) => {
     if (e.tier !== u.getWinTier(evaluate(row0(e.result), clunky.payouts, rules).basePayout)) ok = false;
-    biggest = Math.max(biggest, e.payout);
+    biggest = Math.max(biggest, num(e.payout));
   });
   for (let i = 0; i < 2000; i++) { u.spin(); land(u); }
   check('spinResolved carries the tier (same with 30 levels of Chubby Cheeks)', ok);
-  check('stats.biggestWin is the largest payout', u.state.stats.biggestWin === biggest && biggest > 0);
+  check('stats.biggestWin is the largest payout', num(u.state.stats.biggestWin) === biggest && biggest > 0);
 });
 
 // ─────────────────────────────────────────────────────────────
 describe('offline earnings', () => {
   const o = data.offline;
   const g = newGame(53);
-  check('no Wheel Training: nothing earned offline', g.getOfflineEarnings(3600).coins === 0 && g.applyOfflineEarnings(3600) === false);
+  check('no Wheel Training: nothing earned offline', num(g.getOfflineEarnings(3600).coins) === 0 && g.applyOfflineEarnings(3600) === false);
   g.addCoins(1e5);
   g.buyUpgrade('wheel');
   g.buyUpgrade('thirdReel');
-  const perSecond = g.getEconomy().expectedAutoProfitPerSecond;
+  const perSecond = num(g.getEconomy().expectedAutoProfitPerSecond);
   const hour = g.getOfflineEarnings(3600);
-  check(`1 h away = auto profit/s x 3600 x ${o.efficiency}`, near(hour.coins, perSecond * 3600 * o.efficiency, 0.01) && hour.seconds === 3600);
+  check(`1 h away = auto profit/s x 3600 x ${o.efficiency}`, near(num(hour.coins), perSecond * 3600 * o.efficiency, 0.01) && hour.seconds === 3600);
   check(`capped at ${o.maxSeconds / 3600} h`, g.getOfflineEarnings(o.maxSeconds * 5).seconds === o.maxSeconds);
-  check(`under ${o.minSeconds} s counts as nothing`, g.getOfflineEarnings(o.minSeconds - 1).coins === 0);
-  const before = { coins: g.state.coins, earned: g.state.stats.coinsEarned, rng: g.rng.getState() };
+  check(`under ${o.minSeconds} s counts as nothing`, num(g.getOfflineEarnings(o.minSeconds - 1).coins) === 0);
+  const before = { coins: num(g.state.coins), earned: num(g.state.stats.coinsEarned), rng: g.rng.getState() };
   const events = [];
   g.on('offlineEarned', (e) => events.push(e));
   check('applyOfflineEarnings succeeds', g.applyOfflineEarnings(3600) === true);
   check('offline coins are added and count as earned (toward seeds)',
-    near(g.state.coins, before.coins + hour.coins, 0.011) && near(g.state.stats.coinsEarned, before.earned + hour.coins, 0.011));
+    near(num(g.state.coins), before.coins + num(hour.coins), 0.011) && near(num(g.state.stats.coinsEarned), before.earned + num(hour.coins), 0.011));
   check('offline earnings never touch the RNG', g.rng.getState() === before.rng);
-  check('offlineEarned event says how long and how much', events[0] && events[0].seconds === 3600 && events[0].coins === hour.coins);
-  check('stats.offlineCoins adds up', g.state.stats.offlineCoins === hour.coins);
+  check('offlineEarned event says how long and how much', events[0] && events[0].seconds === 3600 && num(events[0].coins) === num(hour.coins));
+  check('stats.offlineCoins adds up', num(g.state.stats.offlineCoins) === num(hour.coins));
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -335,14 +336,14 @@ describe('buying x10 and Max', () => {
   const cheeks = data.upgrades.find((u) => u.id === 'cheeks');
   const sum = (def, from, n) => Array.from({ length: n }, (_, i) => Math.floor(def.baseCost * Math.pow(def.growthRate, from + i))).reduce((a, b) => a + b, 0);
   const b10 = g.getUpgradeBulk('cheeks', 10);
-  check('x10 Chubby Cheeks costs the sum of the next 10 levels', b10.count === 10 && b10.cost === sum(cheeks, 0, 10) && b10.affordable);
+  check('x10 Chubby Cheeks costs the sum of the next 10 levels', b10.count === 10 && num(b10.cost) === sum(cheeks, 0, 10) && b10.affordable);
   const bought = [];
   g.on('upgradeBought', (e) => bought.push(e));
-  const coins = g.state.coins;
-  check('buy x10', g.buyUpgrade('cheeks', 10) === true && g.getUpgradeLevel('cheeks') === 10 && g.state.coins === coins - b10.cost);
-  check('one upgradeBought event with count 10', bought.length === 1 && bought[0].count === 10 && bought[0].level === 10 && bought[0].cost === b10.cost);
+  const coins = num(g.state.coins);
+  check('buy x10', g.buyUpgrade('cheeks', 10) === true && g.getUpgradeLevel('cheeks') === 10 && num(g.state.coins) === coins - num(b10.cost));
+  check('one upgradeBought event with count 10', bought.length === 1 && bought[0].count === 10 && bought[0].level === 10 && num(bought[0].cost) === num(b10.cost));
   check('stats.upgradesBought counts every level', g.state.stats.upgradesBought === 10);
-  check('x10 preview shows the value after 10 more levels', g.previewUpgrade('cheeks', 10).next === 1 + 0.25 * 20);
+  check('x10 preview shows the value after 10 more levels', num(g.previewUpgrade('cheeks', 10).next) === 1 + 0.25 * 20);
 
   // Capped upgrades: x10 stops at the max level.
   const wheelMax = upgrade('wheel').maxLevel;
@@ -361,10 +362,10 @@ describe('buying x10 and Max', () => {
 
   // Max buys as many as you can afford.
   const m = p.getUpgradeBulk('cheeks', Infinity);
-  check(`Max: ${three + 5} coins buy 3 levels of Cheeks (${three})`, m.count === 3 && m.cost === three && m.affordable);
+  check(`Max: ${three + 5} coins buy 3 levels of Cheeks (${three})`, m.count === 3 && num(m.cost) === three && m.affordable);
   p.buyUpgrade('cheeks', Infinity);
-  check('buy Max', p.getUpgradeLevel('cheeks') === 3 && p.state.coins === 5);
+  check('buy Max', p.getUpgradeLevel('cheeks') === 3 && num(p.state.coins) === 5);
   const poor = p.getUpgradeBulk('cheeks', Infinity);
-  check('Max with too few coins shows the next price but is not affordable', poor.count === 1 && poor.cost === costAtLevel(cheeks, 3) && !poor.affordable);
+  check('Max with too few coins shows the next price but is not affordable', poor.count === 1 && num(poor.cost) === num(costAtLevel(cheeks, 3)) && !poor.affordable);
   check('an upgrade the machine does not sell has nothing to buy', p.getUpgradeBulk('gears', 10).count === 0);
 });

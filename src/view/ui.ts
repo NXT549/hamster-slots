@@ -11,13 +11,15 @@
 import { applySprite, spriteImg, treeIcon, MACHINE_SPRITES, SUIT_SPRITES } from './art.ts';
 import { createReels } from './reels.ts';
 import { createWinShow } from './winshow.ts';
-import { formatCoins, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle } from './dom.ts';
+import { formatCoins, formatWhole, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle } from './dom.ts';
 import { furColors, applyStageSkins } from './skins.ts';
 import { createCapsulesView } from './capsules.ts';
 import { createShopView, describeEffect } from './shop.ts';
 import { createPayoutsView } from './payouts.ts';
 import { createFx } from './fx.ts';
 import { effectAs } from '../logic/game.ts';
+import { divide } from '../logic/money.ts';
+import type { Money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
 import type { Game } from '../logic/game.ts';
 import type { Card, MachineState, Named, SpinSource, TreeNodeDef, UpgradeDef } from '../logic/types.ts';
@@ -156,7 +158,7 @@ export function createUI(
   // If it was already unlocked when the page loaded, don't announce it again.
   const familyUnlocked = () => {
     const s = game.state;
-    return s.generation > 1 || s.seeds > 0 || s.seedsEarned > 0 || game.canRetire();
+    return s.generation > 1 || s.seeds.gt(0) || s.seedsEarned.gt(0) || game.canRetire();
   };
   let familyShown = familyUnlocked();
   let familyNew = false; // shows a dot on the tab until you open it
@@ -164,7 +166,7 @@ export function createUI(
   // The Capsules tab appears once the family has earned enough tokens for a pull.
   const capsulesUnlocked = () => {
     const s = game.state;
-    return !!game.data.capsules && (s.stats.tokensEarned >= game.getPullCost() || s.stats.capsulesOpened > 0 || s.tokens >= game.getPullCost());
+    return !!game.data.capsules && (s.stats.tokensEarned.gte(game.getPullCost()) || s.stats.capsulesOpened > 0 || s.tokens.gte(game.getPullCost()));
   };
   let capsulesShown = capsulesUnlocked();
   let capsulesNew = false;
@@ -233,7 +235,7 @@ export function createUI(
   }
   // One banner at a time: a new big win replaces the last banner. With an amount,
   // the number under the words counts up from 0 (a classic pokie "rollup").
-  function banner(text: string, cls: string, amount: number | null = null): void {
+  function banner(text: string, cls: string, amount: Money | null = null): void {
     for (const old of el.winLayer.querySelectorAll('.win-banner')) old.remove();
     const node = document.createElement('div');
     node.className = `win-banner ${cls}`;
@@ -249,12 +251,12 @@ export function createUI(
     const rollup = (now: number) => {
       if (!node.isConnected) return;
       const t = lessMotion() ? 1 : Math.min(1, (now - start) / 800);
-      node.lastChild!.textContent = `+${formatCoins(amount * (1 - (1 - t) * (1 - t)))}`;
+      node.lastChild!.textContent = `+${formatCoins(amount.mul(1 - (1 - t) * (1 - t)))}`;
       if (t < 1) requestAnimationFrame(rollup);
     };
     requestAnimationFrame(rollup);
   }
-  const seedLabel = (text: string | number) => `${iconHTML('heirloom')}${text}`;
+  const seedLabel = (text: string) => `${iconHTML('heirloom')}${text}`;
 
   // ─────────────────────── building ───────────────────────
 
@@ -394,7 +396,7 @@ export function createUI(
   game.on('spinResolved', (e) => {
     const here = e.machineId === activeId();
     if (here) winShow.start(e); // lights the wins and the feature scatters, and counts the meter up
-    if (e.payout <= 0) return;
+    if (e.payout.lte(0)) return;
     const tierFx = WIN_FX[e.tier] || WIN_FX.win;
     const big = e.tier !== 'win';
     floatText(`+${formatCoins(e.payout)}`, big);
@@ -434,8 +436,8 @@ export function createUI(
   });
   game.on('freeSpinsEnded', (e) => {
     if (e.machineId !== activeId()) return;
-    banner('Free spins won', e.won > 0 ? 'big' : 'free', e.won);
-    if (e.won > 0) coinBurst(16);
+    banner('Free spins won', e.won.gt(0) ? 'big' : 'free', e.won);
+    if (e.won.gt(0)) coinBurst(16);
     say(`${e.spins} free spins paid +${formatCoins(e.won)} coins!`, 3500);
   });
 
@@ -503,16 +505,16 @@ export function createUI(
     }
     // On a pricey machine, a cheaper one you own is the other way out.
     const cheaper = game.data.machines.find((m) => m.id !== activeId() && game.ownsMachine(m.id)
-      && game.getMachineInfo(m.id)!.spinCost <= game.state.coins);
+      && game.getMachineInfo(m.id)!.spinCost.lte(game.state.coins));
     say(cheaper ? `Not enough coins for a spin here. Switch to ${cheaper.name}, or send me on a delivery?`
       : 'Not enough coins for a spin. Send me on a delivery?');
   });
 
   game.on('coinsChanged', (e) => {
-    if (e.amount > 0) replayClass(el.coinPill, 'gain');
+    if (e.amount.gt(0)) replayClass(el.coinPill, 'gain');
   });
   game.on('seedsChanged', (e) => {
-    if (e.amount > 0) replayClass(el.seedPill, 'gain');
+    if (e.amount.gt(0)) replayClass(el.seedPill, 'gain');
   });
 
   game.on('deliveryStarted', (e) => {
@@ -563,8 +565,8 @@ export function createUI(
     shownCoins = game.state.coins; // jump, don't roll down from millions
     retireArmed = 0;
     sound.play('retire');
-    floatText(`+${e.seedsGained} Heirloom Seeds`, true);
-    say(`Hi, I'm ${e.newName}! ${e.oldName} retired to the Big Cage and left the family ${e.seedsGained} Heirloom Seeds.`, 6000);
+    floatText(`+${formatWhole(e.seedsGained)} Heirloom Seeds`, true);
+    say(`Hi, I'm ${e.newName}! ${e.oldName} retired to the Big Cage and left the family ${formatWhole(e.seedsGained)} Heirloom Seeds.`, 6000);
   });
 
   // Tokens: the hamster mentions them only once the Capsules tab is showing,
@@ -573,7 +575,7 @@ export function createUI(
     if (!capsulesShown) return;
     const sticker = game.data.diary.find((d) => d.id === e.id)!;
     sound.play('sticker');
-    say(`Diary sticker: ${sticker.name}! +${e.tokens} Hamster Token${e.tokens === 1 ? '' : 's'}.`, 3500);
+    say(`Diary sticker: ${sticker.name}! +${formatWhole(e.tokens)} Hamster Token${e.tokens.eq(1) ? '' : 's'}.`, 3500);
   });
   game.on('tokensChanged', (e) => {
     if (!capsulesShown) return;
@@ -820,8 +822,8 @@ export function createUI(
       say(`I've earned an Heirloom Seed! I could retire and pass it on to a new pup. Peek at the Family tab.`, 6000);
     }
     el.familyTab.classList.toggle('hidden', !familyShown);
-    el.seedPill.classList.toggle('hidden', !(s.seeds > 0 || s.seedsEarned > 0));
-    setText(el.seedCount, String(s.seeds));
+    el.seedPill.classList.toggle('hidden', !(s.seeds.gt(0) || s.seedsEarned.gt(0)));
+    setText(el.seedCount, formatWhole(s.seeds));
     const anyBuyable = game.data.familyTree && game.data.familyTree.nodes.some((n) => game.canBuyTreeNode(n.id));
     el.familyTab.classList.toggle('alert', familyNew || anyBuyable);
     if (!familyShown) return;
@@ -831,7 +833,7 @@ export function createUI(
     setText(el.pupName, name);
     setText(el.pupGen, `Generation ${s.generation} · earned ${formatCoins(s.run.coinsEarned)} this life`);
     const pending = game.getPendingSeeds();
-    setHTML(el.retireGain, seedLabel(`+${pending} Heirloom Seed${pending === 1 ? '' : 's'}`));
+    setHTML(el.retireGain, seedLabel(`+${formatWhole(pending)} Heirloom Seed${pending.eq(1) ? '' : 's'}`));
     const prog = game.getSeedProgress();
     el.seedBarFill.style.width = `${(prog.progress * 100).toFixed(1)}%`;
     setText(el.seedNext, `Family lifetime coins: ${formatCoins(prog.earned)} · next seed at ${formatCoins(prog.nextAt)}`);
@@ -847,7 +849,7 @@ export function createUI(
       btn.classList.toggle('locked', !game.isTreeNodeUnlocked(id));
       btn.classList.toggle('ready', game.canBuyTreeNode(id));
       btn.classList.toggle('selected', id === selectedNode);
-      const costText = maxed ? 'Owned' : level > 0 ? `Lv ${level} · ${seedLabel(game.getTreeCost(id))}` : seedLabel(game.getTreeCost(id));
+      const costText = maxed ? 'Owned' : level > 0 ? `Lv ${level} · ${seedLabel(formatWhole(game.getTreeCost(id)))}` : seedLabel(formatWhole(game.getTreeCost(id)));
       setHTML(btn.querySelector<HTMLElement>('.node-cost')!, costText);
     }
 
@@ -865,9 +867,9 @@ export function createUI(
     const branch = game.data.familyTree.branches.find((b) => b.id === def.branch);
     const maxText = def.maxLevel ? `Lv ${level}/${def.maxLevel}` : `Lv ${level}`;
     const needs = unlocked ? '' : `<div class="note">Needs ${def.requires.map((r) => game.getTreeNodeDef(r)!.name).join(' + ')} first.</div>`;
-    const fill = maxed || affordable || !unlocked ? 0 : Math.min(100, (game.state.seeds / cost) * 100);
+    const fill = maxed || affordable || !unlocked ? 0 : Math.min(100, divide(game.state.seeds, cost).toNumber() * 100);
     const buttonClass = maxed ? 'maxed' : affordable ? '' : 'poor';
-    const buttonText = maxed ? 'Owned' : unlocked ? seedLabel(`Plant ${cost}`) : 'Locked';
+    const buttonText = maxed ? 'Owned' : unlocked ? seedLabel(`Plant ${formatWhole(cost)}`) : 'Locked';
     setHTML(el.treeDetail, `
       <div class="tile-top">
         <div class="tile-icon">${iconHTML(treeIcon(def) || 'heirloom', 32)}</div>
@@ -952,7 +954,7 @@ export function createUI(
     const lingering = !show && cardShown && now < cardShown.until;
     el.gamble.classList.toggle('hidden', !show && !lingering);
     if (!show && !lingering) return;
-    const num = (n: number) => `<b class="num">${formatCoins(n)}</b>`; // numbers always in the clean font
+    const num = (n: Money) => `<b class="num">${formatCoins(n)}</b>`; // numbers always in the clean font
     if (show) {
       setHTML(el.gambleTitle, `${g.rounds > 0 ? 'Gamble again?' : 'Gamble your win?'} ${num(g.stake)}`);
       setHTML(el.gambleNote, g.canPick
@@ -1031,9 +1033,10 @@ export function createUI(
     const gameDt = s.stats.playTime - lastPlayTime; // game time since last frame (follows speed-up)
     lastPlayTime = s.stats.playTime;
 
-    // Coin counter rolls toward the real value instead of jumping.
-    const diff = s.coins - shownCoins;
-    shownCoins = Math.abs(diff) < 0.01 ? s.coins : shownCoins + diff * Math.min(1, realDt * 14);
+    // Coin counter rolls toward the real value instead of jumping. It lands on it
+    // once it's within a cent, or (for huge amounts) within a billionth of it.
+    const diff = s.coins.sub(shownCoins);
+    shownCoins = diff.abs().lt(s.coins.abs().mul(1e-9).max(0.01)) ? s.coins : shownCoins.add(diff.mul(Math.min(1, realDt * 14)));
     setText(el.coins, formatCoins(shownCoins));
     const econ = game.getEconomy();
     setText(el.coinRate, econ.autoInterval ? `+${formatCoins(econ.expectedAutoProfitPerSecond)}/s` : '');
@@ -1146,7 +1149,7 @@ export function createUI(
     if (!capsulesShown && capsulesUnlocked()) {
       capsulesShown = true;
       capsulesNew = true;
-      say(`My Hamster Diary earned me ${game.state.tokens} Hamster Tokens! Let's try the Capsule Machine.`, 6000);
+      say(`My Hamster Diary earned me ${formatWhole(game.state.tokens)} Hamster Tokens! Let's try the Capsule Machine.`, 6000);
     }
     el.capsulesTab.classList.toggle('hidden', !capsulesShown);
     el.stageGacha.classList.toggle('hidden', !capsulesShown);

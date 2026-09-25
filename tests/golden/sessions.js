@@ -32,6 +32,34 @@ const STEP = 0.25; // seconds of game time per step; the player acts once a seco
 // What the player does with each card gamble, in turn ("collect" = Take win).
 const PICKS = ['collect', 'red', 'hearts', 'black', 'collect', 'spades', 'red', 'clubs', 'diamonds'];
 
+// The money in a save (see MONEY_STATS in the game's types): since save v8 (big
+// numbers, migration step 3.7) it's written as text ("1234.56"); the recording
+// was made with v7, where it was a plain number.
+export const MONEY_STATS = ['coinsWon', 'coinsSpent', 'deliveryCoins', 'coinsEarned', 'tokensEarned', 'biggestWin', 'offlineCoins', 'freeSpinCoins'];
+export function moneyFields(save) {
+  const fields = [[save, 'coins'], [save, 'seeds'], [save, 'seedsEarned'], [save, 'tokens']];
+  if (save.run) fields.push([save.run, 'coinsEarned']);
+  if (save.stats) for (const key of MONEY_STATS) fields.push([save.stats, key]);
+  for (const m of save.machines || []) {
+    for (const pot of Object.keys(m.pots || {})) fields.push([m.pots, pot]);
+    if (m.freeSpins) fields.push([m.freeSpins, 'won']);
+  }
+  return fields.filter(([obj, key]) => key in obj);
+}
+
+// A checkpoint as the golden run compares it: the save's money as plain numbers
+// (text or number, the same amount) and without its version. So the recording
+// from v7 and today's v8 saves match exactly when the game plays the same, while
+// any other difference (a cent, a count, a random number) still shows up.
+export function comparable(cp) {
+  const out = canonical(cp);
+  if (out.save) {
+    for (const [obj, key] of moneyFields(out.save)) obj[key] = Number(obj[key]);
+    delete out.save.saveVersion;
+  }
+  return out;
+}
+
 // A JSON copy with every object's keys sorted, so key order never matters.
 export function canonical(value) {
   const sort = (x) => {
@@ -56,7 +84,7 @@ function newSession(seed) {
 function attach(s, g) {
   s.g = g;
   for (const name of EVENTS) g.on(name, () => { s.log.counts[name] = (s.log.counts[name] || 0) + 1; });
-  g.on('spinResolved', (e) => { s.log.paid = Math.round((s.log.paid + e.payout) * 100) / 100; });
+  g.on('spinResolved', (e) => { s.log.paid = Math.round((s.log.paid + e.payout.toNumber()) * 100) / 100; });
 }
 
 function checkpoint(s, label) {
@@ -86,10 +114,11 @@ function playerSecond(s) {
 }
 
 // Buy the cheapest upgrade that can be bought right now (ties: data.json order).
+// (Costs are Money, big numbers: .lt() is "less than".)
 function buyCheapest(g) {
   let best = null;
   for (const def of g.getAvailableUpgrades()) {
-    if (g.canBuyUpgrade(def.id) && (!best || g.getUpgradeCost(def.id) < g.getUpgradeCost(best.id))) best = def;
+    if (g.canBuyUpgrade(def.id) && (!best || g.getUpgradeCost(def.id).lt(g.getUpgradeCost(best.id)))) best = def;
   }
   return best ? g.buyUpgrade(best.id) : false;
 }
@@ -99,7 +128,7 @@ function plantAll(g) {
   for (;;) {
     const ids = data.familyTree.nodes.map((n) => n.id).filter((id) => g.canBuyTreeNode(id));
     if (!ids.length) return;
-    ids.sort((a, b) => g.getTreeCost(a) - g.getTreeCost(b));
+    ids.sort((a, b) => g.getTreeCost(a).cmp(g.getTreeCost(b)));
     g.buyTreeNode(ids[0]);
   }
 }
@@ -239,11 +268,13 @@ function family() {
 
 export const SESSIONS = { firstLife, allMachines, family };
 
-// Which checkpoints are also kept as real v7 save files (tests/fixtures/), for
-// save-migration tests: [session, checkpoint label, file name].
+// Which checkpoints are also kept as real save files (tests/fixtures/), for
+// save-migration tests: [session, checkpoint label, name]. The files are called
+// save-v<version>-<name>.json; every save version gets its own set, and old sets
+// are kept for good (they're the old-format saves the migrations are tested on).
 export const FIXTURES = [
-  ['firstLife', 'first life, 10 min', 'save-v7-early.json'],
-  ['firstLife', 'first life, 50 min', 'save-v7-first-life.json'],
-  ['family', 'third generation, 5 min', 'save-v7-family.json'],
-  ['allMachines', 'played on after loading', 'save-v7-late.json'],
+  ['firstLife', 'first life, 10 min', 'early'],
+  ['firstLife', 'first life, 50 min', 'first-life'],
+  ['family', 'third generation, 5 min', 'family'],
+  ['allMachines', 'played on after loading', 'late'],
 ];

@@ -5,7 +5,7 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ describe('determinism: frame size must not change the outcome', () => {
   // Same again with the whole family tree: faster spins, shorter + automatic deliveries.
   function runTree(chops) {
     const g = gameWithWholeTree(778);
-    g.addCoins(-g.state.coins); // broke, so Self-Starter kicks in
+    g.addCoins(g.state.coins.neg()); // broke, so Self-Starter kicks in
     for (const dt of chops) g.update(dt);
     return JSON.stringify({ coins: g.state.coins, spins: g.state.stats.spins, deliveries: g.state.stats.deliveries, rng: g.rng.getState() });
   }
@@ -48,7 +48,7 @@ describe('determinism: frame size must not change the outcome', () => {
   const expectedSpins = 600 / g.getAutoInterval();
   check(`Wheel maxed: ${g.state.stats.autoSpins} auto-spins in 600 s ~ expected ${expectedSpins.toFixed(0)} (within 2%)`,
     near(g.state.stats.autoSpins, expectedSpins, expectedSpins * 0.02));
-  check('coins stay rounded to cents', Math.abs(g.state.coins * 100 - Math.round(g.state.coins * 100)) < 1e-6);
+  check('coins stay rounded to cents', Math.abs(num(g.state.coins) * 100 - Math.round(num(g.state.coins) * 100)) < 1e-6);
 });
 
 // ─────────────────────────────────────────────────────────────

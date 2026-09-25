@@ -5,7 +5,7 @@
 // Like ui.ts, it only calls game actions (pullCapsule, equipSkin) and reads state.
 
 import { CAPSULE_SPRITES } from './art.ts';
-import { formatCoins, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
+import { formatCoins, formatWhole, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
 import { skinPreview } from './skins.ts';
 import type { Sound } from './sound.ts';
 import type { Game } from '../logic/game.ts';
@@ -161,7 +161,7 @@ export function createCapsulesView(
       const name = rarityName(e.rarity);
       sound.play(e.rarity === game.data.capsules.pityRarity ? 'epic' : 'capsulePop');
       if (e.duplicate) {
-        say(`${def.name} again! Here are ${e.refund} tokens back.`);
+        say(`${def.name} again! Here are ${formatWhole(e.refund)} tokens back.`);
       } else if (e.rarity === game.data.capsules.pityRarity) {
         say(`WOW, a${/^[aeiou]/i.test(name) ? 'n' : ''} ${name} capsule: ${def.name}!`, 4000);
       } else {
@@ -170,7 +170,7 @@ export function createCapsulesView(
     }
     const def = game.getSkinDef(e.skinId)!;
     const wearing = game.getEquippedSkin(def.category) === def.id;
-    const badge = e.duplicate ? `<span class="note">Duplicate · ${iconHTML('token', 24)}+${e.refund} back</span>` : '<span class="new-badge">NEW!</span>';
+    const badge = e.duplicate ? `<span class="note">Duplicate · ${iconHTML('token', 24)}+${formatWhole(e.refund)} back</span>` : '<span class="new-badge">NEW!</span>';
     const button = wearing ? '<button class="btn btn-soft wear-btn" disabled>Wearing it</button>'
       : `<button class="btn btn-primary wear-btn" data-skin="${def.id}">Wear it</button>`;
     // Rebuild only when the prize or "wearing" changes. (The preview is a real
@@ -192,11 +192,11 @@ export function createCapsulesView(
 
   function render(now: number): void {
     const s = game.state;
-    setText(el.tokens, String(s.tokens));
+    setText(el.tokens, formatWhole(s.tokens));
     const cost = game.getPullCost();
     const opening = reveal && now - reveal.at < REVEAL_MS;
     el.pullBtn.disabled = opening || !game.canPull();
-    setHTML(el.pullBtn, `Pull a capsule · ${iconHTML('token', 24)} ${cost}`);
+    setHTML(el.pullBtn, `Pull a capsule · ${iconHTML('token', 24)} ${formatWhole(cost)}`);
     const left = game.getPityRemaining();
     setText(el.pity, left <= 1
       ? `The next capsule is guaranteed ${rarityName(game.data.capsules.pityRarity)}!`

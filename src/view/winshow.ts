@@ -16,6 +16,7 @@ import type { Reels } from './reels.ts';
 import type { Fx } from './fx.ts';
 import type { Sound } from './sound.ts';
 import type { Game } from '../logic/game.ts';
+import type { Money } from '../logic/money.ts';
 import type { GameEvents, PaidWin, Cell } from '../logic/types.ts';
 
 // One turn of the show: everything lit, one line, or the feature's scatters.
@@ -24,7 +25,7 @@ type Step = { kind: 'all' } | { kind: 'line'; win: PaidWin } | { kind: 'feature'
 // The show that's playing (null when there's none).
 interface Show {
   steps: Step[];
-  total: number;
+  total: Money;
   countFor: number; // ms the meter takes to count up
   start: number;
   step: number; // which step is showing (-1 = the first "everything lit" count-up)
@@ -60,7 +61,7 @@ export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, 
     const s = game.getMachineData().symbols.find((x) => x.id === id);
     return s ? s.name : id;
   };
-  const num = (n: number) => `<b class="num">${formatCoins(n)}</b>`;
+  const num = (n: Money) => `<b class="num">${formatCoins(n)}</b>`;
 
   // What a line's turn says. One-line machines don't number their line.
   function lineText(w: PaidWin): string {
@@ -75,7 +76,7 @@ export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, 
     label.innerHTML = html || '';
   }
 
-  function setMeter(value: number | null): void {
+  function setMeter(value: Money | null): void {
     meterValue.textContent = value === null ? '' : formatCoins(value);
   }
 
@@ -164,7 +165,7 @@ export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, 
     if (!show) return;
     // The meter counts up (ease-out), with a soft tick now and then.
     const t = show.countFor > 0 ? Math.min(1, (now - show.start) / show.countFor) : 1;
-    setMeter(show.total * (1 - (1 - t) * (1 - t)));
+    setMeter(show.total.mul(1 - (1 - t) * (1 - t)));
     meter.classList.toggle('counting', t < 1);
     if (t < 1 && now - lastTick > 90) {
       lastTick = now;

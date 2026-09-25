@@ -57,6 +57,10 @@ const data = JSON.parse(readFileSync(dataPath, 'utf8'));
 
 // ───────────────────────── The bot ─────────────────────────
 
+// The game's money (coins, seeds, tokens, prices) is a big number (src/logic/money.ts).
+// The bot does its sums with plain numbers: num(x) is x's number.
+const num = (x) => (typeof x === 'number' ? x : x.toNumber());
+
 const STEP = 0.25; // seconds of game time between the bot's looks at the game
 const hasBets = (g) => typeof g.setBet === 'function';
 
@@ -82,7 +86,7 @@ function income(g) {
   // Features (free spins, jackpot wheels) take time too; getEconomy says how much per paid spin.
   const extraTime = econ.extraSecondsPerSpin || 0;
   const rate = spinsPerSecond(g);
-  return (econ.profitPerSpin * rate) / (1 + extraTime * rate);
+  return (num(econ.profitPerSpin) * rate) / (1 + extraTime * rate);
 }
 
 // The biggest unlocked bet the bankroll allows (the step-down rule keeps it safe).
@@ -91,7 +95,7 @@ function chooseBet(g) {
   const steps = g.getBetSteps();
   let best = 0;
   for (let i = 0; i <= g.getMaxBetIndex(); i++) {
-    if (g.state.coins >= opts.bankroll * g.getSpinCost() * steps[i]) best = i;
+    if (num(g.state.coins) >= opts.bankroll * num(g.getSpinCost()) * steps[i]) best = i;
   }
   if (best !== g.getBetIndex()) g.setBet(best);
 }
@@ -104,7 +108,7 @@ function chooseMachine(g) {
     const c = cloneGame(g);
     c.switchMachine(m.typeId);
     chooseBet(c);
-    const enough = c.state.coins >= 10 * c.getSpinCost();
+    const enough = num(c.state.coins) >= 10 * num(c.getSpinCost());
     const inc = enough ? income(c) : -1;
     if (inc > bestIncome) { bestIncome = inc; bestId = m.typeId; }
   }
@@ -129,16 +133,16 @@ function rankPurchases(g) {
     chooseBet(c);
     const gain = income(c) - base;
     if (!(gain > 0)) return;
-    const wait = Math.max(0, cost - g.state.coins) / Math.max(base, 0.01);
+    const wait = Math.max(0, cost - num(g.state.coins)) / Math.max(base, 0.01);
     options.push({ kind, id, cost, score: gain / cost, time: wait + cost / gain });
   };
   for (const def of g.getAvailableUpgrades()) {
     if (g.isMaxed(def.id)) continue;
-    consider('upgrade', def.id, g.getUpgradeCost(def.id), (c) => c.buyUpgrade(def.id));
+    consider('upgrade', def.id, num(g.getUpgradeCost(def.id)), (c) => c.buyUpgrade(def.id));
   }
   for (const md of data.machines) {
     if (g.ownsMachine(md.id)) continue;
-    consider('machine', md.id, g.getMachineCost(md.id), (c) => c.buyMachine(md.id));
+    consider('machine', md.id, num(g.getMachineCost(md.id)), (c) => c.buyMachine(md.id));
   }
   return options.sort((a, b) => a.time - b.time);
 }
@@ -147,7 +151,7 @@ function rankPurchases(g) {
 function plantTree(g) {
   const nodes = data.familyTree.nodes;
   for (;;) {
-    const finite = nodes.filter((n) => n.maxLevel !== null && g.canBuyTreeNode(n.id)).sort((a, b) => g.getTreeCost(a.id) - g.getTreeCost(b.id));
+    const finite = nodes.filter((n) => n.maxLevel !== null && g.canBuyTreeNode(n.id)).sort((a, b) => num(g.getTreeCost(a.id)) - num(g.getTreeCost(b.id)));
     const pick = finite[0] || nodes.find((n) => n.maxLevel === null && g.canBuyTreeNode(n.id) && nodes.every((x) => x.maxLevel === null || g.isTreeMaxed(x.id)));
     if (!pick) return;
     g.buyTreeNode(pick.id);
@@ -170,11 +174,11 @@ function playSeed(seed) {
   g.on('upgradeBought', (e) => {
     mark(`${e.id}${e.level}`);
     if (e.id === 'thirdReel') mark('thirdReel');
-    if (opts.verbose) console.log(`  [seed ${seed} gen ${life.generation} ${((t - life.start) / 60).toFixed(1)} min] ${e.id} Lv ${e.level} for ${Math.round(e.cost)}`);
+    if (opts.verbose) console.log(`  [seed ${seed} gen ${life.generation} ${((t - life.start) / 60).toFixed(1)} min] ${e.id} Lv ${e.level} for ${Math.round(num(e.cost))}`);
   });
   g.on('machineBought', (e) => {
     mark(`machine:${e.id}`);
-    if (opts.verbose) console.log(`  [seed ${seed} gen ${life.generation} ${((t - life.start) / 60).toFixed(1)} min] machine ${e.id} for ${Math.round(e.cost)}`);
+    if (opts.verbose) console.log(`  [seed ${seed} gen ${life.generation} ${((t - life.start) / 60).toFixed(1)} min] machine ${e.id} for ${Math.round(num(e.cost))}`);
   });
   g.on('treeNodeBought', (e) => life && life.planted.push(e.id));
   g.on('freeSpinsStarted', () => life.freeSpins++);
@@ -213,12 +217,12 @@ function playSeed(seed) {
       // --verbose also says what the bot is saving up for, every 10 minutes.
       if (opts.verbose && Math.floor(lifeSeconds / 600) !== Math.floor((lifeSeconds - 15) / 600)) {
         const top = ranking.slice(0, 3).map((o) => `${o.id} ${Math.round(o.cost)} (+${(o.score * 1e3).toFixed(3)}/s per 1K)`).join(', ');
-        console.log(`  [seed ${seed} gen ${life.generation} ${(lifeSeconds / 60).toFixed(1)} min] ${Math.round(g.state.coins)} coins, ${income(g).toFixed(2)}/s, saving for: ${top || 'nothing'}`);
+        console.log(`  [seed ${seed} gen ${life.generation} ${(lifeSeconds / 60).toFixed(1)} min] ${Math.round(num(g.state.coins))} coins, ${income(g).toFixed(2)}/s, saving for: ${top || 'nothing'}`);
       }
     }
     // The idle player's first goal is to stop clicking: Wheel Training comes first.
     const wantsWheel = opts.player === 'idle' && g.getAutoInterval() === null && g.getAvailableUpgrades().some((u) => u.id === 'wheel');
-    const top = wantsWheel ? { kind: 'upgrade', id: 'wheel', cost: g.getUpgradeCost('wheel') } : ranking[0];
+    const top = wantsWheel ? { kind: 'upgrade', id: 'wheel', cost: num(g.getUpgradeCost('wheel')) } : ranking[0];
     if (top && g.canAfford(top.cost)) {
       const ok = top.kind === 'machine' ? g.buyMachine(top.id) : g.buyUpgrade(top.id);
       if (ok) { ranking = null; nextMachineCheck = 0; }
@@ -226,8 +230,8 @@ function playSeed(seed) {
     if (t >= nextMachineCheck) { chooseMachine(g); chooseBet(g); nextMachineCheck = t + 10; }
 
     // When the Family tab (first seed pending) and the Capsules tab (10 tokens) would appear.
-    if (g.getPendingSeeds() >= 1 && g.state.seedsEarned === 0) mark('seed1');
-    if (g.state.stats.tokensEarned >= (data.capsules ? data.capsules.pullCost : Infinity)) mark('tokens');
+    if (num(g.getPendingSeeds()) >= 1 && num(g.state.seedsEarned) === 0) mark('seed1');
+    if (num(g.state.stats.tokensEarned) >= (data.capsules ? data.capsules.pullCost : Infinity)) mark('tokens');
 
     // Income, Luck and hit-rate snapshots.
     for (const min of [5, 10, 20, 30, 45, 60]) {
@@ -241,13 +245,13 @@ function playSeed(seed) {
 
     // Retire?
     const firstLife = lives.length === 0 && opts.firstMinutes !== null;
-    const pending = g.getPendingSeeds();
+    const pending = num(g.getPendingSeeds());
     const wantRetire = firstLife
       ? lifeSeconds >= opts.firstMinutes * 60
-      : pending >= Math.max(3, Math.ceil(opts.retire * g.state.seedsEarned)) || lifeSeconds >= opts.minutes * 60;
+      : pending >= Math.max(3, Math.ceil(opts.retire * num(g.state.seedsEarned))) || lifeSeconds >= opts.minutes * 60;
     if (wantRetire && g.canRetire()) {
       life.seeds = pending;
-      life.earned = g.state.run.coinsEarned;
+      life.earned = num(g.state.run.coinsEarned);
       life.length = lifeSeconds / 60;
       lives.push(life);
       g.retire();

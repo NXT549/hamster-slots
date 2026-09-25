@@ -5,8 +5,17 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
 } from './helpers.js';
+import { moneyFields } from '../golden/sessions.js';
+
+// Saves before v8 held money as plain numbers; today's save writes it as text
+// (big numbers, money.ts). An "old save" made from today's save turns its money
+// back into numbers, like the real thing.
+function withNumbers(save) {
+  for (const [obj, key] of moneyFields(save)) obj[key] = Number(obj[key]);
+  return save;
+}
 
 // ─────────────────────────────────────────────────────────────
 describe('saving and loading', () => {
@@ -36,13 +45,13 @@ describe('saving and loading', () => {
   g3.loadSaveData(broken);
   check('load drops unknown upgrades', !('bogus' in g3.state.upgrades));
   check('load caps levels at maxLevel', g3.getUpgradeLevel('wheel') === upgrade('wheel').maxLevel);
-  check('load clamps negative coins to 0', g3.state.coins === 0);
+  check('load clamps negative coins to 0', num(g3.state.coins) === 0);
   check('load discards an invalid spin result', g3.state.machines[0].result === null && !g3.state.machines[0].spinning);
 
   const g4 = newGame();
   check('load rejects null', g4.loadSaveData(null) === false);
   check('load rejects unknown saveVersion', g4.loadSaveData({ saveVersion: 999 }) === false);
-  check('failed load leaves a fresh game', g4.state.coins === data.startCoins);
+  check('failed load leaves a fresh game', num(g4.state.coins) === data.startCoins);
 
   // Family data round-trips, and junk tree data is cleaned.
   const f = newGame(14);
@@ -64,7 +73,7 @@ describe('saving and loading', () => {
   const f3 = newGame();
   f3.loadSaveData(junk);
   check('load cleans the tree (unknown ids dropped, levels capped)', !('bogus' in f3.state.tree) && f3.state.tree.familyPride === 1);
-  check('load clamps seeds >= 0 and generation >= 1', f3.state.seeds === 0 && f3.state.generation === 1);
+  check('load clamps seeds >= 0 and generation >= 1', num(f3.state.seeds) === 0 && f3.state.generation === 1);
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -78,29 +87,29 @@ describe('save migration: v1 -> v2', () => {
   };
   const g = newGame();
   check('a v1 save loads', g.loadSaveData(v1) === true);
-  check('v1 progress is kept', g.state.coins === 321.5 && g.getUpgradeLevel('wheel') === 2 && g.getUpgradeLevel('lever') === 1);
-  check('v1 -> v2: generation 1, no seeds, empty tree', g.state.generation === 1 && g.state.seeds === 0 && deepEqual(g.state.tree, {}));
-  check('v1 -> v2: past wins + deliveries count as earned', g.state.stats.coinsEarned === 930 && g.state.run.coinsEarned === 930);
+  check('v1 progress is kept', num(g.state.coins) === 321.5 && g.getUpgradeLevel('wheel') === 2 && g.getUpgradeLevel('lever') === 1);
+  check('v1 -> v2: generation 1, no seeds, empty tree', g.state.generation === 1 && num(g.state.seeds) === 0 && deepEqual(g.state.tree, {}));
+  check('v1 -> v2: past wins + deliveries count as earned', num(g.state.stats.coinsEarned) === 930 && num(g.state.run.coinsEarned) === 930);
   check('v1 -> v2: a delivery in progress keeps going', g.state.delivery.active === true && g.state.delivery.timer === 12);
   check('v1 -> v5: the old one-row result becomes a grid', deepEqual(g.state.machines[0].result, [['seed'], ['seed']]));
   check('v1 -> v7: the old machine keeps every symbol it had (New Seeds maxed, nothing locked)',
     g.getUpgradeLevel('newSeeds') === upgrade('newSeeds').maxLevel && clunky.symbols.every((s) => !g.isSymbolLocked(s.id)));
   check(`the migrated save is written as the current version (v${SAVE_VERSION})`, g.toSaveData().saveVersion === SAVE_VERSION);
-  check('v1 -> v3: past goals are awarded as diary stickers', g.state.diary.firstSpin === true && g.state.tokens > 0);
+  check('v1 -> v3: past goals are awarded as diary stickers', g.state.diary.firstSpin === true && num(g.state.tokens) > 0);
 });
 
 // ─────────────────────────────────────────────────────────────
 describe('save migration: v3 -> v4', () => {
   const g = newGame(51);
   g.addCoins(100);
-  const v3 = JSON.parse(JSON.stringify(g.toSaveData()));
+  const v3 = withNumbers(JSON.parse(JSON.stringify(g.toSaveData())));
   v3.saveVersion = 3;
   delete v3.stats.biggestWin;
   delete v3.stats.offlineCoins;
   const g2 = newGame();
   check('a v3 save loads', g2.loadSaveData(v3) === true);
-  check('v3 -> v4: new stats start at 0', g2.state.stats.biggestWin === 0 && g2.state.stats.offlineCoins === 0);
-  check('v3 -> v4: everything else is kept', g2.state.coins === g.state.coins);
+  check('v3 -> v4: new stats start at 0', num(g2.state.stats.biggestWin) === 0 && num(g2.state.stats.offlineCoins) === 0);
+  check('v3 -> v4: everything else is kept', num(g2.state.coins) === num(g.state.coins));
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -109,7 +118,7 @@ describe('save migration: v4 -> v5', () => {
   const g = newGame(54);
   g.addCoins(upgrade('thirdReel').baseCost);
   g.buyUpgrade('thirdReel');
-  const v4 = JSON.parse(JSON.stringify(g.toSaveData()));
+  const v4 = withNumbers(JSON.parse(JSON.stringify(g.toSaveData())));
   v4.saveVersion = 4;
   v4.machines[0].result = ['carrot', 'golden', 'seed'];
   v4.machines[0].spinning = true;
@@ -127,7 +136,7 @@ describe('save migration: v4 -> v5', () => {
   let paid = null;
   g2.on('spinResolved', (e) => { paid = e; });
   g2.update(0.5);
-  check('the migrated spin lands and is scored', paid !== null && paid.payout === 0 && g2.getReelCount() === 3);
+  check('the migrated spin lands and is scored', paid !== null && num(paid.payout) === 0 && g2.getReelCount() === 3);
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -141,13 +150,13 @@ describe('save migration: v2 -> v3', () => {
   };
   const g = newGame();
   check('a v2 save loads', g.loadSaveData(v2) === true);
-  check('v2 family data is kept', g.state.generation === 3 && g.state.seeds === 2 && g.state.tree.familyPride === 1);
+  check('v2 family data is kept', g.state.generation === 3 && num(g.state.seeds) === 2 && g.state.tree.familyPride === 1);
   check('v2 -> v3: no skins, starters equipped', Object.keys(g.state.skins.owned).length === 0 && g.getEquippedSkin('fur') === 'furClassic');
   const expected = ['firstSpin', 'firstWin', 'firstDelivery', 'spins100', 'thirdReel', 'firstRetirement'];
   check('v2 -> v3: stickers already reached are awarded on load', expected.every((id) => g.state.diary[id] === true),
     JSON.stringify(g.state.diary));
   const tokens = data.diary.filter((d) => expected.includes(d.id)).reduce((sum, d) => sum + d.tokens, 0);
-  check(`v2 -> v3: those stickers pay ${tokens} tokens`, g.state.tokens === tokens && g.state.stats.tokensEarned === tokens, g.state.tokens);
+  check(`v2 -> v3: those stickers pay ${tokens} tokens`, num(g.state.tokens) === tokens && num(g.state.stats.tokensEarned) === tokens, num(g.state.tokens));
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -197,7 +206,7 @@ describe('saving with bets, bonus features, unlocks and Luck (v6, v7)', () => {
   p3.loadSaveData(junk);
   const pm = p3.state.machines.find((m) => m.typeId === 'palace');
   check('load cleans feature junk: bet capped, pots >= seed, unknown pots and wheels dropped, no streak below 0',
-    p3.getBetIndex() === 0 && pm.pots.mini === palace.jackpot.pots[0].seed && !('bogus' in pm.pots) && pm.bonus === null && pm.streak === 0);
+    p3.getBetIndex() === 0 && num(pm.pots.mini) === palace.jackpot.pots[0].seed && !('bogus' in pm.pots) && pm.bonus === null && pm.streak === 0);
   check('load drops free spins on a machine without them, and never loads a gamble',
     p3.state.machines.find((m) => m.typeId === 'clunky').freeSpins === null && p3.getGambleInfo() === null);
 });
@@ -209,7 +218,7 @@ describe('save migration: v5 -> v6', () => {
   g.buyMachine('stacker');
   g.spin();
   g.update(0.3);
-  const v5 = JSON.parse(JSON.stringify(g.toSaveData()));
+  const v5 = withNumbers(JSON.parse(JSON.stringify(g.toSaveData())));
   v5.saveVersion = 5;
   for (const m of v5.machines) for (const k of ['bet', 'streak', 'freeSpins', 'pots', 'bonus', 'spinBet', 'spinFree', 'spinSource']) delete m[k];
   for (const k of ['biggestBet', 'freeSpins', 'freeSpinTriggers', 'freeSpinCoins', 'wildWins', 'bestStreak', 'jackpotsWon', 'grandJackpots', 'gambleWins', 'gambleLosses', 'bestGambleRun']) delete v5.stats[k];
@@ -229,7 +238,7 @@ describe('save migration: v6 -> v7 (symbols you unlock)', () => {
   g.buyMachine('stacker');
   g.buyMachine('bonanza');
   g.buyUpgrade('tunnelGrease', 2);
-  const v6 = JSON.parse(JSON.stringify(g.toSaveData()));
+  const v6 = withNumbers(JSON.parse(JSON.stringify(g.toSaveData())));
   v6.saveVersion = 6;
   for (const k of ['symbolsUnlocked', 'bestLuck', 'suitWins']) delete v6.stats[k];
   delete v6.machines[0].upgrades; // an old machine with no upgrades at all
@@ -245,10 +254,50 @@ describe('save migration: v6 -> v7 (symbols you unlock)', () => {
     g2.state.stats.symbolsUnlocked === 0 && g2.state.stats.suitWins === 0 && g2.state.diary.newSeed !== true);
   check('v6 -> v7: no Luck is given for free (Luck comes from upgrades)', g2.getLuck().total === 0);
   // A fresh v7 game still starts with symbols locked (the migration is only for old saves).
-  const fresh = JSON.parse(JSON.stringify(newGame().toSaveData()));
+  const fresh = withNumbers(JSON.parse(JSON.stringify(newGame().toSaveData())));
+  fresh.saveVersion = 7;
   const g3 = newGame();
   g3.loadSaveData(fresh);
   check('a v7 save is not migrated: its locked symbols stay locked', g3.isSymbolLocked('carrot') && g3.isSymbolLocked('golden'));
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('save migration: v7 -> v8 (money saved as text: big numbers)', () => {
+  // (The real v7 saves in tests/fixtures/ are migrated in fixtures.test.js.)
+  const g = newGame(160);
+  g.addCoins(1234.56);
+  g.addTokens(7);
+  const v7 = withNumbers(JSON.parse(JSON.stringify(g.toSaveData())));
+  v7.saveVersion = 7;
+  const g2 = newGame();
+  check('a v7 save (money as plain numbers) loads', g2.loadSaveData(v7) === true);
+  const v8 = g2.toSaveData();
+  check('v7 -> v8: the same amounts, now written as text', v8.saveVersion === 8 && v8.coins === String(v7.coins) && v8.tokens === '7'
+    && typeof v8.stats.coinsWon === 'string' && typeof v8.run.coinsEarned === 'string', JSON.stringify([v8.coins, v8.tokens]));
+
+  // What v8 is for: money past 1.8e308, where a plain number would be Infinity.
+  const big = JSON.parse(JSON.stringify(g.toSaveData()));
+  big.coins = '1.5e400';
+  big.seeds = '4e320';
+  big.stats.coinsEarned = '2.5e500';
+  const g3 = newGame();
+  check('a save with money past 1.8e308 loads', g3.loadSaveData(big) === true && g3.state.coins.gt(1e308) && g3.state.seeds.gt(1e308));
+  const again = g3.toSaveData();
+  const g4 = newGame();
+  g4.loadSaveData(again);
+  check('… keeps the amounts (to 12 digits) and saves them back the same every time',
+    g3.state.coins.eq_tolerance('1.5e400', 1e-12) && g3.state.stats.coinsEarned.eq_tolerance('2.5e500', 1e-12) && deepEqual(g4.toSaveData(), again), again.coins);
+  check('… and the game carries on (a spin, buying, the seed formula)', g4.spin() === true && g4.buyUpgrade('cheeks', 10) === true && g4.getPendingSeeds().gt(1e200));
+
+  // Junk in the money fields falls back like any broken value.
+  const junk = JSON.parse(JSON.stringify(g.toSaveData()));
+  junk.coins = 'lots';
+  junk.tokens = 'Infinity';
+  junk.stats.coinsWon = '12abc';
+  junk.seeds = { amount: 5 };
+  const g5 = newGame();
+  check('junk money text loads as the fresh value (start coins, 0 tokens, 0 seeds, 0 won)', g5.loadSaveData(junk) === true
+    && num(g5.state.coins) === data.startCoins && num(g5.state.tokens) === 0 && num(g5.state.stats.coinsWon) === 0 && num(g5.state.seeds) === 0);
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -256,12 +305,12 @@ describe('hot reload (debug "Reload data.json")', () => {
   const g = newGame(10);
   g.addCoins(5000);
   for (let i = 0; i < 5; i++) g.buyUpgrade('wheel');
-  const coins = g.state.coins;
+  const coins = num(g.state.coins);
   const newData = structuredClone(data);
   newData.upgrades.find((u) => u.id === 'wheel').maxLevel = 3;
   newData.machines[0].spinCost = 7;
   g.setData(newData);
-  check('reload keeps coins', g.state.coins === coins);
+  check('reload keeps coins', num(g.state.coins) === coins);
   check('reload caps levels to the new maxLevel', g.getUpgradeLevel('wheel') === 3);
-  check('reload applies new balance values', g.getSpinCost() === 7);
+  check('reload applies new balance values', num(g.getSpinCost()) === 7);
 });

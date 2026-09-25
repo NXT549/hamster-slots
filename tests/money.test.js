@@ -8,7 +8,7 @@
 import { describe, test, expect, afterEach } from 'vitest';
 import { money, moneyFrom, roundMoney, divide, power, isMoney, isFiniteMoney } from '../src/logic/money.ts';
 import { createRng } from '../src/logic/rng.ts';
-import { formatCoins, setNumberStyle } from '../src/view/dom.ts';
+import { formatCoins, formatWhole, setNumberStyle } from '../src/view/dom.ts';
 
 // Everyday amounts, the way the game makes them: cents from 0.01 to billions,
 // plus multipliers and rates. A seeded RNG, so a failure can be replayed.
@@ -121,5 +121,12 @@ describe('how money is written on screen', () => {
 
   test('a plain number past 1e15 is written the same way', () => {
     expect(formatCoins(1.23e15)).toBe('1.23e15');
+  });
+
+  // Heirloom Seeds and Hamster Tokens: whole numbers, in full as before, until a quadrillion.
+  test.each([
+    [0, '0'], [3, '3'], [1234, '1234'], [999999999999999, '999999999999999'], [1e15, '1e15'], ['2.773500981126202e198', '2.77e198'],
+  ])('seeds and tokens: %s → %s', (x, text) => {
+    expect(formatWhole(money(x))).toBe(text);
   });
 });

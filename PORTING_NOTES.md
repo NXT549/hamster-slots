@@ -47,7 +47,7 @@ Save backup and app actions aren't in the interface yet: the backup comes in 3.8
 **Every platform**
 - **Fonts:** today they load from Google Fonts. For offline play, desktop and mobile, bundle the two fonts with the build (both are OFL-licensed, so that's allowed, D22).
 - **A save belongs to one site or app.** Saves on `localhost`, on GitHub Pages and on itch.io are three separate saves. Export/import is how a player moves one, and it's the backup when a browser clears a site's data.
-- **Big numbers:** break_eternity.js lets currency grow far past 1e308, where plain JS numbers turn into `Infinity`. The save must store those numbers as text so they survive JSON (D107).
+- **Big numbers:** break_eternity.js lets currency grow far past 1e308, where plain JS numbers turn into `Infinity`. The save stores them as text so they survive JSON (save v8, step 3.7, D115).
 - **The debug panel** opens in every build today (backtick). Whether public builds keep it, hide it or leave it out is an **open question for the user** (Step 2).
 - **Store rules:** slot machines, bets, the card gamble and the capsule gacha can trigger "simulated gambling" and loot-box ratings, even with no real money. Check each store's current rules before a release (DESIGN §11, "Things to keep in mind for release").
 
@@ -91,8 +91,8 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 | 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the tools run the `.ts` logic straight on Node 24. TypeScript 7.0.2 (D112) | **Done** (the user OK'd it) |
 | 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main (and save.ts, which holds the Settings type the screens need) (D113) | **Done** (the user OK'd it) |
 | 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform (D114) | **Done** (the user said to continue) |
-| 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× (D115) | **In progress:** `money.ts` and the display are in (3.7a); the logic, save, screens and tools next (3.7b) |
-| 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations | |
+| 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× (D115) | **Done**, waiting for the user's OK |
+| 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations | Next |
 | 3.9 | Bundled fonts, the debug-panel rule, cleanup, docs; release **0.2.0**; merge into `main` | |
 | Step 4 | GitHub Pages: the user creates the repo (`NXT549`) and sets Pages → Source = GitHub Actions; `.github/workflows/deploy.yml` tests, builds and deploys on every push to `main` | |
 
@@ -102,7 +102,7 @@ These were the "gotchas for the port". They still hold for the TypeScript migrat
 
 - **Payout tables are keyed by strings:** `payouts["seed"]["2"]`, not `[2]` (in TypeScript: `Record<string, number>`).
 - **The cost formula is exactly `floor(baseCost × growthRate ^ owned)`** (`costAtLevel()`), so costs never drift (rule 3).
-- **Money is rounded to cents after every change** (`roundMoney()`, D12). Keep that rounding when money moves to break_eternity.js.
+- **Money is rounded to cents after every change** (`roundMoney()`, D12), and money maths goes through money.ts (D115): break_eternity's own `div`, `pow` and `round` differ from plain numbers in the last digit, which would drift by a cent.
 - **Seed formula epsilon:** `seedsForCoins()` is `floor(pow(coins / divisor, exponent) + 1e-9)`. Without the tiny `+ 1e-9`, an exact square like 11,700 coins (3 seeds with the square root, `seedExponent` 0.5) can come out as 2.9999999 and floor to 2 seeds. Keep it.
 - **Offline earnings are capped, then halved:** `min(seconds, maxSeconds) × perSecond × efficiency`. Compare `seconds >= minSeconds` BEFORE capping.
 - **Sprite scale must stay a whole number** (`max(1, floor(size / width))`), or pixel art gets uneven pixels.
@@ -446,7 +446,16 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Past 9e15** a Decimal keeps about 12 significant digits, far more than a price or a payout needs. Cents stop mattering there, so `roundMoney` leaves such amounts alone.
 - **Reading money from a save is strict.** break_eternity reads almost any text ("abc" as 0, "12abc" as 12), so `moneyFrom` only accepts the forms a Decimal writes ("1234.56", "1.5e400", "ee15.2", "(e^6)15.2"), or a plain number (older saves). Junk, NaN and Infinity give the fallback.
 - **On screen:** below 1e15, `formatCoins` writes exactly what it always did (a test pins it). From a quadrillion up: "1.23e15" (the mantissa floored to 2 decimals, like K/M/B/T), the D110 default.
-- **3.7a** is money.ts and the display, with 51 tests (tests/money.test.js); the game logic doesn't use Money yet.
+- **3.7a** is money.ts and the display, with 51 tests (tests/money.test.js).
+- **3.7b: the game uses it.** In `state`, the save and every event, all three currencies and everything priced in them (costs, payouts, pots, the gamble's stake, rewards, the money stats, the payout multiplier and heirloom bonus, profit per spin/second, offline earnings) are Money. Odds, weights, timers, levels, counts, `rtp` and the paytable's EV per ×1 stay numbers (machine.ts only ever sees data.json's numbers). Every calculation kept its order of operations, so the answers are the same doubles as before.
+- **Save v8:** money is saved as text. `migrateSave` v7 → v8 only bumps the version: `sanitizeState` reads a plain number (old saves) or text (`moneyFrom`), like v5 → v6 did. *Rejected: converting every field in the migration* (a second list of the money fields to keep in step).
+- **The golden run stays as recorded (v7).** It compares saves with their money as numbers and without their version (sessions.js `comparable()`), so it still demands every cent; a deliberate break (Decimal's own divide in `roundMoney`) failed it from the 30-minute checkpoint on.
+- **Save fixtures, one set per version:** `save-v8-*.json` were added by `node tools/golden.mjs --fixtures` (a new option: fixtures only, never overwriting). They're the v7 files with every amount in quotes and version 8, nothing else. The v7 files are now the migration test: each must load and save as exactly its v8 twin.
+- **Tests:** each check that compares or adds money reads it with `num()` (its plain number, exact below 9e15); every check kept its name and meaning (687 → 687, plus 6 new for v8: big amounts saved and loaded, junk money text).
+- **Tools:** the simulator's bot still does its sums in plain numbers (`num()`), so its output is **identical** to before (idle and active, every line); `npm run economy` too. It takes ~18 s instead of ~13 s (Decimal is ~100× slower per operation than a plain number).
+- **Speed at 50×** (4 machines, every upgrade, the Pouch Palace, 30 s of frames): the logic takes 0.110 ms a frame (was 0.098 ms), with the same 339 spins. A frame has 16.7 ms.
+- **Found in the browser, fixed:** the coin counter never quite reached a huge amount (it showed 9.99e399 for 1e400), so it now lands once it's within a billionth (below 10 million coins that's still "within a cent", as before); and seeds and tokens (`formatWhole`) are written like money from a quadrillion up ("2.77e198"), in full below that as before.
+- **Checked in the browser:** a real v7 save (4 machines, 1.17B coins) loaded at start-up as v8 and paid its 20 minutes away (+902.57K); every tab and sub-tab, the gamble, the recent wins, the paytable, the debug panel's figures; 1e400 coins, Max buying (1,000 levels in 6 ms), retiring for 2.77e198 seeds, 5e300 tokens and a pull, a reload keeping all of it; 375 px wide; no errors.
 
 ---
 

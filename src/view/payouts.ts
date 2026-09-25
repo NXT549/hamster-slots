@@ -12,13 +12,14 @@ import { formatCoins, iconHTML, setHTML, createSubTabs } from './dom.ts';
 import { effectAs } from '../logic/game.ts';
 import type { Game } from '../logic/game.ts';
 import type { PaidWin } from '../logic/types.ts';
+import type { Money } from '../logic/money.ts';
 import type { Settings } from '../platform/save.ts';
 
 // One row of the Recent wins log.
 interface LogEntry {
   machineId: string;
   kind: 'spin' | 'free' | 'pot' | 'gamble';
-  payout: number;
+  payout: Money; // below 0 for a lost gamble
   wins?: PaidWin[];
   tier?: string;
   bet?: number;
@@ -59,7 +60,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
   }
   // Free-spin wins are summed up in one line when they end, not logged one by one.
   game.on('spinResolved', (e) => {
-    if (e.payout <= 0 || e.free) return;
+    if (e.payout.lte(0) || e.free) return;
     addLog({ machineId: e.machineId, kind: 'spin', wins: e.wins, payout: e.payout, tier: e.tier, bet: e.bet });
   });
   game.on('freeSpinsEnded', (e) => addLog({ machineId: e.machineId, kind: 'free', payout: e.won, text: `${e.spins} free spins` }));
@@ -70,7 +71,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
   });
   game.on('gambleEnded', (e) => {
     if (!e.started) return;
-    addLog({ machineId: e.machineId, kind: 'gamble', payout: e.won, text: e.won >= 0 ? `Gamble: ${e.rounds} card${e.rounds === 1 ? '' : 's'} right` : 'Gamble lost' });
+    addLog({ machineId: e.machineId, kind: 'gamble', payout: e.won, text: e.won.gte(0) ? `Gamble: ${e.rounds} card${e.rounds === 1 ? '' : 's'} right` : 'Gamble lost' });
   });
 
   // "12s ago", "3 min ago"
@@ -100,10 +101,10 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
         middle = `<span class="log-line">${iconHTML(icon, 16)} ${entry.text}</span>`;
         chip = `<span class="tier-chip tier-${entry.kind}">${({ free: 'Free spins', pot: 'Pot', gamble: 'Gamble' } as Record<string, string>)[entry.kind]}</span>`;
       }
-      const sign = entry.payout < 0 ? '−' : '+';
+      const sign = entry.payout.lt(0) ? '−' : '+';
       row.innerHTML = `<span class="log-machine" title="${md ? md.name : ''}">${iconHTML(MACHINE_SPRITES[entry.machineId], 24)}</span>
         <span class="log-lines">${middle}</span>${chip}
-        <span class="log-pay${entry.payout < 0 ? ' lost' : ''}">${sign}${formatCoins(Math.abs(entry.payout))}</span><span class="log-ago">${ago(now - entry.at)}</span>`;
+        <span class="log-pay${entry.payout.lt(0) ? ' lost' : ''}">${sign}${formatCoins(entry.payout.abs())}</span><span class="log-ago">${ago(now - entry.at)}</span>`;
       return row;
     }));
   }
@@ -112,7 +113,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     const md = game.getMachineData();
     const symbols = game.getSymbols();
     const reelCount = game.getReelCount();
-    const mult = game.getPayoutMultiplier() * game.getBet();
+    const mult = game.getPayoutMultiplier().mul(game.getBet());
     const fullLine = game.getFullLineMultiplier();
     const head = document.createElement('tr');
     head.innerHTML = '<th>Symbol</th><th>Chance</th>';
@@ -171,7 +172,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
         const td = document.createElement('td');
         // Jackpot Dance: a line of EVERY reel pays extra (for a locked column: once it unlocks).
         const bonus = k >= reelCount ? fullLine : 1;
-        td.textContent = formatCoins(((md.payouts[s.id] || {})[String(k)] || 0) * mult * bonus);
+        td.textContent = formatCoins(mult.mul(((md.payouts[s.id] || {})[String(k)] || 0) * bonus));
         td.classList.toggle('locked', k > reelCount);
         tr.appendChild(td);
       }

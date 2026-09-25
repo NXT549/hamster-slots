@@ -182,12 +182,12 @@ describe('autosave and time away', () => {
     const paid = offlinePayments(g);
     createAutosave(g, p).start(30);
     p.hide();
-    expect(JSON.parse(p.stored.get(SAVE_KEY)).coins).toBe(g.state.coins);
+    expect(JSON.parse(p.stored.get(SAVE_KEY)).coins).toBe(g.state.coins.toString()); // money is saved as text
     p.advance(600);
     p.show();
     expect(paid.length).toBe(1);
     expect(paid[0].awaySeconds).toBe(600);
-    expect(paid[0].coins).toBe(playedGame().getOfflineEarnings(600).coins); // the logic's own maths
+    expect(paid[0].coins.toString()).toBe(playedGame().getOfflineEarnings(600).coins.toString()); // the logic's own maths
   });
 
   test('the time away is paid once, and only after going away', () => {
@@ -211,7 +211,7 @@ describe('autosave and time away', () => {
     const g = playedGame();
     createAutosave(g, p).start(30);
     p.close();
-    expect(JSON.parse(p.stored.get(SAVE_KEY)).coins).toBe(g.state.coins);
+    expect(JSON.parse(p.stored.get(SAVE_KEY)).coins).toBe(g.state.coins.toString()); // money is saved as text
   });
 
   test('save now says whether it worked', () => {
@@ -321,6 +321,6 @@ describe('the web platform', () => {
     const g = playedGame();
     createAutosave(g, p).start(30);
     browser.setHidden(true);
-    expect(JSON.parse(browser.items.get(SAVE_KEY)).coins).toBe(g.state.coins);
+    expect(JSON.parse(browser.items.get(SAVE_KEY)).coins).toBe(g.state.coins.toString());
   });
 });

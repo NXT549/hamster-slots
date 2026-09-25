@@ -36,6 +36,13 @@ export function formatCoins(value: Money | number): string {
   return Math.floor(n).toLocaleString('en-US');
 }
 
+// Whole numbers (Heirloom Seeds, Hamster Tokens): written in full, "1234", and
+// from a quadrillion up like money, "1.23e15".
+export function formatWhole(value: Money | number): string {
+  const n = typeof value === 'number' ? value : value.toNumber();
+  return Math.abs(n) < 1e15 ? String(n) : scientific(money(value));
+}
+
 // "1.23e15": the mantissa (1 to 9.99) with 2 decimals, never rounded up, like
 // the K/M/B/T numbers. (+1e-9: a big number's mantissa is worked out with
 // logarithms and can come out as 1.2299999… for 1.23.) Past about 1e9000000000000000

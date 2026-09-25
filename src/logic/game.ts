@@ -23,9 +23,11 @@ import { createEmitter } from './events.ts';
 import { rollGrid, evaluateGrid, rowCount, allPaylines, symbolRules, findSymbol, freeSpinAward, spinExpectation } from './machine.ts';
 import type { SpinValue } from './machine.ts';
 import type { Rng } from './rng.ts';
+import { money, roundMoney, divide, power, moneyFrom, isMoney } from './money.ts';
+import type { Money, MoneyLike } from './money.ts';
 import type {
   GameData, GameState, GameEvents, MachineDef, MachineState, SymbolDef, UpgradeDef, TreeNodeDef, Priced, Effect, EffectType,
-  EffectOf, Levels, Overrides, Stats, SaveData, Goal, Grid, SpinSource, Suit, CardColor, Card, GambleEndReason, TokenSource,
+  EffectOf, Levels, Overrides, Stats, SaveData, Goal, Grid, SpinSource, Suit, CardColor, Card, GambleEndReason, TokenSource, PotDef,
 } from './types.ts';
 
 // v2 added retirement: generation, Heirloom Seeds, the family tree, per-run
@@ -37,8 +39,9 @@ import type {
 // v6 added bets, free spins, jackpot pots, Hot Streak and the gamble stats.
 // v7 added symbols you unlock (old saves get the ones they already had) and the
 // stats symbolsUnlocked, bestLuck and suitWins.
+// v8 saves money as text, so it can grow past 1.8e308 (big numbers, money.ts).
 // See migrateSave() below.
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -59,16 +62,14 @@ export const TICK = 1 / 60;
 // A tiny tolerance for comparing floating-point timers (0.1 + 0.2 ≠ 0.3 in floats).
 const EPS = 1e-9;
 
-// Coins are always rounded to cents. Otherwise float drift (4.4999999…) could
-// make you unable to afford a 4.5-coin spin while the screen shows "4.5".
-export function roundMoney(x: number): number {
-  return Math.round(x * 100) / 100;
-}
+// Every amount of money (coins, seeds, tokens) is a Money: a big number that can
+// grow past 1.8e308. Maths on it uses methods (a.add(b), a.gte(b) …) and the
+// helpers in money.ts; roundMoney (to cents) lives there too.
 
 // The one cost formula for EVERY purchase (coin upgrades and family tree nodes):
 // floor(baseCost × growthRate ^ owned).
-export function costAtLevel(def: Priced, owned: number): number {
-  return Math.floor(def.baseCost * Math.pow(def.growthRate, owned));
+export function costAtLevel(def: Priced, owned: number): Money {
+  return power(def.growthRate, owned).mul(def.baseCost).floor();
 }
 
 function maxedAtLevel(def: Priced, owned: number): boolean {
@@ -97,7 +98,7 @@ export function effectAs<T extends EffectType>(def: { effect: Effect }, _type: T
 }
 
 // What the shop's "now → next" shows for an upgrade or tree node.
-type PreviewValue = number | boolean | null | { luck: number; hitRate: number } | { open: number; hitRate: number; win: number };
+type PreviewValue = number | Money | boolean | null | { luck: number; hitRate: number } | { open: number; hitRate: number; win: Money };
 
 // Anything read from a save (or a state being cleaned up) could hold anything at
 // all, so it's typed "any", and every value is checked before it's used.
@@ -174,7 +175,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     return state.tree[id] || 0;
   }
 
-  function getUpgradeCost(id: string): number {
+  function getUpgradeCost(id: string): Money {
     return costAtLevel(getUpgradeDef(id)!, getUpgradeLevel(id));
   }
 
@@ -182,8 +183,8 @@ export function createGame(initialData: GameData, rng: Rng) {
     return maxedAtLevel(getUpgradeDef(id)!, getUpgradeLevel(id));
   }
 
-  function canAfford(cost: number): boolean {
-    return state.coins >= cost;
+  function canAfford(cost: MoneyLike): boolean {
+    return state.coins.gte(cost);
   }
 
   function canBuyUpgrade(id: string): boolean {
@@ -228,26 +229,27 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Family bonuses = family tree nodes + the heirloom bonus (see below).
   // e.g. Chubby Cheeks Lv 2 (+50%) with Family Pride (+25%) → 1.5 × 1.25 = ×1.875.
   // Multiplying is what makes the family feel strong in every new life.
-  function getPayoutMultiplier(overrides?: Overrides): number {
+  // (A Money: the heirloom bonus grows with the seeds, and seeds can grow huge.)
+  function getPayoutMultiplier(overrides?: Overrides): Money {
     let upgrades = 1;
-    let family = 1 + getHeirloomBonus();
+    let family = money(1).add(getHeirloomBonus());
     for (const { effect, level, fromTree } of effectsOfType('payoutMultiplier', overrides)) {
-      if (fromTree) family += effect.perLevel * level;
+      if (fromTree) family = family.add(effect.perLevel * level);
       else upgrades += effect.perLevel * level;
     }
-    return upgrades * family;
+    return family.mul(upgrades);
   }
 
   // Heirloom bonus: every seed the family has EVER earned adds a little to payouts,
   // even after it's planted in the tree. Planting never makes you weaker, and
   // each generation starts stronger than the last.
-  function getHeirloomBonus(): number {
+  function getHeirloomBonus(): Money {
     const perSeed = (data.retirement && data.retirement.payoutBonusPerSeedEarned) || 0;
-    return perSeed * state.seedsEarned;
+    return state.seedsEarned.mul(perSeed);
   }
 
   // Oiled Lever / Smooth Gears: base spin cost × perLevel ^ level
-  function getSpinCost(overrides?: Overrides, machine: MachineState = activeMachine()): number {
+  function getSpinCost(overrides?: Overrides, machine: MachineState = activeMachine()): Money {
     let cost = getMachineData(machine).spinCost;
     for (const { effect, level } of effectsOfType('spinCostMultiplier', overrides, machine)) cost *= Math.pow(effect.perLevel, level);
     return roundMoney(cost);
@@ -388,9 +390,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // Big Backpack: deliveries get your payout multiplier too.
-  function getDeliveryReward(overrides?: Overrides): number {
+  function getDeliveryReward(overrides?: Overrides): Money {
     const boosted = effectsOfType('deliveryPayoutBonus', overrides).some((x) => x.level > 0);
-    return boosted ? roundMoney(data.delivery.reward * getPayoutMultiplier(overrides)) : data.delivery.reward;
+    return boosted ? roundMoney(getPayoutMultiplier(overrides).mul(data.delivery.reward)) : money(data.delivery.reward);
   }
 
   // Self-Starter: when you're broke, the hamster starts a delivery by itself.
@@ -424,8 +426,8 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // What a paid spin costs at a bet (default: the chosen one).
-  function getBetCost(bet: number = getBet(), machine: MachineState = activeMachine()): number {
-    return roundMoney(getSpinCost(undefined, machine) * bet);
+  function getBetCost(bet: number = getBet(), machine: MachineState = activeMachine()): Money {
+    return roundMoney(getSpinCost(undefined, machine).mul(bet));
   }
 
   // The bet the next paid spin will REALLY use: the chosen one if you can afford
@@ -520,7 +522,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     // "win" = the average win per paid spin at ×1, with every payout bonus.
     unlockSymbol: (def, o) => {
       const v = spinValue(activeMachine(), o);
-      return { open: effectAs(def, 'unlockSymbol').symbols.filter((id) => !isSymbolLocked(id, o)).length, hitRate: v.hitRate, win: v.ev * getPayoutMultiplier(o) };
+      return { open: effectAs(def, 'unlockSymbol').symbols.filter((id) => !isSymbolLocked(id, o)).length, hitRate: v.hitRate, win: getPayoutMultiplier(o).mul(v.ev) };
     },
   };
 
@@ -542,7 +544,9 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // ─────────────────────── Economy info ───────────────────────
   // Everything the debug panel (and the tests, and the balance simulator) want to
-  // know about the maths. All of it is exact (machine.js spinExpectation).
+  // know about the maths. All of it is exact (machine.ts spinExpectation).
+  // The chances and the EV per ×1 come from the paytable (plain numbers); coins
+  // (profit, costs, the multiplier) are Money.
   function spinValue(machine: MachineState = activeMachine(), overrides?: Overrides): SpinValue {
     const md = { ...getMachineData(machine), symbols: getSymbols(overrides, machine) };
     const reels = getReelCount(overrides, machine);
@@ -565,7 +569,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     const bet = getBet(machine);
     const autoInterval = getAutoInterval(undefined, machine);
     // Per paid spin, at the chosen bet: every payout and the cost scale with it.
-    const profitPerSpin = bet * (value.ev * payoutMultiplier - spinCost);
+    const profitPerSpin = payoutMultiplier.mul(value.ev).sub(spinCost).mul(bet);
     return {
       reels: getReelCount(undefined, machine),
       lines: getLineCount(undefined, machine),
@@ -582,14 +586,14 @@ export function createGame(initialData: GameData, rng: Rng) {
       bet,
       betCost: getBetCost(bet, machine),
       spinDuration: getSpinDuration(undefined, machine),
-      rtp: (value.ev * payoutMultiplier) / spinCost, // > 1 means spinning makes money on average (the same at every bet)
+      rtp: divide(payoutMultiplier.mul(value.ev), spinCost).toNumber(), // > 1 means spinning makes money on average (the same at every bet)
       profitPerSpin,
       autoInterval,
       // Free spins and the jackpot wheel pause auto-spin while they play, so they
       // make each paid spin's "cycle" longer by this many seconds on average.
       extraSecondsPerSpin: value.extraSeconds,
-      expectedAutoProfitPerSecond: autoInterval ? profitPerSpin / (autoInterval + value.extraSeconds) : 0,
-      deliveryPerSecond: getDeliveryReward() / getDeliveryDuration(),
+      expectedAutoProfitPerSecond: autoInterval ? divide(profitPerSpin, autoInterval + value.extraSeconds) : money(0),
+      deliveryPerSecond: divide(getDeliveryReward(), getDeliveryDuration()),
     };
   }
 
@@ -615,21 +619,21 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // ─────────────────────── Actions ───────────────────────────
 
-  function changeCoins(amount: number): void {
-    state.coins = roundMoney(state.coins + amount);
+  function changeCoins(amount: Money): void {
+    state.coins = roundMoney(state.coins.add(amount));
     events.emit('coinsChanged', { coins: state.coins, amount });
   }
 
-  function changeSeeds(amount: number): void {
-    state.seeds += amount;
+  function changeSeeds(amount: Money): void {
+    state.seeds = state.seeds.add(amount);
     events.emit('seedsChanged', { seeds: state.seeds, amount });
   }
 
   // Every coin EARNED by playing (spin wins, deliveries) goes through here, so the
   // totals that decide Heirloom Seeds can never miss one. Spending doesn't lower them.
-  function earn(amount: number): void {
-    state.stats.coinsEarned = roundMoney(state.stats.coinsEarned + amount);
-    state.run.coinsEarned = roundMoney(state.run.coinsEarned + amount);
+  function earn(amount: Money): void {
+    state.stats.coinsEarned = roundMoney(state.stats.coinsEarned.add(amount));
+    state.run.coinsEarned = roundMoney(state.run.coinsEarned.add(amount));
     changeCoins(amount);
   }
 
@@ -668,7 +672,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     if (free !== (!!machine.freeSpins && machine.freeSpins.left > 0)) return false;
 
     let bet: number | null;
-    let cost = 0;
+    let cost = money(0);
     if (free) {
       bet = machine.freeSpins!.bet;
       machine.freeSpins!.left--;
@@ -682,9 +686,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     }
     if (state.gamble) endGamble('spin'); // spinning again means "no thanks" to an open gamble offer
 
-    if (cost > 0) {
-      changeCoins(-cost);
-      state.stats.coinsSpent = roundMoney(state.stats.coinsSpent + cost);
+    if (cost.gt(0)) {
+      changeCoins(cost.neg());
+      state.stats.coinsSpent = roundMoney(state.stats.coinsSpent.add(cost));
       state.stats.biggestBet = Math.max(state.stats.biggestBet, bet);
       growPots(machine);
     }
@@ -720,14 +724,14 @@ export function createGame(initialData: GameData, rng: Rng) {
     const bet = machine.spinBet || 1;
     const free = !!machine.spinFree;
     const manual = machine.spinSource === 'manual';
-    const multiplier = getPayoutMultiplier() * bet;
+    const multiplier = getPayoutMultiplier().mul(bet);
     const fullLineBonus = getFullLineMultiplier();
     const featureMultiplier = free && md.freeSpins ? md.freeSpins.multiplier : 1;
     const streakMultiplier = free ? 1 : getStreakMultiplier(machine); // the streak BEFORE this spin
-    let payout = 0;
+    let payout = money(0);
     const paid = wins.map((w) => {
-      const linePayout = roundMoney(w.basePayout * (w.fullLine ? fullLineBonus : 1) * multiplier * featureMultiplier * streakMultiplier);
-      payout += linePayout;
+      const linePayout = roundMoney(multiplier.mul(w.basePayout * (w.fullLine ? fullLineBonus : 1)).mul(featureMultiplier).mul(streakMultiplier));
+      payout = payout.add(linePayout);
       return { ...w, payout: linePayout };
     });
     payout = roundMoney(payout);
@@ -739,15 +743,15 @@ export function createGame(initialData: GameData, rng: Rng) {
       machine.streak = paid.length > 0 ? (machine.streak || 0) + 1 : 0;
       state.stats.bestStreak = Math.max(state.stats.bestStreak, machine.streak);
     }
-    if (payout > 0) {
+    if (payout.gt(0)) {
       state.stats.wins++;
-      state.stats.coinsWon = roundMoney(state.stats.coinsWon + payout);
-      state.stats.biggestWin = Math.max(state.stats.biggestWin, payout);
+      state.stats.coinsWon = roundMoney(state.stats.coinsWon.add(payout));
+      state.stats.biggestWin = state.stats.biggestWin.max(payout);
       state.stats.mostLinesWon = Math.max(state.stats.mostLinesWon, paid.length);
       if (paid.some((w) => w.usedWild)) state.stats.wildWins++;
       if (free && machine.freeSpins) {
-        machine.freeSpins.won = roundMoney(machine.freeSpins.won + payout);
-        state.stats.freeSpinCoins = roundMoney(state.stats.freeSpinCoins + payout);
+        machine.freeSpins.won = roundMoney(machine.freeSpins.won.add(payout));
+        state.stats.freeSpinCoins = roundMoney(state.stats.freeSpinCoins.add(payout));
       }
       earn(payout);
     }
@@ -782,7 +786,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
     // The gamble is offered after a win you pulled yourself, when nothing else is
     // about to happen on the machine.
-    if (payout > 0 && manual && !free && award === 0 && !wheel && machine === activeMachine()) offerGamble(machine, payout);
+    if (payout.gt(0) && manual && !free && award === 0 && !wheel && machine === activeMachine()) offerGamble(machine, payout);
     checkDiary();
   }
 
@@ -810,7 +814,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       machine.freeSpins!.left += count;
       machine.freeSpins!.total += count;
     } else {
-      machine.freeSpins = { left: count, total: count, bet, won: 0, timer: md.freeSpins!.pause };
+      machine.freeSpins = { left: count, total: count, bet, won: money(0), timer: md.freeSpins!.pause };
     }
     state.stats.freeSpinTriggers++;
     events.emit('freeSpinsStarted', { machineId: machine.typeId, count, retrigger, bet, left: machine.freeSpins!.left });
@@ -840,11 +844,17 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Each pot is kept in base units (×1 bet, before payout bonuses). Every paid
   // spin adds its growth; winning it pays pot × bet × payout multiplier, and the
   // pot goes back to its seed.
+  // A pot's coins in base units (a missing or empty pot counts as its seed).
+  function potBase(machine: MachineState, pot: PotDef): Money {
+    const value = machine.pots[pot.id];
+    return value && !value.eq(0) ? value : money(pot.seed);
+  }
+
   function growPots(machine: MachineState): void {
     const jp = getMachineData(machine).jackpot;
     if (!jp) return;
     const growth = getJackpotGrowth(undefined, machine);
-    for (const pot of jp.pots) machine.pots[pot.id] = roundMoney((machine.pots[pot.id] || pot.seed) + pot.growth * growth);
+    for (const pot of jp.pots) machine.pots[pot.id] = roundMoney(potBase(machine, pot).add(pot.growth * growth));
   }
 
   // The wheel picks a pot NOW (like a spin's result) and pays when it stops.
@@ -859,12 +869,12 @@ export function createGame(initialData: GameData, rng: Rng) {
     const jp = getMachineData(machine).jackpot!;
     const { pot, bet } = machine.bonus!;
     const def = jp.pots.find((p) => p.id === pot)!;
-    const amount = roundMoney((machine.pots[pot] || def.seed) * bet * getPayoutMultiplier());
+    const amount = roundMoney(potBase(machine, def).mul(bet).mul(getPayoutMultiplier()));
     machine.bonus = null;
-    machine.pots[pot] = def.seed;
+    machine.pots[pot] = money(def.seed);
     state.stats.jackpotsWon++;
     if (def === jp.pots[jp.pots.length - 1]) state.stats.grandJackpots++; // the last pot in the list is the top one
-    state.stats.biggestWin = Math.max(state.stats.biggestWin, amount);
+    state.stats.biggestWin = state.stats.biggestWin.max(amount);
     earn(amount);
     events.emit('jackpotWon', { machineId: machine.typeId, pot, amount });
     checkDiary();
@@ -883,10 +893,10 @@ export function createGame(initialData: GameData, rng: Rng) {
   function getJackpotPots(machine: MachineState = activeMachine()) {
     const jp = getMachineData(machine).jackpot;
     if (!jp) return [];
-    const scale = getBet(machine) * getPayoutMultiplier();
+    const scale = getPayoutMultiplier().mul(getBet(machine));
     return jp.pots.map((p) => {
-      const base = machine.pots[p.id] || p.seed;
-      return { id: p.id, name: p.name, base, value: roundMoney(base * scale) };
+      const base = potBase(machine, p);
+      return { id: p.id, name: p.name, base, value: roundMoney(base.mul(scale)) };
     });
   }
 
@@ -904,16 +914,16 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Wrong: the stake is gone, and it's over. Both are exactly fair bets (on
   // average they never pay), and gamble coins are NOT "earned": otherwise wins
   // would count toward Heirloom Seeds and losses wouldn't, and gambling would farm seeds.
-  function offerGamble(machine: MachineState, stake: number): void {
+  function offerGamble(machine: MachineState, stake: Money): void {
     const g = data.gamble;
     if (!g) return;
-    state.gamble = { machineId: machine.typeId, stake, rounds: 0, won: 0, started: false, timer: g.offerSeconds };
+    state.gamble = { machineId: machine.typeId, stake, rounds: 0, won: money(0), started: false, timer: g.offerSeconds };
     events.emit('gambleOffered', { machineId: machine.typeId, stake });
   }
 
   function canGamble(): boolean {
     const g = state.gamble;
-    return !!g && !!data.gamble && g.rounds < data.gamble.maxRounds && g.machineId === activeMachine().typeId && state.coins >= g.stake;
+    return !!g && !!data.gamble && g.rounds < data.gamble.maxRounds && g.machineId === activeMachine().typeId && state.coins.gte(g.stake);
   }
 
   // The fair prize for a pick: the cards in the deck ÷ the cards that win.
@@ -934,17 +944,17 @@ export function createGame(initialData: GameData, rng: Rng) {
     const stake = g.stake;
     const win = byColor ? card.color === pick : card.id === pick;
     if (win) {
-      const gain = roundMoney(stake * (multiplier - 1));
+      const gain = roundMoney(stake.mul(multiplier - 1));
       changeCoins(gain);
-      g.won = roundMoney(g.won + gain);
-      g.stake = roundMoney(stake * multiplier);
+      g.won = roundMoney(g.won.add(gain));
+      g.stake = roundMoney(stake.mul(multiplier));
       g.rounds++;
       state.stats.gambleWins++;
       if (!byColor) state.stats.suitWins++;
       state.stats.bestGambleRun = Math.max(state.stats.bestGambleRun, g.rounds);
     } else {
-      changeCoins(-stake);
-      g.won = roundMoney(g.won - stake);
+      changeCoins(stake.neg());
+      g.won = roundMoney(g.won.sub(stake));
       state.stats.gambleLosses++;
     }
     cardHistory = [{ suit: card.id, color: card.color }, ...cardHistory].slice(0, Math.max(1, data.gamble.history || 5));
@@ -959,10 +969,11 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // Debug only: offer the gamble on the active machine for `stake` coins, as if a
   // spin you pulled had just won that much (to try the card panel quickly).
-  function triggerGamble(stake: number): boolean {
+  function triggerGamble(stake: MoneyLike): boolean {
     const machine = activeMachine();
-    if (!(stake > 0) || state.gamble || machine.spinning || machine.bonus) return false;
-    offerGamble(machine, roundMoney(stake));
+    const amount = money(stake);
+    if (!amount.gt(0) || state.gamble || machine.spinning || machine.bonus) return false;
+    offerGamble(machine, roundMoney(amount));
     return true;
   }
 
@@ -987,7 +998,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     return {
       machineId: g.machineId, stake: g.stake, rounds: g.rounds, maxRounds: data.gamble.maxRounds,
       won: g.won, started: g.started, canPick: canGamble(), timeLeft: g.started ? null : g.timer,
-      colorWin: roundMoney(g.stake * gambleMultiplier('red')), suitWin: roundMoney(g.stake * gambleMultiplier(SUITS[0].id)),
+      colorWin: roundMoney(g.stake.mul(gambleMultiplier('red'))), suitWin: roundMoney(g.stake.mul(gambleMultiplier(SUITS[0].id))),
       history: getCardHistory(),
     };
   }
@@ -1016,7 +1027,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     state.delivery.timer = 0;
     state.delivery.duration = 0;
     state.stats.deliveries++;
-    state.stats.deliveryCoins = roundMoney(state.stats.deliveryCoins + reward);
+    state.stats.deliveryCoins = roundMoney(state.stats.deliveryCoins.add(reward));
     earn(reward);
     events.emit('deliveryFinished', { reward });
 
@@ -1032,17 +1043,17 @@ export function createGame(initialData: GameData, rng: Rng) {
   //   want = Infinity  → "Max": as many levels as you can afford right now
   // Returns { count, cost, affordable }. When you can't afford even one level,
   // "Max" still returns the next level's price, so the button can show it.
-  function getUpgradeBulk(id: string, want = 1): { count: number; cost: number; affordable: boolean } {
+  function getUpgradeBulk(id: string, want = 1): { count: number; cost: Money; affordable: boolean } {
     const def = getUpgradeDef(id);
-    if (!isUpgradeAvailable(def)) return { count: 0, cost: 0, affordable: false };
+    if (!isUpgradeAvailable(def)) return { count: 0, cost: money(0), affordable: false };
     const start = getUpgradeLevel(id);
     let count = 0;
-    let cost = 0;
+    let cost = money(0);
     // (The 1,000 cap only guards against a broken data.json with a 0 cost.)
     while (count < want && count < 1000 && !maxedAtLevel(def, start + count)) {
       const next = costAtLevel(def, start + count);
-      if (want === Infinity && count > 0 && !canAfford(cost + next)) break;
-      cost += next;
+      if (want === Infinity && count > 0 && !canAfford(cost.add(next))) break;
+      cost = cost.add(next);
       count++;
       if (want === Infinity && !canAfford(cost)) break; // not even one level: keep it as the price to show
     }
@@ -1054,7 +1065,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     const { count, cost, affordable } = getUpgradeBulk(id, want);
     if (!def || !affordable) return false;
     const level = getUpgradeLevel(id) + count;
-    changeCoins(-cost);
+    changeCoins(cost.neg());
     levelStore(def)[id] = level;
     state.stats.upgradesBought += count;
     if (def.effect.type === 'unlockSymbol') state.stats.symbolsUnlocked += count;
@@ -1078,9 +1089,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // A one-time price (the first machine is free: unlockCost 0).
-  function getMachineCost(id: string): number {
+  function getMachineCost(id: string): Money {
     const md = data.machines.find((m) => m.id === id);
-    return md ? md.unlockCost || 0 : Infinity;
+    return money(md ? md.unlockCost || 0 : Infinity);
   }
 
   function canBuyMachine(id: string): boolean {
@@ -1092,7 +1103,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function buyMachine(id: string): boolean {
     if (!canBuyMachine(id)) return false;
     const cost = getMachineCost(id);
-    changeCoins(-cost);
+    changeCoins(cost.neg());
     const machine = newMachineState(data.machines.find((m) => m.id === id)!);
     machine.bet = getBetIndex();
     state.machines.push(machine);
@@ -1156,9 +1167,9 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // Debug only: free coins. Normally NOT counted as earned, so they don't give
   // Heirloom Seeds. asEarned = true counts them (for testing retirement quickly).
-  function addCoins(amount: number, asEarned = false): void {
-    const clamped = Math.max(amount, -state.coins);
-    if (asEarned && clamped > 0) {
+  function addCoins(amount: MoneyLike, asEarned = false): void {
+    const clamped = money(amount).max(state.coins.neg());
+    if (asEarned && clamped.gt(0)) {
       earn(clamped);
       checkDiary();
     } else {
@@ -1167,13 +1178,13 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // Debug only: free Hamster Tokens (not counted as earned).
-  function addTokens(amount: number): void {
-    changeTokens(Math.max(Math.floor(amount), -state.tokens), 'debug');
+  function addTokens(amount: MoneyLike): void {
+    changeTokens(money(amount).floor().max(state.tokens.neg()), 'debug');
   }
 
   // Debug only: free Heirloom Seeds (not counted in seedsEarned).
-  function addSeeds(amount: number): void {
-    changeSeeds(Math.max(Math.floor(amount), -state.seeds));
+  function addSeeds(amount: MoneyLike): void {
+    changeSeeds(money(amount).floor().max(state.seeds.neg()));
   }
 
   // ─────────────────── Retirement + family tree ───────────────────
@@ -1184,26 +1195,26 @@ export function createGame(initialData: GameData, rng: Rng) {
   // there's no trick where retiring every minute beats playing on.
   // With exponent 0.5 (a square root), 4× the coins gives 2× the seeds.
 
-  function seedsForCoins(coins: number): number {
+  function seedsForCoins(coins: Money): Money {
     const r = data.retirement;
-    if (!r) return 0;
-    return Math.floor(Math.pow(Math.max(0, coins) / r.seedDivisor, r.seedExponent) + EPS);
+    if (!r) return money(0);
+    return power(divide(coins.max(0), r.seedDivisor), r.seedExponent).add(EPS).floor();
   }
 
   // The inverse: lifetime coins needed for a total of n seeds.
-  function coinsForSeeds(n: number): number {
+  function coinsForSeeds(n: Money): Money {
     const r = data.retirement;
-    return r.seedDivisor * Math.pow(n, 1 / r.seedExponent);
+    return power(n, 1 / r.seedExponent).mul(r.seedDivisor);
   }
 
-  function getPendingSeeds(): number {
-    return Math.max(0, seedsForCoins(state.stats.coinsEarned) - state.seedsEarned);
+  function getPendingSeeds(): Money {
+    return seedsForCoins(state.stats.coinsEarned).sub(state.seedsEarned).max(0);
   }
 
   // Not while the jackpot wheel is turning or a gamble is under way (their coins
   // would vanish with the old life).
   function canRetire(): boolean {
-    return getPendingSeeds() >= 1 && !state.machines.some((m) => m.bonus) && !(state.gamble && state.gamble.started);
+    return getPendingSeeds().gte(1) && !state.machines.some((m) => m.bonus) && !(state.gamble && state.gamble.started);
   }
 
   // For the progress bar: how far lifetime coins are towards the next seed.
@@ -1211,8 +1222,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     const earned = state.stats.coinsEarned;
     const total = seedsForCoins(earned);
     const from = coinsForSeeds(total);
-    const nextAt = coinsForSeeds(total + 1);
-    return { earned, total, nextAt, progress: Math.min(1, Math.max(0, (earned - from) / (nextAt - from))) };
+    const nextAt = coinsForSeeds(total.add(1));
+    const progress = divide(earned.sub(from), nextAt.sub(from)).toNumber();
+    return { earned, total, nextAt, progress: Math.min(1, Math.max(0, progress)) };
   }
 
   // Names cycle through the list in data.json: generation 1 is the first name.
@@ -1246,7 +1258,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     if (state.gamble) endGamble('retire');
     const oldName = getPupName();
     const runEarned = state.run.coinsEarned;
-    state.seedsEarned += gained;
+    state.seedsEarned = state.seedsEarned.add(gained);
     changeSeeds(gained);
     state.generation++;
 
@@ -1262,13 +1274,13 @@ export function createGame(initialData: GameData, rng: Rng) {
     applyStartingLevels(); // the new pup's head start from the tree
 
     events.emit('retired', { generation: state.generation, seedsGained: gained, oldName, newName: getPupName(), runEarned });
-    events.emit('coinsChanged', { coins: state.coins, amount: 0 });
+    events.emit('coinsChanged', { coins: state.coins, amount: money(0) });
     if (data.tokens) earnTokens(data.tokens.perRetirement, 'retire');
     checkDiary();
     return true;
   }
 
-  function getTreeCost(id: string): number {
+  function getTreeCost(id: string): Money {
     return costAtLevel(getTreeNodeDef(id)!, getTreeLevel(id));
   }
 
@@ -1283,7 +1295,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   function canBuyTreeNode(id: string): boolean {
-    return !!getTreeNodeDef(id) && isTreeNodeUnlocked(id) && !isTreeMaxed(id) && state.seeds >= getTreeCost(id);
+    return !!getTreeNodeDef(id) && isTreeNodeUnlocked(id) && !isTreeMaxed(id) && state.seeds.gte(getTreeCost(id));
   }
 
   function buyTreeNode(id: string): boolean {
@@ -1291,7 +1303,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     const cost = getTreeCost(id);
     const level = getTreeLevel(id) + 1;
     state.tree[id] = level;
-    changeSeeds(-cost);
+    changeSeeds(cost.neg());
     applyStartingLevels(); // e.g. Warm-up Laps gives Wheel Training Lv 1 right away
     events.emit('treeNodeBought', { id, level, cost });
     checkDiary();
@@ -1307,22 +1319,26 @@ export function createGame(initialData: GameData, rng: Rng) {
   // power. They're earned from diary stickers, golden jackpots, every Nth
   // delivery and retiring, and they're kept when the hamster retires.
 
-  function changeTokens(amount: number, source: TokenSource): void {
-    state.tokens += amount;
+  function changeTokens(amount: Money, source: TokenSource): void {
+    state.tokens = state.tokens.add(amount);
     events.emit('tokensChanged', { tokens: state.tokens, amount, source });
   }
 
   // Earning (not refunds or debug) also counts toward stats.tokensEarned.
-  function earnTokens(amount: number, source: TokenSource): void {
-    if (!(amount > 0)) return;
-    state.stats.tokensEarned += amount;
-    changeTokens(amount, source);
+  function earnTokens(amount: MoneyLike, source: TokenSource): void {
+    const tokens = money(amount);
+    if (!tokens.gt(0)) return;
+    state.stats.tokensEarned = state.stats.tokensEarned.add(tokens);
+    changeTokens(tokens, source);
   }
 
   // How far along a diary goal is. Each goal "type" is one line here.
   function getDiaryValue(goal: Goal): number {
     switch (goal.type) {
-      case 'stat': return state.stats[goal.stat] || 0;
+      case 'stat': {
+        const value = state.stats[goal.stat];
+        return isMoney(value) ? value.toNumber() : value || 0;
+      }
       case 'upgradeLevel': return getBestUpgradeLevel(goal.upgrade);
       case 'generation': return state.generation;
       case 'treeNodes': return treeNodes().filter((n) => getTreeLevel(n.id) > 0).length;
@@ -1351,7 +1367,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       if (getDiaryValue(sticker.goal) < sticker.goal.target) continue;
       state.diary[sticker.id] = true;
       earnTokens(sticker.tokens, 'sticker');
-      events.emit('stickerEarned', { id: sticker.id, tokens: sticker.tokens });
+      events.emit('stickerEarned', { id: sticker.id, tokens: money(sticker.tokens) });
     }
   }
 
@@ -1380,12 +1396,12 @@ export function createGame(initialData: GameData, rng: Rng) {
     return starter ? starter.id : null;
   }
 
-  function getPullCost(): number {
-    return data.capsules ? data.capsules.pullCost : Infinity;
+  function getPullCost(): Money {
+    return money(data.capsules ? data.capsules.pullCost : Infinity);
   }
 
   function canPull(): boolean {
-    return !!data.capsules && state.tokens >= getPullCost();
+    return !!data.capsules && state.tokens.gte(getPullCost());
   }
 
   // The odds for the odds table: `chance` is the listed weight; `withPity` is the
@@ -1414,7 +1430,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function pullCapsule(): boolean {
     if (!canPull()) return false;
     const c = data.capsules;
-    changeTokens(-c.pullCost, 'pull');
+    changeTokens(money(-c.pullCost), 'pull');
 
     const forced = state.capsules.sincePity >= c.pityPulls - 1;
     const rarity = forced ? c.pityRarity : rng.pickWeighted(c.rarities).id;
@@ -1424,9 +1440,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     state.stats.capsulesOpened++;
 
     const duplicate = !!state.skins.owned[skin.id];
-    let refund = 0;
+    let refund = money(0);
     if (duplicate) {
-      refund = c.rarities.find((r) => r.id === rarity)!.duplicateRefund;
+      refund = money(c.rarities.find((r) => r.id === rarity)!.duplicateRefund);
       changeTokens(refund, 'refund');
     } else {
       state.skins.owned[skin.id] = true;
@@ -1451,18 +1467,18 @@ export function createGame(initialData: GameData, rng: Rng) {
   // simulating every spin, so it's instant and doesn't touch the RNG.
   // The boot code (main.ts, autosave.ts) says how long the player was away: this file never reads the clock.
   // No Wheel Training = no auto-spin = nothing earned while away.
-  function getOfflineEarnings(seconds: number): { seconds: number; coins: number } {
+  function getOfflineEarnings(seconds: number): { seconds: number; coins: Money } {
     const o = data.offline;
-    if (!o || !(seconds >= o.minSeconds)) return { seconds: 0, coins: 0 };
+    if (!o || !(seconds >= o.minSeconds)) return { seconds: 0, coins: money(0) };
     const counted = Math.min(seconds, o.maxSeconds);
-    const perSecond = Math.max(0, getEconomy().expectedAutoProfitPerSecond);
-    return { seconds: counted, coins: roundMoney(perSecond * counted * o.efficiency) };
+    const perSecond = getEconomy().expectedAutoProfitPerSecond.max(0);
+    return { seconds: counted, coins: roundMoney(perSecond.mul(counted).mul(o.efficiency)) };
   }
 
   function applyOfflineEarnings(seconds: number): boolean {
     const { seconds: counted, coins } = getOfflineEarnings(seconds);
-    if (coins <= 0) return false;
-    state.stats.offlineCoins = roundMoney(state.stats.offlineCoins + coins);
+    if (coins.lte(0)) return false;
+    state.stats.offlineCoins = roundMoney(state.stats.offlineCoins.add(coins));
     earn(coins); // counts as earned, so it moves you toward Heirloom Seeds too
     events.emit('offlineEarned', { awaySeconds: seconds, seconds: counted, coins });
     checkDiary();
@@ -1586,11 +1602,12 @@ export function createGame(initialData: GameData, rng: Rng) {
     applyStartingLevels();
     checkDiary();
     events.emit('dataReloaded', {});
-    events.emit('coinsChanged', { coins: state.coins, amount: 0 });
+    events.emit('coinsChanged', { coins: state.coins, amount: money(0) });
   }
 
   // A plain JSON-safe copy of the player's state. Balance numbers are NOT saved,
-  // so changes to data.json apply straight away to existing saves.
+  // so changes to data.json apply straight away to existing saves. Every Money
+  // becomes text on the way (a Decimal writes itself as "1234.56" or "1.5e400").
   // An open gamble isn't saved: dropping it is the same as collecting (its coins
   // are already in the pile).
   function toSaveData(): SaveData {
@@ -1608,7 +1625,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     accumulator = 0;
     queuedManual = false;
     events.emit('stateLoaded', {});
-    events.emit('coinsChanged', { coins: state.coins, amount: 0 });
+    events.emit('coinsChanged', { coins: state.coins, amount: money(0) });
     return true;
   }
 
@@ -1663,8 +1680,8 @@ export type Game = ReturnType<typeof createGame>;
 
 // A fresh machine of one type (md = its data.json entry).
 function newMachineState(md: MachineDef): MachineState {
-  const pots: Record<string, number> = {};
-  if (md.jackpot) for (const pot of md.jackpot.pots) pots[pot.id] = pot.seed;
+  const pots: Record<string, Money> = {};
+  if (md.jackpot) for (const pot of md.jackpot.pots) pots[pot.id] = money(pot.seed);
   return {
     typeId: md.id, // which machine in data.json
     upgrades: {}, // machine-scoped upgrade levels, e.g. { lever: 2 }
@@ -1690,17 +1707,17 @@ function copyGrid(grid: Grid): Grid {
 function newStats(): Stats {
   return {
     spins: 0, manualSpins: 0, autoSpins: 0, wins: 0,
-    coinsWon: 0, coinsSpent: 0, deliveries: 0, deliveryCoins: 0,
-    coinsEarned: 0, // everything earned by playing (wins + deliveries); decides Heirloom Seeds
+    coinsWon: money(0), coinsSpent: money(0), deliveries: 0, deliveryCoins: money(0),
+    coinsEarned: money(0), // everything earned by playing (wins + deliveries); decides Heirloom Seeds
     upgradesBought: 0, playTime: 0,
-    goldenJackpots: 0, capsulesOpened: 0, tokensEarned: 0,
-    biggestWin: 0, // the largest single spin payout ever
-    offlineCoins: 0, // coins earned while the game was closed
+    goldenJackpots: 0, capsulesOpened: 0, tokensEarned: money(0),
+    biggestWin: money(0), // the largest single spin payout ever
+    offlineCoins: money(0), // coins earned while the game was closed
     machinesBought: 0, // new machines bought (they reset on retiring, so this can pass the number of machine types)
     mostLinesWon: 0, // the most paylines that won in a single spin
     // v6: bets and bonus features
     biggestBet: 0, // the biggest bet a paid spin ever used (×N)
-    freeSpins: 0, freeSpinTriggers: 0, freeSpinCoins: 0, // free spins played, times they started, coins they paid
+    freeSpins: 0, freeSpinTriggers: 0, freeSpinCoins: money(0), // free spins played, times they started, coins they paid
     wildWins: 0, // winning spins where a Hamster Wild helped
     bestStreak: 0, // the most winning paid spins in a row
     jackpotsWon: 0, grandJackpots: 0, // jackpot pots won (grand = the top pot)
@@ -1715,23 +1732,23 @@ function newStats(): Stats {
 export function newState(data: GameData): GameState {
   return {
     // ── this hamster's life (reset when it retires) ──
-    coins: data.startCoins,
+    coins: money(data.startCoins),
     upgrades: {}, // global upgrade levels, e.g. { cheeks: 3, wheel: 1 }
     machines: [newMachineState(data.machines[0])], // owned machines; the first one in data.json is free
     activeMachine: 0, // index into machines: the one the hamster is running
     delivery: { active: false, timer: 0, duration: 0 },
     autoTimer: 0,
     gamble: null, // { machineId, stake, rounds, won, started, timer } while a gamble is offered or played (never saved)
-    run: { coinsEarned: 0, playTime: 0 }, // totals for this hamster only
+    run: { coinsEarned: money(0), playTime: 0 }, // totals for this hamster only
 
     // ── the family (kept when retiring) ──
     generation: 1, // 1 = the first hamster; +1 per retirement
-    seeds: 0, // unspent Heirloom Seeds
-    seedsEarned: 0, // every seed ever received from retiring (the seed formula subtracts these)
+    seeds: money(0), // unspent Heirloom Seeds
+    seedsEarned: money(0), // every seed ever received from retiring (the seed formula subtracts these)
     tree: {}, // family tree node levels, e.g. { familyPride: 1 }
 
     // ── collection (also kept when retiring) ──
-    tokens: 0, // unspent Hamster Tokens
+    tokens: money(0), // unspent Hamster Tokens
     diary: {}, // diary stickers earned, e.g. { firstSpin: true }
     skins: { owned: {}, equipped: {} }, // owned: { furCinnamon: true }; equipped: { fur: "furCinnamon" }
     capsules: { sincePity: 0 }, // pulls since the last pity-rarity (Epic) capsule
@@ -1818,6 +1835,14 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
     save.saveVersion = 7;
   }
 
+  // v7 → v8: big numbers (money.ts). Money is saved as text now ("1234.56",
+  // "1.5e400"), because a plain number stops at 1.8e308. A v7 save's plain
+  // numbers are the very same amounts, and sanitizeState reads both (moneyFrom),
+  // so only the version changes here.
+  if (save.saveVersion === 7) {
+    save.saveVersion = 8;
+  }
+
   if (save.saveVersion !== SAVE_VERSION) return null;
   return save;
 }
@@ -1858,7 +1883,7 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   const s = newState(data);
   if (!raw || typeof raw !== 'object') return s;
 
-  s.coins = roundMoney(Math.max(0, num(raw.coins, s.coins)));
+  s.coins = roundMoney(moneyFrom(raw.coins, s.coins).max(0));
   s.upgrades = cleanLevels(raw.upgrades, data.upgrades.filter((u) => u.scope === 'global'));
 
   // Machines: keep each known machine type once. The first machine in data.json
@@ -1891,14 +1916,14 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
       const left = clamp(Math.floor(num(fs.left, 0)), 0, 10000);
       if (left > 0 || clean.spinFree) {
         const total = Math.max(left, Math.floor(num(fs.total, left)));
-        clean.freeSpins = { left, total, bet: validBet(fs.bet), won: Math.max(0, num(fs.won, 0)), timer: clamp(num(fs.timer, 0), 0, md.freeSpins.pause) };
+        clean.freeSpins = { left, total, bet: validBet(fs.bet), won: moneyFrom(fs.won, 0).max(0), timer: clamp(num(fs.timer, 0), 0, md.freeSpins.pause) };
       }
     }
     if (clean.spinFree && !clean.freeSpins) clean.spinFree = false;
     // Jackpot pots never drop below their seeds; a wheel that was turning keeps turning.
     if (md.jackpot) {
       const rawPots = m.pots && typeof m.pots === 'object' ? m.pots : {};
-      for (const pot of md.jackpot.pots) clean.pots[pot.id] = roundMoney(Math.max(pot.seed, num(rawPots[pot.id], pot.seed)));
+      for (const pot of md.jackpot.pots) clean.pots[pot.id] = roundMoney(moneyFrom(rawPots[pot.id], pot.seed).max(pot.seed));
       const b = m.bonus;
       if (b && typeof b === 'object' && md.jackpot.pots.some((p) => p.id === b.pot)) {
         clean.bonus = { pot: b.pot, timer: clamp(num(b.timer, 0), 0, md.jackpot.duration), bet: validBet(b.bet) };
@@ -1918,15 +1943,16 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   }
   s.autoTimer = Math.max(0, num(raw.autoTimer, 0));
   if (raw.run && typeof raw.run === 'object') {
-    for (const key of Object.keys(s.run) as (keyof GameState['run'])[]) s.run[key] = Math.max(0, num(raw.run[key], 0));
+    s.run.coinsEarned = moneyFrom(raw.run.coinsEarned, 0).max(0);
+    s.run.playTime = Math.max(0, num(raw.run.playTime, 0));
   }
 
   s.generation = Math.max(1, Math.floor(num(raw.generation, 1)));
-  s.seeds = Math.max(0, Math.floor(num(raw.seeds, 0)));
-  s.seedsEarned = Math.max(0, Math.floor(num(raw.seedsEarned, 0)));
+  s.seeds = moneyFrom(raw.seeds, 0).floor().max(0);
+  s.seedsEarned = moneyFrom(raw.seedsEarned, 0).floor().max(0);
   s.tree = cleanLevels(raw.tree, (data.familyTree && data.familyTree.nodes) || []);
 
-  s.tokens = Math.max(0, Math.floor(num(raw.tokens, 0)));
+  s.tokens = moneyFrom(raw.tokens, 0).floor().max(0);
   if (raw.diary && typeof raw.diary === 'object') {
     for (const sticker of data.diary || []) if (raw.diary[sticker.id] === true) s.diary[sticker.id] = true;
   }
@@ -1945,7 +1971,11 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   s.capsules.sincePity = clamp(Math.floor(num(raw.capsules && raw.capsules.sincePity, 0)), 0, maxSincePity);
 
   if (raw.stats && typeof raw.stats === 'object') {
-    for (const key of Object.keys(s.stats) as (keyof Stats)[]) s.stats[key] = Math.max(0, num(raw.stats[key], 0));
+    // The amounts of money are read as Money; counts, seconds and bests as plain numbers.
+    const stats = s.stats as unknown as Record<string, Money | number>;
+    for (const key of Object.keys(stats)) {
+      stats[key] = isMoney(stats[key]) ? moneyFrom(raw.stats[key], 0).max(0) : Math.max(0, num(raw.stats[key], 0));
+    }
   }
   return s;
 }

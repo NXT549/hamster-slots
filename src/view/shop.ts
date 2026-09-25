@@ -10,13 +10,16 @@
 import { spriteImg, upgradeIcon, MACHINE_SPRITES } from './art.ts';
 import { formatCoins, formatSeconds, formatWait, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
 import { effectAs } from '../logic/game.ts';
+import { divide } from '../logic/money.ts';
 import type { Game } from '../logic/game.ts';
+import type { Money } from '../logic/money.ts';
 import type { UpgradeDef, TreeNodeDef } from '../logic/types.ts';
 import type { Settings } from '../platform/save.ts';
 
 // What game.previewUpgrade / previewTreeNode return: the value now and after buying.
-// Each effect type has its own kind of value (a number, on/off, Luck's
-// { luck, hitRate } …) and its format below knows which, so it's loosely typed here.
+// Each effect type has its own kind of value (a number, a Money for coins and
+// the payout multiplier, on/off, Luck's { luck, hitRate } …) and its format below
+// knows which, so it's loosely typed here. (A Money has toFixed() too.)
 type Preview = { now: any; next: any };
 type Format = (value: any) => string;
 type Def = UpgradeDef | TreeNodeDef;
@@ -134,9 +137,9 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
   const coinLabel = (text: string) => `${iconHTML('coin')}${text}`;
 
   // "ready in ~2 min" at the current auto-spin income ('' when there's no auto-spin).
-  function waitText(cost: number, rate: number): string {
-    const missing = cost - game.state.coins;
-    return missing > 0 && rate > 0 ? `ready in ~${formatWait(missing / rate)}` : '';
+  function waitText(cost: Money, rate: Money): string {
+    const missing = cost.sub(game.state.coins);
+    return missing.gt(0) && rate.gt(0) ? `ready in ~${formatWait(divide(missing, rate).toNumber())}` : '';
   }
 
   // ─────────────────────── building ───────────────────────
@@ -311,7 +314,7 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       }
       c.button.classList.toggle('switch', info.owned && !info.active);
       c.button.disabled = info.active;
-      paintBuy(c.button, c.fill, { maxed: info.active, affordable: info.owned || affordable, progress: s.coins / info.cost });
+      paintBuy(c.button, c.fill, { maxed: info.active, affordable: info.owned || affordable, progress: divide(s.coins, info.cost).toNumber() });
       setText(c.wait, info.owned ? '' : waitText(info.cost, rate));
     }
 
@@ -326,7 +329,7 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       t.pips.forEach((pip, i) => pip.classList.toggle('on', i < level));
       const times = bulk.count > 1 ? `×${bulk.count} · ` : '';
       setHTML(t.label, maxed ? 'Maxed out' : coinLabel(`${times}${formatCoins(bulk.cost)}`));
-      paintBuy(t.button, t.fill, { maxed, affordable: bulk.affordable, progress: s.coins / bulk.cost });
+      paintBuy(t.button, t.fill, { maxed, affordable: bulk.affordable, progress: divide(s.coins, bulk.cost).toNumber() });
       t.tile.classList.toggle('ready', bulk.affordable);
       setText(t.wait, maxed || bulk.affordable ? '' : waitText(bulk.cost, rate));
       if (bulk.affordable) ready[t.def.scope === 'machine' ? 'machine' : 'hamster'] = true;

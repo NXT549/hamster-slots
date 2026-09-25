@@ -5,6 +5,11 @@
 // machine.spinCots, or passing a number where a machine is expected, is caught
 // before the game even starts. They're also the best map of the game there is:
 // read GameData to see everything data.json can hold, GameState for the save.
+//
+// data.json holds plain numbers. In the game's state, every amount of money
+// (coins, Heirloom Seeds, Hamster Tokens) is a Money: a big number (money.ts).
+
+import type { Money } from './money.ts';
 
 // ───────────────────────── data.json (GameData) ─────────────────────────
 
@@ -220,7 +225,7 @@ export interface LineWin extends LineResult {
 
 // A winning line after every multiplier (game.ts resolveSpin).
 export interface PaidWin extends LineWin {
-  payout: number;
+  payout: Money;
 }
 
 // ───────────────────────── The game state (the save) ─────────────────────────
@@ -229,7 +234,7 @@ export interface FreeSpinsState {
   left: number;
   total: number;
   bet: number; // the bet that won them
-  won: number; // coins paid so far
+  won: Money; // coins paid so far
   timer: number; // seconds until the next one
 }
 
@@ -251,43 +256,44 @@ export interface MachineState {
   result: Grid | null;
   streak: number;
   freeSpins: FreeSpinsState | null;
-  pots: Record<string, number>; // jackpot pots in base units
+  pots: Record<string, Money>; // jackpot pots in base units
   bonus: BonusState | null; // the jackpot wheel while it turns
 }
 
 export interface GambleState {
   machineId: string;
-  stake: number;
+  stake: Money;
   rounds: number;
-  won: number;
+  won: Money; // coins gained so far (below 0 after a loss)
   started: boolean; // a card has been picked (then it's no longer just an offer)
   timer: number; // seconds left on the offer
 }
 
 // Lifetime stats: they keep counting across retirements (only Reset wipes them).
+// The amounts of money are Money; the rest are counts, seconds or bests.
 export interface Stats {
   spins: number;
   manualSpins: number;
   autoSpins: number;
   wins: number;
-  coinsWon: number;
-  coinsSpent: number;
+  coinsWon: Money;
+  coinsSpent: Money;
   deliveries: number;
-  deliveryCoins: number;
-  coinsEarned: number;
+  deliveryCoins: Money;
+  coinsEarned: Money;
   upgradesBought: number;
   playTime: number;
   goldenJackpots: number;
   capsulesOpened: number;
-  tokensEarned: number;
-  biggestWin: number;
-  offlineCoins: number;
+  tokensEarned: Money;
+  biggestWin: Money;
+  offlineCoins: Money;
   machinesBought: number;
   mostLinesWon: number;
   biggestBet: number;
   freeSpins: number;
   freeSpinTriggers: number;
-  freeSpinCoins: number;
+  freeSpinCoins: Money;
   wildWins: number;
   bestStreak: number;
   jackpotsWon: number;
@@ -302,29 +308,36 @@ export interface Stats {
 
 export interface GameState {
   // this hamster's life (reset when it retires)
-  coins: number;
+  coins: Money;
   upgrades: Levels;
   machines: MachineState[];
   activeMachine: number;
   delivery: { active: boolean; timer: number; duration: number };
   autoTimer: number;
   gamble: GambleState | null;
-  run: { coinsEarned: number; playTime: number };
+  run: { coinsEarned: Money; playTime: number };
   // the family (kept when retiring)
   generation: number;
-  seeds: number;
-  seedsEarned: number;
+  seeds: Money;
+  seedsEarned: Money;
   tree: Levels;
   // the collection (also kept)
-  tokens: number;
+  tokens: Money;
   diary: Record<string, boolean>;
   skins: { owned: Record<string, boolean>; equipped: Record<string, string> };
   capsules: { sincePity: number };
   stats: Stats;
 }
 
+// A save is JSON, so every Money in it is written as text ("1234.56", "1.5e400"):
+// Saved<T> is T with each Money turned into a string.
+export type Saved<T> = T extends Money ? string
+  : T extends (infer U)[] ? Saved<U>[]
+  : T extends object ? { [K in keyof T]: Saved<T[K]> }
+  : T;
+
 // What toSaveData() returns: the state without the open gamble, plus the version.
-export type SaveData = Omit<GameState, 'gamble'> & { saveVersion: number };
+export type SaveData = Saved<Omit<GameState, 'gamble'>> & { saveVersion: number };
 
 // ───────────────────────── The card gamble ─────────────────────────
 
@@ -341,42 +354,42 @@ export interface Card {
 
 // ───────────────────────── Events ─────────────────────────
 // Every event game.ts emits, and what it carries (AGENTS.md → Events).
-// game.on('spinResolved', (e) => …) knows that e.payout is a number, and so on.
+// game.on('spinResolved', (e) => …) knows that e.payout is a Money, and so on.
 
 export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug';
 export type GambleEndReason = 'collect' | 'lose' | 'max' | 'spin' | 'expired' | 'switch' | 'retire';
 
 export interface GameEvents {
-  spinStarted: { machineId: string; result: Grid; source: SpinSource; cost: number; bet: number; free: boolean };
+  spinStarted: { machineId: string; result: Grid; source: SpinSource; cost: Money; bet: number; free: boolean };
   spinResolved: {
-    machineId: string; result: Grid; wins: PaidWin[]; payout: number; fullLine: boolean; tier: string;
+    machineId: string; result: Grid; wins: PaidWin[]; payout: Money; fullLine: boolean; tier: string;
     bet: number; free: boolean; streak: number; featureCells: Cell[];
   };
-  spinBlocked: { reason: 'coins' | 'delivery' | 'gamble' | 'bonus'; source: SpinSource; cost?: number };
+  spinBlocked: { reason: 'coins' | 'delivery' | 'gamble' | 'bonus'; source: SpinSource; cost?: Money };
   betChanged: { machineId: string; index: number; bet: number };
   freeSpinsStarted: { machineId: string; count: number; retrigger: boolean; bet: number; left: number };
-  freeSpinsEnded: { machineId: string; spins: number; won: number };
+  freeSpinsEnded: { machineId: string; spins: number; won: Money };
   jackpotStarted: { machineId: string; pot: string; duration: number; bet: number };
-  jackpotWon: { machineId: string; pot: string; amount: number };
-  gambleOffered: { machineId: string; stake: number };
+  jackpotWon: { machineId: string; pot: string; amount: Money };
+  gambleOffered: { machineId: string; stake: Money };
   gambleResolved: {
-    machineId: string; win: boolean; pick: string; card: Card; multiplier: number; stake: number; round: number; next: number;
+    machineId: string; win: boolean; pick: string; card: Card; multiplier: number; stake: Money; round: number; next: Money;
   };
-  gambleEnded: { machineId: string; reason: GambleEndReason; won: number; rounds: number; started: boolean };
-  coinsChanged: { coins: number; amount: number };
-  seedsChanged: { seeds: number; amount: number };
-  upgradeBought: { id: string; level: number; cost: number; count: number };
-  machineBought: { id: string; cost: number };
+  gambleEnded: { machineId: string; reason: GambleEndReason; won: Money; rounds: number; started: boolean };
+  coinsChanged: { coins: Money; amount: Money };
+  seedsChanged: { seeds: Money; amount: Money };
+  upgradeBought: { id: string; level: number; cost: Money; count: number };
+  machineBought: { id: string; cost: Money };
   machineSwitched: { id: string; from: string };
-  treeNodeBought: { id: string; level: number; cost: number };
-  retired: { generation: number; seedsGained: number; oldName: string; newName: string; runEarned: number };
-  deliveryStarted: { duration: number; reward: number; source: 'manual' | 'auto' };
-  deliveryFinished: { reward: number };
-  tokensChanged: { tokens: number; amount: number; source: TokenSource };
-  stickerEarned: { id: string; tokens: number };
-  capsuleOpened: { skinId: string; rarity: string; duplicate: boolean; refund: number; pity: boolean };
+  treeNodeBought: { id: string; level: number; cost: Money };
+  retired: { generation: number; seedsGained: Money; oldName: string; newName: string; runEarned: Money };
+  deliveryStarted: { duration: number; reward: Money; source: 'manual' | 'auto' };
+  deliveryFinished: { reward: Money };
+  tokensChanged: { tokens: Money; amount: Money; source: TokenSource };
+  stickerEarned: { id: string; tokens: Money };
+  capsuleOpened: { skinId: string; rarity: string; duplicate: boolean; refund: Money; pity: boolean };
   skinEquipped: { id: string; category: string };
-  offlineEarned: { awaySeconds: number; seconds: number; coins: number };
+  offlineEarned: { awaySeconds: number; seconds: number; coins: Money };
   dataReloaded: Record<string, never>;
   stateLoaded: Record<string, never>;
 }

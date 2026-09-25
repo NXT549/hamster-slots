@@ -5,7 +5,7 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -20,19 +20,19 @@ describe('free spins (Burrow Bonanza)', () => {
   g.on('freeSpinsEnded', (e) => ended.push(e));
   check('addFreeSpins (debug) gives free spins', g.addFreeSpins(5) === true && g.getFreeSpins().left === 5);
   check('a paid spin waits while free spins are waiting', g.spin() === false);
-  const coins = g.state.coins;
+  const coins = num(g.state.coins);
   g.update(300);
   const n = started.length;
-  check(`free spins play by themselves (no Wheel Training), cost nothing (${n} played)`, n >= 5 && started.every((e) => e.free && e.cost === 0 && e.source === 'free'));
+  check(`free spins play by themselves (no Wheel Training), cost nothing (${n} played)`, n >= 5 && started.every((e) => e.free && num(e.cost) === 0 && e.source === 'free'));
   const mult = bonanza.freeSpins.multiplier;
   const payOk = resolved.every((e) => {
     const r = evaluateGrid(e.result, g.getPaylines(), bonanza.payouts, symbolRules(bonanza));
-    return e.payout === roundMoney(r.wins.reduce((sum, w) => sum + roundMoney(w.basePayout * g.getPayoutMultiplier() * mult), 0));
+    return num(e.payout) === roundMoney(r.wins.reduce((sum, w) => sum + roundMoney(w.basePayout * num(g.getPayoutMultiplier()) * mult), 0));
   });
   check(`every free-spin win is x${mult}`, payOk && resolved.every((e) => e.free));
-  const won = roundMoney(resolved.reduce((sum, e) => sum + e.payout, 0));
-  check('when they are done: freeSpinsEnded with the spins and the total won', ended.length === 1 && ended[0].spins === n && near(ended[0].won, won, 0.011) && g.getFreeSpins() === null);
-  check('coins only went up during free spins', near(g.state.coins, coins + won, 0.011));
+  const won = roundMoney(resolved.reduce((sum, e) => sum + num(e.payout), 0));
+  check('when they are done: freeSpinsEnded with the spins and the total won', ended.length === 1 && ended[0].spins === n && near(num(ended[0].won), won, 0.011) && g.getFreeSpins() === null);
+  check('coins only went up during free spins', near(num(g.state.coins), coins + won, 0.011));
   check('stats.freeSpins counts them (not as manual or auto spins)', g.state.stats.freeSpins === n && g.state.stats.manualSpins === 0 && g.state.stats.autoSpins === 0);
   check('free-spin wins never offer a gamble', g.getGambleInfo() === null);
 
@@ -70,7 +70,7 @@ describe('free spins (Burrow Bonanza)', () => {
   const ss = gameWithWholeTree(105);
   ss.addCoins(1e9);
   ss.buyMachine('bonanza');
-  ss.addCoins(-ss.state.coins);
+  ss.addCoins(ss.state.coins.neg());
   ss.addFreeSpins(3);
   ss.update(0.2);
   check('Self-Starter waits while free spins are left', ss.state.delivery.active === false);
@@ -104,34 +104,34 @@ describe('the jackpot wheel and pots (Pouch Palace)', () => {
   const jp = palace.jackpot;
   const g = gameOn('palace', 111);
   check('Pouch Palace: 5 reels, 10 of 20 lines, every pot at its seed', g.getReelCount() === 5 && g.getLineCount() === 10
-    && g.getJackpotPots().every((p, i) => p.base === jp.pots[i].seed));
+    && g.getJackpotPots().every((p, i) => num(p.base) === jp.pots[i].seed));
   g.spin();
-  check('every paid spin grows every pot by its growth', g.getJackpotPots().every((p, i) => p.base === roundMoney(jp.pots[i].seed + jp.pots[i].growth)));
+  check('every paid spin grows every pot by its growth', g.getJackpotPots().every((p, i) => num(p.base) === roundMoney(jp.pots[i].seed + jp.pots[i].growth)));
   land(g);
   g.buyUpgrade('pouchPolish');
   const growth = 1 + data.upgrades.find((u) => u.id === 'pouchPolish').effect.perLevel;
-  const before = g.getJackpotPots().map((p) => p.base);
+  const before = g.getJackpotPots().map((p) => num(p.base));
   g.spin();
-  check('Pouch Polish makes the pots grow faster', g.getJackpotPots().every((p, i) => near(p.base, before[i] + jp.pots[i].growth * growth, 0.011)));
+  check('Pouch Polish makes the pots grow faster', g.getJackpotPots().every((p, i) => near(num(p.base), before[i] + jp.pots[i].growth * growth, 0.011)));
   land(g);
-  check('the marquee value = pot x bet x payout multiplier', g.getJackpotPots().every((p) => p.value === roundMoney(p.base * g.getBet() * g.getPayoutMultiplier())));
+  check('the marquee value = pot x bet x payout multiplier', g.getJackpotPots().every((p) => num(p.value) === roundMoney(num(p.base) * g.getBet() * num(g.getPayoutMultiplier()))));
 
   const won = [];
   const blocked = [];
   g.on('jackpotWon', (e) => won.push(e));
   g.on('spinBlocked', (e) => blocked.push(e.reason));
-  const major = g.getJackpotPots().find((p) => p.id === 'major').base;
+  const major = num(g.getJackpotPots().find((p) => p.id === 'major').base);
   check('triggerJackpot (debug) starts the wheel', g.triggerJackpot('major') === true && g.getBonusProgress() === 0);
   check('no spins while the wheel turns', g.spin() === false && blocked.includes('bonus'));
   g.update(1);
   check('the wheel\'s progress follows game time', near(g.getBonusProgress(), 1 / jp.duration, 0.02));
-  const coins = g.state.coins;
-  const earned = g.state.stats.coinsEarned;
+  const coins = num(g.state.coins);
+  const earned = num(g.state.stats.coinsEarned);
   g.update(jp.duration);
   check('when it stops it pays pot x bet x payout multiplier', won.length === 1 && won[0].pot === 'major'
-    && won[0].amount === roundMoney(major * g.getBet() * g.getPayoutMultiplier()) && near(g.state.coins, coins + won[0].amount, 0.011));
-  check('… the pot goes back to its seed, and the win counts as earned', g.getJackpotPots().find((p) => p.id === 'major').base === jp.pots.find((p) => p.id === 'major').seed
-    && near(g.state.stats.coinsEarned, earned + won[0].amount, 0.011));
+    && num(won[0].amount) === roundMoney(major * g.getBet() * num(g.getPayoutMultiplier())) && near(num(g.state.coins), coins + num(won[0].amount), 0.011));
+  check('… the pot goes back to its seed, and the win counts as earned', num(g.getJackpotPots().find((p) => p.id === 'major').base) === jp.pots.find((p) => p.id === 'major').seed
+    && near(num(g.state.stats.coinsEarned), earned + num(won[0].amount), 0.011));
   check('stats.jackpotsWon and "Pot Luck"', g.state.stats.jackpotsWon === 1 && g.state.diary.potLuck === true);
   g.triggerJackpot(jp.pots[jp.pots.length - 1].id);
   g.update(jp.duration + 0.1);
@@ -161,10 +161,10 @@ describe('the jackpot wheel and pots (Pouch Palace)', () => {
   const counts = {};
   const sums = {};
   const sumSqs = {};
-  const scale = n.getBet() * n.getPayoutMultiplier();
+  const scale = n.getBet() * num(n.getPayoutMultiplier());
   n.on('spinStarted', (e) => { if (!e.free) paid++; });
   n.on('jackpotWon', (e) => {
-    const x = e.amount / scale; // back to base units
+    const x = num(e.amount) / scale; // back to base units
     counts[e.pot] = (counts[e.pot] || 0) + 1;
     sums[e.pot] = (sums[e.pot] || 0) + x;
     sumSqs[e.pot] = (sumSqs[e.pot] || 0) + x * x;
@@ -207,8 +207,8 @@ describe('the card gamble', () => {
   let lastPayout = 0;
   g.on('gambleOffered', (e) => offers.push(e));
   g.on('gambleEnded', (e) => ends.push(e));
-  g.on('spinResolved', (e) => { if (e.payout > 0) lastPayout = e.payout; });
-  check('a win you pulled yourself offers the gamble for that win', manualWin(g) && offers.length === 1 && g.getGambleInfo().stake === lastPayout);
+  g.on('spinResolved', (e) => { if (num(e.payout) > 0) lastPayout = num(e.payout); });
+  check('a win you pulled yourself offers the gamble for that win', manualWin(g) && offers.length === 1 && num(g.getGambleInfo().stake) === lastPayout);
   g.update(data.gamble.offerSeconds + 0.1);
   check(`an untouched offer runs out after ${data.gamble.offerSeconds} s`, g.getGambleInfo() === null && ends.at(-1).reason === 'expired');
   manualWin(g);
@@ -250,18 +250,18 @@ describe('the card gamble', () => {
   const p = newGame(123);
   p.addCoins(1e6);
   manualWin(p);
-  const stake = p.getGambleInfo().stake;
-  const coins = p.state.coins;
-  const earned = p.state.stats.coinsEarned;
+  const stake = num(p.getGambleInfo().stake);
+  const coins = num(p.state.coins);
+  const earned = num(p.state.stats.coinsEarned);
   const res = [];
   p.on('gambleResolved', (e) => res.push(e));
   check('a pick must be a colour or a suit', p.gamble('middle') === false && p.gamble('left') === false && p.gamble('') === false);
   p.gamble('red');
   check('a colour pick wins +stake (×2) or loses the stake', res.length === 1 && res[0].multiplier === 2
-    && (res[0].win ? p.state.coins === roundMoney(coins + stake) : p.state.coins === roundMoney(coins - stake)));
+    && (res[0].win ? num(p.state.coins) === roundMoney(coins + stake) : num(p.state.coins) === roundMoney(coins - stake)));
   check('the card is a real card of the deck, and red wins exactly on hearts and diamonds',
     SUITS.some((s) => s.id === res[0].card.suit && s.color === res[0].card.color) && res[0].win === (res[0].card.color === 'red'));
-  check('gambling never changes coinsEarned (it can\'t farm Heirloom Seeds)', p.state.stats.coinsEarned === earned);
+  check('gambling never changes coinsEarned (it can\'t farm Heirloom Seeds)', num(p.state.stats.coinsEarned) === earned);
   if (p.getGambleInfo()) {
     const blocked = [];
     p.on('spinBlocked', (e) => blocked.push(e.reason));
@@ -273,7 +273,7 @@ describe('the card gamble', () => {
   // Every card is a fresh draw, so both bets are exactly fair: on average they never pay.
   const f = newGame(124);
   f.addCoins(1e9);
-  const coinsEarned0 = f.state.stats.coinsEarned;
+  const coinsEarned0 = num(f.state.stats.coinsEarned);
   const tally = { color: { picks: 0, wins: 0, net: 0 }, suit: { picks: 0, wins: 0, net: 0 } };
   const suitsSeen = {};
   let prizesOk = true;
@@ -282,8 +282,9 @@ describe('the card gamble', () => {
   f.on('gambleResolved', (e) => {
     const t = tally[['red', 'black'].includes(e.pick) ? 'color' : 'suit'];
     t.picks++;
-    t.net += (e.win ? e.stake * (e.multiplier - 1) : -e.stake) / e.stake; // in stakes
-    if (e.win) { t.wins++; if (e.next !== roundMoney(e.stake * e.multiplier)) prizesOk = false; }
+    const stake = num(e.stake);
+    t.net += (e.win ? stake * (e.multiplier - 1) : -stake) / stake; // in stakes
+    if (e.win) { t.wins++; if (num(e.next) !== roundMoney(stake * e.multiplier)) prizesOk = false; }
     suitsSeen[e.card.suit] = (suitsSeen[e.card.suit] || 0) + 1;
     lastCard = e.card;
   });
@@ -309,7 +310,7 @@ describe('the card gamble', () => {
     SUITS.every((s) => near((suitsSeen[s.id] || 0) / draws, 0.25, 4 * Math.sqrt(0.1875 / draws))));
   check('a right colour doubles the stake, a right suit makes it ×4', prizesOk);
   check(`after ${data.gamble.maxRounds} wins in a row the gamble takes the win by itself`, maxEnds > 0);
-  check('rule 4: gamble coins never count as earned', f.state.stats.coinsEarned === coinsEarned0);
+  check('rule 4: gamble coins never count as earned', num(f.state.stats.coinsEarned) === coinsEarned0);
   check('stats count gamble picks; "Double Trouble" after 3 wins in a row; "Card Shark" after a suit win',
     f.state.stats.gambleWins === tally.color.wins + tally.suit.wins && f.state.stats.gambleLosses === tally.color.picks + tally.suit.picks - tally.color.wins - tally.suit.wins
     && f.state.stats.suitWins === tally.suit.wins && f.state.diary.doubleTrouble === true && f.state.diary.cardShark === true);
@@ -317,14 +318,14 @@ describe('the card gamble', () => {
   check(`the last ${data.gamble.history} cards are kept, newest first`, history.length === data.gamble.history && deepEqual(history[0], { suit: lastCard.suit, color: lastCard.color }));
   f.triggerGamble(10);
   const info = f.getGambleInfo();
-  check('getGambleInfo shows both prizes and the card history', info.colorWin === 20 && info.suitWin === 40 && info.history.length === data.gamble.history);
+  check('getGambleInfo shows both prizes and the card history', num(info.colorWin) === 20 && num(info.suitWin) === 40 && info.history.length === data.gamble.history);
   check('the Info tab gets the real odds', deepEqual(f.getFeatureOdds().gamble.color, { chance: 0.5, multiplier: 2 }) && deepEqual(f.getFeatureOdds().gamble.suit, { chance: 0.25, multiplier: 4 }));
 
   // Edge cases.
   const e = newGame(126);
   e.addCoins(1e6);
   manualWin(e);
-  e.addCoins(-e.state.coins + e.getGambleInfo().stake / 2);
+  e.addCoins(-num(e.state.coins) + num(e.getGambleInfo().stake) / 2);
   check('you need the stake in your pile to gamble it', e.canGamble() === false && e.gamble('red') === false);
   const sv = newGame(127);
   sv.addCoins(1e6);
@@ -371,8 +372,8 @@ describe('Hot Streak', () => {
   let winsN = 0;
   h.on('spinResolved', (e) => {
     const mult = 1 + per * Math.min(before, hs.effect.maxStacks);
-    const expected = roundMoney(e.wins.reduce((sum, w) => sum + roundMoney(w.basePayout * h.getPayoutMultiplier() * mult), 0));
-    if (e.payout !== expected) payOk = false;
+    const expected = roundMoney(e.wins.reduce((sum, w) => sum + roundMoney(w.basePayout * num(h.getPayoutMultiplier()) * mult), 0));
+    if (num(e.payout) !== expected) payOk = false;
     if (e.wins.length) { sumMult += mult; winsN++; }
     before = e.streak;
   });

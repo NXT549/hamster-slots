@@ -5,7 +5,7 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -13,15 +13,15 @@ describe('Hamster Tokens + the diary', () => {
   const g = newGame(31);
   const stickers = [];
   g.on('stickerEarned', (e) => stickers.push(e.id));
-  check('a new game has 0 tokens and no stickers', g.state.tokens === 0 && Object.keys(g.state.diary).length === 0);
+  check('a new game has 0 tokens and no stickers', num(g.state.tokens) === 0 && Object.keys(g.state.diary).length === 0);
   g.spin();
   land(g);
   check('first spin earns the "First Spin" sticker', stickers.includes('firstSpin') && g.state.diary.firstSpin === true);
-  const tokensAfter = g.state.tokens;
+  const tokensAfter = num(g.state.tokens);
   g.spin();
   land(g);
   check('a sticker is only awarded once', stickers.filter((id) => id === 'firstSpin').length === 1);
-  check('tokens only change when a sticker/jackpot pays', g.state.tokens >= tokensAfter);
+  check('tokens only change when a sticker/jackpot pays', num(g.state.tokens) >= tokensAfter);
   g.addCoins(1000);
   g.buyUpgrade('wheel');
   check('buying Wheel Training earns "Look, No Paws!"', g.state.diary.wheelTraining === true);
@@ -41,11 +41,11 @@ describe('Hamster Tokens + the diary', () => {
   // Retiring pays tokens.
   const r = newGame(33);
   r.addCoins(data.retirement.seedDivisor, true);
-  const before = r.state.tokens;
+  const before = num(r.state.tokens);
   r.retire();
   check(`retiring pays ${data.tokens.perRetirement} tokens (+ the "Big Cage" sticker)`,
-    r.state.tokens === before + data.tokens.perRetirement + data.diary.find((x) => x.id === 'firstRetirement').tokens);
-  check('tokens are kept when retiring', r.state.tokens > 0);
+    num(r.state.tokens) === before + data.tokens.perRetirement + data.diary.find((x) => x.id === 'firstRetirement').tokens);
+  check('tokens are kept when retiring', num(r.state.tokens) > 0);
 
   // Golden jackpots: only the jackpot symbol on EVERY reel, with 3+ reels.
   // (Max Luck and every symbol unlocked, so golden lines come often enough to count.)
@@ -79,7 +79,7 @@ describe('Capsule Machine + skins', () => {
   g.addTokens(c.pullCost);
   const collectorTokens = data.diary.find((d) => d.id === 'firstCapsule').tokens;
   check('a pull costs pullCost tokens (the first one also earns "Capsule Collector")',
-    g.pullCapsule() === true && g.state.tokens === collectorTokens + opened[0].refund);
+    g.pullCapsule() === true && num(g.state.tokens) === collectorTokens + num(opened[0].refund));
   check('the pulled skin is owned now', g.isSkinOwned(opened[0].skinId) && g.getSkinDef(opened[0].skinId).rarity === opened[0].rarity);
   check('a pull never gives a starter skin', opened[0].rarity !== 'starter');
   check('pulled skin can be equipped', g.equipSkin(opened[0].skinId) === true
@@ -103,10 +103,10 @@ describe('Capsule Machine + skins', () => {
     longestRun = Math.max(longestRun, run);
     if (e.duplicate) {
       dupes++;
-      if (e.refund !== c.rarities.find((r) => r.id === e.rarity).duplicateRefund) refundsOk = false;
+      if (num(e.refund) !== c.rarities.find((r) => r.id === e.rarity).duplicateRefund) refundsOk = false;
     }
   });
-  const tokensBefore = o.state.tokens;
+  const tokensBefore = num(o.state.tokens);
   for (let i = 0; i < 20000; i++) o.pullCapsule();
   const total = 20000;
   // Pity lifts the pity rarity above its listed chance; getCapsuleOdds() predicts by how much.
@@ -117,7 +117,7 @@ describe('Capsule Machine + skins', () => {
   }
   check(`pity: never ${c.pityPulls} pulls in a row without ${c.pityRarity} (longest ${longestRun})`, longestRun <= c.pityPulls - 1);
   check('duplicates refund their rarity\'s tokens', dupes > 0 && refundsOk);
-  const refunds = o.state.tokens - (tokensBefore - total * c.pullCost);
+  const refunds = num(o.state.tokens) - (tokensBefore - total * c.pullCost);
   check('tokens spent = pulls x cost - refunds', refunds > 0 && o.state.stats.capsulesOpened === total);
   check('20,000 pulls collect every skin', data.skins.every((s) => o.isSkinOwned(s.id)));
   check('"Fashion Hamster" sticker for 8 skins', o.state.diary.fashion === true);
@@ -149,7 +149,7 @@ describe('Capsule Machine + skins', () => {
   check('load drops unknown/starter skins from "owned"', !('notASkin' in g3.state.skins.owned) && !('furClassic' in g3.state.skins.owned));
   check('load un-equips skins that are not owned or in the wrong slot',
     g3.getEquippedSkin('room') === 'roomClassic' && g3.getEquippedSkin('fur') !== 'wheelGold');
-  check('load clamps tokens >= 0 and the pity counter', g3.state.tokens === 0 && g3.state.capsules.sincePity === c.pityPulls - 1);
+  check('load clamps tokens >= 0 and the pity counter', num(g3.state.tokens) === 0 && g3.state.capsules.sincePity === c.pityPulls - 1);
 
   // Pulls are deterministic with the same seed.
   const pulls = (seed) => {

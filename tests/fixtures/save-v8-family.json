@@ -1,0 +1,139 @@
+{
+ "activeMachine": 0,
+ "autoTimer": 1.9199999999999904,
+ "capsules": {
+  "sincePity": 2
+ },
+ "coins": "648.37",
+ "delivery": {
+  "active": false,
+  "duration": 0,
+  "timer": 0
+ },
+ "diary": {
+  "fashion": true,
+  "firstCapsule": true,
+  "firstRetirement": true,
+  "firstSpin": true,
+  "firstWin": true,
+  "millionaire": true,
+  "newSeed": true,
+  "tree5": true,
+  "wheelTraining": true
+ },
+ "generation": 3,
+ "machines": [
+  {
+   "bet": 0,
+   "bonus": null,
+   "freeSpins": null,
+   "pots": {},
+   "result": [
+    [
+     "blank"
+    ],
+    [
+     "carrot"
+    ]
+   ],
+   "spinBet": 1,
+   "spinFree": false,
+   "spinSource": "auto",
+   "spinTimer": 0.4833333333333371,
+   "spinning": true,
+   "streak": 1,
+   "typeId": "clunky",
+   "upgrades": {
+    "horseshoe": 2,
+    "lever": 5,
+    "newSeeds": 1
+   }
+  }
+ ],
+ "run": {
+  "coinsEarned": "8044.49",
+  "playTime": 300.0000000000558
+ },
+ "saveVersion": 8,
+ "seeds": "0",
+ "seedsEarned": "39",
+ "skins": {
+  "equipped": {
+   "fur": "furGolden",
+   "machine": "machineGrape",
+   "room": "roomSunflower",
+   "wheel": "wheelGold"
+  },
+  "owned": {
+   "furCinnamon": true,
+   "furCocoa": true,
+   "furGolden": true,
+   "furLavender": true,
+   "furMint": true,
+   "furSnowball": true,
+   "machineGrape": true,
+   "machinePeach": true,
+   "machineSky": true,
+   "roomMint": true,
+   "roomStarry": true,
+   "roomStrawberry": true,
+   "roomSunflower": true,
+   "wheelBerry": true,
+   "wheelGold": true,
+   "wheelMint": true,
+   "wheelOak": true
+  }
+ },
+ "stats": {
+  "autoSpins": 95,
+  "bestGambleRun": 0,
+  "bestLuck": 30,
+  "bestStreak": 2,
+  "biggestBet": 1,
+  "biggestWin": "988.77",
+  "capsulesOpened": 37,
+  "coinsEarned": "2028219.29",
+  "coinsSpent": "375.12",
+  "coinsWon": "6674.27",
+  "deliveries": 0,
+  "deliveryCoins": "0",
+  "freeSpinCoins": "0",
+  "freeSpinTriggers": 0,
+  "freeSpins": 0,
+  "gambleLosses": 0,
+  "gambleWins": 0,
+  "goldenJackpots": 0,
+  "grandJackpots": 0,
+  "jackpotsWon": 0,
+  "machinesBought": 0,
+  "manualSpins": 0,
+  "mostLinesWon": 1,
+  "offlineCoins": "1545.02",
+  "playTime": 1199.9999999992374,
+  "spins": 95,
+  "suitWins": 0,
+  "symbolsUnlocked": 1,
+  "tokensEarned": "29",
+  "upgradesBought": 19,
+  "wildWins": 0,
+  "wins": 20
+ },
+ "tokens": "17",
+ "tree": {
+  "bigBackpack": 1,
+  "carrotPatch": 1,
+  "familyFortune": 3,
+  "familyPride": 1,
+  "jackpotDance": 1,
+  "luckyWhiskers": 1,
+  "quickPaws": 1,
+  "selfStarter": 1,
+  "speedyScooter": 1,
+  "warmUpLaps": 1
+ },
+ "upgrades": {
+  "cheeks": 9,
+  "clover": 1,
+  "wheel": 1
+ }
+}

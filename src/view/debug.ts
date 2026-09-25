@@ -4,6 +4,8 @@
 // object from main.ts for time speed.
 
 import { formatCoins } from './dom.ts';
+import { money, divide } from '../logic/money.ts';
+import type { Money } from '../logic/money.ts';
 import type { Game } from '../logic/game.ts';
 
 const SPEEDS = [1, 2, 5, 10, 50];
@@ -105,11 +107,11 @@ export function createDebugPanel(
   // Every coin in or out from playing (spin costs, payouts, deliveries) is logged
   // with its game time. Upgrade purchases and debug coins are left out on purpose:
   // we want the rate the machine is actually producing.
-  const log: { t: number; amount: number }[] = [];
+  const log: { t: number; amount: Money }[] = [];
   let logStart = game.state.stats.playTime;
   const now = () => game.state.stats.playTime;
-  game.on('spinStarted', (e) => log.push({ t: now(), amount: -e.cost }));
-  game.on('spinResolved', (e) => { if (e.payout > 0) log.push({ t: now(), amount: e.payout }); });
+  game.on('spinStarted', (e) => log.push({ t: now(), amount: e.cost.neg() }));
+  game.on('spinResolved', (e) => { if (e.payout.gt(0)) log.push({ t: now(), amount: e.payout }); });
   game.on('deliveryFinished', (e) => log.push({ t: now(), amount: e.reward }));
   game.on('jackpotWon', (e) => log.push({ t: now(), amount: e.amount }));
   game.on('stateLoaded', () => { log.length = 0; logStart = now(); });
@@ -118,8 +120,8 @@ export function createDebugPanel(
     const t = now();
     while (log.length && log[0].t < t - WINDOW) log.shift();
     const span = Math.min(WINDOW, t - logStart);
-    if (span <= 0) return 0;
-    return log.reduce((sum, x) => sum + x.amount, 0) / span;
+    if (span <= 0) return money(0);
+    return divide(log.reduce((sum, x) => sum.add(x.amount), money(0)), span);
   }
 
   // Toggle with backtick (or the Menu's "Toggle debug panel" button)
@@ -160,7 +162,7 @@ export function createDebugPanel(
     const free = game.getFreeSpins();
     statsEl.textContent = [
       `Machine        ${md.name} · ${e.reels} reels × ${e.rows} row${e.rows === 1 ? '' : 's'} · ${e.lines} line${e.lines === 1 ? '' : 's'} (${game.state.machines.length} owned)`,
-      `EV / spin      ${e.ev.toFixed(2)} base (lines ${e.lineEv.toFixed(2)} × streak ${e.streakFactor.toFixed(3)}) × ${e.payoutMultiplier.toFixed(2)} = ${(e.ev * e.payoutMultiplier).toFixed(2)}`,
+      `EV / spin      ${e.ev.toFixed(2)} base (lines ${e.lineEv.toFixed(2)} × streak ${e.streakFactor.toFixed(3)}) × ${e.payoutMultiplier.toFixed(2)} = ${e.payoutMultiplier.mul(e.ev).toFixed(2)}`,
       `Features       ${features}`,
       pots ? `Pots           ${pots}` : null,
       free ? `Free spins     ${free.left} left of ${free.total} · +${formatCoins(free.won)} · bet ×${free.bet}` : null,
@@ -180,7 +182,7 @@ export function createDebugPanel(
       `Play time      ${minutes}m ${seconds}s (game time, all lives)`,
       `Family         gen ${game.state.generation} (${game.getPupName()}) · this life ${Math.floor(game.state.run.playTime / 60)}m, +${formatCoins(game.state.run.coinsEarned)}`,
       `Seeds          ${game.state.seeds} to spend · ${game.state.seedsEarned} ever earned · ${game.getPendingSeeds()} pending`,
-      `Heirloom bonus +${(game.getHeirloomBonus() * 100).toFixed(0)}% payouts · lifetime earned ${formatCoins(s.coinsEarned)}`,
+      `Heirloom bonus +${game.getHeirloomBonus().mul(100).toFixed(0)}% payouts · lifetime earned ${formatCoins(s.coinsEarned)}`,
       `Tokens         ${game.state.tokens} (${s.tokensEarned} earned) · stickers ${Object.keys(game.state.diary).length}/${(game.data.diary || []).length}`,
       `Capsules       ${s.capsulesOpened} opened · ${Object.keys(game.state.skins.owned).length} skins · pity in ${game.getPityRemaining()} · jackpots ${s.goldenJackpots}`,
       `Seed           ${game.rng.seed}`,

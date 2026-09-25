@@ -8,11 +8,18 @@ import {
   evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol,
   scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation,
 } from '../../src/logic/machine.ts';
-import { createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS } from '../../src/logic/game.ts';
+import { createGame, costAtLevel, SAVE_VERSION, SUITS } from '../../src/logic/game.ts';
+import { money, roundMoney as roundBig } from '../../src/logic/money.ts';
 
 const data = JSON.parse(readFileSync(new URL('../../data.json', import.meta.url), 'utf8'));
 
 const near = (a, b, tol) => Math.abs(a - b) <= tol;
+// Money (coins, seeds, tokens) is a big number since migration step 3.7 (money.ts).
+// num(x) is its plain number, so a check can compare it with === or add it up.
+// (Exact for every amount the tests use: they're far below 9e15.)
+const num = (x) => (typeof x === 'number' ? x : x.toNumber());
+// Round to cents like the game does, as a plain number.
+const roundMoney = (x) => num(roundBig(x));
 // Compares two JSON-like values, ignoring the order of object keys.
 function deepEqual(a, b) {
   if (a === b) return true;
@@ -131,5 +138,5 @@ function gameWithWholeTree(seed = 1) {
 }
 
 export {
-  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
 };

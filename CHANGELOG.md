@@ -10,7 +10,8 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ### Changed
 
-- Very big numbers, from a quadrillion up, are now written like **1.23e15** (that's 1.23 × 10¹⁵), instead of piling up as 1,000T and beyond.
+- **No more upper limit.** Coins, Heirloom Seeds and Hamster Tokens can now grow far past 1.8e308, where they used to turn into "Infinity". Your save carries over as it is.
+- Very big numbers, from a quadrillion up, are now written like **1.23e15** (that's 1.23 × 10¹⁵), instead of piling up as 1,000T and beyond. That goes for coins, Heirloom Seeds and Hamster Tokens.
 
 ## [0.1.0] - 2026-09-25
 
