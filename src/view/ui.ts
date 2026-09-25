@@ -84,14 +84,14 @@ const SETTING_ROWS: Record<string, [keyof Settings, [unknown, string][]]> = {
 export function createUI(
   game: Game,
   { onReset, onToggleDebug, sound, settings, onSettingsChange, backup }:
-    { onReset: () => void; onToggleDebug: () => void; sound: Sound; settings: Settings; onSettingsChange: () => void; backup: BackupActions },
+    { onReset: () => void; onToggleDebug: (() => void) | null; sound: Sound; settings: Settings; onSettingsChange: () => void; backup: BackupActions },
 ) {
   // The element with this id (every id used here is in index.html).
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
     coinPill: $('coin-pill'), coins: $('coin-count'), coinRate: $('coin-rate'),
     seedPill: $('seed-pill'), seedCount: $('seed-count'),
-    menuBtn: $('menu-btn'), menu: $<HTMLDialogElement>('menu'), debugBtn: $('debug-btn'), resetBtn: $('reset-btn'),
+    menuBtn: $('menu-btn'), menu: $<HTMLDialogElement>('menu'), debugBtn: $('debug-btn'), debugKey: $('debug-key'), resetBtn: $('reset-btn'),
     stage: $('stage'), wall: $('wall'), rig: document.querySelector<HTMLElement>('.rig')!, machineTags: $('machine-tags'),
     bubble: $('bubble'), spokes: $('spokes'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
     machine: $('machine'), machineName: $('machine-name'), reels: $('reels'), winLayer: $('win-layer'),
@@ -725,9 +725,12 @@ export function createUI(
     buildStats();
     el.stats.showModal();
   });
+  // No debug panel in this game (a built game without ?debug): no button, no key hint.
+  el.debugBtn.classList.toggle('hidden', !onToggleDebug);
+  el.debugKey.classList.toggle('hidden', !onToggleDebug);
   el.debugBtn.addEventListener('click', () => {
     el.menu.close();
-    onToggleDebug();
+    if (onToggleDebug) onToggleDebug();
   });
   // Reset asks for a second tap within 3 s instead of a browser pop-up.
   el.resetBtn.addEventListener('click', () => {

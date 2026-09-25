@@ -10,6 +10,15 @@
 // Vite bundles data.json into the game's code, so there's no separate file to
 // load: it works the same on every platform (and even offline).
 import bundledData from '../data.json';
+// The two fonts come with the game (the Fontsource packages; both fonts are OFL,
+// so that's allowed), so it looks the same offline, on itch.io, and later in the
+// desktop and phone apps. Pixelify Sans (pixel words) only at weight 500, Nunito
+// (numbers and easy-to-read text) at the four weights style.css uses.
+import '@fontsource/pixelify-sans/500.css';
+import '@fontsource/nunito/600.css';
+import '@fontsource/nunito/700.css';
+import '@fontsource/nunito/800.css';
+import '@fontsource/nunito/900.css';
 import { createRng } from './logic/rng.ts';
 import { createGame } from './logic/game.ts';
 import { createWebPlatform } from './platform/web.ts';
@@ -68,11 +77,17 @@ function boot(platform: Platform) {
   const sound = createSound(settings);
   applyTheme(); // the pixel frames for the cardboard/paper look (reads the CSS colour tokens)
 
-  const debug = createDebugPanel(game, {
-    clock,
-    reloadData: import.meta.env.DEV ? async () => game.setData(await fetchData()) : null,
-    saveNow: autosave.save,
-  });
+  // The debug panel: always there while developing (npm run dev). In a built game
+  // (the public site) only with ?debug in the address, e.g. …/hamster_slots/?debug,
+  // so players don't stumble on it but it's still there for testing.
+  const debugOn = import.meta.env.DEV || new URLSearchParams(location.search).has('debug');
+  const debug = debugOn
+    ? createDebugPanel(game, {
+      clock,
+      reloadData: import.meta.env.DEV ? async () => game.setData(await fetchData()) : null,
+      saveNow: autosave.save,
+    })
+    : null;
 
   const ui = createUI(game, {
     sound,
@@ -82,7 +97,7 @@ function boot(platform: Platform) {
       clearSave(platform);
       location.reload();
     },
-    onToggleDebug: debug.toggle,
+    onToggleDebug: debug ? debug.toggle : null, // null: the Menu hides its debug button
     onSettingsChange() {
       settings.muted = sound.muted;
       settings.volume = sound.volume;
@@ -114,7 +129,7 @@ function boot(platform: Platform) {
     last = nowMs;
     game.update(realDt * clock.timeScale);
     ui.render();
-    debug.render();
+    debug?.render();
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

@@ -712,7 +712,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     return true;
   }
 
-  // Pay a finished spin. Every active payline is scored on its own (machine.js
+  // Pay a finished spin. Every active payline is scored on its own (machine.ts
   // evaluateGrid) and the wins add up. Each line's payout gets:
   //   × the payout multiplier × the bet
   //   × Jackpot Dance on a line where EVERY reel matched

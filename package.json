@@ -1,6 +1,6 @@
 {
   "name": "hamster-slots",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "A cute pixel-art idle slot machine powered by a hamster on a wheel.",
   "type": "module",
@@ -20,6 +20,8 @@
     "vitest": "^5.0.2"
   },
   "dependencies": {
+    "@fontsource/nunito": "^5.3.0",
+    "@fontsource/pixelify-sans": "^5.3.0",
     "break_eternity.js": "^2.1.3"
   }
 }

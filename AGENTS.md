@@ -15,12 +15,12 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 
 > **Keep this block accurate.** Update it in the same commit as any change it describes.
 
-- **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 8 (game.ts) and the data is `schemaVersion` 7 (data.json).
-- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. 3.3 (Vitest + the golden run) is done. 3.4 (TypeScript for the game logic) is done. 3.5 (TypeScript for the view) is done. 3.6 (the platform layer) is done. 3.7 (break_eternity.js: all money is a big number, save v8) is done. **3.8 (save backup) is done and waiting for the user's OK:** Menu → Save backup gives the save as a one-line code to copy, and loads a pasted one. Next is 3.9 (bundled fonts, the debug-panel rule, cleanup, release 0.2.0). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
-- **The code today:** everything in `src/` (logic, view, platform, boot) is **TypeScript** (strict); the tests and tools are still JavaScript (typing them needs `@types/node`, a new dependency: ask first). Vite runs and builds it (`npm run dev`, `npm run build`, which type-checks first). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
+- **Version:** **0.2.0** (CHANGELOG.md) = milestones 1–7 on the new web foundation, plus the save backup and big numbers (0.1.0 was the plain-JS prototype). These are separate numbers: the save format is `SAVE_VERSION` 8 (game.ts) and the data is `schemaVersion` 7 (data.json).
+- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is complete** (PORTING_NOTES → Web migration, D110–D117): npm + Vite, the layer folders, Vitest + the golden run, TypeScript for all of `src/`, the platform layer, break_eternity.js (save v8), the save backup, bundled fonts, the debug-panel rule. **3.9 (fonts, debug rule, cleanup, release 0.2.0) is done and waiting for the user's OK**; then it's merged into `main` and tagged `v0.2.0`. **Next is Step 4:** the user creates the GitHub repo (owner `NXT549`) and sets Pages → Source = GitHub Actions; then a workflow tests, builds and deploys to GitHub Pages on every push to `main`.
+- **The code today:** everything in `src/` (logic, view, platform, boot) is **TypeScript** (strict), and the stack below is all in place. The tests and tools are JavaScript (typing them needs `@types/node`, a new dependency: ask first). Vite runs and builds it (`npm run dev`, `npm run build`, which type-checks first). Git: releases are tagged on `main` (`v0.1.0`; `v0.2.0` when 3.9 is merged); the migration was done on the `web-migration` branch.
 - **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). Friends can join that playtest from the Pages link once it's deployed. After that come M8 The Big Cage → M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M8+ early. Known issue for M8: from generation ~9, lives shrink to 3–10 min (D102).
 - **Tests now:** `npm test` (Vitest) runs 1,231 tests in about 11 s: the logic checks (693: M7's 687 + 6 for save v8), 383 art checks, the golden run (33), the save fixtures (13), the platform layer (27), money (57) and save codes (25).
-- **Last verified (M7):** the logic checks 687/687 and the art checks all OK (then `node tools/test_logic.mjs` / `test_art.mjs`), the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
+- **Last verified (0.2.0, 2026-09-26):** all tests; the golden run unchanged since 0.1.0 (the game plays exactly the same, to the cent); the simulator's and `npm run economy`'s output identical to 0.1.0; the built game in Chromium (fonts from the build, the debug rule). M7's own checks: PORTING_NOTES → Playtest notes, 2026-09-25.
 - **Not yet verified:** how the M7 sounds *sound* (tick, card, luck, unlock, softer auto clunks); the label on a natural jackpot-wheel trigger; the look in Firefox and Safari.
 
 ## Project docs
@@ -52,9 +52,9 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Platform-specific features (saving, storage, achievements) go through a small platform layer**, so the Steam and mobile versions can swap in their own implementations later (PORTING_NOTES → The platform layer). It's `src/platform/`: the `Platform` interface (`platform.ts`: storage, lifecycle, `now()`, achievements) and its web version (`web.ts`), which `main.ts` passes to `boot()`. `save.ts` and `autosave.ts` only use the interface, so they work on any platform. **Only `web.ts` touches `localStorage` and the page's hide/close events, and only `platform.now()` reads the real-world clock** (for offline earnings). A new platform = one more file like `web.ts`.
 - **Use break_eternity.js for all currency and large numbers.** Every amount of money is a `Money` (`src/logic/money.ts`, D115): do maths with its methods (`a.add(b)`, `a.gte(b)`, `a.mul(x)`), and divide, raise to a power or round to cents with money.ts's `divide`, `power` and `roundMoney`, which give plain numbers' exact answers (Decimal's own `div`/`pow` drift by a cent, and the golden run would catch it). `+ - * < >` don't work on a Money, and TypeScript doesn't flag `<`/`>` between two of them, or a Money used as true/false (always true, even 0): watch for those. Odds, weights, timers, levels and counts stay plain numbers.
 - **Rule 2: all balance numbers (costs, payouts, rebirth formulas, slot odds) live in data files, not hardcoded.** Today that's `data.json`: symbols, weights, payouts, spin cost and duration, delivery, upgrade costs, growth rates, effect values. No magic numbers in code. Data files stay plain JSON (no comments, no trailing commas), because the game, the tests and the simulator all read them. They hold **no art or colours**.
-- **Rule 5: the stack and its dependencies.** TypeScript + Vite; break_eternity.js at runtime; Vitest for tests. No UI framework. Ask the user before adding any other dependency.
+- **Rule 5: the stack and its dependencies.** TypeScript + Vite; break_eternity.js at runtime; Vitest for tests; the two fonts from Fontsource (`@fontsource/pixelify-sans`, `@fontsource/nunito`: the user's OK, 2026-09-26). No UI framework. Ask the user before adding any other dependency.
 - **Rule 11: art lives in the view.** Sprites are text grids in `src/view/art.ts`. Colours, fonts and sizes are theme tokens in `src/view/style.css` `:root`; `src/view/theme.ts` repaints the UI frame sprites in those token colours (so button colours still live in `:root`). What each skin looks like is in `src/view/skins.ts` (fur = palette colours, the rest = token overrides set on the stage); data.json only lists skin ids/names/rarities. Numbers always use `--font-num` (clean font). The pixel font is always weight 500 (in bold its C looks like an O). Highlights go *behind* symbols, never on top (a tint once made grey seeds look golden). Every framed element sets its own `--frame`/`--fw` (custom properties inherit: a paper tile inside the cardboard tray would otherwise turn to cardboard).
-- **Until migrated:** all of `src/` is TypeScript, and the platform layer is built (the web version only). Vite runs and builds it all, and data.json is bundled into the build. Money is break_eternity.js (3.7), and the save backup is built (3.8). Still to come: bundled fonts and the debug-panel rule (3.9). The files are already in their layer folders (File map below). Only migrate through the approved step-by-step plan.
+- **Where things are:** the files live in their layer folders (File map below). data.json is bundled into the build, and so are the fonts.
 
 ## Saves
 
@@ -93,7 +93,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
   - `tests/money.test.js`: big numbers (`src/logic/money.ts`): the same answers as plain numbers for everyday amounts (the cent-exact promise), big numbers past 1.8e308, reading money from a save, and how `formatCoins` writes it.
   - `tests/savecode.test.js`: save codes: made, checked (every problem a pasted code can have), loaded (stored straight away, no offline pay), old v7 codes through the migrations, UTF-8.
   - `tests/platform.test.js`: the platform layer. Saving and loading, broken saves, full or blocked storage, settings, Reset keeping the settings, autosave and the pay for time away, all on the pretend platform (`src/platform/memory.ts`); and the web version on a fake browser.
-- **Until migrated:** the tests are still JavaScript (`.test.js`); they become TypeScript with the code.
+- **The tests and tools are JavaScript** (`.test.js`, `.mjs`): typing them would need `@types/node`, a new dependency (ask first).
 
 ## Git and releases
 
@@ -103,7 +103,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Versioning:** patch (0.1.1) for fixes, minor (0.2.0) for new features/content, major (1.0.0) for the full public release.
 - **Every player-facing change gets a CHANGELOG.md entry** under `[Unreleased]`, written in plain language for players. A release moves those entries under the new version and its date (and sets the same version in `package.json` once that file exists).
 - **Commit identity** (set in this repo's own git config): name `nxt`, email `94941422+NXT549@users.noreply.github.com` (GitHub's private address, so no personal email is published). Claude's commits add a `Co-Authored-By` line.
-- **Until migrated:** there's no remote and no deploy yet (Step 4). The migration's steps are committed on `web-migration` and merged into `main` after the user's OK.
+- **Not yet:** there's no remote and no deploy (Step 4). Until then, work is committed on a branch (`web-migration` for the migration) and merged into `main` after the user's OK. A release is tagged on `main` (`v0.2.0`).
 
 ## When unsure
 
@@ -114,7 +114,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Rule 7: comment for a learner.** The user is learning. Add short comments that explain *why*, at key points. Don't comment every line.
 - **Rule 9: prototype art.** Pixel sprites in `src/view/art.ts` follow the style guide at the top of that file (24/16/12 px, colour ramps, matching outlines, whole-number scales; 12×12 UI frames are 9-slice and must keep their edges uniform). The palette's letters are all used: new colours go on free digits/punctuation (the purple ramp uses `8 9 0 +`); M7's sprites (Wood Shaving, clover, horseshoe, seed packet, card back, four suits) reuse existing ramps. The cage itself (bars, base, tubes, machines, the WIN meter, the gamble card) is CSS. Particles (`src/view/fx.ts`) are whole-pixel squares in token colours and must stay off with Motion "Less". Spend effort on feel and clarity, not detail.
 
-## How to run (the code is still plain JS; the migration updates this as it goes)
+## How to run
 
 - **Play:** double-click **`play.bat`**. It checks the tools are installed (`npm install`; the first time downloads them into `node_modules/`), then starts **Vite** (`npm run dev`) in its own window on `http://localhost:8765/` and opens the browser. Port 8765 is where the game has always run, so the player's save is still there (a browser keeps one save per address + port). Close the server window to stop. (Opening `index.html` directly shows a "use play.bat" message, because browsers won't run JS modules from `file://`.)
 - **npm scripts** (from this folder): `npm run dev` (the same as play.bat, without opening a browser), `npm run typecheck` (TypeScript checks the code, strict), `npm run build` (type-checks, then builds the players' version → `dist/`, relative paths), `npm run preview` (serves `dist/` on port 4173 to try the build), `npm test` (Vitest), `npm run test:watch`, `npm run economy`, `npm run sim` (the simulator).
@@ -122,8 +122,8 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Tests:** `npm test` runs every test once (about 10 s); `npm run test:watch` re-runs them as you edit; `npx vitest run tests/logic/family.test.js` runs one file. A failing check shows its name and details.
 - **Economy tables:** `npm run economy` prints EV, RTP and hit rate of every machine setup, feature odds and more, for DESIGN.md's tables after a balance change.
 - **Balance simulator:** `node tools/sim.mjs` (idle player, 5 seeds, 7 lives; about 20 s). Options: `--player active`, `--lives 12`, `--seeds 3`, `--minutes 120` (the longest a life may last), `--retire 0.5`, `--first-minutes 60`, `--bankroll 40`, `--data other.json` (try a variant without touching data.json; relative or absolute path), `--verbose` (every purchase, and every 10 minutes what the bot is saving up for), `--help`. It plays the real game logic and prints, per life: length, seeds, coins earned, time to each milestone (first buy, Family/Capsules tab, Wheel 1, each symbol unlock on Old Clunky, Third Reel, Wheel maxed, each machine, bet ×2/×10), income snapshots, Luck and hit rate at 10/30/60 min, and feature rates. It buys by "time to afford + time to pay back" (D100).
-- **Debug panel:** press **`` ` ``** (backtick) in the game, or Menu → Toggle debug panel.
-- **Fonts** load from Google Fonts (Pixelify Sans + Nunito). Offline, the browser uses system fonts and everything still works.
+- **Debug panel:** press **`` ` ``** (backtick) in the game, or Menu → Toggle debug panel. Always there with `npm run dev` (and play.bat); in a built game (`npm run preview`, the public site) only with **`?debug`** in the address, e.g. `http://localhost:8768/?debug`. Without it there's no panel, no Menu button and no key.
+- **Fonts** come with the game: `main.ts` imports Pixelify Sans 500 and Nunito 600–900 from the Fontsource packages, and the build copies the font files into `dist/assets/` (a browser only downloads the ones it needs, ~75 KB). Nothing loads from the internet, so it works offline.
 - **Claude Code preview:** `hamster-slots` (Vite dev on port **8766**) is defined in `.claude/launch.json` in **this** folder (for sessions started here) and in the **parent** folder (sessions started there). This folder also has `hamster-slots-alt` (port **8767**), for when another session is already using 8766, and `hamster-slots-build` (`npm run preview` of `dist/` on port **8768**; run `npm run build` first). Different port = different browser storage, so test saves never touch the player's save.
 - **Screenshots at high DPI:** the preview's screenshot can crop to the top-left of the page when the display is scaled (e.g. 150%). Shrinking the page for an overview works without changing the layout: `document.querySelector('.app').style.cssText = 'transform: scale(0.55); transform-origin: 0 0; margin: 0'` (remove it afterwards).
 - **Background tab?** Browsers pause animation frames when the page isn't visible (this includes a *hidden* Claude Code preview pane: the game then stops). `hamster.ui.render()` in the console draws one frame by hand; to keep it running, drive it with `setInterval(() => { hamster.game.update(0.05 * hamster.clock.timeScale); hamster.ui.render(); }, 50)`.
@@ -156,7 +156,7 @@ hamster_slots/
 │                         luck + unlockSymbol), retirement + familyTree, tokens, capsules, skins, diary
 ├── index.html         ← page skeleton (HUD, cage stage + bet box + card gamble panel + pots + WIN meter + clover
 │                         badge, tray tabs and sub-tabs, menu + settings, save backup, the particle canvas) + file:// warning
-├── package.json       ← npm: the version, scripts (dev, typecheck, build, preview, test, economy, sim) and packages (Vite, Vitest, TypeScript; break_eternity.js in the game)
+├── package.json       ← npm: the version, scripts (dev, typecheck, build, preview, test, economy, sim) and packages (Vite, Vitest, TypeScript; in the game: break_eternity.js and the two Fontsource fonts)
 ├── tsconfig.json      ← TypeScript settings (strict; .ts imports; only erasable syntax, so Node can run it)
 ├── tsconfig.logic.json ← src/logic checked with no browser types (rule 1)
 ├── package-lock.json  ← the exact tool versions npm installed (committed, so every install matches)
@@ -182,7 +182,7 @@ hamster_slots/
 │   ├── golden.mjs     ← records the golden run (only for approved gameplay changes: --confirm) + save fixtures (--fixtures)
 │   └── sprites.html   ← sprite gallery (dev page): every sprite in src/view/art.ts, big
 └── src/
-    ├── main.ts        ← BOOT: boot(createWebPlatform()): data.json (bundled; hot-applied in dev) → game → load save →
+    ├── main.ts        ← BOOT: boot(createWebPlatform()): the fonts, data.json (bundled; hot-applied in dev) → game → load save →
     │                    settings, theme, sound, debug + UI → offline earnings → frame loop + autosave
     ├── logic/         ← LOGIC: no DOM, no clock, runs headless in Node (rule 1)
     │   ├── types.ts   ← the shapes of data.json (GameData), the state/save (GameState) and every event (GameEvents)
@@ -236,7 +236,7 @@ hamster_slots/
         │                welcome-back + stats dialogs
         ├── capsules.ts ← the Capsules tab (sub-tabs): machine card + reveal, Wardrobe, Hamster Diary
         ├── backup.ts  ← the Save backup dialog (Menu): your code + Copy, paste a code (checked as you paste), two-tap Load
-        └── debug.ts   ← debug panel (stats incl. Luck and feature odds, coins, free spins, jackpot wheel, offer
+        └── debug.ts   ← debug panel (dev, or ?debug in a built game): stats incl. Luck and feature odds, coins, free spins, jackpot wheel, offer
                          a gamble, time speed, reload data in dev)
 ```
 

@@ -232,7 +232,7 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
     ctx.globalAlpha = 1;
   }
 
-  // Called every frame by ui.js with real seconds.
+  // Called every frame by ui.ts with real seconds.
   function frame(dt: number): void {
     if (lessMotion() && parts.length) parts.length = 0;
     update(Math.min(dt, 0.05));

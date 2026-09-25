@@ -42,7 +42,7 @@
   --surface: #fffaf1;         /* (older name for paper) */
   --surface-2: #f6ead6;
   --line: #e7d5bb;
-  /* actions (theme.js paints a pixel button frame for each) */
+  /* actions (theme.ts paints a pixel button frame for each) */
   --primary: #ff9466;       --primary-dark: #dd6d3e;   /* spin */
   --soft: #93cfe8;          --soft-dark: #5ea6c8;      /* deliver, switch */
   --buy: #82d1b1;           --buy-dark: #53aa88;       /* buy */
@@ -89,7 +89,7 @@
   --outline: 3px;
   --outline-thin: 2px;
   --outline-ink: #57402f;
-  --cell: 72px; /* reel cell height; must match CELL in src/view/reels.js */
+  --cell: 72px; /* reel cell height; must match CELL in src/view/reels.ts */
   /* A notched "pixel" corner for small flat things (bars, strips, chips) */
   --notch: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px),
     calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
@@ -123,7 +123,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 
 /* ── Pixel frames ───────────────────────────────────────
    These elements get a crisp pixel-art border: a 12×12 frame from src/view/art.ts,
-   sliced into corners + edges + middle (see theme.js). --frame says which frame,
+   sliced into corners + edges + middle (see theme.ts). --frame says which frame,
    --fw how wide the border is: 8px = the frame drawn at 2×, 12px = 3×.
    Whole-number scales keep the pixels square.
    Every framed element sets its own --frame and --fw here, because custom
@@ -213,7 +213,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
     linear-gradient(color-mix(in srgb, var(--floor) 88%, white), var(--floor) 40%, color-mix(in srgb, var(--floor) 88%, black));
 }
 
-/* width: fit-content + side padding (room for the lever) lets ui.js measure the rig
+/* width: fit-content + side padding (room for the lever) lets ui.ts measure the rig
    and shrink it with CSS zoom until it fits the stage (phones, 4 reels). */
 .rig {
   position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: center;
@@ -246,7 +246,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
 }
 
-/* The tube from the wheel to the machine: seeds roll along it (ui.js moves the stripes) */
+/* The tube from the wheel to the machine: seeds roll along it (ui.ts moves the stripes) */
 .belt {
   position: relative; width: 44px; height: 18px; margin: 0 -6px 116px; flex: none; z-index: 1;
   border-radius: 9px; border: var(--outline-thin) solid var(--tube-edge);
@@ -575,7 +575,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .float-text.big { font-size: 46px; color: var(--gold); }
 @keyframes float-up { to { transform: translate(-50%, -140%); opacity: 0; } }
 
-/* Win celebrations (see WIN_FX in ui.js) */
+/* Win celebrations (see WIN_FX in ui.ts) */
 .win-banner {
   position: absolute; left: 50%; top: 18%; transform: translate(-50%, -50%);
   font-family: var(--font-display); font-weight: 500; font-size: 30px; white-space: nowrap;
@@ -603,7 +603,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   60% { transform: translate(-3px, 1px); } 80% { transform: translate(2px, -1px); }
 }
 
-/* ── Buttons (pixel frames from theme.js) ───────────── */
+/* ── Buttons (pixel frames from theme.ts) ───────────── */
 .btn {
   --frame: var(--frame-btn-card);
   font-family: var(--font-display); font-weight: 500; font-size: 17px; color: var(--ink);
@@ -687,7 +687,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   background: var(--primary); box-shadow: 0 0 0 2px var(--paper); clip-path: var(--notch);
 }
 
-/* Sub-tabs: a row of small paper labels inside a tab (dom.js createSubTabs) */
+/* Sub-tabs: a row of small paper labels inside a tab (dom.ts createSubTabs) */
 .subtab-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 2px 10px; }
 .subtabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .subtab {
@@ -1077,7 +1077,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   .brand span { display: none; } /* keep just the hamster icon */
   .coin-count { font-size: 22px; }
   .tag { padding: 0 8px 0 12px; gap: 6px; }
-  /* The rig is zoomed out to fit (ui.js sets --rig-zoom). Divide by it so the
+  /* The rig is zoomed out to fit (ui.ts sets --rig-zoom). Divide by it so the
      bubble text stays readable at its real on-screen size. */
   .bubble { font-size: calc(11.5px / var(--rig-zoom, 1)); line-height: 1.25; }
   .wall { padding: 26px 8px 0; }

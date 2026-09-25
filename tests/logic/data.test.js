@@ -38,7 +38,7 @@ describe('data.json sanity', () => {
     data.machines.every((m) => m.symbols.every((s) => s.weight > 0 || (s.weight === 0 && raised(m, s)))));
   check('every line symbol has a payout table; scatters and blanks have none',
     data.machines.every((m) => m.symbols.every((s) => (s.scatter || s.blank ? !m.payouts[s.id] : !!m.payouts[s.id]))));
-  // The exact hit-rate count in machine.js relies on every 2-match paying something.
+  // The exact hit-rate count in machine.ts relies on every 2-match paying something.
   check('every line symbol\'s 2-match pays (wilds too)', data.machines.every((m) => m.symbols.every((s) => s.scatter || s.blank || m.payouts[s.id]['2'] > 0)));
   check('at most one wild per machine, and no symbol is two kinds at once (wild, scatter, blank)',
     data.machines.every((m) => m.symbols.filter((s) => s.wild).length <= 1 && m.symbols.every((s) => [s.wild, s.scatter, s.blank].filter(Boolean).length <= 1)));

@@ -99,7 +99,7 @@ export function furColors(game: Game): Colors | null {
 export function applyStageSkins(game: Game, stage: HTMLElement): void {
   for (const name of SKIN_TOKENS) stage.style.removeProperty(name);
   for (const cat of game.data.skinCategories || []) {
-    if (cat.id === 'fur') continue; // fur is a sprite palette, drawn by ui.js
+    if (cat.id === 'fur') continue; // fur is a sprite palette, drawn by ui.ts
     const id = game.getEquippedSkin(cat.id);
     const art: SkinArt = (id && SKIN_ART[id]) || {};
     for (const [name, value] of Object.entries(art.tokens || {})) stage.style.setProperty(name, value);

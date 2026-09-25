@@ -276,7 +276,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 
 ## 8. Debug panel (milestone 1)
 
-Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel.
+Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's always there while developing; on the public site only with `?debug` in the address (players don't stumble on it).
 
 - Machine stats: which machine (reels × rows, paylines, how many you own), EV per spin, payout multiplier, spin cost, RTP, auto interval
 - **Expected auto profit/s** vs **measured net coins/s** (last 10 s of game time: payouts + deliveries − spin costs)
@@ -365,7 +365,7 @@ The user picked **"real slog"** for the first life (PORTING_NOTES D93). Measured
 
 The user asked for rebirth + skill tree next, then skins, so the old "Prestige" milestone (7) moved up to 2 and everything after shifted.
 
-**Web-first (2026-09-25):** there's no engine port (PORTING_NOTES D106). Before M8, the code moves to TypeScript + Vite and deploys to GitHub Pages, with **no gameplay changes**; then friends can join the M7 playtest from a link. The platform steps (itch.io, Steam, mobile) are in PORTING_NOTES → The plan.
+**Web-first (2026-09-25):** there's no engine port (PORTING_NOTES D106). Before M8, the code moved to TypeScript + Vite (0.2.0, 2026-09-26) with **no gameplay changes**, and next it deploys to GitHub Pages; then friends can join the M7 playtest from a link. The platform steps (itch.io, Steam, mobile) are in PORTING_NOTES → The plan.
 
 **Re-planned after M6 (2026-09-25):** the user's M6 feedback (the first real playtest) asked for a slower, more pokie-like game, luck you can see, symbols you unlock, a card gamble, a real rebirth decision, machine rebirths, more machines, buffs on hats and skins, a hamster casino with side games, and, late game, your own casino. They picked **"Real pokies" first**. Rows 7–14 below replace the old 7–9 (the old M7 "Wardrobe buffs" is now M10; its Family Tree ideas moved to M8). The order after M7 can be re-picked after each playtest. See PORTING_NOTES D88.
 

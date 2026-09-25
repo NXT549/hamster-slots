@@ -83,7 +83,7 @@ for (const name of SKIN_TOKENS) {
 }
 check('no art for skins that are not in data.json', Object.keys(SKIN_ART).every((id) => data.skins.some((s) => s.id === id)));
 
-// theme.js paints the pixel frames in token colours and mixes them, which needs "#rrggbb".
+// theme.ts paints the pixel frames in token colours and mixes them, which needs "#rrggbb".
 for (const name of THEME_TOKENS) {
   const match = rootBlock.match(new RegExp(`${name}:\\s*([^;]+);`));
   check(`theme token ${name} is a #rrggbb colour in style.css :root`, !!match && /^#[0-9a-f]{6}$/i.test(match[1].trim()), match && match[1]);

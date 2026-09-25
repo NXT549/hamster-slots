@@ -1,4 +1,4 @@
-// machine.test.js — the pure slot-machine rules and their exact maths (machine.js).
+// machine.test.js — the pure slot-machine rules and their exact maths (machine.ts).
 // Moved from tools/test_logic.mjs (migration step 3.3): each section's code is
 // unchanged; check(name, condition) registers one Vitest test per check.
 
@@ -83,7 +83,7 @@ describe('EV formula vs brute force (every possible line, wilds and scatters)', 
     }
   }
 
-  // The fast multi-line hit rate (machine.js gridHitRate) against every possible
+  // The fast multi-line hit rate (machine.ts gridHitRate) against every possible
   // grid of a 2-reel × 3-row toy machine: 6 symbols on 6 cells = 46,656 grids.
   // Only reels 1 and 2 decide a hit, so 2 reels are enough to test it.
   const toyGrid = { ...toy, rows: 3, maxReels: 2, paylines: [[1, 1], [0, 0], [2, 2], [0, 1], [2, 1], [1, 0], [0, 2]] };

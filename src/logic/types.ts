@@ -209,7 +209,7 @@ export interface SymbolRules {
   blanks: Set<string>;
 }
 
-// One line, scored (machine.js evaluate).
+// One line, scored (machine.ts evaluate).
 export interface LineResult {
   symbolId: string | null;
   count: number;
@@ -217,7 +217,7 @@ export interface LineResult {
   usedWild: boolean;
 }
 
-// A winning line of a grid (machine.js evaluateGrid); `line` = its index in the paylines.
+// A winning line of a grid (machine.ts evaluateGrid); `line` = its index in the paylines.
 export interface LineWin extends LineResult {
   line: number;
   fullLine: boolean; // every reel matched

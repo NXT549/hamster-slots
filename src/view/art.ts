@@ -54,7 +54,7 @@ export const PALETTE: Colors = {
   g: '#3f8f45', // leaf shade
   i: '#a8e290', // leaf light
   H: '#2c6634', // leaf outline
-  // hamster (fur skins recolour t/T/c/p; skins.js works out a/A/C from them)
+  // hamster (fur skins recolour t/T/c/p; skins.ts works out a/A/C from them)
   t: '#f2b37b', // fur
   T: '#d98f55', // fur shade
   a: '#fad3a8', // fur light
@@ -99,7 +99,7 @@ export const PALETTE: Colors = {
   1: '#fffaf1', // paper
   2: '#f1e2c9', // paper shade
   3: '#cfae86', // paper outline
-  // … and a button. theme.js repaints 4–7 with each button's own colours.
+  // … and a button. theme.ts repaints 4–7 with each button's own colours.
   4: '#82d1b1', // button
   5: '#53aa88', // button shade (the "lip" under it)
   6: '#b7ead4', // button light
@@ -1335,7 +1335,7 @@ const frameTab = [
   '311111111123',
 ];
 
-// A button with a darker lip underneath. theme.js repaints it for every button colour.
+// A button with a darker lip underneath. theme.ts repaints it for every button colour.
 const frameButton = [
   '..77777777..',
   '.7666666667.',

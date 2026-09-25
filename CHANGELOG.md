@@ -8,6 +8,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-26
+
+Behind the scenes, the game moved to a new foundation (TypeScript and Vite), ready to be played from a link. It plays exactly the same as 0.1.0.
+
 ### Added
 
 - **Save backup** (Menu → Save backup): your whole save as a one-line code to copy and keep somewhere safe. Paste a code back in to load it: to get your hamster back, or to carry on in another browser or on another computer. It tells you what's in a code before you load it.
@@ -16,6 +20,7 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 - **No more upper limit.** Coins, Heirloom Seeds and Hamster Tokens can now grow far past 1.8e308, where they used to turn into "Infinity". Your save carries over as it is.
 - Very big numbers, from a quadrillion up, are now written like **1.23e15** (that's 1.23 × 10¹⁵), instead of piling up as 1,000T and beyond. That goes for coins, Heirloom Seeds and Hamster Tokens.
+- The game's fonts now come with it, so it looks right even without an internet connection.
 
 ## [0.1.0] - 2026-09-25
 

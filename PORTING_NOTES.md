@@ -45,10 +45,10 @@ The save backup (`src/platform/savecode.ts`, 3.8) needed no new service: it only
 ## Platform notes
 
 **Every platform**
-- **Fonts:** today they load from Google Fonts. For offline play, desktop and mobile, bundle the two fonts with the build (both are OFL-licensed, so that's allowed, D22).
+- **Fonts:** bundled with the build since 0.2.0 (Fontsource packages; both fonts are OFL-licensed, so that's allowed, D22, D117). Nothing loads from the internet, so offline, desktop and mobile look the same.
 - **A save belongs to one site or app.** Saves on `localhost`, on GitHub Pages and on itch.io are three separate saves. Export/import is how a player moves one, and it's the backup when a browser clears a site's data.
 - **Big numbers:** break_eternity.js lets currency grow far past 1e308, where plain JS numbers turn into `Infinity`. The save stores them as text so they survive JSON (save v8, step 3.7, D115).
-- **The debug panel** opens in every build today (backtick). Whether public builds keep it, hide it or leave it out is an **open question for the user** (Step 2).
+- **The debug panel:** always there in `npm run dev`; in a built game only with `?debug` in the address (D110 default, built in 3.9, D117). A desktop or mobile build will need its own way in (a launch flag, say) if it's wanted there.
 - **Store rules:** slot machines, bets, the card gamble and the capsule gacha can trigger "simulated gambling" and loot-box ratings, even with no real money. Check each store's current rules before a release (DESIGN §11, "Things to keep in mind for release").
 
 **Web: GitHub Pages**
@@ -92,8 +92,8 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 | 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main (and save.ts, which holds the Settings type the screens need) (D113) | **Done** (the user OK'd it) |
 | 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform (D114) | **Done** (the user said to continue) |
 | 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× (D115) | **Done** (the user OK'd it) |
-| 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations (D116) | **Done**, waiting for the user's OK |
-| 3.9 | Bundled fonts, the debug-panel rule, cleanup, docs; release **0.2.0**; merge into `main` | Next |
+| 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations (D116) | **Done** (the user OK'd it) |
+| 3.9 | Bundled fonts, the debug-panel rule, cleanup, docs; release **0.2.0**; merge into `main` (D117) | **Done**, waiting for the user's OK (then merged and tagged `v0.2.0`) |
 | Step 4 | GitHub Pages: the user creates the repo (`NXT549`) and sets Pages → Source = GitHub Actions; `.github/workflows/deploy.yml` tests, builds and deploys on every push to `main` | |
 
 ## Invariants any rewrite must keep
@@ -464,6 +464,13 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Copy** uses the clipboard; if the browser refuses, or doesn't answer within a second (the Claude Code preview never answers), the code is selected instead with "Selected: now copy it". One tap on the code box selects all of it too.
 - The code logic is platform code (`src/platform/savecode.ts`: it uses `btoa`/`TextEncoder`, which browsers and Node both have) built only on the Platform interface; the dialog is `src/view/backup.ts`; `main.ts` hands the view three actions (make, check, load).
 - **Checked:** 25 tests (tests/savecode.test.js: the format, every problem, codes cut short, UTF-8, loading exactly, stored with no offline pay, full storage, all four old v7 fixtures as codes → exactly their v8 files). In the browser: the dialog, Copy (the fallback here), every message, a v7 code (generation 3) loaded with two taps and the page restarted as it (stored as v8, no welcome-back pay); 375 px wide; no errors.
+
+**D117 — Bundled fonts, the debug-panel rule, release 0.2.0** (step 3.9, the end of the migration).
+- **Fonts:** `@fontsource/pixelify-sans` and `@fontsource/nunito` 5.3.0 (the user's OK, 2026-09-26: rule 5). `main.ts` imports exactly what the Google Fonts link loaded: Pixelify Sans 500, Nunito 600, 700, 800 and 900 (the only weights style.css uses), with the same unicode-range subsets and `font-display: swap`, and the same family names, so style.css didn't change. Vite copies the font files into `dist/assets/` (~1 MB in all, every subset in woff2 and woff), and a browser downloads only the ones a page uses (~75 KB, latin woff2). The Google Fonts link is gone: the game makes no request to anyone else. *Rejected: the variable-font packages* (another family name to change in the theme tokens, for one weight of Pixelify).
+- **The debug panel:** `main.ts` creates it only when `import.meta.env.DEV` (npm run dev, play.bat) or the address has `?debug`; otherwise there's no panel, no key and the Menu hides its "Toggle debug panel" button and the key hint. Its code still ships in the build (small; not worth a separate chunk). `window.hamster` (the console) stays: it's a single-player game.
+- **Cleanup:** the "Until migrated" notes are gone from AGENTS (the stack is in place); comments that still named `.js` files now name the `.ts` ones; index.html's comments too.
+- **Release 0.2.0** (a minor version: a new feature, the save backup): `package.json` 0.2.0, CHANGELOG `[0.2.0] - 2026-09-26`. Tagged `v0.2.0` on `main` when merged.
+- **Checked:** 1,231 tests and the build; in the built game (`npm run preview`): the fonts came from `/assets/` (no request to Google), no debug panel, button or key without `?debug`, all of them with it ("Reload data.json" hidden, as in any build); `npm run dev` still has the panel; no errors.
 
 ---
 

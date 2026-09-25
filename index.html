@@ -4,16 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hamster Slots</title>
-  <!-- Fonts: Pixelify Sans (pixel words) + Nunito (numbers and easy-to-read body text).
-       Offline, the browser falls back to its own fonts and everything still works. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Pixelify+Sans:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="src/view/style.css">
 </head>
 <body>
   <!-- This file is just the page skeleton. The src/ files fill in the reels,
-       machine cards, upgrade tiles, paytable and sprites from data.json and src/view/art.js.
+       machine cards, upgrade tiles, paytable and sprites from data.json and src/view/art.ts.
        The look: the game is the inside of a hamster cage (wire bars, wood-shaving
        bedding, a plastic base), and the UI is cardboard and paper. -->
   <div class="app">
@@ -150,7 +145,7 @@
       </nav>
 
       <!-- Sub-tabs: every tab with several parts gets a row of paper labels
-           (dom.js createSubTabs). A dot means "something here is ready". -->
+           (dom.ts createSubTabs). A dot means "something here is ready". -->
       <div class="tab-panel" id="tab-upgrades">
         <div class="subtab-row">
           <nav class="subtabs" id="upgrades-subtabs">
@@ -267,7 +262,7 @@
   <!-- ── Menu (settings) ── -->
   <dialog class="dialog" id="menu">
     <h2>Menu</h2>
-    <div class="menu-row"><span>Controls</span><span class="note">Space spin · D deliver · <kbd>-</kbd> <kbd>=</kbd> bet · gamble: <kbd>←</kbd> red <kbd>→</kbd> black <kbd>1</kbd>–<kbd>4</kbd> suit <kbd>C</kbd> take win · <kbd>`</kbd> debug</span></div>
+    <div class="menu-row"><span>Controls</span><span class="note">Space spin · D deliver · <kbd>-</kbd> <kbd>=</kbd> bet · gamble: <kbd>←</kbd> red <kbd>→</kbd> black <kbd>1</kbd>–<kbd>4</kbd> suit <kbd>C</kbd> take win<span id="debug-key"> · <kbd>`</kbd> debug</span></span></div>
     <div class="menu-row"><span>Saving</span><span class="note">Automatic, every 10 s</span></div>
     <div class="menu-row"><span>Sound</span>
       <span class="sound-controls">
@@ -275,7 +270,7 @@
         <button class="btn btn-soft btn-small" id="mute-btn">On</button>
       </span>
     </div>
-    <!-- Segmented settings: ui.js fills in the buttons -->
+    <!-- Segmented settings: ui.ts fills in the buttons -->
     <div class="menu-row"><span>Motion <span class="note">(hops, shakes, flying coins)</span></span><span class="seg" id="set-motion"></span></div>
     <div class="menu-row"><span>Reels <span class="note">(spins take the same time)</span></span><span class="seg" id="set-reels"></span></div>
     <div class="menu-row"><span>Numbers</span><span class="seg" id="set-numbers"></span></div>
@@ -319,7 +314,7 @@
   </dialog>
 
   <aside id="debug-panel" class="debug hidden" aria-label="Debug panel"></aside>
-  <!-- Pixel particles (src/view/fx.js): sparkles, confetti, embers. Over the whole page, never clickable. -->
+  <!-- Pixel particles (src/view/fx.ts): sparkles, confetti, embers. Over the whole page, never clickable. -->
   <canvas id="fx" class="fx" aria-hidden="true"></canvas>
   <div id="boot-error" class="boot-error hidden"></div>
 
