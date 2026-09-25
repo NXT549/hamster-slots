@@ -79,7 +79,7 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 | Step | What | Status |
 |---|---|---|
 | 3.0 | Git baseline: `git init`, `.gitignore`, `.gitattributes`; commit today's game + docs on `main`, tag `v0.1.0`; branch `web-migration` | **Done** |
-| 3.1 | npm + Vite, still JavaScript: `package.json` (0.1.0), Vite (`base: './'`); data.json bundled, with live reload of data edits in `npm run dev`; `play.bat` runs Vite on **port 8765** (the same site, so the player's save carries over); `tools/serve.py` removed; preview configs switched to Vite (+ `hamster-slots-build` for `dist/`). Vite 8.3.1 | **Done**, waiting for the user's test |
+| 3.1 | npm + Vite, still JavaScript: `package.json` (0.1.0), Vite (`base: './'`); data.json bundled, with live reload of data edits in `npm run dev`; `play.bat` runs Vite on **port 8765** (the same site, so the player's save carries over); `tools/serve.py` removed; preview configs switched to Vite (+ `hamster-slots-build` for `dist/`). Vite 8.3.1 | **Done** (the user tested play.bat: it opens and the save was kept) |
 | 3.2 | Move files into layers, no code changes (a separate commit keeps git history): `src/logic/`, `src/platform/`, `src/view/`, `src/main.js` | Next |
 | 3.3 | Vitest: all 687 checks as Vitest tests, art tests too, `npm run economy` for DESIGN's tables; the **golden run** (scripted sessions on fixed seeds, recorded from today's code, replayed by a test); real v7 save fixtures | |
 | 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the simulator runs as `.ts` on Node 24 | |
