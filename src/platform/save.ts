@@ -1,11 +1,13 @@
-// save.ts — PLATFORM layer. The ONLY file that touches localStorage.
+// save.ts — PLATFORM layer: the save and the settings, in and out of storage.
 //
-// It just moves text in and out of the browser's storage. What goes IN the
-// save (and how old saves get upgraded) is decided by game.ts
+// It just moves text through the platform's storage (localStorage on the web,
+// see web.ts), so it works the same on every platform. What goes IN the save
+// (and how old saves get upgraded) is decided by game.ts
 // (toSaveData / loadSaveData), so that part is testable without a browser.
 
 import type { Game } from '../logic/game.ts';
 import type { SaveData } from '../logic/types.ts';
+import type { Platform } from './platform.ts';
 
 const SAVE_KEY = 'hamsterSlots.save';
 // Settings (sound, motion, number style …) are the player's preferences, not game
@@ -15,11 +17,11 @@ const SETTINGS_KEY = 'hamsterSlots.settings';
 // Everything is wrapped in try/catch: storage can be full, disabled (private
 // windows), or hold broken text. A failed save or load must never crash the game.
 
-export function saveGame(game: Game): boolean {
+export function saveGame(game: Game, platform: Platform): boolean {
   try {
     const save: SaveData & { savedAt?: number } = game.toSaveData();
-    save.savedAt = Date.now(); // real-world time, so the next visit can pay offline earnings
-    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+    save.savedAt = platform.now(); // real-world time, so the next visit can pay offline earnings
+    platform.storage.set(SAVE_KEY, JSON.stringify(save));
     return true;
   } catch (err) {
     console.warn('Save failed:', err);
@@ -29,9 +31,9 @@ export function saveGame(game: Game): boolean {
 
 // Returns { loaded, savedAt }: whether a save was loaded, and when it was
 // written (milliseconds since 1970, or null if unknown).
-export function loadGame(game: Game): { loaded: boolean; savedAt: number | null } {
+export function loadGame(game: Game, platform: Platform): { loaded: boolean; savedAt: number | null } {
   try {
-    const text = localStorage.getItem(SAVE_KEY);
+    const text = platform.storage.get(SAVE_KEY);
     if (!text) return { loaded: false, savedAt: null };
     const save = JSON.parse(text);
     const loaded = game.loadSaveData(save);
@@ -42,9 +44,9 @@ export function loadGame(game: Game): { loaded: boolean; savedAt: number | null 
   }
 }
 
-export function clearSave(): void {
+export function clearSave(platform: Platform): void {
   try {
-    localStorage.removeItem(SAVE_KEY);
+    platform.storage.remove(SAVE_KEY);
   } catch (err) {
     console.warn('Could not clear save:', err);
   }
@@ -80,9 +82,9 @@ function cleanSubTabs(raw: unknown): Record<string, string> {
 
 const oneOf = <T>(value: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(value as T) ? (value as T) : fallback);
 
-export function loadSettings(): Settings {
+export function loadSettings(platform: Platform): Settings {
   try {
-    const raw = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    const raw = JSON.parse(platform.storage.get(SETTINGS_KEY) || '{}');
     const d = DEFAULT_SETTINGS;
     return {
       muted: typeof raw.muted === 'boolean' ? raw.muted : d.muted,
@@ -98,9 +100,9 @@ export function loadSettings(): Settings {
   }
 }
 
-export function saveSettings(settings: Settings): void {
+export function saveSettings(platform: Platform, settings: Settings): void {
   try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    platform.storage.set(SETTINGS_KEY, JSON.stringify(settings));
   } catch (err) {
     console.warn('Could not save settings:', err);
   }

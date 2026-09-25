@@ -16,10 +16,10 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 > **Keep this block accurate.** Update it in the same commit as any change it describes.
 
 - **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 7 (game.ts) and the data is `schemaVersion` 7 (data.json).
-- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. 3.3 (Vitest + the golden run) is done. 3.4 (TypeScript for the game logic) is done. **3.5 (TypeScript for the view) is done and waiting for the user's OK:** every file in `src/` is TypeScript now. Next is 3.6 (the platform layer). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
+- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. 3.3 (Vitest + the golden run) is done. 3.4 (TypeScript for the game logic) is done. 3.5 (TypeScript for the view) is done. **3.6 (the platform layer) is done and waiting for the user's OK:** storage, the real-world clock and "the player went away" now go through one `Platform` interface. Next is 3.7 (break_eternity.js). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
 - **The code today:** everything in `src/` (logic, view, platform, boot) is **TypeScript** (strict); the tests and tools are still JavaScript (typing them needs `@types/node`, a new dependency: ask first). Vite runs and builds it (`npm run dev`, `npm run build`, which type-checks first). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
 - **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). Friends can join that playtest from the Pages link once it's deployed. After that come M8 The Big Cage → M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M8+ early. Known issue for M8: from generation ~9, lives shrink to 3–10 min (D102).
-- **Tests now:** `npm test` (Vitest) runs 1,108 tests in about 10 s: M7's 687 logic checks and 383 art checks (unchanged, now Vitest tests), the golden run (33) and the save fixtures (5).
+- **Tests now:** `npm test` (Vitest) runs 1,135 tests in about 10 s: M7's 687 logic checks and 383 art checks (unchanged, now Vitest tests), the golden run (33), the save fixtures (5) and the platform layer (27).
 - **Last verified (M7):** the logic checks 687/687 and the art checks all OK (then `node tools/test_logic.mjs` / `test_art.mjs`), the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
 - **Not yet verified:** how the M7 sounds *sound* (tick, card, luck, unlock, softer auto clunks); the label on a natural jackpot-wheel trigger; the look in Firefox and Safari.
 
@@ -49,20 +49,20 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 
 - **TypeScript + Vite.**
 - **Game logic and state live in their own modules with no DOM/UI code.** **Rule 1: logic never touches the DOM.** Logic modules (`src/logic/`: `rng.ts`, `events.ts`, `machine.ts`, `game.ts`) never use `document`, `window`, `localStorage`, `Date`, `performance` or `Math.random`, and they run headless in Node (tests, simulator). `tsconfig.logic.json` checks `src/logic` with no browser types at all, so `document`, `window` or `localStorage` there doesn't even compile. UI code reads `game.state` and listens to events. It never changes state directly: it calls actions (`game.spin()`, `game.buyUpgrade(id)`, …).
-- **Platform-specific features (saving, storage, achievements) go through a small platform layer**, so the Steam and mobile versions can swap in their own implementations later (PORTING_NOTES → The platform layer). Today that layer is `src/platform/save.ts` plus the clock and tab-visibility code in `src/main.ts` (step 3.6 turns them into the real platform layer).
+- **Platform-specific features (saving, storage, achievements) go through a small platform layer**, so the Steam and mobile versions can swap in their own implementations later (PORTING_NOTES → The platform layer). It's `src/platform/`: the `Platform` interface (`platform.ts`: storage, lifecycle, `now()`, achievements) and its web version (`web.ts`), which `main.ts` passes to `boot()`. `save.ts` and `autosave.ts` only use the interface, so they work on any platform. **Only `web.ts` touches `localStorage` and the page's hide/close events, and only `platform.now()` reads the real-world clock** (for offline earnings). A new platform = one more file like `web.ts`.
 - **Use break_eternity.js for all currency and large numbers.**
 - **Rule 2: all balance numbers (costs, payouts, rebirth formulas, slot odds) live in data files, not hardcoded.** Today that's `data.json`: symbols, weights, payouts, spin cost and duration, delivery, upgrade costs, growth rates, effect values. No magic numbers in code. Data files stay plain JSON (no comments, no trailing commas), because the game, the tests and the simulator all read them. They hold **no art or colours**.
 - **Rule 5: the stack and its dependencies.** TypeScript + Vite; break_eternity.js at runtime; Vitest for tests. No UI framework. Ask the user before adding any other dependency.
 - **Rule 11: art lives in the view.** Sprites are text grids in `src/view/art.ts`. Colours, fonts and sizes are theme tokens in `src/view/style.css` `:root`; `src/view/theme.ts` repaints the UI frame sprites in those token colours (so button colours still live in `:root`). What each skin looks like is in `src/view/skins.ts` (fur = palette colours, the rest = token overrides set on the stage); data.json only lists skin ids/names/rarities. Numbers always use `--font-num` (clean font). The pixel font is always weight 500 (in bold its C looks like an O). Highlights go *behind* symbols, never on top (a tint once made grey seeds look golden). Every framed element sets its own `--frame`/`--fw` (custom properties inherit: a paper tile inside the cardboard tray would otherwise turn to cardboard).
-- **Until migrated:** all of `src/` is TypeScript; the platform layer is still just `src/platform/save.ts` plus the clock and tab-visibility code in `src/main.ts` (3.6 makes it a real layer). Vite runs and builds it all, and data.json is bundled into the build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are already in their layer folders (File map below). Only migrate through the approved step-by-step plan.
+- **Until migrated:** all of `src/` is TypeScript, and the platform layer is built (the web version only). Vite runs and builds it all, and data.json is bundled into the build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are already in their layer folders (File map below). Only migrate through the approved step-by-step plan.
 
 ## Saves
 
 - **Save files include a version number** (`saveVersion`; `SAVE_VERSION` in game.ts, 7 today).
 - **Rule 6: the save stores player state only** (never balance values), so a data change applies straight away to an existing save. The save format lives in the logic (`toSaveData` / `loadSaveData` / `migrateSave` in game.ts); the platform layer only moves text. Settings are stored apart from the save, so Reset keeps them.
 - **Any change to the save format needs a migration function, so old saves never break** (bump `SAVE_VERSION`, add a step to `migrateSave`), **plus a test that loads an old-format save and checks it migrates correctly.**
-- **Autosave** (every `autosaveSeconds`, and whenever the page is hidden or closed), **plus export/import of the save as a text string.** *Export/import isn't built yet:* it's planned (DESIGN §7, §17).
-- **Offline progress is calculated when the player returns** (`applyOfflineEarnings(seconds)`, DESIGN §15). The boot code tells the logic how many seconds passed; the logic never reads the clock.
+- **Autosave** (every `autosaveSeconds`, and whenever the page is hidden or closed: `autosave.ts`), **plus export/import of the save as a text string.** *Export/import isn't built yet:* it's planned (DESIGN §7, §17).
+- **Offline progress is calculated when the player returns** (`applyOfflineEarnings(seconds)`, DESIGN §15). The platform layer tells the logic how many seconds passed (`main.ts` for the time since the last visit, `autosave.ts` for a hidden tab); the logic never reads the clock.
 
 ## Adding content and features
 
@@ -90,6 +90,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
   - `tests/art.test.js`: sprites, skins and theme tokens.
   - `tests/golden.test.js`: **the golden run**, the migration's safety net. Scripted sessions (`tests/golden/sessions.js`) play the real logic on fixed seeds and must reproduce `tests/golden/golden.json` exactly: every save, the RNG's position, event counts, coins paid. It was recorded from the plain-JS game. **Never re-record it to make a failing test pass.** Only re-record (`node tools/golden.mjs --confirm`) for an intended, approved gameplay change (a balance change, a new feature), and say so in the commit message.
   - `tests/fixtures.test.js`: real v7 saves (`tests/fixtures/`) must load and save back unchanged. They're the old-format saves that future save migrations are tested against.
+  - `tests/platform.test.js`: the platform layer. Saving and loading, broken saves, full or blocked storage, settings, Reset keeping the settings, autosave and the pay for time away, all on the pretend platform (`src/platform/memory.ts`); and the web version on a fake browser.
 - **Until migrated:** the tests are still JavaScript (`.test.js`); they become TypeScript with the code.
 
 ## Git and releases
@@ -168,15 +169,16 @@ hamster_slots/
 │   ├── golden.test.js ← the golden run: the game must play exactly as recorded
 │   ├── golden/        ← sessions.js (the scripted players) + golden.json (the recording)
 │   ├── fixtures.test.js ← real saves must load and save back unchanged
-│   └── fixtures/      ← real v7 save files (old-format saves for future migrations)
+│   ├── fixtures/      ← real v7 save files (old-format saves for future migrations)
+│   └── platform.test.js ← the platform layer on a pretend platform (full/blocked storage, hide/show/close) + web.ts
 ├── tools/
 │   ├── sim.mjs        ← the balance simulator: a bot plays the real logic (node tools/sim.mjs --help)
 │   ├── economy.mjs    ← prints the economy tables for DESIGN.md (npm run economy)
 │   ├── golden.mjs     ← records the golden run + v7 save fixtures (only for approved gameplay changes: --confirm)
 │   └── sprites.html   ← sprite gallery (dev page): every sprite in src/view/art.ts, big
 └── src/
-    ├── main.ts        ← BOOT: data.json (bundled; hot-applied in dev) → game → load save → settings, theme, sound,
-    │                    debug + UI → offline earnings → frame loop + autosave (+ offline earnings after a hidden tab)
+    ├── main.ts        ← BOOT: boot(createWebPlatform()): data.json (bundled; hot-applied in dev) → game → load save →
+    │                    settings, theme, sound, debug + UI → offline earnings → frame loop + autosave
     ├── logic/         ← LOGIC: no DOM, no clock, runs headless in Node (rule 1)
     │   ├── types.ts   ← the shapes of data.json (GameData), the state/save (GameState) and every event (GameEvents)
     │   ├── rng.ts     ← seedable RNG (mulberry32) + pickWeighted
@@ -191,8 +193,13 @@ hamster_slots/
     │                    queued click, deliveries, auto-spin (+ the rest floor), retirement + Family Tree, effects
     │                    from both lists (effectsOfType), Hamster Tokens + diary, Capsule Machine + skins, 60 Hz
     │                    tick, save format + migrations
-    ├── platform/      ← PLATFORM: talks to the browser for storage (becomes the platform layer in step 3.6)
-    │   └── save.ts    ← the only file using localStorage (the save + the settings, incl. sub-tabs); the Settings type
+    ├── platform/      ← PLATFORM: everything that depends on the device (PORTING_NOTES → The platform layer)
+    │   ├── platform.ts ← the Platform interface: storage (text by name), lifecycle (onHide/onShow/onClose), now(),
+    │   │                achievements
+    │   ├── web.ts     ← the web version: the only file using localStorage and visibilitychange/pagehide
+    │   ├── memory.ts  ← a pretend platform for the tests (fill up or block storage, move the clock, hide/show/close)
+    │   ├── save.ts    ← the save + the settings (incl. sub-tabs) in and out of storage, never crashing; the Settings type
+    │   └── autosave.ts ← saves on a timer and when the player goes away or closes the game; pays for a hidden tab's time
     └── view/          ← VIEW: draws the game and turns clicks and keys into game actions
         ├── style.css  ← the "hamster cage" look; THEME TOKENS in :root (colours, fonts, sizes)
         ├── art.ts     ← pixel sprites as text grids + palette (+ per-draw palette overrides for fur);

@@ -22,7 +22,13 @@ Each platform gets a detailed plan here when its turn comes.
 
 ## The platform layer
 
-*A plan, not built yet.* The game logic never knows which platform it's on (rule 1). Everything platform-specific goes through one small interface, and each platform brings its own implementation. Today that job is done by `src/platform/save.ts` (localStorage) and the clock and tab-visibility code in `src/main.ts`.
+*Built for the web (step 3.6, D114); the other columns are the plan.* The game logic never knows which platform it's on (rule 1). Everything platform-specific goes through one small interface, and each platform brings its own implementation:
+- `src/platform/platform.ts`: the `Platform` interface: **storage**, **lifecycle**, **`now()`** (the clock) and **achievements**.
+- `src/platform/web.ts`: the web version (localStorage, `visibilitychange` + `pagehide`, `Date.now()`, no achievements). `main.ts` calls `boot(createWebPlatform())`: a Steam or mobile build would pass its own platform there instead.
+- `src/platform/save.ts` (the save and the settings) and `autosave.ts` (the timer, save on hide/close, pay for a hidden tab's time) only use the interface, so every platform shares them.
+- `src/platform/memory.ts`: a pretend platform for the tests.
+
+Save backup and app actions aren't in the interface yet: the backup comes in 3.8, and Quit / open-a-link when a platform needs them.
 
 | Service | What the game needs | Web / itch.io | Steam (Electron or Tauri) | Mobile (Capacitor) |
 |---|---|---|---|---|
@@ -83,9 +89,9 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 | 3.2 | Move files into layers, no code changes (a separate commit keeps git history): `src/logic/`, `src/platform/`, `src/view/` (with style.css), `src/main.js`; data.json stays at the top | **Done** (the built files came out byte-for-byte the same; the user tested it) |
 | 3.3 | Vitest: all 687 checks as Vitest tests, art tests too, `npm run economy` for DESIGN's tables; the **golden run** (scripted sessions on fixed seeds, recorded from today's code, replayed by a test); real v7 save fixtures. Vitest 5.0.2; 1,108 tests in ~10 s (D111) | **Done** (the user OK'd it) |
 | 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the tools run the `.ts` logic straight on Node 24. TypeScript 7.0.2 (D112) | **Done** (the user OK'd it) |
-| 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main (and save.ts, which holds the Settings type the screens need) (D113) | **Done**, waiting for the user's OK |
-| 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform | Next |
-| 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× | |
+| 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main (and save.ts, which holds the Settings type the screens need) (D113) | **Done** (the user OK'd it) |
+| 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform (D114) | **Done**, waiting for the user's OK |
+| 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× | Next |
 | 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations | |
 | 3.9 | Bundled fonts, the debug-panel rule, cleanup, docs; release **0.2.0**; merge into `main` | |
 | Step 4 | GitHub Pages: the user creates the repo (`NXT549`) and sets Pages → Source = GitHub Actions; `.github/workflows/deploy.yml` tests, builds and deploys on every push to `main` | |
@@ -420,6 +426,19 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Checked:**
   - 1,108 tests, and the build, byte-identical CSS
   - in the browser: every tab and sub-tab, retiring, planting, a capsule pull and wearing it, the card gamble panel, Space to spin, bets, Menu settings, Stats, welcome back, the debug panel, and 375 px wide (no sideways scroll)
+  - no errors
+
+**D114 — The platform layer: one small interface, synchronous storage** (step 3.6). `src/platform/platform.ts` defines `Platform`: `storage` (`get`/`set`/`remove` text by name), `lifecycle` (`onHide`/`onShow`/`onClose`), `now()` and `achievements.unlock(id)`. `web.ts` is the web version; `main.ts` does `boot(createWebPlatform())`.
+- **Storage is synchronous.** *Rejected: an asynchronous (Promise) storage API*, even though desktop files and Capacitor's storage are asynchronous. The game must be able to save in the instant the page closes, and a synchronous `get` keeps the start-up simple. A platform with slower storage reads everything into memory when it starts (a save is a few KB) and writes in the background.
+- **Storage may throw; `save.ts` catches.** The platform just reports the failure, and the one place that saves decides what a failure means (warn, keep playing). `web.ts` looks `localStorage` up on every call, never at start-up: some browsers throw on merely reading it when site data is blocked, and that must land inside save.ts's try/catch.
+- **The save + settings code (`save.ts`) and autosave (`autosave.ts`) are shared by every platform.** Only the thin platform file differs. The hide/show/close timing moved out of main.ts into autosave.ts, so tests can drive it.
+- **The pretend platform (`memory.ts`) lives in `src/`**, not `tests/`, so TypeScript checks that it really matches the interface (the tests are still JavaScript). Nothing in the game imports it, so it isn't in the build (checked).
+- **Achievements are a no-op, and nothing unlocks one yet.** Which Diary stickers would become Steam achievements is a design question for the user, answered when Steam is planned.
+- **Not changed:** the storage names (`hamsterSlots.save`, `hamsterSlots.settings`), what's saved, when it saves, how the time away is paid. A test pins the names, since changing one would lose every save.
+- **Also:** a few stale `.js` file names in comments (game.ts, types.ts, dom.ts, sessions.js) now say `.ts`.
+- **Checked:**
+  - 1,135 tests (27 new, for the platform layer), and the build. Breaking the code on purpose (paying the time away twice; saving after Reset; "shown" firing on hide; the save's time from `Date.now()` instead of `platform.now()`) failed the tests every time.
+  - in the browser: hiding the tab saved; coming back "10 minutes later" paid exactly the logic's figure; closing the page saved; a reload kept the progress to the cent; a setting saved; Reset wiped the game, didn't write the old save back, and kept the settings
   - no errors
 
 ---

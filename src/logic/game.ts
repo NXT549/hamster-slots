@@ -1449,7 +1449,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   // reduced rate (offline.efficiency) and for at most offline.maxSeconds.
   // It's worked out from the average auto-spin profit per second instead of
   // simulating every spin, so it's instant and doesn't touch the RNG.
-  // main.js says how long the player was away: this file never reads the clock.
+  // The boot code (main.ts, autosave.ts) says how long the player was away: this file never reads the clock.
   // No Wheel Training = no auto-spin = nothing earned while away.
   function getOfflineEarnings(seconds: number): { seconds: number; coins: number } {
     const o = data.offline;
@@ -1873,7 +1873,7 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
     if (!md || kept.some((k) => k.typeId === md.id)) continue; // unknown type, or a duplicate
     const clean = newMachineState(md);
     clean.upgrades = cleanLevels(m.upgrades, data.upgrades.filter((u) => u.scope === 'machine' && (!u.machines || u.machines.includes(md.id))));
-    clean.bet = clamp(Math.floor(num(m.bet, 0)), 0, steps.length - 1); // (game.js also caps it at what's unlocked)
+    clean.bet = clamp(Math.floor(num(m.bet, 0)), 0, steps.length - 1); // (game.ts also caps it at what's unlocked)
     clean.streak = Math.max(0, Math.floor(num(m.streak, 0)));
     if (isValidGrid(m.result, md)) {
       clean.result = m.result.map((column: string[]) => [...column]);

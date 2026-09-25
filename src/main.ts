@@ -1,22 +1,27 @@
 // main.ts — BOOT. Wires everything together and runs the frame loop.
 //
 // Order: data.json (bundled in) → create RNG + game → load save → settings, theme
-// frames, sound, UI + debug → pay offline earnings → loop.
-// This is the only place that knows about all the layers (and the only place,
-// besides save.ts, that reads the real-world clock with Date.now()).
+// frames, sound, UI + debug → pay offline earnings → loop + autosave.
+// This is the only place that knows about all the layers. Everything that
+// depends on the device (storage, the real-world clock, "the player went away")
+// goes through the platform: createWebPlatform() here, and one day a Steam or
+// mobile version instead (src/platform/platform.ts).
 
 // Vite bundles data.json into the game's code, so there's no separate file to
 // load: it works the same on every platform (and even offline).
 import bundledData from '../data.json';
 import { createRng } from './logic/rng.ts';
 import { createGame } from './logic/game.ts';
-import { saveGame, loadGame, clearSave, loadSettings, saveSettings } from './platform/save.ts';
+import { createWebPlatform } from './platform/web.ts';
+import { loadGame, clearSave, loadSettings, saveSettings } from './platform/save.ts';
+import { createAutosave } from './platform/autosave.ts';
 import { createSound } from './view/sound.ts';
 import { applyTheme } from './view/theme.ts';
 import { createUI } from './view/ui.ts';
 import { createDebugPanel } from './view/debug.ts';
 import type { Game } from './logic/game.ts';
 import type { GameData } from './logic/types.ts';
+import type { Platform } from './platform/platform.ts';
 import type { Sound } from './view/sound.ts';
 
 // `hamster` in the browser console (see the end of boot()).
@@ -39,7 +44,7 @@ async function fetchData(): Promise<GameData> {
   return response.json();
 }
 
-function boot() {
+function boot(platform: Platform) {
   // TypeScript reads data.json's own shape; GameData (types.ts) describes it more
   // exactly (e.g. which effect types exist), so the data is treated as a GameData.
   const data = bundledData as unknown as GameData;
@@ -48,47 +53,45 @@ function boot() {
   // session can be replayed in a test with createRng(thatSeed).
   const seed = Math.floor(Math.random() * 2 ** 32);
   const game = createGame(data, createRng(seed));
-  const { savedAt } = loadGame(game);
+  const { savedAt } = loadGame(game, platform);
 
   // Shared by the loop and the debug panel's speed buttons.
   const clock = { timeScale: 1 };
 
-  // While resetting, stop all saving. Otherwise the "save on page close"
-  // handler would write the old progress straight back.
-  let resetting = false;
-  const save = () => (resetting ? false : saveGame(game));
+  // Saving by itself (it starts after the first frame, below).
+  const autosave = createAutosave(game, platform);
 
   // The player's preferences (sound, motion, numbers …). The UI changes this
   // object and calls onSettingsChange, which writes it back to storage.
-  const settings = loadSettings();
+  const settings = loadSettings(platform);
   const sound = createSound(settings);
   applyTheme(); // the pixel frames for the cardboard/paper look (reads the CSS colour tokens)
 
   const debug = createDebugPanel(game, {
     clock,
     reloadData: import.meta.env.DEV ? async () => game.setData(await fetchData()) : null,
-    saveNow: save,
+    saveNow: autosave.save,
   });
 
   const ui = createUI(game, {
     sound,
     settings,
     onReset() {
-      resetting = true;
-      clearSave();
+      autosave.stop(); // or the "save when the page closes" would write the old progress straight back
+      clearSave(platform);
       location.reload();
     },
     onToggleDebug: debug.toggle,
     onSettingsChange() {
       settings.muted = sound.muted;
       settings.volume = sound.volume;
-      saveSettings(settings);
+      saveSettings(platform, settings);
     },
   });
 
-  // Offline earnings: pay for the time since the last save. game.js does the
+  // Offline earnings: pay for the time since the last save. game.ts does the
   // maths; we only tell it how many seconds passed (it never reads the clock).
-  if (savedAt) game.applyOfflineEarnings((Date.now() - savedAt) / 1000);
+  if (savedAt) game.applyOfflineEarnings((platform.now() - savedAt) / 1000);
 
   // The frame loop. requestAnimationFrame calls us before each screen repaint
   // (~60×/s). We pass the elapsed time, scaled by debug speed, to the logic,
@@ -104,21 +107,10 @@ function boot() {
   }
   requestAnimationFrame(frame);
 
-  // Autosave on a timer, and whenever the tab is hidden or closed.
+  // Autosave on a timer, and whenever the player goes away or closes the game.
   // A hidden tab stops the frame loop, so when it comes back, the time it was
-  // hidden is paid out as offline earnings too.
-  setInterval(save, data.autosaveSeconds * 1000);
-  let hiddenAt: number | null = null;
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      save();
-      hiddenAt = Date.now();
-    } else if (hiddenAt !== null) {
-      game.applyOfflineEarnings((Date.now() - hiddenAt) / 1000);
-      hiddenAt = null;
-    }
-  });
-  window.addEventListener('pagehide', save);
+  // hidden is paid out as offline earnings too (autosave.ts).
+  autosave.start(data.autosaveSeconds);
 
   // While developing (`npm run dev`), Vite watches data.json. Save a change to it
   // and the running game swaps in the new numbers straight away, keeping your
@@ -134,4 +126,5 @@ function boot() {
   window.hamster = { game, clock, ui, sound };
 }
 
-boot();
+// The web version of the platform. A Steam or phone version would pass its own.
+boot(createWebPlatform());

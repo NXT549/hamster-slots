@@ -71,7 +71,7 @@ export function iconHTML(sprite: string, size = 24): string {
 // others. The choice is remembered in settings.subTabs[key] (a view setting, not
 // game progress). Returns helpers to open a sub-tab, show a dot on one ("something
 // here is ready") and rename or hide one.
-// Only the part of the settings (save.js) that sub-tabs use.
+// Only the part of the settings (save.ts) that sub-tabs use.
 interface SubTabSettings {
   subTabs?: Record<string, string>;
 }

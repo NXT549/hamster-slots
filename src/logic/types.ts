@@ -69,7 +69,7 @@ export interface MachineDef {
 }
 
 // Every upgrade and Family Tree node has an effect. The "type" says which small
-// function in game.js handles it; the other fields are that type's numbers.
+// function in game.ts handles it; the other fields are that type's numbers.
 export type Effect =
   | { type: 'payoutMultiplier'; perLevel: number }
   | { type: 'autoSpin'; baseInterval: number; intervalMultiplier: number; rest?: number }
@@ -218,7 +218,7 @@ export interface LineWin extends LineResult {
   fullLine: boolean; // every reel matched
 }
 
-// A winning line after every multiplier (game.js resolveSpin).
+// A winning line after every multiplier (game.ts resolveSpin).
 export interface PaidWin extends LineWin {
   payout: number;
 }
@@ -340,7 +340,7 @@ export interface Card {
 }
 
 // ───────────────────────── Events ─────────────────────────
-// Every event game.js emits, and what it carries (AGENTS.md → Events).
+// Every event game.ts emits, and what it carries (AGENTS.md → Events).
 // game.on('spinResolved', (e) => …) knows that e.payout is a number, and so on.
 
 export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug';
