@@ -8,6 +8,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Changed
+
+- Very big numbers, from a quadrillion up, are now written like **1.23e15** (that's 1.23 × 10¹⁵), instead of piling up as 1,000T and beyond.
+
 ## [0.1.0] - 2026-09-25
 
 The first numbered version: everything built so far.

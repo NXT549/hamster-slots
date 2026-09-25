@@ -2,6 +2,8 @@
 // Small, boring functions that make drawing every frame cheap.
 
 import { SPRITES, spriteURL, spriteScale } from './art.ts';
+import { money, isFiniteMoney } from '../logic/money.ts';
+import type { Money } from '../logic/money.ts';
 
 // How numbers from 1,000 up are written (a Menu setting):
 //   "short" → 47.27K, 1.5M      "full" → 47,275, 1.5M
@@ -17,8 +19,12 @@ function twoDecimals(x: number): string {
 }
 
 // Small amounts show cents (a 4.05-coin spin matters); big ones show whole numbers.
-// From a million up it's always "1.23M" (B, T), so the HUD stays readable.
-export function formatCoins(n: number): string {
+// From a million up it's always "1.23M" (B, T), so the HUD stays readable, and
+// from a quadrillion (1e15) up it's "1.23e15": 1.23 × 10^15.
+// Takes a plain number or a Money (a big number, see logic/money.ts).
+export function formatCoins(value: Money | number): string {
+  const n = typeof value === 'number' ? value : value.toNumber();
+  if (!(Math.abs(n) < 1e15)) return scientific(money(value));
   const abs = Math.abs(n);
   if (abs < 100) return String(Math.round(n * 100) / 100);
   if (abs < 1000) return String(Math.floor(n));
@@ -28,6 +34,16 @@ export function formatCoins(n: number): string {
     return `${twoDecimals(n / size)}${suffix}`;
   }
   return Math.floor(n).toLocaleString('en-US');
+}
+
+// "1.23e15": the mantissa (1 to 9.99) with 2 decimals, never rounded up, like
+// the K/M/B/T numbers. (+1e-9: a big number's mantissa is worked out with
+// logarithms and can come out as 1.2299999… for 1.23.) Past about 1e9000000000000000
+// (layer 2 and up) break_eternity writes it itself, e.g. "ee15.2".
+function scientific(m: Money): string {
+  if (!isFiniteMoney(m)) return m.toString();
+  if (m.layer >= 2) return m.toString();
+  return `${Math.floor(m.m * 100 + 1e-9) / 100}e${m.e}`;
 }
 
 // Mix two "#rrggbb" colours: t = 0 gives a, t = 1 gives b.

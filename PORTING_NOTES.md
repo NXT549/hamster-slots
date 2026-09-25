@@ -90,8 +90,8 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 | 3.3 | Vitest: all 687 checks as Vitest tests, art tests too, `npm run economy` for DESIGN's tables; the **golden run** (scripted sessions on fixed seeds, recorded from today's code, replayed by a test); real v7 save fixtures. Vitest 5.0.2; 1,108 tests in ~10 s (D111) | **Done** (the user OK'd it) |
 | 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the tools run the `.ts` logic straight on Node 24. TypeScript 7.0.2 (D112) | **Done** (the user OK'd it) |
 | 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main (and save.ts, which holds the Settings type the screens need) (D113) | **Done** (the user OK'd it) |
-| 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform (D114) | **Done**, waiting for the user's OK |
-| 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× | Next |
+| 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform (D114) | **Done** (the user said to continue) |
+| 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× (D115) | **In progress:** `money.ts` and the display are in (3.7a); the logic, save, screens and tools next (3.7b) |
 | 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations | |
 | 3.9 | Bundled fonts, the debug-panel rule, cleanup, docs; release **0.2.0**; merge into `main` | |
 | Step 4 | GitHub Pages: the user creates the repo (`NXT549`) and sets Pages → Source = GitHub Actions; `.github/workflows/deploy.yml` tests, builds and deploys on every push to `main` | |
@@ -440,6 +440,13 @@ Keeping the format in the logic means the Node test can check save round-trips a
   - 1,135 tests (27 new, for the platform layer), and the build. Breaking the code on purpose (paying the time away twice; saving after Reset; "shown" firing on hide; the save's time from `Date.now()` instead of `platform.now()`) failed the tests every time.
   - in the browser: hiding the tab saved; coming back "10 minutes later" paid exactly the logic's figure; closing the page saved; a reload kept the progress to the cent; a setting saved; Reset wiped the game, didn't write the old save back, and kept the settings
   - no errors
+
+**D115 — Big numbers: break_eternity.js behind `money.ts`, exact where plain numbers were** (step 3.7). break_eternity.js 2.1.3 (MIT, no dependencies of its own; +56 KB to the game, 14 KB zipped). `src/logic/money.ts`: `Money` is its `Decimal`, `money(x)` makes one.
+- **The cent-exact promise.** For values below 9e15, a Decimal keeps a plain number inside (break_eternity's "layer 0"). Its add, subtract, multiply and compare then give exactly the plain-number answer (checked on 200,000 random amounts). Its divide (× 1 ÷ b) and power (through logarithms) don't: 57 ÷ 100 = 0.5700000000000001. So `divide`, `power` and `roundMoney` in money.ts do plain-number maths whenever the numbers fit, and hand over to break_eternity only past that. That's what lets the golden run keep passing unchanged. *Rejected: Decimal's own div/pow everywhere* (the game would drift by a cent here and there, and the golden run couldn't guard the switch).
+- **Past 9e15** a Decimal keeps about 12 significant digits, far more than a price or a payout needs. Cents stop mattering there, so `roundMoney` leaves such amounts alone.
+- **Reading money from a save is strict.** break_eternity reads almost any text ("abc" as 0, "12abc" as 12), so `moneyFrom` only accepts the forms a Decimal writes ("1234.56", "1.5e400", "ee15.2", "(e^6)15.2"), or a plain number (older saves). Junk, NaN and Infinity give the fallback.
+- **On screen:** below 1e15, `formatCoins` writes exactly what it always did (a test pins it). From a quadrillion up: "1.23e15" (the mantissa floored to 2 decimals, like K/M/B/T), the D110 default.
+- **3.7a** is money.ts and the display, with 51 tests (tests/money.test.js); the game logic doesn't use Money yet.
 
 ---
 

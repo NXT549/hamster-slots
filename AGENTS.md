@@ -16,10 +16,10 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 > **Keep this block accurate.** Update it in the same commit as any change it describes.
 
 - **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 7 (game.ts) and the data is `schemaVersion` 7 (data.json).
-- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. 3.3 (Vitest + the golden run) is done. 3.4 (TypeScript for the game logic) is done. 3.5 (TypeScript for the view) is done. **3.6 (the platform layer) is done and waiting for the user's OK:** storage, the real-world clock and "the player went away" now go through one `Platform` interface. Next is 3.7 (break_eternity.js). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
+- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. 3.3 (Vitest + the golden run) is done. 3.4 (TypeScript for the game logic) is done. 3.5 (TypeScript for the view) is done. 3.6 (the platform layer) is done. **3.7 (break_eternity.js) is under way:** `src/logic/money.ts` (big numbers for money) and the `1.23e15` display are in (3.7a). Next, the game logic, the save (v8), the screens and the tools switch to it (3.7b). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
 - **The code today:** everything in `src/` (logic, view, platform, boot) is **TypeScript** (strict); the tests and tools are still JavaScript (typing them needs `@types/node`, a new dependency: ask first). Vite runs and builds it (`npm run dev`, `npm run build`, which type-checks first). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
 - **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). Friends can join that playtest from the Pages link once it's deployed. After that come M8 The Big Cage → M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M8+ early. Known issue for M8: from generation ~9, lives shrink to 3–10 min (D102).
-- **Tests now:** `npm test` (Vitest) runs 1,135 tests in about 10 s: M7's 687 logic checks and 383 art checks (unchanged, now Vitest tests), the golden run (33), the save fixtures (5) and the platform layer (27).
+- **Tests now:** `npm test` (Vitest) runs 1,135 tests in about 10 s: M7's 687 logic checks and 383 art checks (unchanged, now Vitest tests), the golden run (33), the save fixtures (5), the platform layer (27) and money (51).
 - **Last verified (M7):** the logic checks 687/687 and the art checks all OK (then `node tools/test_logic.mjs` / `test_art.mjs`), the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
 - **Not yet verified:** how the M7 sounds *sound* (tick, card, luck, unlock, softer auto clunks); the label on a natural jackpot-wheel trigger; the look in Firefox and Safari.
 
@@ -90,6 +90,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
   - `tests/art.test.js`: sprites, skins and theme tokens.
   - `tests/golden.test.js`: **the golden run**, the migration's safety net. Scripted sessions (`tests/golden/sessions.js`) play the real logic on fixed seeds and must reproduce `tests/golden/golden.json` exactly: every save, the RNG's position, event counts, coins paid. It was recorded from the plain-JS game. **Never re-record it to make a failing test pass.** Only re-record (`node tools/golden.mjs --confirm`) for an intended, approved gameplay change (a balance change, a new feature), and say so in the commit message.
   - `tests/fixtures.test.js`: real v7 saves (`tests/fixtures/`) must load and save back unchanged. They're the old-format saves that future save migrations are tested against.
+  - `tests/money.test.js`: big numbers (`src/logic/money.ts`): the same answers as plain numbers for everyday amounts (the cent-exact promise), big numbers past 1.8e308, reading money from a save, and how `formatCoins` writes it.
   - `tests/platform.test.js`: the platform layer. Saving and loading, broken saves, full or blocked storage, settings, Reset keeping the settings, autosave and the pay for time away, all on the pretend platform (`src/platform/memory.ts`); and the web version on a fake browser.
 - **Until migrated:** the tests are still JavaScript (`.test.js`); they become TypeScript with the code.
 
@@ -153,7 +154,7 @@ hamster_slots/
 │                         luck + unlockSymbol), retirement + familyTree, tokens, capsules, skins, diary
 ├── index.html         ← page skeleton (HUD, cage stage + bet box + card gamble panel + pots + WIN meter + clover
 │                         badge, tray tabs and sub-tabs, menu + settings, the particle canvas) + file:// warning
-├── package.json       ← npm: the version, scripts (dev, typecheck, build, preview, test, economy, sim) and tools (Vite, Vitest, TypeScript)
+├── package.json       ← npm: the version, scripts (dev, typecheck, build, preview, test, economy, sim) and packages (Vite, Vitest, TypeScript; break_eternity.js in the game)
 ├── tsconfig.json      ← TypeScript settings (strict; .ts imports; only erasable syntax, so Node can run it)
 ├── tsconfig.logic.json ← src/logic checked with no browser types (rule 1)
 ├── package-lock.json  ← the exact tool versions npm installed (committed, so every install matches)
@@ -170,6 +171,7 @@ hamster_slots/
 │   ├── golden/        ← sessions.js (the scripted players) + golden.json (the recording)
 │   ├── fixtures.test.js ← real saves must load and save back unchanged
 │   ├── fixtures/      ← real v7 save files (old-format saves for future migrations)
+│   ├── money.test.js  ← big numbers: exact for everyday amounts, past 1.8e308, from a save, on screen
 │   └── platform.test.js ← the platform layer on a pretend platform (full/blocked storage, hide/show/close) + web.ts
 ├── tools/
 │   ├── sim.mjs        ← the balance simulator: a bot plays the real logic (node tools/sim.mjs --help)
@@ -181,6 +183,8 @@ hamster_slots/
     │                    settings, theme, sound, debug + UI → offline earnings → frame loop + autosave
     ├── logic/         ← LOGIC: no DOM, no clock, runs headless in Node (rule 1)
     │   ├── types.ts   ← the shapes of data.json (GameData), the state/save (GameState) and every event (GameEvents)
+    │   ├── money.ts   ← Money = a big number (break_eternity.js Decimal) + helpers that give plain numbers' exact answers
+    │   │                (roundMoney, divide, power) and read money from a save (moneyFrom)
     │   ├── rng.ts     ← seedable RNG (mulberry32) + pickWeighted
     │   ├── events.ts  ← tiny event emitter (the UI, tests and simulator listen)
     │   ├── machine.ts ← pure rules: rollGrid (reels × rows), paylines, evaluate (one line, left to right, wilds:
@@ -206,7 +210,7 @@ hamster_slots/
         │                symbol/machine/upgrade/tree node/capsule → sprite maps; UI frames + bedding tile
         ├── theme.ts   ← turns the UI frame sprites into CSS variables (9-slice borders), painted in token colours
         ├── skins.ts   ← what each skin looks like (fur colours, cage theme tokens) + swatches
-        ├── dom.ts     ← shared helpers: formatCoins (+ short/full numbers), mix, setText, setHTML, replayClass,
+        ├── dom.ts     ← shared helpers: formatCoins (+ short/full numbers; 1.23e15 from a quadrillion up; plain numbers or Money), mix, setText, setHTML, replayClass,
         │                iconHTML, createSubTabs, formatSeconds/Duration/Wait
         ├── sound.ts   ← synthesized sound effects (Web Audio), volume + mute
         ├── fx.ts      ← pixel particles on one canvas over the page: sparkles, confetti, fountains, dust, embers,
