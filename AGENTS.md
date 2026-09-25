@@ -16,8 +16,8 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 > **Keep this block accurate.** Update it in the same commit as any change it describes.
 
 - **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 7 (game.js) and the data is `schemaVersion` 7 (data.json).
-- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. Next is 3.1 (npm + Vite). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
-- **The code today** is still the plain-JS prototype: no build step, no npm. It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
+- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. **3.1 (npm + Vite) is done and waiting for the user's test** (play.bat, their save). Next is 3.2 (move files into layers). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
+- **The code today** is still plain JavaScript, now run and built by **Vite** (`npm run dev`, `npm run build`). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
 - **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). Friends can join that playtest from the Pages link once it's deployed. After that come M8 The Big Cage → M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M8+ early. Known issue for M8: from generation ~9, lives shrink to 3–10 min (D102).
 - **Last verified (M7):** `node tools/test_logic.mjs` 687/687, `node tools/test_art.mjs` all OK, the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
 - **Not yet verified:** how the M7 sounds *sound* (tick, card, luck, unlock, softer auto clunks); the label on a natural jackpot-wheel trigger; the look in Firefox and Safari; a real double-click on `play.bat`.
@@ -53,7 +53,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Rule 2: all balance numbers (costs, payouts, rebirth formulas, slot odds) live in data files, not hardcoded.** Today that's `data.json`: symbols, weights, payouts, spin cost and duration, delivery, upgrade costs, growth rates, effect values. No magic numbers in code. Data files stay plain JSON (no comments, no trailing commas), because the game, the tests and the simulator all read them. They hold **no art or colours**.
 - **Rule 5: the stack and its dependencies.** TypeScript + Vite; break_eternity.js at runtime; Vitest for tests. No UI framework. Ask the user before adding any other dependency.
 - **Rule 11: art lives in the view.** Sprites are text grids in `js/art.js`. Colours, fonts and sizes are theme tokens in `style.css` `:root`; `js/theme.js` repaints the UI frame sprites in those token colours (so button colours still live in `:root`). What each skin looks like is in `js/skins.js` (fur = palette colours, the rest = token overrides set on the stage); data.json only lists skin ids/names/rarities. Numbers always use `--font-num` (clean font). The pixel font is always weight 500 (in bold its C looks like an O). Highlights go *behind* symbols, never on top (a tint once made grey seeds look golden). Every framed element sets its own `--frame`/`--fw` (custom properties inherit: a paper tile inside the cardboard tray would otherwise turn to cardboard).
-- **Until migrated:** the code is plain JavaScript ES modules with no build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are as in the File map below. Only migrate through the approved step-by-step plan.
+- **Until migrated:** the code is plain JavaScript ES modules. Vite runs and builds it, and data.json is bundled into the build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are as in the File map below. Only migrate through the approved step-by-step plan.
 
 ## Saves
 
@@ -84,7 +84,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Run the tests and a build before every commit. Don't commit if either fails.**
 - **Bug fixes should include a test that would have caught the bug.**
 - **Rule 10:** run the logic tests after any logic or data change, and the sprite tests after any sprite change. Both must stay all PASS.
-- **Until migrated:** there's no Vitest and no build yet. The tests are plain Node scripts, `node tools/test_logic.mjs` (687 checks) and `node tools/test_art.mjs`, and both must pass.
+- **Until migrated:** there's no Vitest yet. The tests are plain Node scripts, `node tools/test_logic.mjs` (687 checks) and `node tools/test_art.mjs`; `npm test` runs both, and both must pass along with `npm run build`.
 
 ## Git and releases
 
@@ -105,15 +105,17 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Rule 7: comment for a learner.** The user is learning. Add short comments that explain *why*, at key points. Don't comment every line.
 - **Rule 9: prototype art.** Pixel sprites in `js/art.js` follow the style guide at the top of that file (24/16/12 px, colour ramps, matching outlines, whole-number scales; 12×12 UI frames are 9-slice and must keep their edges uniform). The palette's letters are all used: new colours go on free digits/punctuation (the purple ramp uses `8 9 0 +`); M7's sprites (Wood Shaving, clover, horseshoe, seed packet, card back, four suits) reuse existing ramps. The cage itself (bars, base, tubes, machines, the WIN meter, the gamble card) is CSS. Particles (`js/fx.js`) are whole-pixel squares in token colours and must stay off with Motion "Less". Spend effort on feel and clarity, not detail.
 
-## How to run (today's plain-JS prototype; the migration replaces this)
+## How to run (the code is still plain JS; the migration updates this as it goes)
 
-- **Play:** double-click **`play.bat`**. It starts `python tools/serve.py 8765` (Python's simple web server, but with caching turned off, so a refresh always loads the newest files) in its own window and opens `http://localhost:8765/`. Close the server window to stop. *If a browser still has old files from before the no-cache server, press **Ctrl+F5** once.* (Opening `index.html` directly shows a "use play.bat" message, because browsers block `data.json` and ES modules from `file://`.)
+- **Play:** double-click **`play.bat`**. It checks the tools are installed (`npm install`; the first time downloads them into `node_modules/`), then starts **Vite** (`npm run dev`) in its own window on `http://localhost:8765/` and opens the browser. Port 8765 is where the game has always run, so the player's save is still there (a browser keeps one save per address + port). Close the server window to stop. (Opening `index.html` directly shows a "use play.bat" message, because browsers won't run JS modules from `file://`.)
+- **npm scripts** (from this folder): `npm run dev` (the same as play.bat, without opening a browser), `npm run build` (the players' version → `dist/`, relative paths), `npm run preview` (serves `dist/` on port 4173 to try the build), `npm test` (both test scripts below), `npm run sim` (the simulator).
+- **Editing data.json while `npm run dev` runs:** save the file and the running game swaps in the new numbers by itself, keeping your progress (Vite hot update → `game.setData`). The debug panel's **Reload data.json** does the same by hand; it's hidden in a built game, where data.json is bundled into the code.
 - **Test the logic (headless):** from this folder, `node tools/test_logic.mjs`
 - **Test the sprites and skins:** `node tools/test_art.mjs` (row widths, palette letters, every symbol/upgrade/tree node/capsule/skin has art, every skin token exists in `:root`)
 - **Balance simulator:** `node tools/sim.mjs` (idle player, 5 seeds, 7 lives; a few seconds). Options: `--player active`, `--lives 12`, `--seeds 3`, `--minutes 120` (the longest a life may last), `--retire 0.5`, `--first-minutes 60`, `--bankroll 40`, `--data other.json` (try a variant without touching data.json; relative or absolute path), `--verbose` (every purchase, and every 10 minutes what the bot is saving up for), `--help`. It plays the real game logic and prints, per life: length, seeds, coins earned, time to each milestone (first buy, Family/Capsules tab, Wheel 1, each symbol unlock on Old Clunky, Third Reel, Wheel maxed, each machine, bet ×2/×10), income snapshots, Luck and hit rate at 10/30/60 min, and feature rates. It buys by "time to afford + time to pay back" (D100).
 - **Debug panel:** press **`` ` ``** (backtick) in the game, or Menu → Toggle debug panel.
 - **Fonts** load from Google Fonts (Pixelify Sans + Nunito). Offline, the browser uses system fonts and everything still works.
-- **Claude Code preview:** `hamster-slots` (`tools/serve.py` on port **8766**) is defined in `.claude/launch.json` in **this** folder (for sessions started here) and in the **parent** folder (sessions started there). This folder also has `hamster-slots-alt` (port **8767**), for when another session is already using 8766. Different port = different browser storage, so test saves never touch the player's save.
+- **Claude Code preview:** `hamster-slots` (Vite dev on port **8766**) is defined in `.claude/launch.json` in **this** folder (for sessions started here) and in the **parent** folder (sessions started there). This folder also has `hamster-slots-alt` (port **8767**), for when another session is already using 8766, and `hamster-slots-build` (`npm run preview` of `dist/` on port **8768**; run `npm run build` first). Different port = different browser storage, so test saves never touch the player's save.
 - **Screenshots at high DPI:** the preview's screenshot can crop to the top-left of the page when the display is scaled (e.g. 150%). Shrinking the page for an overview works without changing the layout: `document.querySelector('.app').style.cssText = 'transform: scale(0.55); transform-origin: 0 0; margin: 0'` (remove it afterwards).
 - **Background tab?** Browsers pause animation frames when the page isn't visible (this includes a *hidden* Claude Code preview pane: the game then stops). `hamster.ui.render()` in the console draws one frame by hand; to keep it running, drive it with `setInterval(() => { hamster.game.update(0.05 * hamster.clock.timeScale); hamster.ui.render(); }, 50)`.
 - **Testing fast:**
@@ -125,7 +127,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
   - **A fresh game:** Menu → Reset (twice). Clearing localStorage from the console doesn't stick, because the game saves itself when the page unloads.
   - **Offline earnings:** debug panel → pretend you were away 10 min / 1 h / 10 h. **Sound:** Menu → Sound; `hamster.sound.ready` in the console says whether audio is on.
 - **Sprite gallery:** `http://localhost:8765/tools/sprites.html` shows every sprite big (`?only=seed,carrot&zoom=8` for close-ups).
-- Requires Python 3 on PATH (the user has 3.12) and Node for tests (the user has 24).
+- Requires Node.js with npm (the user has Node 24, npm 11). Python isn't needed any more.
 
 ## File map
 
@@ -145,14 +147,17 @@ hamster_slots/
 ├── index.html         ← page skeleton (HUD, cage stage + bet box + card gamble panel + pots + WIN meter + clover
 │                         badge, tray tabs and sub-tabs, menu + settings, the particle canvas) + file:// warning
 ├── style.css          ← the "hamster cage" look; THEME TOKENS in :root (colours, fonts, sizes)
-├── play.bat           ← double-click launcher (starts tools/serve.py + opens browser)
+├── package.json       ← npm: the version, scripts (dev, build, preview, test, sim) and tools (Vite)
+├── package-lock.json  ← the exact tool versions npm installed (committed, so every install matches)
+├── vite.config.js     ← Vite settings: relative paths for any host, dev server on port 8765
+├── play.bat           ← double-click launcher (npm install if needed, then Vite on port 8765 + opens the browser)
 ├── .claude/launch.json ← Claude Code preview servers (ports 8766 and 8767)
-├── .gitignore / .gitattributes ← what git skips; line endings stored as LF in the repo
+├── .gitignore / .gitattributes ← what git skips (node_modules/, dist/); line endings stored as LF (.bat keeps CRLF)
+├── node_modules/, dist/ ← made by npm install / npm run build; never committed
 ├── tools/
 │   ├── test_logic.mjs ← headless logic test: node tools/test_logic.mjs
 │   ├── test_art.mjs   ← sprite + skin + frame sanity test: node tools/test_art.mjs
 │   ├── sim.mjs        ← the balance simulator: a bot plays the real logic (node tools/sim.mjs --help)
-│   ├── serve.py       ← the local web server (no caching); play.bat runs it
 │   └── sprites.html   ← sprite gallery (dev page): every sprite in js/art.js, big
 └── js/
     ├── rng.js         ← LOGIC   seedable RNG (mulberry32) + pickWeighted
@@ -195,7 +200,7 @@ hamster_slots/
     ├── capsules.js    ← VIEW    the Capsules tab (sub-tabs): machine card + reveal, Wardrobe, Hamster Diary
     ├── debug.js       ← VIEW    debug panel (stats incl. Luck and feature odds, coins, free spins, jackpot wheel,
     │                             offer a gamble, time speed, reload data)
-    └── main.js        ← BOOT    load data.json → game → load save → settings, theme, sound, debug + UI
+    └── main.js        ← BOOT    data.json (bundled; hot-applied in dev) → game → load save → settings, theme, sound, debug + UI
                                   → offline earnings → frame loop + autosave (+ offline earnings after a hidden tab)
 ```
 

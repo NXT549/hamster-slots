@@ -3,21 +3,40 @@
   "configurations": [
     {
       "name": "hamster-slots",
-      "runtimeExecutable": "python",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "tools/serve.py",
+        "run",
+        "dev",
+        "--",
+        "--port",
         "8766"
       ],
       "port": 8766
     },
     {
       "name": "hamster-slots-alt",
-      "runtimeExecutable": "python",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "tools/serve.py",
+        "run",
+        "dev",
+        "--",
+        "--port",
         "8767"
       ],
       "port": 8767
+    },
+    {
+      "name": "hamster-slots-build",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "--",
+        "--port",
+        "8768",
+        "--strictPort"
+      ],
+      "port": 8768
     }
   ]
 }

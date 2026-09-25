@@ -1,11 +1,13 @@
 // main.js — BOOT. Wires everything together and runs the frame loop.
 //
-// Order: load data.json → create RNG + game → load save → settings, theme frames,
-// sound, UI + debug → pay offline earnings → loop.
+// Order: data.json (bundled in) → create RNG + game → load save → settings, theme
+// frames, sound, UI + debug → pay offline earnings → loop.
 // This is the only place that knows about all the layers (and the only place,
 // besides save.js, that reads the real-world clock with Date.now()).
-// Godot equivalent: the autoloads (GameData, Game, SaveManager) + the Main scene.
 
+// Vite bundles data.json into the game's code, so there's no separate file to
+// load: it works the same on every platform (and even offline).
+import bundledData from '../data.json';
 import { createRng } from './rng.js';
 import { createGame } from './game.js';
 import { saveGame, loadGame, clearSave, loadSettings, saveSettings } from './save.js';
@@ -19,33 +21,16 @@ import { createDebugPanel } from './debug.js';
 // out as offline earnings instead (see below).
 const MAX_FRAME_SECONDS = 0.25;
 
-async function loadData() {
-  // cache: 'no-store' so edits to data.json show up on reload straight away.
+// Debug "Reload data.json" (only while developing with `npm run dev`): fetch the
+// file fresh from the dev server. A built game has no data.json to fetch.
+async function fetchData() {
   const response = await fetch('data.json', { cache: 'no-store' });
   if (!response.ok) throw new Error(`data.json: HTTP ${response.status}`);
   return response.json();
 }
 
-function showBootError(err) {
-  const box = document.getElementById('boot-error');
-  box.innerHTML = `
-    <div class="panel">
-      <p><b>Couldn't load data.json.</b></p>
-      <p>Browsers block this when <code>index.html</code> is opened straight from disk.
-      Start the game by double-clicking <b>play.bat</b> instead.</p>
-      <p class="small">${String(err && err.message ? err.message : err)}</p>
-    </div>`;
-  box.classList.remove('hidden');
-}
-
-async function boot() {
-  let data;
-  try {
-    data = await loadData();
-  } catch (err) {
-    showBootError(err);
-    return;
-  }
+function boot() {
+  const data = bundledData;
 
   // A new random seed each session. The debug panel shows it, so a weird
   // session can be replayed in a test with createRng(thatSeed).
@@ -69,7 +54,7 @@ async function boot() {
 
   const debug = createDebugPanel(game, {
     clock,
-    reloadData: async () => game.setData(await loadData()),
+    reloadData: import.meta.env.DEV ? async () => game.setData(await fetchData()) : null,
     saveNow: save,
   });
 
@@ -122,6 +107,15 @@ async function boot() {
     }
   });
   window.addEventListener('pagehide', save);
+
+  // While developing (`npm run dev`), Vite watches data.json. Save a change to it
+  // and the running game swaps in the new numbers straight away, keeping your
+  // progress: no page reload needed.
+  if (import.meta.hot) {
+    import.meta.hot.accept('../data.json', (mod) => {
+      if (mod) game.setData(mod.default);
+    });
+  }
 
   // Handy for poking around in the browser console: try  hamster.game.state
   // (hamster.ui.render() draws one frame by hand, e.g. while the tab is hidden.)

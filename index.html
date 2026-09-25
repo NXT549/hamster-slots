@@ -309,20 +309,21 @@
   <div id="boot-error" class="boot-error hidden"></div>
 
   <!-- Opened by double-clicking index.html (a file:// address)? Then the browser
-       won't load the game's modules or data.json at all, so explain what to do.
-       This is a plain (non-module) script, so it still runs from disk. -->
+       won't load the game's code at all (it blocks JavaScript modules from disk),
+       so explain what to do. This is a plain (non-module) script, so it still runs from disk. -->
   <script>
     if (location.protocol === 'file:') {
       var box = document.getElementById('boot-error');
       box.innerHTML = '<div class="dialog-card"><p><b>Please start the game with play.bat.</b></p>' +
-        '<p>Browsers block pages opened straight from disk from loading data.json. ' +
-        'Double-click <b>play.bat</b> in the hamster_slots folder: it starts a tiny local server and opens the game.</p></div>';
+        '<p>Browsers block pages opened straight from disk from loading the game. ' +
+        'Double-click <b>play.bat</b> in the hamster_slots folder: it starts a small local server and opens the game.</p></div>';
       box.classList.remove('hidden');
     }
   </script>
 
-  <!-- type="module" lets the JS files import each other. It needs the local
-       server that play.bat starts; see AGENTS.md → How to run. -->
+  <!-- type="module" lets the JS files import each other. Vite serves it while you
+       work (`npm run dev`, which play.bat starts) and bundles it for players
+       (`npm run build`); see AGENTS.md → How to run. -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

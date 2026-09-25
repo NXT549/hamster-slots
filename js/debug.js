@@ -82,7 +82,11 @@ export function createDebugPanel(game, { clock, reloadData, saveNow }) {
     statusEl.textContent = text;
   }
 
-  panel.querySelector('#dbg-reload').addEventListener('click', async () => {
+  // reloadData is null in a built game (there's no data.json file to re-read
+  // there; it's bundled into the code), so the button only shows in `npm run dev`.
+  const reloadButton = panel.querySelector('#dbg-reload');
+  if (!reloadData) reloadButton.hidden = true;
+  reloadButton.addEventListener('click', async () => {
     try {
       await reloadData();
       setStatus('data.json reloaded, progress kept ✓');

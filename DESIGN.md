@@ -289,7 +289,7 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel.
 - Milestone 7: **Offer a gamble (100)** opens the card gamble without a winning spin (set game time to 0× first to freeze its countdown). Stats: **Luck** (Hamster + Machine) and how many of the machine's symbols are unlocked.
 - Family stats: generation and pup name, this life's time and coins, seeds (to spend / ever earned / pending), heirloom bonus, lifetime earned.
 - Time speed: 1× / 2× / 5× / 10× / 50×. This speeds up *game time*, so spins, auto-spins and deliveries all scale together.
-- **Reload data.json**: re-reads the balance file and keeps your progress, so you can tweak numbers mid-game.
+- **Reload data.json**: re-reads the balance file and keeps your progress, so you can tweak numbers mid-game. Only while developing (`npm run dev`), where saving data.json also applies it by itself; a built game has data.json bundled in, so the button is hidden there.
 
 ---
 

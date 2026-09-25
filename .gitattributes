@@ -1,3 +1,6 @@
 # Store every text file with LF line endings in the repo. On Windows, git can
-# still check them out with CRLF, so editors see what they're used to.
+# still check them out with CRLF, so editors see what they are used to.
 * text=auto
+
+# Windows batch files must keep CRLF line endings, or cmd.exe can misread them.
+*.bat text eol=crlf
