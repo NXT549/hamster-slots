@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Hamster Slots · sprite gallery</title>
+  <!-- A dev page: every sprite in js/art.js, big, on light and dark backgrounds.
+       Open it with the game's server running: http://localhost:8765/tools/sprites.html -->
+  <style>
+    body { margin: 0; padding: 20px; background: #efe2d3; font: 13px system-ui, sans-serif; color: #4a3428; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .controls { margin-bottom: 16px; }
+    .grid { display: flex; flex-wrap: wrap; gap: 12px; }
+    .cell { background: #fffdf9; border-radius: 12px; padding: 10px; text-align: center; min-width: 96px; }
+    .cell.dark { background: #2f335c; color: #fbeedd; }
+    .cell img { display: block; margin: 0 auto 6px; image-rendering: pixelated; }
+    .meta { opacity: 0.7; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <h1>Sprite gallery</h1>
+  <div class="controls">
+    Zoom: <select id="zoom"><option>2</option><option>3</option><option selected>4</option><option>6</option></select>
+    <label><input type="checkbox" id="dark"> dark backgrounds</label>
+  </div>
+  <div class="grid" id="grid"></div>
+  <script type="module">
+    import { SPRITES, spriteImg } from '../js/art.js';
+    const grid = document.getElementById('grid');
+    // ?only=seed,carrot shows just those sprites; ?zoom=8 sets the zoom.
+    const params = new URLSearchParams(location.search);
+    const only = params.get('only') ? params.get('only').split(',') : null;
+    if (params.get('zoom')) {
+      const select = document.getElementById('zoom');
+      select.add(new Option(params.get('zoom')));
+      select.value = params.get('zoom');
+    }
+    function draw() {
+      const zoom = Number(document.getElementById('zoom').value);
+      const dark = document.getElementById('dark').checked;
+      grid.replaceChildren();
+      for (const [name, rows] of Object.entries(SPRITES)) {
+        if (only && !only.includes(name)) continue;
+        const cell = document.createElement('div');
+        cell.className = `cell${dark ? ' dark' : ''}`;
+        cell.appendChild(spriteImg(name, rows[0].length * zoom));
+        const label = document.createElement('div');
+        label.innerHTML = `${name}<div class="meta">${rows[0].length}×${rows.length}</div>`;
+        cell.appendChild(label);
+        grid.appendChild(cell);
+      }
+    }
+    document.getElementById('zoom').addEventListener('change', draw);
+    document.getElementById('dark').addEventListener('change', draw);
+    draw();
+  </script>
+</body>
+</html>

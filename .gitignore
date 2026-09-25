@@ -1,0 +1,11 @@
+# Installed packages and build output (made by npm / Vite, never committed)
+node_modules/
+dist/
+
+# Personal Claude Code settings (launch.json IS committed: it's shared)
+.claude/settings.local.json
+
+# Logs and OS clutter
+*.log
+.DS_Store
+Thumbs.db

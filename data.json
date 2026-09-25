@@ -1,0 +1,651 @@
+{
+  "schemaVersion": 7,
+  "startCoins": 100,
+  "autosaveSeconds": 10,
+  "betSteps": [1, 2, 3, 5, 10],
+  "gamble": { "maxRounds": 5, "offerSeconds": 5, "history": 5 },
+  "machines": [
+    {
+      "id": "clunky",
+      "name": "Old Clunky",
+      "description": "A creaky old machine with just two reels and one payline.",
+      "unlockCost": 0,
+      "startReels": 2,
+      "maxReels": 3,
+      "spinCost": 5,
+      "spinDuration": 3,
+      "symbols": [
+        { "id": "seed", "name": "Sunflower Seed", "weight": 50 },
+        { "id": "carrot", "name": "Baby Carrot", "weight": 25, "locked": true },
+        { "id": "golden", "name": "Golden Seed", "weight": 12, "locked": true },
+        { "id": "blank", "name": "Wood Shaving", "weight": 45, "blank": true }
+      ],
+      "payouts": {
+        "seed": { "2": 27, "3": 45 },
+        "carrot": { "2": 95, "3": 400 },
+        "golden": { "2": 280, "3": 2400 }
+      }
+    },
+    {
+      "id": "stacker",
+      "name": "Snack Stacker",
+      "description": "Three rows of snacks, and every payline pays. Pricier spins, much bigger wins.",
+      "unlockCost": 5000,
+      "startReels": 3,
+      "maxReels": 4,
+      "rows": 3,
+      "paylines": [[1, 1, 1, 1], [0, 0, 0, 0], [2, 2, 2, 2], [0, 1, 2, 1], [2, 1, 0, 1]],
+      "startLines": 3,
+      "spinCost": 25,
+      "spinDuration": 3.2,
+      "symbols": [
+        { "id": "seed", "name": "Sunflower Seed", "weight": 40 },
+        { "id": "carrot", "name": "Baby Carrot", "weight": 25 },
+        { "id": "blueberry", "name": "Blueberry", "weight": 17 },
+        { "id": "strawberry", "name": "Strawberry", "weight": 12, "locked": true },
+        { "id": "golden", "name": "Golden Seed", "weight": 6, "locked": true },
+        { "id": "wild", "name": "Hamster Wild", "weight": 0, "wild": true },
+        { "id": "blank", "name": "Wood Shaving", "weight": 40, "blank": true }
+      ],
+      "payouts": {
+        "seed": { "2": 40, "3": 70, "4": 125 },
+        "carrot": { "2": 75, "3": 155, "4": 335 },
+        "blueberry": { "2": 140, "3": 390, "4": 1100 },
+        "strawberry": { "2": 310, "3": 2200, "4": 15400 },
+        "golden": { "2": 770, "3": 10500, "4": 105000 },
+        "wild": { "2": 560, "3": 8400, "4": 84000 }
+      }
+    },
+    {
+      "id": "bonanza",
+      "name": "Burrow Bonanza",
+      "description": "Five reels deep in the burrow. Hamster Wilds, and three Hamster Balls roll in free spins.",
+      "unlockCost": 60000,
+      "startReels": 5,
+      "maxReels": 5,
+      "rows": 3,
+      "paylines": [[1, 1, 1, 1, 1], [0, 0, 0, 0, 0], [2, 2, 2, 2, 2], [0, 1, 2, 1, 0], [2, 1, 0, 1, 2],
+                   [0, 0, 1, 2, 2], [2, 2, 1, 0, 0], [1, 0, 0, 0, 1], [1, 2, 2, 2, 1], [1, 2, 1, 0, 1]],
+      "startLines": 5,
+      "spinCost": 100,
+      "spinDuration": 3.6,
+      "symbols": [
+        { "id": "seed", "name": "Sunflower Seed", "weight": 30 },
+        { "id": "carrot", "name": "Baby Carrot", "weight": 22 },
+        { "id": "corn", "name": "Sweet Corn", "weight": 16 },
+        { "id": "apple", "name": "Red Apple", "weight": 12, "locked": true },
+        { "id": "golden", "name": "Golden Seed", "weight": 6, "locked": true },
+        { "id": "wild", "name": "Hamster Wild", "weight": 5, "wild": true },
+        { "id": "ball", "name": "Hamster Ball", "weight": 3.2, "scatter": true },
+        { "id": "blank", "name": "Wood Shaving", "weight": 70, "blank": true }
+      ],
+      "payouts": {
+        "seed": { "2": 380, "3": 565, "4": 945, "5": 1600 },
+        "carrot": { "2": 565, "3": 945, "4": 2000, "5": 3800 },
+        "corn": { "2": 880, "3": 2000, "4": 4500, "5": 11300 },
+        "apple": { "2": 1600, "3": 8300, "4": 44100, "5": 252000 },
+        "golden": { "2": 3800, "3": 37800, "4": 283500, "5": 1890000 },
+        "wild": { "2": 3200, "3": 31500, "4": 252000, "5": 1890000 }
+      },
+      "freeSpins": { "symbol": "ball", "awards": { "3": 8, "4": 12, "5": 20 }, "multiplier": 2, "pause": 1 }
+    },
+    {
+      "id": "palace",
+      "name": "Pouch Palace",
+      "description": "Twenty paylines of velvet and gold. Three Cheek Pouches spin the jackpot wheel for a pot.",
+      "unlockCost": 3000000,
+      "startReels": 5,
+      "maxReels": 5,
+      "rows": 3,
+      "paylines": [[1, 1, 1, 1, 1], [0, 0, 0, 0, 0], [2, 2, 2, 2, 2], [0, 1, 2, 1, 0], [2, 1, 0, 1, 2],
+                   [0, 0, 1, 2, 2], [2, 2, 1, 0, 0], [1, 0, 0, 0, 1], [1, 2, 2, 2, 1], [1, 2, 1, 0, 1],
+                   [0, 1, 0, 1, 0], [2, 1, 2, 1, 2], [1, 1, 0, 1, 1], [1, 1, 2, 1, 1], [0, 1, 1, 1, 0],
+                   [2, 1, 1, 1, 2], [0, 0, 2, 0, 0], [2, 2, 0, 2, 2], [0, 2, 0, 2, 0], [2, 0, 2, 0, 2]],
+      "startLines": 10,
+      "spinCost": 500,
+      "spinDuration": 3.6,
+      "symbols": [
+        { "id": "seed", "name": "Sunflower Seed", "weight": 28 },
+        { "id": "blueberry", "name": "Blueberry", "weight": 20 },
+        { "id": "strawberry", "name": "Strawberry", "weight": 16 },
+        { "id": "apple", "name": "Red Apple", "weight": 12, "locked": true },
+        { "id": "golden", "name": "Golden Seed", "weight": 7, "locked": true },
+        { "id": "wild", "name": "Hamster Wild", "weight": 5, "wild": true },
+        { "id": "pouch", "name": "Cheek Pouch", "weight": 2.8, "scatter": true },
+        { "id": "blank", "name": "Wood Shaving", "weight": 70, "blank": true }
+      ],
+      "payouts": {
+        "seed": { "2": 1800, "3": 3100, "4": 5400, "5": 9500 },
+        "blueberry": { "2": 2700, "3": 4700, "4": 10800, "5": 23900 },
+        "strawberry": { "2": 3800, "3": 8500, "4": 21400, "5": 59900 },
+        "apple": { "2": 9500, "3": 59900, "4": 359100, "5": 1795500 },
+        "golden": { "2": 23900, "3": 299300, "4": 2154600, "5": 11970000 },
+        "wild": { "2": 18000, "3": 179600, "4": 1436400, "5": 9576000 }
+      },
+      "jackpot": {
+        "symbol": "pouch",
+        "min": 3,
+        "duration": 3,
+        "pots": [
+          { "id": "mini", "name": "Mini", "weight": 62, "seed": 30000, "growth": 6 },
+          { "id": "minor", "name": "Minor", "weight": 27, "seed": 75000, "growth": 12 },
+          { "id": "major", "name": "Major", "weight": 10, "seed": 300000, "growth": 24 },
+          { "id": "grand", "name": "Grand", "weight": 1, "seed": 3000000, "growth": 60 }
+        ]
+      }
+    }
+  ],
+  "delivery": {
+    "name": "Food Delivery",
+    "description": "Your hamster scoots off to deliver seeds. Safe coins, but nobody runs the wheel while it's away.",
+    "duration": 45,
+    "reward": 20
+  },
+  "upgrades": [
+    {
+      "id": "cheeks",
+      "name": "Chubby Cheeks",
+      "description": "Stuffs more coins in those cheeks.",
+      "scope": "global",
+      "baseCost": 200,
+      "growthRate": 1.16,
+      "maxLevel": null,
+      "effect": { "type": "payoutMultiplier", "perLevel": 0.25 }
+    },
+    {
+      "id": "wheel",
+      "name": "Wheel Training",
+      "description": "Your hamster learns to run the wheel on its own.",
+      "scope": "global",
+      "baseCost": 600,
+      "growthRate": 1.6,
+      "maxLevel": 4,
+      "effect": { "type": "autoSpin", "baseInterval": 4.6, "intervalMultiplier": 0.93, "rest": 0.8 }
+    },
+    {
+      "id": "clover",
+      "name": "Four-Leaf Clover",
+      "description": "Your hamster found a four-leaf clover. More Luck on every machine: fewer Wood Shavings, more wins.",
+      "scope": "global",
+      "baseCost": 500,
+      "growthRate": 2,
+      "maxLevel": 5,
+      "effect": { "type": "luck", "perLevel": 10 }
+    },
+    {
+      "id": "highRoller",
+      "name": "High Roller",
+      "description": "Your hamster learns to carry bigger coins. Unlocks the next bet size on every machine.",
+      "scope": "global",
+      "baseCost": 3000,
+      "growthRate": 15,
+      "maxLevel": 4,
+      "effect": { "type": "betSteps", "stepsPerLevel": 1 }
+    },
+    {
+      "id": "hotStreak",
+      "name": "Hot Streak",
+      "description": "Wins in a row get your hamster fired up: each one pays a bit more than the last.",
+      "scope": "global",
+      "baseCost": 20000,
+      "growthRate": 4,
+      "maxLevel": 5,
+      "effect": { "type": "winStreak", "perStack": 0.05, "maxStacks": 5 }
+    },
+    {
+      "id": "lever",
+      "name": "Oiled Lever",
+      "description": "A drop of oil and the old lever takes fewer coins per pull.",
+      "scope": "machine",
+      "machines": ["clunky"],
+      "baseCost": 200,
+      "growthRate": 1.35,
+      "maxLevel": 8,
+      "effect": { "type": "spinCostMultiplier", "perLevel": 0.9 }
+    },
+    {
+      "id": "newSeeds",
+      "name": "New Seeds",
+      "description": "Paint a new symbol onto Old Clunky's reels: first the Baby Carrot, then the Golden Seed. Bigger prizes, but wins come a little less often.",
+      "scope": "machine",
+      "machines": ["clunky"],
+      "baseCost": 300,
+      "growthRate": 6,
+      "maxLevel": 2,
+      "effect": { "type": "unlockSymbol", "symbols": ["carrot", "golden"] }
+    },
+    {
+      "id": "horseshoe",
+      "name": "Lucky Horseshoe",
+      "description": "A horseshoe nailed above Old Clunky's reels. More Luck on this machine.",
+      "scope": "machine",
+      "machines": ["clunky"],
+      "baseCost": 300,
+      "growthRate": 2,
+      "maxLevel": 5,
+      "effect": { "type": "luck", "perLevel": 10 }
+    },
+    {
+      "id": "thirdReel",
+      "name": "Third Reel",
+      "description": "Bolt a third reel onto Old Clunky.",
+      "scope": "machine",
+      "machines": ["clunky"],
+      "baseCost": 1600,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "extraReel", "reelsPerLevel": 1 }
+    },
+    {
+      "id": "gears",
+      "name": "Smooth Gears",
+      "description": "Greased gears inside the Snack Stacker. Fewer coins per spin.",
+      "scope": "machine",
+      "machines": ["stacker"],
+      "baseCost": 4000,
+      "growthRate": 1.3,
+      "maxLevel": 8,
+      "effect": { "type": "spinCostMultiplier", "perLevel": 0.9 }
+    },
+    {
+      "id": "paylines",
+      "name": "Extra Paylines",
+      "description": "Chalk another winning line across the Snack Stacker: the two diagonals.",
+      "scope": "machine",
+      "machines": ["stacker"],
+      "baseCost": 20000,
+      "growthRate": 4,
+      "maxLevel": 2,
+      "effect": { "type": "extraPayline", "linesPerLevel": 1 }
+    },
+    {
+      "id": "fourthReel",
+      "name": "Fourth Reel",
+      "description": "Bolt a fourth reel onto the Snack Stacker. Four in a row pays huge.",
+      "scope": "machine",
+      "machines": ["stacker"],
+      "baseCost": 200000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "extraReel", "reelsPerLevel": 1 }
+    },
+    {
+      "id": "hamsterWild",
+      "name": "Hamster Wild",
+      "description": "Your hamster's face on the Snack Stacker's reels. It stands in for any snack.",
+      "scope": "machine",
+      "machines": ["stacker"],
+      "baseCost": 60000,
+      "growthRate": 3,
+      "maxLevel": 3,
+      "effect": { "type": "symbolWeight", "symbol": "wild", "perLevel": 2 }
+    },
+    {
+      "id": "snackRestock",
+      "name": "Snack Restock",
+      "description": "Stock the Snack Stacker with new treats: first the Strawberry, then the Golden Seed. Bigger prizes, but wins come a little less often.",
+      "scope": "machine",
+      "machines": ["stacker"],
+      "baseCost": 10000,
+      "growthRate": 6,
+      "maxLevel": 2,
+      "effect": { "type": "unlockSymbol", "symbols": ["strawberry", "golden"] }
+    },
+    {
+      "id": "sprinkles",
+      "name": "Lucky Sprinkles",
+      "description": "Rainbow sprinkles in the Snack Stacker's gears. More Luck on this machine.",
+      "scope": "machine",
+      "machines": ["stacker"],
+      "baseCost": 8000,
+      "growthRate": 2,
+      "maxLevel": 5,
+      "effect": { "type": "luck", "perLevel": 10 }
+    },
+    {
+      "id": "tunnelGrease",
+      "name": "Tunnel Grease",
+      "description": "Slippery tunnels. The Burrow Bonanza takes fewer coins per spin.",
+      "scope": "machine",
+      "machines": ["bonanza"],
+      "baseCost": 10000,
+      "growthRate": 1.3,
+      "maxLevel": 8,
+      "effect": { "type": "spinCostMultiplier", "perLevel": 0.9 }
+    },
+    {
+      "id": "moreTunnels",
+      "name": "More Tunnels",
+      "description": "Dig another winding payline through the burrow.",
+      "scope": "machine",
+      "machines": ["bonanza"],
+      "baseCost": 25000,
+      "growthRate": 2.5,
+      "maxLevel": 5,
+      "effect": { "type": "extraPayline", "linesPerLevel": 1 }
+    },
+    {
+      "id": "bouncyBall",
+      "name": "Bouncy Ball",
+      "description": "A springier Hamster Ball. More free spins every time they start.",
+      "scope": "machine",
+      "machines": ["bonanza"],
+      "baseCost": 20000,
+      "growthRate": 2.2,
+      "maxLevel": 5,
+      "effect": { "type": "extraFreeSpins", "perLevel": 3 }
+    },
+    {
+      "id": "deeperDigging",
+      "name": "Deeper Digging",
+      "description": "Dig up new treats for the Burrow Bonanza: first the Red Apple, then the Golden Seed. Bigger prizes, but wins come a little less often.",
+      "scope": "machine",
+      "machines": ["bonanza"],
+      "baseCost": 30000,
+      "growthRate": 6,
+      "maxLevel": 2,
+      "effect": { "type": "unlockSymbol", "symbols": ["apple", "golden"] }
+    },
+    {
+      "id": "acorn",
+      "name": "Lucky Acorn",
+      "description": "A lucky acorn buried under the Burrow Bonanza. More Luck on this machine.",
+      "scope": "machine",
+      "machines": ["bonanza"],
+      "baseCost": 25000,
+      "growthRate": 2,
+      "maxLevel": 5,
+      "effect": { "type": "luck", "perLevel": 10 }
+    },
+    {
+      "id": "velvetGears",
+      "name": "Velvet Gears",
+      "description": "Plush-lined gears. The Pouch Palace takes fewer coins per spin.",
+      "scope": "machine",
+      "machines": ["palace"],
+      "baseCost": 400000,
+      "growthRate": 1.3,
+      "maxLevel": 8,
+      "effect": { "type": "spinCostMultiplier", "perLevel": 0.9 }
+    },
+    {
+      "id": "extraPouches",
+      "name": "Extra Pouches",
+      "description": "Stitch two more paylines across the Pouch Palace.",
+      "scope": "machine",
+      "machines": ["palace"],
+      "baseCost": 800000,
+      "growthRate": 2.5,
+      "maxLevel": 5,
+      "effect": { "type": "extraPayline", "linesPerLevel": 2 }
+    },
+    {
+      "id": "pouchPolish",
+      "name": "Pouch Polish",
+      "description": "Shiny pouches attract coins. Every jackpot pot grows faster.",
+      "scope": "machine",
+      "machines": ["palace"],
+      "baseCost": 1200000,
+      "growthRate": 3,
+      "maxLevel": 4,
+      "effect": { "type": "jackpotGrowth", "perLevel": 0.5 }
+    },
+    {
+      "id": "royalPantry",
+      "name": "Royal Pantry",
+      "description": "Fill the Pouch Palace's pantry: first the Red Apple, then the Golden Seed. Bigger prizes, but wins come a little less often.",
+      "scope": "machine",
+      "machines": ["palace"],
+      "baseCost": 1200000,
+      "growthRate": 6,
+      "maxLevel": 2,
+      "effect": { "type": "unlockSymbol", "symbols": ["apple", "golden"] }
+    },
+    {
+      "id": "charm",
+      "name": "Lucky Charm",
+      "description": "A golden charm hung over the Pouch Palace's reels. More Luck on this machine.",
+      "scope": "machine",
+      "machines": ["palace"],
+      "baseCost": 800000,
+      "growthRate": 2,
+      "maxLevel": 5,
+      "effect": { "type": "luck", "perLevel": 10 }
+    }
+  ],
+  "winTiers": [
+    { "id": "nice", "minMultiple": 10 },
+    { "id": "big", "minMultiple": 20 },
+    { "id": "jackpot", "minMultiple": 100 }
+  ],
+  "offline": {
+    "minSeconds": 60,
+    "maxSeconds": 7200,
+    "efficiency": 0.5
+  },
+  "retirement": {
+    "name": "Retire to the Big Cage",
+    "currencyName": "Heirloom Seeds",
+    "seedDivisor": 1300,
+    "seedExponent": 0.5,
+    "payoutBonusPerSeedEarned": 0.015,
+    "pupNames": ["Pip", "Nibbles", "Biscuit", "Hazel", "Mochi", "Peanut", "Waffles", "Clover", "Pudding", "Sesame", "Truffle", "Button"]
+  },
+  "familyTree": {
+    "branches": [
+      { "id": "roots", "name": "Roots" },
+      { "id": "luck", "name": "Luck" },
+      { "id": "speed", "name": "Speed" },
+      { "id": "delivery", "name": "Delivery" }
+    ],
+    "nodes": [
+      {
+        "id": "familyPride",
+        "name": "Family Pride",
+        "description": "Every pup in the family is born with chubby cheeks.",
+        "branch": "roots",
+        "requires": [],
+        "baseCost": 1,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "payoutMultiplier", "perLevel": 0.25 }
+      },
+      {
+        "id": "familyFortune",
+        "name": "Family Fortune",
+        "description": "Old family savings that grow with every generation.",
+        "branch": "roots",
+        "requires": ["familyPride"],
+        "baseCost": 3,
+        "growthRate": 1.5,
+        "maxLevel": null,
+        "effect": { "type": "payoutMultiplier", "perLevel": 0.1 }
+      },
+      {
+        "id": "luckyWhiskers",
+        "name": "Lucky Whiskers",
+        "description": "Twitchy whiskers sniff out gold. Some Sunflower Seeds become Golden Seeds.",
+        "branch": "luck",
+        "requires": ["familyPride"],
+        "baseCost": 2,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "shiftWeight", "from": "seed", "to": "golden", "amount": 5 }
+      },
+      {
+        "id": "carrotPatch",
+        "name": "Carrot Patch",
+        "description": "Grandma's secret garden. Some Sunflower Seeds become Baby Carrots.",
+        "branch": "luck",
+        "requires": ["luckyWhiskers"],
+        "baseCost": 4,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "shiftWeight", "from": "seed", "to": "carrot", "amount": 5 }
+      },
+      {
+        "id": "jackpotDance",
+        "name": "Jackpot Dance",
+        "description": "When every reel matches, the hamster does a happy dance and the win pays extra.",
+        "branch": "luck",
+        "requires": ["carrotPatch"],
+        "baseCost": 8,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "fullLineMultiplier", "multiplier": 1.5 }
+      },
+      {
+        "id": "warmUpLaps",
+        "name": "Warm-up Laps",
+        "description": "Pups are born knowing how to run the wheel.",
+        "branch": "speed",
+        "requires": ["familyPride"],
+        "baseCost": 1,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "startingLevel", "upgrade": "wheel", "levels": 1 }
+      },
+      {
+        "id": "quickPaws",
+        "name": "Quick Paws",
+        "description": "Spins and auto-spins go faster.",
+        "branch": "speed",
+        "requires": ["warmUpLaps"],
+        "baseCost": 4,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "spinSpeed", "multiplier": 0.8 }
+      },
+      {
+        "id": "heirloomReel",
+        "name": "Heirloom Reel",
+        "description": "The family keeps Old Clunky's third reel.",
+        "branch": "speed",
+        "requires": ["quickPaws"],
+        "baseCost": 8,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "startingLevel", "upgrade": "thirdReel", "levels": 1 }
+      },
+      {
+        "id": "speedyScooter",
+        "name": "Speedy Scooter",
+        "description": "A zippier scooter. Deliveries are quicker.",
+        "branch": "delivery",
+        "requires": ["familyPride"],
+        "baseCost": 1,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "deliveryTime", "multiplier": 0.6 }
+      },
+      {
+        "id": "bigBackpack",
+        "name": "Big Backpack",
+        "description": "Room for more seeds. Your payout bonuses boost deliveries too.",
+        "branch": "delivery",
+        "requires": ["speedyScooter"],
+        "baseCost": 2,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "deliveryPayoutBonus" }
+      },
+      {
+        "id": "selfStarter",
+        "name": "Self-Starter",
+        "description": "When you're out of coins, the hamster heads off on a delivery by itself.",
+        "branch": "delivery",
+        "requires": ["bigBackpack"],
+        "baseCost": 3,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "autoDelivery" }
+      }
+    ]
+  },
+  "tokens": {
+    "name": "Hamster Tokens",
+    "perJackpot": 1,
+    "jackpotSymbol": "golden",
+    "jackpotMinReels": 3,
+    "deliveryEvery": 5,
+    "perDelivery": 1,
+    "perRetirement": 3
+  },
+  "capsules": {
+    "name": "Capsule Machine",
+    "pullCost": 10,
+    "rarities": [
+      { "id": "common", "name": "Common", "weight": 70, "duplicateRefund": 2 },
+      { "id": "rare", "name": "Rare", "weight": 25, "duplicateRefund": 4 },
+      { "id": "epic", "name": "Epic", "weight": 5, "duplicateRefund": 8 }
+    ],
+    "pityRarity": "epic",
+    "pityPulls": 20
+  },
+  "skinCategories": [
+    { "id": "fur", "name": "Fur" },
+    { "id": "wheel", "name": "Wheel" },
+    { "id": "machine", "name": "Machine" },
+    { "id": "room", "name": "Room" }
+  ],
+  "skins": [
+    { "id": "furClassic", "name": "Classic", "category": "fur", "rarity": "starter" },
+    { "id": "furCinnamon", "name": "Cinnamon", "category": "fur", "rarity": "common" },
+    { "id": "furSnowball", "name": "Snowball", "category": "fur", "rarity": "common" },
+    { "id": "furCocoa", "name": "Cocoa", "category": "fur", "rarity": "common" },
+    { "id": "furLavender", "name": "Lavender", "category": "fur", "rarity": "rare" },
+    { "id": "furMint", "name": "Mint Chip", "category": "fur", "rarity": "rare" },
+    { "id": "furGolden", "name": "Golden Glow", "category": "fur", "rarity": "epic" },
+
+    { "id": "wheelClassic", "name": "Classic Wheel", "category": "wheel", "rarity": "starter" },
+    { "id": "wheelMint", "name": "Mint Wheel", "category": "wheel", "rarity": "common" },
+    { "id": "wheelBerry", "name": "Berry Wheel", "category": "wheel", "rarity": "common" },
+    { "id": "wheelOak", "name": "Oak Wheel", "category": "wheel", "rarity": "rare" },
+    { "id": "wheelGold", "name": "Gold Wheel", "category": "wheel", "rarity": "epic" },
+
+    { "id": "machineClassic", "name": "Mint Clunky", "category": "machine", "rarity": "starter" },
+    { "id": "machinePeach", "name": "Peach Clunky", "category": "machine", "rarity": "common" },
+    { "id": "machineSky", "name": "Sky Clunky", "category": "machine", "rarity": "common" },
+    { "id": "machineGrape", "name": "Grape Clunky", "category": "machine", "rarity": "rare" },
+    { "id": "machineMidnight", "name": "Midnight Clunky", "category": "machine", "rarity": "epic" },
+
+    { "id": "roomClassic", "name": "Cozy Cream", "category": "room", "rarity": "starter" },
+    { "id": "roomStrawberry", "name": "Strawberry Milk", "category": "room", "rarity": "common" },
+    { "id": "roomMint", "name": "Mint Garden", "category": "room", "rarity": "common" },
+    { "id": "roomStarry", "name": "Starry Night", "category": "room", "rarity": "rare" },
+    { "id": "roomSunflower", "name": "Sunflower Field", "category": "room", "rarity": "epic" }
+  ],
+  "diary": [
+    { "id": "firstSpin", "name": "First Spin", "description": "Spin the reels for the first time.", "goal": { "type": "stat", "stat": "spins", "target": 1 }, "tokens": 2 },
+    { "id": "firstWin", "name": "Beginner's Luck", "description": "Win a spin.", "goal": { "type": "stat", "stat": "wins", "target": 1 }, "tokens": 2 },
+    { "id": "wheelTraining", "name": "Look, No Paws!", "description": "Buy Wheel Training.", "goal": { "type": "upgradeLevel", "upgrade": "wheel", "target": 1 }, "tokens": 2 },
+    { "id": "firstDelivery", "name": "Special Delivery", "description": "Finish a food delivery.", "goal": { "type": "stat", "stat": "deliveries", "target": 1 }, "tokens": 1 },
+    { "id": "spins100", "name": "Warming Up", "description": "Spin 100 times.", "goal": { "type": "stat", "stat": "spins", "target": 100 }, "tokens": 2 },
+    { "id": "thirdReel", "name": "Three's Company", "description": "Get the Third Reel.", "goal": { "type": "upgradeLevel", "upgrade": "thirdReel", "target": 1 }, "tokens": 2 },
+    { "id": "newSeed", "name": "Fresh Seeds", "description": "Unlock a new symbol.", "goal": { "type": "stat", "stat": "symbolsUnlocked", "target": 1 }, "tokens": 2 },
+    { "id": "secondMachine", "name": "Snack Time", "description": "Buy a second machine.", "goal": { "type": "stat", "stat": "machinesBought", "target": 1 }, "tokens": 2 },
+    { "id": "threeLines", "name": "Line Dancer", "description": "Win on 3 paylines in a single spin.", "goal": { "type": "stat", "stat": "mostLinesWon", "target": 3 }, "tokens": 3 },
+    { "id": "onFire", "name": "On Fire", "description": "Win 5 paid spins in a row on one machine.", "goal": { "type": "stat", "stat": "bestStreak", "target": 5 }, "tokens": 2 },
+    { "id": "highRoller", "name": "High Roller", "description": "Spin with a bet of x10 or more.", "goal": { "type": "stat", "stat": "biggestBet", "target": 10 }, "tokens": 2 },
+    { "id": "doubleTrouble", "name": "Double Trouble", "description": "Win the card gamble 3 times in a row.", "goal": { "type": "stat", "stat": "bestGambleRun", "target": 3 }, "tokens": 3 },
+    { "id": "cardShark", "name": "Card Shark", "description": "Guess the suit of a gamble card.", "goal": { "type": "stat", "stat": "suitWins", "target": 1 }, "tokens": 3 },
+    { "id": "wildThing", "name": "Wild Thing", "description": "Win with a Hamster Wild.", "goal": { "type": "stat", "stat": "wildWins", "target": 1 }, "tokens": 2 },
+    { "id": "freeRide", "name": "Free Ride", "description": "Roll 3 Hamster Balls for free spins.", "goal": { "type": "stat", "stat": "freeSpinTriggers", "target": 1 }, "tokens": 3 },
+    { "id": "potLuck", "name": "Pot Luck", "description": "Win a jackpot pot.", "goal": { "type": "stat", "stat": "jackpotsWon", "target": 1 }, "tokens": 3 },
+    { "id": "wheelMax", "name": "Top Athlete", "description": "Max out Wheel Training.", "goal": { "type": "upgradeLevel", "upgrade": "wheel", "target": 4 }, "tokens": 3 },
+    { "id": "luck50", "name": "Four-Leaf Hamster", "description": "Reach Luck 50 on a machine.", "goal": { "type": "stat", "stat": "bestLuck", "target": 50 }, "tokens": 3 },
+    { "id": "goldenJackpot", "name": "Golden Moment", "description": "Line up Golden Seeds on every reel (3 reels or more).", "goal": { "type": "stat", "stat": "goldenJackpots", "target": 1 }, "tokens": 3 },
+    { "id": "spins1000", "name": "Wheel Enthusiast", "description": "Spin 1,000 times.", "goal": { "type": "stat", "stat": "spins", "target": 1000 }, "tokens": 3 },
+    { "id": "deliveries25", "name": "Regular Courier", "description": "Finish 25 deliveries.", "goal": { "type": "stat", "stat": "deliveries", "target": 25 }, "tokens": 3 },
+    { "id": "millionaire", "name": "Millionaire", "description": "Earn 1,000,000 coins in total.", "goal": { "type": "stat", "stat": "coinsEarned", "target": 1000000 }, "tokens": 3 },
+    { "id": "firstRetirement", "name": "The Big Cage", "description": "Retire your first hamster.", "goal": { "type": "generation", "target": 2 }, "tokens": 3 },
+    { "id": "tree5", "name": "Growing Family", "description": "Plant 5 Family Tree traits.", "goal": { "type": "treeNodes", "target": 5 }, "tokens": 3 },
+    { "id": "firstCapsule", "name": "Capsule Collector", "description": "Open a capsule.", "goal": { "type": "stat", "stat": "capsulesOpened", "target": 1 }, "tokens": 1 },
+    { "id": "spins10000", "name": "Marathon Runner", "description": "Spin 10,000 times.", "goal": { "type": "stat", "stat": "spins", "target": 10000 }, "tokens": 5 },
+    { "id": "generation5", "name": "Big Family", "description": "Reach generation 5.", "goal": { "type": "generation", "target": 5 }, "tokens": 5 },
+    { "id": "treeAll", "name": "Full Bloom", "description": "Plant every Family Tree trait.", "goal": { "type": "treeNodes", "target": 11 }, "tokens": 5 },
+    { "id": "fashion", "name": "Fashion Hamster", "description": "Collect 8 skins from capsules.", "goal": { "type": "skinsOwned", "target": 8 }, "tokens": 5 },
+    { "id": "fullCage", "name": "Full Cage", "description": "Own every machine at once.", "goal": { "type": "machinesOwned", "target": 4 }, "tokens": 5 },
+    { "id": "grandHamster", "name": "Grand Hamster", "description": "Win the Grand jackpot.", "goal": { "type": "stat", "stat": "grandJackpots", "target": 1 }, "tokens": 5 }
+  ]
+}

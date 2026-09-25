@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hamster Slots</title>
+  <!-- Fonts: Pixelify Sans (pixel words) + Nunito (numbers and easy-to-read body text).
+       Offline, the browser falls back to its own fonts and everything still works. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Pixelify+Sans:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- This file is just the page skeleton. The js/ files fill in the reels,
+       machine cards, upgrade tiles, paytable and sprites from data.json and js/art.js.
+       The look: the game is the inside of a hamster cage (wire bars, wood-shaving
+       bedding, a plastic base), and the UI is cardboard and paper. -->
+  <div class="app">
+
+    <!-- ── HUD: name, coins, menu ── -->
+    <header class="hud">
+      <div class="brand"><img data-sprite="hamster" data-size="24" alt=""><span>Hamster Slots</span></div>
+      <div class="hud-center">
+        <div class="tag coin-tag" id="coin-pill">
+          <img data-sprite="coin" data-size="24" alt="">
+          <span class="coin-count" id="coin-count">0</span>
+          <span class="coin-rate" id="coin-rate"></span>
+        </div>
+        <!-- Heirloom Seeds: appears once the family has any -->
+        <div class="tag seed-tag hidden" id="seed-pill" title="Heirloom Seeds">
+          <img data-sprite="heirloom" data-size="24" alt="">
+          <span class="seed-count" id="seed-count">0</span>
+        </div>
+      </div>
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><span></span><span></span><span></span></button>
+    </header>
+
+    <!-- ── STAGE: the hamster's cage ── -->
+    <section class="stage" id="stage">
+      <!-- The back of the cage: wire bars in front of the room's wall -->
+      <div class="wall" id="wall">
+        <!-- Paper tags hanging on the bars: switch machines (once you own two) -->
+        <div class="machine-tags hidden" id="machine-tags"></div>
+        <img class="prop prop-bottle" data-sprite="bottle" data-size="48" alt="">
+
+        <div class="rig">
+          <!-- Hamster wheel, joined to the machine by a tube: the hamster powers it -->
+          <div class="wheel-unit">
+            <div class="bubble hidden" id="bubble"></div>
+            <!-- During a jackpot wheel the hamster wheel becomes a prize wheel (the face + a pointer) -->
+            <div class="wheel" id="wheel"><div class="spokes" id="spokes"></div><div class="prize-face" id="prize-face"></div></div>
+            <span class="prize-pointer"></span>
+            <img class="hamster" id="hamster" data-sprite="hamster" data-size="48" alt="">
+            <div class="wheel-stand"></div>
+          </div>
+          <div class="belt" id="belt"></div>
+
+          <!-- The slot machine. data-machine says which one (it changes its look). -->
+          <div class="machine" id="machine" data-machine="clunky">
+            <div class="marquee"><span class="bulbs"></span><span id="machine-name">Old Clunky</span><span class="bulbs"></span></div>
+            <!-- Jackpot pots (machines with a jackpot wheel): live coin values at your bet -->
+            <div class="pots hidden" id="pots"></div>
+            <div class="reel-window">
+              <div class="reels" id="reels"></div>
+              <span class="payline-arrow left"></span><span class="payline-arrow right"></span>
+              <!-- The win show names the line it's showing ("Line 4 · Baby Carrot ×3 · 150") -->
+              <div class="line-label hidden" id="line-label"></div>
+            </div>
+            <!-- The WIN meter: counts up to what the last spin paid (a tap on the reels skips the show) -->
+            <div class="win-meter" id="win-meter"><span class="win-meter-label">Win</span><span class="win-meter-value" id="win-meter-value"></span></div>
+            <div class="coin-tray"></div>
+            <!-- Luck (Hamster Luck + Machine Luck): a clover on the machine's corner -->
+            <div class="luck-badge hidden" id="luck-badge"><img data-sprite="clover" data-size="16" alt=""><span id="luck-text"></span></div>
+            <!-- Hot Streak: shows the bonus the next win gets -->
+            <div class="streak-badge hidden" id="streak-badge"><img data-sprite="flame" data-size="16" alt=""><span id="streak-text"></span></div>
+            <!-- The card gamble: offered after a win you pulled yourself. Red/black doubles, a suit ×4. -->
+            <div class="gamble hidden" id="gamble">
+              <div class="gamble-top">
+                <div class="gamble-card" id="gamble-card"></div>
+                <div class="gamble-info">
+                  <div class="gamble-title" id="gamble-title">Gamble?</div>
+                  <div class="gamble-history" id="gamble-history" title="The last cards (every card is a fresh draw)"></div>
+                  <div class="note" id="gamble-note"></div>
+                </div>
+              </div>
+              <div class="gamble-buttons">
+                <button class="btn btn-danger" data-pick="red">Red <b class="num">×2</b></button>
+                <button class="btn btn-black" data-pick="black">Black <b class="num">×2</b></button>
+              </div>
+              <div class="gamble-buttons gamble-suits">
+                <button class="btn btn-card" data-pick="hearts" aria-label="Hearts"><img data-sprite="suitHearts" data-size="24" alt=""><b class="num">×4</b></button>
+                <button class="btn btn-card" data-pick="diamonds" aria-label="Diamonds"><img data-sprite="suitDiamonds" data-size="24" alt=""><b class="num">×4</b></button>
+                <button class="btn btn-card" data-pick="clubs" aria-label="Clubs"><img data-sprite="suitClubs" data-size="24" alt=""><b class="num">×4</b></button>
+                <button class="btn btn-card" data-pick="spades" aria-label="Spades"><img data-sprite="suitSpades" data-size="24" alt=""><b class="num">×4</b></button>
+              </div>
+              <button class="btn btn-gold" id="gamble-keep">Take win</button>
+              <div class="gamble-timer"><div class="gamble-timer-fill" id="gamble-timer"></div></div>
+            </div>
+            <div class="win-layer" id="win-layer"></div>
+            <div class="lever"><span class="lever-stick"></span><span class="lever-knob"></span></div>
+          </div>
+        </div>
+
+        <img class="prop prop-bowl" data-sprite="bowl" data-size="48" alt="">
+        <!-- A little capsule-toy machine in the corner of the cage (wide screens only).
+             It appears with the Capsules tab and opens it when clicked. -->
+        <button class="stage-gacha hidden" id="stage-gacha" aria-label="Open the Capsule Machine">
+          <img data-sprite="gacha" data-size="48" alt="">
+        </button>
+      </div>
+
+      <!-- The bedding the machines stand in, then the front of the plastic base -->
+      <div class="bedding"></div>
+      <div class="floor">
+        <div class="controls">
+          <button id="deliver-btn" class="btn btn-soft btn-deliver">
+            <span class="btn-title">Deliver</span><span class="btn-meta" id="deliver-meta"></span>
+          </button>
+          <button id="spin-btn" class="btn btn-primary btn-spin">
+            <span class="btn-title" id="spin-title">Spin</span>
+            <span class="btn-meta" id="spin-meta"></span>
+          </button>
+          <!-- The bet ("denom"): every spin costs and pays × this. High Roller unlocks bigger bets. -->
+          <div class="bet-box" id="bet-box">
+            <button class="btn btn-card bet-btn" id="bet-down" aria-label="Lower the bet">−</button>
+            <div class="bet-value"><span class="bet-label">Bet</span><span class="bet-amount" id="bet-amount">×1</span><span class="bet-hint" id="bet-hint"></span></div>
+            <button class="btn btn-card bet-btn" id="bet-up" aria-label="Raise the bet">+</button>
+          </div>
+        </div>
+
+        <!-- The delivery route: a clear tube the hamster runs through while it's away -->
+        <div class="road" id="road">
+          <div class="road-track"><div class="road-fill" id="road-fill"></div></div>
+          <img class="road-hamster" id="road-hamster" data-sprite="hamster" data-size="24" alt="">
+          <span class="road-label" id="road-label"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TRAY: a cardboard box of tabs ── -->
+    <section class="tray">
+      <nav class="tabs" role="tablist">
+        <button class="tab active" role="tab" data-tab="upgrades">Upgrades</button>
+        <!-- Hidden until the hamster could retire for its first Heirloom Seed -->
+        <button class="tab hidden" role="tab" data-tab="family" id="family-tab">Family</button>
+        <!-- Hidden until the Hamster Diary has paid for a first capsule -->
+        <button class="tab hidden" role="tab" data-tab="capsules" id="capsules-tab">Capsules</button>
+        <button class="tab" role="tab" data-tab="info">Info</button>
+      </nav>
+
+      <!-- Sub-tabs: every tab with several parts gets a row of paper labels
+           (dom.js createSubTabs). A dot means "something here is ready". -->
+      <div class="tab-panel" id="tab-upgrades">
+        <div class="subtab-row">
+          <nav class="subtabs" id="upgrades-subtabs">
+            <button class="subtab" data-sub="hamster">Hamster</button>
+            <button class="subtab" data-sub="machine" id="machine-subtab">Machine</button>
+            <button class="subtab" data-sub="machines">Machines</button>
+          </nav>
+          <div class="seg buy-amount" id="buy-amount" role="group" aria-label="How many levels to buy"></div>
+        </div>
+        <div class="subpanel" data-sub="hamster">
+          <p class="note subpanel-note">Your hamster's own upgrades: they work on every machine.</p>
+          <div class="upgrade-grid" id="upgrade-list-hamster"></div>
+        </div>
+        <div class="subpanel" data-sub="machine">
+          <p class="note subpanel-note" id="machine-upgrades-note"></p>
+          <div class="upgrade-grid" id="upgrade-list-machine"></div>
+        </div>
+        <div class="subpanel" data-sub="machines">
+          <p class="note subpanel-note">Buy a new machine, or switch between the ones you own. Each machine keeps its own upgrades and bet.</p>
+          <div class="machine-list" id="machine-list"></div>
+        </div>
+      </div>
+
+      <!-- Family: retire for Heirloom Seeds, then plant them in the family tree -->
+      <div class="tab-panel hidden" id="tab-family">
+        <div class="retire-card">
+          <div class="retire-info">
+            <div class="retire-who">
+              <img id="pup-img" data-sprite="hamster" data-size="48" alt="">
+              <div>
+                <div class="retire-name" id="pup-name"></div>
+                <div class="tile-tag" id="pup-gen"></div>
+              </div>
+            </div>
+            <div class="retire-gain">Retire now: <span class="seed-amount" id="retire-gain"></span></div>
+            <div class="seed-bar"><div class="seed-bar-fill" id="seed-bar-fill"></div></div>
+            <div class="note" id="seed-next"></div>
+          </div>
+          <div class="retire-action">
+            <p class="note">A new pup starts over: coins, upgrades (High Roller too), machines and unplayed free spins reset.
+              The family keeps its Heirloom Seeds, the family tree, and a <b>+<span id="heirloom-per-seed"></span>% payout bonus</b> for every seed ever earned.</p>
+            <button class="btn btn-gold" id="retire-btn">Retire to the Big Cage</button>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h3>Family Tree</h3>
+          <span class="note">Plant Heirloom Seeds for traits every future pup is born with.</span>
+        </div>
+        <div class="tree" id="tree"></div>
+        <div class="tree-detail" id="tree-detail"></div>
+      </div>
+
+      <!-- Capsules: spend Hamster Tokens on skins, wear them, and see how to earn tokens -->
+      <div class="tab-panel hidden" id="tab-capsules">
+        <div class="subtab-row">
+          <nav class="subtabs" id="capsules-subtabs">
+            <button class="subtab" data-sub="machine">Capsule Machine</button>
+            <button class="subtab" data-sub="wardrobe">Wardrobe</button>
+            <button class="subtab" data-sub="diary">Diary</button>
+          </nav>
+        </div>
+        <div class="subpanel" data-sub="machine">
+          <div class="capsule-card">
+            <div class="cap-machine" id="cap-machine"><img data-sprite="gacha" data-size="96" alt=""></div>
+            <div class="cap-info">
+              <div class="cap-tokens"><img data-sprite="token" data-size="24" alt=""><span id="cap-tokens">0</span><span class="note">Hamster Tokens</span></div>
+              <button class="btn btn-token" id="pull-btn">Pull a capsule</button>
+              <div class="note" id="cap-pity"></div>
+              <div class="cap-odds" id="cap-odds"></div>
+            </div>
+            <div class="cap-reveal" id="cap-reveal"></div>
+          </div>
+        </div>
+        <div class="subpanel" data-sub="wardrobe">
+          <p class="note subpanel-note">Skins are just for looks. Tap one you own to wear it.</p>
+          <div class="wardrobe" id="wardrobe"></div>
+        </div>
+        <div class="subpanel" data-sub="diary">
+          <p class="note subpanel-note" id="diary-note"></p>
+          <div class="diary" id="diary"></div>
+        </div>
+      </div>
+
+      <!-- Info: the machine you're running (paytable, paylines, bonus features) and recent wins -->
+      <div class="tab-panel hidden" id="tab-info">
+        <div class="subtab-row">
+          <nav class="subtabs" id="info-subtabs">
+            <button class="subtab" data-sub="paytable">Paytable</button>
+            <button class="subtab" data-sub="paylines" id="paylines-subtab">Paylines</button>
+            <button class="subtab" data-sub="features">Features</button>
+            <button class="subtab" data-sub="wins">Recent wins</button>
+          </nav>
+        </div>
+        <div class="subpanel" data-sub="paytable">
+          <table class="paytable" id="paytable"></table>
+          <p class="note" id="paytable-note"></p>
+        </div>
+        <div class="subpanel" data-sub="paylines">
+          <div class="paylines-legend" id="paylines-legend"></div>
+          <p class="note" id="paylines-note"></p>
+        </div>
+        <div class="subpanel" data-sub="features">
+          <div class="features" id="features"></div>
+        </div>
+        <div class="subpanel" data-sub="wins">
+          <p class="note subpanel-note">Your last few wins, free spins, jackpots and gambles. This visit only.</p>
+          <div class="win-log" id="win-log"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ── Menu (settings) ── -->
+  <dialog class="dialog" id="menu">
+    <h2>Menu</h2>
+    <div class="menu-row"><span>Controls</span><span class="note">Space spin · D deliver · <kbd>-</kbd> <kbd>=</kbd> bet · gamble: <kbd>←</kbd> red <kbd>→</kbd> black <kbd>1</kbd>–<kbd>4</kbd> suit <kbd>C</kbd> take win · <kbd>`</kbd> debug</span></div>
+    <div class="menu-row"><span>Saving</span><span class="note">Automatic, every 10 s</span></div>
+    <div class="menu-row"><span>Sound</span>
+      <span class="sound-controls">
+        <input type="range" id="volume" min="0" max="100" step="5" aria-label="Volume">
+        <button class="btn btn-soft btn-small" id="mute-btn">On</button>
+      </span>
+    </div>
+    <!-- Segmented settings: ui.js fills in the buttons -->
+    <div class="menu-row"><span>Motion <span class="note">(hops, shakes, flying coins)</span></span><span class="seg" id="set-motion"></span></div>
+    <div class="menu-row"><span>Reels <span class="note">(spins take the same time)</span></span><span class="seg" id="set-reels"></span></div>
+    <div class="menu-row"><span>Numbers</span><span class="seg" id="set-numbers"></span></div>
+    <button class="btn btn-soft" id="stats-btn">Stats</button>
+    <button class="btn btn-soft" id="debug-btn">Toggle debug panel</button>
+    <button class="btn btn-danger" id="reset-btn">Reset progress</button>
+    <form method="dialog"><button class="btn btn-primary">Close</button></form>
+  </dialog>
+
+  <!-- ── Stats (Menu → Stats) ── -->
+  <dialog class="dialog" id="stats">
+    <h2>Stats</h2>
+    <div class="stats-list" id="stats-list"></div>
+    <form method="dialog"><button class="btn btn-primary">Close</button></form>
+  </dialog>
+
+  <!-- ── Welcome back: coins earned while the game was closed ── -->
+  <dialog class="dialog welcome" id="welcome">
+    <h2>Welcome back!</h2>
+    <div class="welcome-body">
+      <img data-sprite="hamster" data-size="48" alt="">
+      <p id="welcome-text"></p>
+    </div>
+    <div class="welcome-coins" id="welcome-coins"></div>
+    <form method="dialog"><button class="btn btn-primary">Yay!</button></form>
+  </dialog>
+
+  <aside id="debug-panel" class="debug hidden" aria-label="Debug panel"></aside>
+  <!-- Pixel particles (js/fx.js): sparkles, confetti, embers. Over the whole page, never clickable. -->
+  <canvas id="fx" class="fx" aria-hidden="true"></canvas>
+  <div id="boot-error" class="boot-error hidden"></div>
+
+  <!-- Opened by double-clicking index.html (a file:// address)? Then the browser
+       won't load the game's modules or data.json at all, so explain what to do.
+       This is a plain (non-module) script, so it still runs from disk. -->
+  <script>
+    if (location.protocol === 'file:') {
+      var box = document.getElementById('boot-error');
+      box.innerHTML = '<div class="dialog-card"><p><b>Please start the game with play.bat.</b></p>' +
+        '<p>Browsers block pages opened straight from disk from loading data.json. ' +
+        'Double-click <b>play.bat</b> in the hamster_slots folder: it starts a tiny local server and opens the game.</p></div>';
+      box.classList.remove('hidden');
+    }
+  </script>
+
+  <!-- type="module" lets the JS files import each other. It needs the local
+       server that play.bat starts; see AGENTS.md → How to run. -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

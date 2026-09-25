@@ -1,0 +1,285 @@
+// payouts.js — VIEW layer. The Info tab, in four sub-tabs:
+//   1) Paytable: what the machine you're running pays, with every bonus applied
+//      (and what its scatters do).
+//   2) Paylines: its paylines as little grids (lines you haven't unlocked are faded).
+//   3) Features: how its bonus features work, with the REAL odds from game.js
+//      (wild, free spins, jackpot pots, the gamble, Hot Streak, bets).
+//   4) Recent wins: the last few wins, free spins, pots and gambles, newest first.
+//      View only: it's not saved, and it starts empty every session.
+// Godot: InfoPanel.tscn (a ItemList for the log, a GridContainer per line).
+
+import { symbolImg, MACHINE_SPRITES, SYMBOL_SPRITES } from './art.js';
+import { formatCoins, iconHTML, setHTML, createSubTabs } from './dom.js';
+
+const LOG_SIZE = 10;
+const TIER_NAMES = { nice: 'Nice', big: 'Big win', jackpot: 'Jackpot' };
+
+// "1 in 76 spins" (or "every spin" for anything that likely).
+function oneIn(chance) {
+  if (!(chance > 0)) return 'never';
+  const n = 1 / chance;
+  return n < 1.5 ? 'almost every spin' : `about 1 in ${n < 100 ? Math.round(n) : formatCoins(Math.round(n / 10) * 10)} spins`;
+}
+
+export function createPayoutsView(game, { settings, onSettingsChange } = {}) {
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    log: $('win-log'), table: $('paytable'), lines: $('paylines-legend'), linesNote: $('paylines-note'),
+    note: $('paytable-note'), features: $('features'),
+  };
+  const subtabs = createSubTabs($('info-subtabs'), $('tab-info'), { key: 'info', settings, onSettingsChange });
+  const log = []; // { machineId, kind, wins?, payout, tier?, text?, at (performance.now()) }
+  let logDirty = true;
+  let lastLogDraw = 0;
+  let tableKey = '';
+  let featuresKey = '';
+  let unseenWins = false;
+
+  function addLog(entry) {
+    log.unshift({ ...entry, at: performance.now() });
+    log.length = Math.min(log.length, LOG_SIZE);
+    logDirty = true;
+    if (subtabs.current !== 'wins') unseenWins = entry.kind !== 'spin' || (entry.tier && entry.tier !== 'win');
+  }
+  // Free-spin wins are summed up in one line when they end, not logged one by one.
+  game.on('spinResolved', (e) => {
+    if (e.payout <= 0 || e.free) return;
+    addLog({ machineId: e.machineId, kind: 'spin', wins: e.wins, payout: e.payout, tier: e.tier, bet: e.bet });
+  });
+  game.on('freeSpinsEnded', (e) => addLog({ machineId: e.machineId, kind: 'free', payout: e.won, text: `${e.spins} free spins` }));
+  game.on('jackpotWon', (e) => {
+    const md = game.data.machines.find((m) => m.id === e.machineId);
+    const pot = md && md.jackpot ? md.jackpot.pots.find((p) => p.id === e.pot) : null;
+    addLog({ machineId: e.machineId, kind: 'pot', payout: e.amount, text: `${pot ? pot.name : e.pot} jackpot` });
+  });
+  game.on('gambleEnded', (e) => {
+    if (!e.started) return;
+    addLog({ machineId: e.machineId, kind: 'gamble', payout: e.won, text: e.won >= 0 ? `Gamble: ${e.rounds} card${e.rounds === 1 ? '' : 's'} right` : 'Gamble lost' });
+  });
+
+  // "12s ago", "3 min ago"
+  function ago(ms) {
+    const s = Math.floor(ms / 1000);
+    return s < 60 ? `${s}s ago` : `${Math.floor(s / 60)} min ago`;
+  }
+
+  function drawLog(now) {
+    if (log.length === 0) {
+      el.log.innerHTML = '<div class="note">No wins yet this visit. Give the lever a pull!</div>';
+      return;
+    }
+    el.log.replaceChildren(...log.map((entry) => {
+      const row = document.createElement('div');
+      row.className = `log-row tier-${entry.tier || entry.kind}`;
+      const md = game.data.machines.find((m) => m.id === entry.machineId);
+      let middle;
+      let chip = '';
+      if (entry.kind === 'spin') {
+        // Each winning line as "symbol ×count" (the icon shows which symbol).
+        middle = entry.wins.map((w) => `<span class="log-line">${iconHTML(SYMBOL_SPRITES[w.symbolId], 24)}×${w.count}</span>`).join('');
+        if (entry.bet > 1) middle += `<span class="log-bet">bet ×${entry.bet}</span>`;
+        if (TIER_NAMES[entry.tier]) chip = `<span class="tier-chip tier-${entry.tier}">${TIER_NAMES[entry.tier]}</span>`;
+      } else {
+        const icon = { free: 'ballIcon', pot: 'pouchPolish', gamble: 'cardBack' }[entry.kind];
+        middle = `<span class="log-line">${iconHTML(icon, 16)} ${entry.text}</span>`;
+        chip = `<span class="tier-chip tier-${entry.kind}">${{ free: 'Free spins', pot: 'Pot', gamble: 'Gamble' }[entry.kind]}</span>`;
+      }
+      const sign = entry.payout < 0 ? '−' : '+';
+      row.innerHTML = `<span class="log-machine" title="${md ? md.name : ''}">${iconHTML(MACHINE_SPRITES[entry.machineId], 24)}</span>
+        <span class="log-lines">${middle}</span>${chip}
+        <span class="log-pay${entry.payout < 0 ? ' lost' : ''}">${sign}${formatCoins(Math.abs(entry.payout))}</span><span class="log-ago">${ago(now - entry.at)}</span>`;
+      return row;
+    }));
+  }
+
+  function buildTable() {
+    const md = game.getMachineData();
+    const symbols = game.getSymbols();
+    const reelCount = game.getReelCount();
+    const mult = game.getPayoutMultiplier() * game.getBet();
+    const fullLine = game.getFullLineMultiplier();
+    const head = document.createElement('tr');
+    head.innerHTML = '<th>Symbol</th><th>Chance</th>';
+    for (let k = 2; k <= md.maxReels; k++) {
+      const th = document.createElement('th');
+      th.textContent = k > reelCount ? `${k} in a row (locked)` : `${k} in a row`;
+      th.classList.toggle('locked', k > reelCount);
+      head.appendChild(th);
+    }
+    const totalWeight = symbols.reduce((sum, s) => sum + s.weight, 0);
+    // Every symbol is listed, locked ones too (faded, with the upgrade that unlocks them).
+    const rows = symbols.map((s) => {
+      const tr = document.createElement('tr');
+      const locked = game.isSymbolLocked(s.id);
+      tr.classList.toggle('locked-symbol', locked);
+      const name = document.createElement('td');
+      const inner = document.createElement('div');
+      inner.className = 'sym-cell';
+      inner.append(symbolImg(s.id, 24), s.name);
+      if (s.wild) inner.insertAdjacentHTML('beforeend', ' <span class="feature-chip chip-wild">Wild</span>');
+      if (s.scatter) inner.insertAdjacentHTML('beforeend', ' <span class="feature-chip chip-free">Scatter</span>');
+      if (s.blank) inner.insertAdjacentHTML('beforeend', ' <span class="feature-chip chip-blank">Blank</span>');
+      name.appendChild(inner);
+      const chance = document.createElement('td');
+      const p = s.weight / totalWeight;
+      chance.textContent = s.weight > 0 ? `${p < 0.1 ? (p * 100).toFixed(1) : Math.round(p * 100)}%` : locked ? 'locked' : 'upgrade';
+      tr.append(name, chance);
+      if (s.blank || locked) {
+        // A blank pays nothing; a locked symbol says how to get it (its prizes stay visible, faded).
+        if (s.blank) {
+          const td = document.createElement('td');
+          td.colSpan = md.maxReels - 1;
+          td.className = 'scatter-note';
+          td.textContent = 'Never pays: the empty stop on the reels. Luck makes it land less often.';
+          tr.appendChild(td);
+          return tr;
+        }
+        const unlock = game.getSymbolUnlock(s.id);
+        inner.insertAdjacentHTML('beforeend', ` <span class="feature-chip chip-seeds">Unlock: ${unlock ? unlock.name : 'shop'}</span>`);
+      }
+      if (s.scatter) {
+        // A scatter pays nothing on a line: say what it does instead.
+        const td = document.createElement('td');
+        td.colSpan = md.maxReels - 1;
+        td.className = 'scatter-note';
+        if (md.freeSpins && md.freeSpins.symbol === s.id) {
+          const awards = Object.entries(md.freeSpins.awards).map(([k, n]) => `${k}+ → ${n} free spins`).join(' · ');
+          td.textContent = `Anywhere on the reels: ${awards} (wins ×${md.freeSpins.multiplier})`;
+        } else if (md.jackpot && md.jackpot.symbol === s.id) {
+          td.textContent = `Anywhere on the reels: ${md.jackpot.min}+ spin the jackpot wheel`;
+        }
+        tr.appendChild(td);
+        return tr;
+      }
+      for (let k = 2; k <= md.maxReels; k++) {
+        const td = document.createElement('td');
+        // Jackpot Dance: a line of EVERY reel pays extra (for a locked column: once it unlocks).
+        const bonus = k >= reelCount ? fullLine : 1;
+        td.textContent = formatCoins(((md.payouts[s.id] || {})[String(k)] || 0) * mult * bonus);
+        td.classList.toggle('locked', k > reelCount);
+        tr.appendChild(td);
+      }
+      return tr;
+    });
+    el.table.replaceChildren(head, ...rows);
+
+    // Paylines: a little grid per line, its cells filled along the line.
+    const all = md.paylines || null;
+    subtabs.setHidden('paylines', !all);
+    if (all) {
+      const active = game.getLineCount();
+      el.lines.replaceChildren(...all.map((line, index) => {
+        const box = document.createElement('div');
+        box.className = `line-card line-${index % 10}${index >= active ? ' locked' : ''}`;
+        const grid = document.createElement('div');
+        grid.className = 'line-grid';
+        grid.style.gridTemplateColumns = `repeat(${reelCount}, 1fr)`;
+        for (let row = 0; row < (md.rows || 1); row++) {
+          for (let reel = 0; reel < reelCount; reel++) {
+            const dot = document.createElement('span');
+            dot.className = line[reel] === row ? 'on' : '';
+            grid.appendChild(dot);
+          }
+        }
+        const label = document.createElement('span');
+        label.className = 'line-label';
+        label.textContent = index >= active ? `Line ${index + 1} · locked` : `Line ${index + 1}`;
+        box.append(grid, label);
+        return box;
+      }));
+      el.linesNote.textContent = `${active} of ${all.length} paylines are active. Every payline is read on its own, left to right, and wins on several lines add up. A spin costs the same however many lines you have.`;
+    }
+
+    const wild = md.symbols.some((s) => s.wild);
+    const luck = game.getLuck().total;
+    el.note.textContent = (all
+      ? 'Every payline is read on its own, left to right: reel 1 and reel 2 must match to win. Wins on several lines add up.'
+      : 'Matches count from the left: reel 1 and reel 2 must match to win. Only the middle row (the payline) counts.')
+      + ' A Wood Shaving never pays and ends a run.'
+      + (wild ? ' The Hamster Wild stands in for any symbol on a line (not scatters or Wood Shavings); a line pays whichever reading is worth more.' : '')
+      + ` Prices include your payout bonuses and your bet (×${game.getBet()}). "Chance" is how often one cell lands on that symbol${luck > 0 ? `, with your Luck (${luck})` : ''}.`;
+  }
+
+  // The Features page: every bonus with its real odds, from game.getFeatureOdds().
+  function buildFeatures() {
+    const md = game.getMachineData();
+    const odds = game.getFeatureOdds();
+    const card = (icon, title, body) => `<div class="feature-card"><div class="feature-icon">${iconHTML(icon, 32)}</div><div><div class="tile-name">${title}</div><div class="tile-desc">${body}</div></div></div>`;
+    const cards = [];
+    const steps = game.getBetSteps();
+    // Luck (M7): what the number means, in plain words and this machine's numbers.
+    const luck = odds.luck;
+    const blank = md.symbols.find((s) => s.blank);
+    cards.push(card('clover', `Luck ${luck.total}`,
+      `Luck = Hamster Luck ${luck.hamster} (the Four-Leaf Clover, every machine) + Machine Luck ${luck.machine} (this machine only). Every symbol except the ${blank ? blank.name : 'blank'} lands ×${(1 + luck.total / 100).toFixed(2)} as often as with no Luck, so you hit more often: a paid spin wins on a line ${Math.round(odds.hitRate * 100)}% of the time here, and wins are worth more on average too.`));
+    const info = game.getMachineInfo(md.id);
+    if (info.symbols.lockable > 0) {
+      const unlock = game.getAvailableUpgrades().find((u) => u.effect.type === 'unlockSymbol');
+      const names = unlock ? unlock.effect.symbols.map((id) => md.symbols.find((s) => s.id === id).name).join(', then the ') : '';
+      cards.push(card('seedPacket', `Symbols ${info.symbols.unlocked}/${info.symbols.lockable} unlocked`,
+        `${md.name} starts with fewer symbols. ${unlock ? `${unlock.name} adds the ${names}.` : ''} Each new symbol pays much more, but it takes up room on the reels, so wins come a little less often: more Luck makes up for it. (Unlocks reset when your hamster retires.)`));
+    }
+    cards.push(card('highRollerIcon', `Bet ×${game.getBet()}`,
+      `Every spin costs and pays × your bet, so the machine pays back the same share at any bet: bigger bets are just bigger (and riskier). Use − and + next to Spin. You can bet up to ×${steps[game.getMaxBetIndex()]} now (High Roller unlocks up to ×${steps[steps.length - 1]}). Short of coins? A spin steps down to the biggest bet you can afford.`));
+    if (md.symbols.some((s) => s.wild)) {
+      cards.push(card('wildIcon', 'Hamster Wild', odds.wild > 0
+        ? `Lands on ${(odds.wild * 100).toFixed(1)}% of cells. It stands in for any symbol on a payline, and a line of wilds pays the wild's own prize.`
+        : 'This machine gets the wild with the Hamster Wild upgrade.'));
+    }
+    if (odds.freeSpins) {
+      const f = odds.freeSpins;
+      cards.push(card('ballIcon', 'Free spins',
+        `3 or more Hamster Balls anywhere start free spins: ${oneIn(f.chance)}, ${f.perTrigger.toFixed(1)} spins on average (${f.perTriggerWithRetriggers.toFixed(1)} counting retriggers). They play by themselves, cost nothing, use the bet that won them, and every win is ×${f.multiplier}.`));
+    }
+    if (odds.jackpot) {
+      const pots = game.getJackpotPots();
+      const list = odds.jackpot.pots.map((p) => {
+        const pot = pots.find((x) => x.id === p.id);
+        return `<b>${pot.name}</b> ${formatCoins(pot.value)} (${oneIn(p.chance)})`;
+      }).join(' · ');
+      cards.push(card('pouchPolish', 'Jackpot pots',
+        `3 or more Cheek Pouches start the jackpot wheel (${oneIn(odds.jackpot.chance)}). It lands on one pot and pays it all. Every paid spin adds a little to every pot, and a pot starts again from its seed when it's won. Now: ${list}.`));
+    }
+    if (odds.gamble) {
+      const gm = odds.gamble;
+      cards.push(card('cardBack', 'The card gamble',
+        `After a win you pulled yourself, you can gamble it on a face-down card. Pick a colour (red or black): right ${Math.round(gm.color.chance * 100)}% of the time, and the win ×${gm.color.multiplier}. Or pick a suit: right ${Math.round(gm.suit.chance * 100)}% of the time, ×${gm.suit.multiplier}. Wrong: the win is gone. Up to ${gm.maxRounds} wins in a row. Every card is a fresh draw, so the cards shown before tell you nothing: it never pays on average, it's just for the thrill. (Gamble coins don't count toward Heirloom Seeds.)`));
+    }
+    if (odds.streak.perStack > 0) {
+      cards.push(card('flame', 'Hot Streak',
+        `Each win in a row adds +${Math.round(odds.streak.perStack * 100)}% to the next win (up to ${odds.streak.cap} in a row). On this machine that's ×${odds.streak.factor.toFixed(2)} on average. Free spins don't count.`));
+    } else {
+      cards.push(card('flame', 'Hot Streak', 'Buy Hot Streak (a hamster upgrade) and wins in a row pay more and more.'));
+    }
+    cards.push(card('coin', 'Line hit rate', `A paid spin wins on a payline ${Math.round(odds.hitRate * 100)}% of the time on this machine.`));
+    setHTML(el.features, cards.join(''));
+  }
+
+  function render(now) {
+    // Rebuild the table only when something it shows changed.
+    const weights = game.getSymbols().map((s) => s.weight).join(',');
+    const key = `${game.getMachineData().id}|${game.getReelCount()}|${game.getLineCount()}|${game.getPayoutMultiplier()}|${game.getFullLineMultiplier()}|${weights}|${game.getBet()}`;
+    if (key !== tableKey) {
+      tableKey = key;
+      buildTable();
+    }
+    // Features show live pot values: redraw them about twice a second when showing.
+    if (subtabs.current === 'features') {
+      const fKey = `${key}|${game.getMaxBetIndex()}|${Math.floor(now / 500)}`;
+      if (fKey !== featuresKey) {
+        featuresKey = fKey;
+        buildFeatures();
+      }
+    }
+    // The log's "12s ago" labels only need a redraw about once a second.
+    if (logDirty || now - lastLogDraw > 1000) {
+      logDirty = false;
+      lastLogDraw = now;
+      drawLog(now);
+    }
+    if (subtabs.current === 'wins') unseenWins = false;
+    subtabs.setDot('wins', unseenWins);
+  }
+
+  return { render, rebuild: () => { tableKey = ''; featuresKey = ''; }, openSub: subtabs.open };
+}

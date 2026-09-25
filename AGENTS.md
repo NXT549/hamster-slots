@@ -1,0 +1,245 @@
+# AGENTS.md — read this first
+
+This is the entry point for **any AI agent** (Claude Code, Codex, Cursor, Copilot, …) working on `hamster_slots/`.
+Read it fully before touching anything. `CLAUDE.md` in this folder just imports this file.
+
+**Hamster Slots** is a cute pixel-art idle/clicker slot machine. A hamster on a wheel powers the machine. Spins cost coins, and when you run out, the hamster goes on **food deliveries** (timed, always pays), so you can never get stuck. All currency is fake in-game coins. **No real money, ever.**
+
+**Web-first (since 2026-09-25):** the browser game *is* the game, and there's no engine port. One web codebase ships everywhere: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), and maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106).
+
+**Read order:** `AGENTS.md` (this file) → `DESIGN.md` (what the game is; the roadmap is §11) → `PORTING_NOTES.md` (platform plans, then the decision, balance and playtest logs). `CHANGELOG.md` says what players got in each version.
+
+---
+
+## Current status
+
+> **Keep this block accurate.** Update it in the same commit as any change it describes.
+
+- **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 7 (game.js) and the data is `schemaVersion` 7 (data.json).
+- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. Next is 3.1 (npm + Vite). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
+- **The code today** is still the plain-JS prototype: no build step, no npm. It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
+- **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). Friends can join that playtest from the Pages link once it's deployed. After that come M8 The Big Cage → M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M8+ early. Known issue for M8: from generation ~9, lives shrink to 3–10 min (D102).
+- **Last verified (M7):** `node tools/test_logic.mjs` 687/687, `node tools/test_art.mjs` all OK, the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
+- **Not yet verified:** how the M7 sounds *sound* (tick, card, luck, unlock, softer auto clunks); the label on a natural jackpot-wheel trigger; the look in Firefox and Safari; a real double-click on `play.bat`.
+
+## Project docs
+
+- **AGENTS.md:** how to work on the project (these rules).
+- **DESIGN.md:** what the game is and where it's heading. The source of truth for design decisions.
+- **PORTING_NOTES.md:** platform plans (web, Steam, mobile). Below them it also keeps the project's logs: **Decisions** (D-numbers), the **Balance log**, **Playtest notes** and the **Prototype history** (the old dev changelog).
+- **CHANGELOG.md:** the player-facing record of changes.
+- **Any change that affects what these docs say must update them in the same commit.** Docs must never go out of date.
+
+| If you change… | Update… |
+|---|---|
+| Anything | **Current status** above, if it's no longer true |
+| Something players will notice | `CHANGELOG.md` → `[Unreleased]`, in plain language for players |
+| A number in a data file | `PORTING_NOTES.md` → Balance log (old → new, *why*, the simulator's before/after), and the DESIGN.md tables that show it (the logic test prints fresh EV/RTP numbers at the end) |
+| A mechanic, symbol, upgrade or currency | `DESIGN.md` |
+| Architecture, a file's role, an event, or a public game method | The **File map** / **Events** / **Game API** sections below |
+| Platforms, the build, deploying, storage | `PORTING_NOTES.md` → the platform plan |
+| Something felt good or bad in playtesting | `PORTING_NOTES.md` → Playtest notes |
+| A choice between alternatives | `PORTING_NOTES.md` → Decisions (what you chose, what you rejected, why) |
+| How we work | This file |
+
+The hard rules keep their numbers (1–11), because the logs refer to them ("rule 3").
+
+## Tech stack and architecture
+
+- **TypeScript + Vite.**
+- **Game logic and state live in their own modules with no DOM/UI code.** **Rule 1: logic never touches the DOM.** Logic modules (today `js/rng.js`, `events.js`, `machine.js` and `game.js`) never use `document`, `window`, `localStorage`, `Date`, `performance` or `Math.random`, and they run headless in Node (tests, simulator). UI code reads `game.state` and listens to events. It never changes state directly: it calls actions (`game.spin()`, `game.buyUpgrade(id)`, …).
+- **Platform-specific features (saving, storage, achievements) go through a small platform layer**, so the Steam and mobile versions can swap in their own implementations later (PORTING_NOTES → The platform layer). Today that layer is `js/save.js` plus the clock and tab-visibility code in `js/main.js`.
+- **Use break_eternity.js for all currency and large numbers.**
+- **Rule 2: all balance numbers (costs, payouts, rebirth formulas, slot odds) live in data files, not hardcoded.** Today that's `data.json`: symbols, weights, payouts, spin cost and duration, delivery, upgrade costs, growth rates, effect values. No magic numbers in code. Data files stay plain JSON (no comments, no trailing commas), because the game, the tests and the simulator all read them. They hold **no art or colours**.
+- **Rule 5: the stack and its dependencies.** TypeScript + Vite; break_eternity.js at runtime; Vitest for tests. No UI framework. Ask the user before adding any other dependency.
+- **Rule 11: art lives in the view.** Sprites are text grids in `js/art.js`. Colours, fonts and sizes are theme tokens in `style.css` `:root`; `js/theme.js` repaints the UI frame sprites in those token colours (so button colours still live in `:root`). What each skin looks like is in `js/skins.js` (fur = palette colours, the rest = token overrides set on the stage); data.json only lists skin ids/names/rarities. Numbers always use `--font-num` (clean font). The pixel font is always weight 500 (in bold its C looks like an O). Highlights go *behind* symbols, never on top (a tint once made grey seeds look golden). Every framed element sets its own `--frame`/`--fw` (custom properties inherit: a paper tile inside the cardboard tray would otherwise turn to cardboard).
+- **Until migrated:** the code is plain JavaScript ES modules with no build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are as in the File map below. Only migrate through the approved step-by-step plan.
+
+## Saves
+
+- **Save files include a version number** (`saveVersion`; `SAVE_VERSION` in game.js, 7 today).
+- **Rule 6: the save stores player state only** (never balance values), so a data change applies straight away to an existing save. The save format lives in the logic (`toSaveData` / `loadSaveData` / `migrateSave` in game.js); the platform layer only moves text. Settings are stored apart from the save, so Reset keeps them.
+- **Any change to the save format needs a migration function, so old saves never break** (bump `SAVE_VERSION`, add a step to `migrateSave`), **plus a test that loads an old-format save and checks it migrates correctly.**
+- **Autosave** (every `autosaveSeconds`, and whenever the page is hidden or closed), **plus export/import of the save as a text string.** *Export/import isn't built yet:* it's planned (DESIGN §7, §17).
+- **Offline progress is calculated when the player returns** (`applyOfflineEarnings(seconds)`, DESIGN §15). The boot code tells the logic how many seconds passed; the logic never reads the clock.
+
+## Adding content and features
+
+- **New content** (upgrades, slot symbols, rebirth layers, etc.) **should be added through the data files wherever possible, following existing patterns.** A new upgrade of an existing effect type needs only data. A new effect type needs one small function in game.js (D7).
+- **If a new feature needs a new system, describe the plan to the user before building it.**
+- **Never change game design, balance direction or core mechanics without asking first.** If a request conflicts with DESIGN.md, point out the conflict and ask.
+- **Rule 3: one cost formula for everything you buy** (coin upgrades AND Family Tree nodes): `cost = floor(baseCost × growthRate ^ owned)` (`costAtLevel()` in game.js). Don't invent per-upgrade cost curves.
+- **Rule 8: build one milestone at a time,** then stop so the user can test. Don't add roadmap features early.
+
+## Balance changes
+
+- **Use the simulation/balance scripts in `tools/` to compare pacing before and after any balance change.** `node tools/sim.mjs` plays the real logic (options under How to run). Try a variant without touching the real file with `--data variant.json`, and check both players (`--player active`) and enough lives (`--lives 12`).
+- **Report the key before/after numbers in the summary** (e.g. time to the first retirement, the first life's length, when each machine arrives), and paste the tables into PORTING_NOTES → Playtest notes.
+- **If the tools can't measure something needed, suggest an addition to them.**
+- **Rule 4: the balance rules are tested and must keep holding** (DESIGN §9). Every machine's RTP is above 100% in every setup: every reel count, payline count, wild level and **step of its symbol unlocks, locked symbols included**, counting its features; the bet never changes it. **Every symbol unlock raises the EV and lowers the hit rate** (in every setup, at no Luck and at max Luck). **Every Luck level raises both the hit rate and the EV.** The auto-spin interval is never shorter than the spin time + the rest. Delivery coins/s stays below auto-spin profit/s at Wheel Training level 1 (also with the whole Family Tree). One delivery covers a base spin on the free first machine. The card gamble is exactly fair (colour and suit) and never counts as earned. Free spins always end (the retrigger loop stays < 1, even with max Luck). **Every feature's EV is exact** (machine.js `spinExpectation`); keep it that way when you add one.
+
+## Testing
+
+- **Game logic has unit tests (Vitest).**
+- **Run the tests and a build before every commit. Don't commit if either fails.**
+- **Bug fixes should include a test that would have caught the bug.**
+- **Rule 10:** run the logic tests after any logic or data change, and the sprite tests after any sprite change. Both must stay all PASS.
+- **Until migrated:** there's no Vitest and no build yet. The tests are plain Node scripts, `node tools/test_logic.mjs` (687 checks) and `node tools/test_art.mjs`, and both must pass.
+
+## Git and releases
+
+- **Work on a branch for anything bigger than a small fix;** merge to `main` when it's working.
+- **Commit after each working step** with a clear message.
+- **`main` must always be playable**, because it deploys to players automatically.
+- **Versioning:** patch (0.1.1) for fixes, minor (0.2.0) for new features/content, major (1.0.0) for the full public release.
+- **Every player-facing change gets a CHANGELOG.md entry** under `[Unreleased]`, written in plain language for players. A release moves those entries under the new version and its date (and sets the same version in `package.json` once that file exists).
+- **Commit identity** (set in this repo's own git config): name `nxt`, email `94941422+NXT549@users.noreply.github.com` (GitHub's private address, so no personal email is published). Claude's commits add a `Co-Authored-By` line.
+- **Until migrated:** there's no remote and no deploy yet (Step 4). The migration's steps are committed on `web-migration` and merged into `main` after the user's OK.
+
+## When unsure
+
+- **Ask rather than guess**, especially for anything touching design, balance, or saves.
+
+## Code style
+
+- **Rule 7: comment for a learner.** The user is learning. Add short comments that explain *why*, at key points. Don't comment every line.
+- **Rule 9: prototype art.** Pixel sprites in `js/art.js` follow the style guide at the top of that file (24/16/12 px, colour ramps, matching outlines, whole-number scales; 12×12 UI frames are 9-slice and must keep their edges uniform). The palette's letters are all used: new colours go on free digits/punctuation (the purple ramp uses `8 9 0 +`); M7's sprites (Wood Shaving, clover, horseshoe, seed packet, card back, four suits) reuse existing ramps. The cage itself (bars, base, tubes, machines, the WIN meter, the gamble card) is CSS. Particles (`js/fx.js`) are whole-pixel squares in token colours and must stay off with Motion "Less". Spend effort on feel and clarity, not detail.
+
+## How to run (today's plain-JS prototype; the migration replaces this)
+
+- **Play:** double-click **`play.bat`**. It starts `python tools/serve.py 8765` (Python's simple web server, but with caching turned off, so a refresh always loads the newest files) in its own window and opens `http://localhost:8765/`. Close the server window to stop. *If a browser still has old files from before the no-cache server, press **Ctrl+F5** once.* (Opening `index.html` directly shows a "use play.bat" message, because browsers block `data.json` and ES modules from `file://`.)
+- **Test the logic (headless):** from this folder, `node tools/test_logic.mjs`
+- **Test the sprites and skins:** `node tools/test_art.mjs` (row widths, palette letters, every symbol/upgrade/tree node/capsule/skin has art, every skin token exists in `:root`)
+- **Balance simulator:** `node tools/sim.mjs` (idle player, 5 seeds, 7 lives; a few seconds). Options: `--player active`, `--lives 12`, `--seeds 3`, `--minutes 120` (the longest a life may last), `--retire 0.5`, `--first-minutes 60`, `--bankroll 40`, `--data other.json` (try a variant without touching data.json; relative or absolute path), `--verbose` (every purchase, and every 10 minutes what the bot is saving up for), `--help`. It plays the real game logic and prints, per life: length, seeds, coins earned, time to each milestone (first buy, Family/Capsules tab, Wheel 1, each symbol unlock on Old Clunky, Third Reel, Wheel maxed, each machine, bet ×2/×10), income snapshots, Luck and hit rate at 10/30/60 min, and feature rates. It buys by "time to afford + time to pay back" (D100).
+- **Debug panel:** press **`` ` ``** (backtick) in the game, or Menu → Toggle debug panel.
+- **Fonts** load from Google Fonts (Pixelify Sans + Nunito). Offline, the browser uses system fonts and everything still works.
+- **Claude Code preview:** `hamster-slots` (`tools/serve.py` on port **8766**) is defined in `.claude/launch.json` in **this** folder (for sessions started here) and in the **parent** folder (sessions started there). This folder also has `hamster-slots-alt` (port **8767**), for when another session is already using 8766. Different port = different browser storage, so test saves never touch the player's save.
+- **Screenshots at high DPI:** the preview's screenshot can crop to the top-left of the page when the display is scaled (e.g. 150%). Shrinking the page for an overview works without changing the layout: `document.querySelector('.app').style.cssText = 'transform: scale(0.55); transform-origin: 0 0; margin: 0'` (remove it afterwards).
+- **Background tab?** Browsers pause animation frames when the page isn't visible (this includes a *hidden* Claude Code preview pane: the game then stops). `hamster.ui.render()` in the console draws one frame by hand; to keep it running, drive it with `setInterval(() => { hamster.game.update(0.05 * hamster.clock.timeScale); hamster.ui.render(); }, 50)`.
+- **Testing fast:**
+  - **Retirement:** debug panel → **Earn +10K / +100K** (counts toward seeds, unlike "Add coins") and **+5 seeds**. **Capsules:** **+10 / +100 tokens**.
+  - **M6 features:** debug panel → **+5 free spins** (Burrow Bonanza) and **Wheel: Mini/Minor/Major/Grand** (Pouch Palace, when it isn't spinning). In the console: `hamster.game.addCoins(1e9)`, `hamster.game.buyUpgrade('highRoller', 4)`, `hamster.game.setBet(4)`, `hamster.game.buyMachine('bonanza')`.
+  - **The card gamble:** debug panel → **Offer a gamble (100)** (or `hamster.game.triggerGamble(100)`). Set `hamster.clock.timeScale = 0` **first** to freeze its 5 s countdown while you look (a real offer after a manual win runs out before a console command can freeze it).
+  - **Unlocks and Luck:** `hamster.game.buyUpgrade('newSeeds', 2)`, `buyUpgrade('clover', Infinity)`, `buyUpgrade('horseshoe', Infinity)`.
+  - **The win show on many lines:** buy the Stacker with its paylines and wild, then speed time up until a spin wins on 3+ lines and slow it back down (a spin every ~3 s at normal speed).
+  - **A fresh game:** Menu → Reset (twice). Clearing localStorage from the console doesn't stick, because the game saves itself when the page unloads.
+  - **Offline earnings:** debug panel → pretend you were away 10 min / 1 h / 10 h. **Sound:** Menu → Sound; `hamster.sound.ready` in the console says whether audio is on.
+- **Sprite gallery:** `http://localhost:8765/tools/sprites.html` shows every sprite big (`?only=seed,carrot&zoom=8` for close-ups).
+- Requires Python 3 on PATH (the user has 3.12) and Node for tests (the user has 24).
+
+## File map
+
+> **File map, Events and Game API describe today's plain-JS code.** After the migration they will point to the typed modules instead.
+
+```
+hamster_slots/
+├── AGENTS.md          ← you are here (read-first guide, kept live)
+├── CLAUDE.md          ← just `@AGENTS.md`, so Claude Code loads this file every session
+├── DESIGN.md          ← game design: loop, machine, symbols, upgrades, balance, roadmap
+├── PORTING_NOTES.md   ← platform plans (web, itch.io, Steam, mobile) + decisions, balance log, playtest notes,
+│                         prototype history
+├── CHANGELOG.md       ← what players got in each version (Keep a Changelog, from 0.1.0)
+├── data.json          ← ALL balance data (read by the game, tests and simulator): betSteps, gamble, machines (+ paylines,
+│                         wild/scatter/blank symbols, locked symbols, freeSpins, jackpot pots), upgrades (incl.
+│                         luck + unlockSymbol), retirement + familyTree, tokens, capsules, skins, diary
+├── index.html         ← page skeleton (HUD, cage stage + bet box + card gamble panel + pots + WIN meter + clover
+│                         badge, tray tabs and sub-tabs, menu + settings, the particle canvas) + file:// warning
+├── style.css          ← the "hamster cage" look; THEME TOKENS in :root (colours, fonts, sizes)
+├── play.bat           ← double-click launcher (starts tools/serve.py + opens browser)
+├── .claude/launch.json ← Claude Code preview servers (ports 8766 and 8767)
+├── .gitignore / .gitattributes ← what git skips; line endings stored as LF in the repo
+├── tools/
+│   ├── test_logic.mjs ← headless logic test: node tools/test_logic.mjs
+│   ├── test_art.mjs   ← sprite + skin + frame sanity test: node tools/test_art.mjs
+│   ├── sim.mjs        ← the balance simulator: a bot plays the real logic (node tools/sim.mjs --help)
+│   ├── serve.py       ← the local web server (no caching); play.bat runs it
+│   └── sprites.html   ← sprite gallery (dev page): every sprite in js/art.js, big
+└── js/
+    ├── rng.js         ← LOGIC   seedable RNG (mulberry32) + pickWeighted
+    ├── events.js      ← LOGIC   tiny event emitter (the UI, tests and simulator listen)
+    ├── machine.js     ← LOGIC   pure rules: rollGrid (reels × rows), paylines, evaluate (one line, left to right,
+    │                             wilds: best of two readings; scatters and blanks never on a line), evaluateGrid
+    │                             (every line), findSymbol, expectedValue (exact, with wilds; exact hit rate, fast
+    │                             on grids), scatter maths (freeSpinStats, jackpotStats) and spinExpectation
+    ├── game.js        ← LOGIC   state, actions, upgrades (+ ×10/Max), machines (buy/switch, per-machine upgrades),
+    │                             symbols (locks → family shifts → wild → Luck), Luck (Hamster + Machine), bets
+    │                             (High Roller, step-down), free spins, jackpot pots + wheel, the card gamble (SUITS),
+    │                             Hot Streak, the queued click, deliveries, auto-spin (+ the rest floor), retirement
+    │                             + Family Tree, effects from both lists (effectsOfType), Hamster Tokens + diary,
+    │                             Capsule Machine + skins, 60 Hz tick, save format + migrations
+    ├── save.js        ← BRIDGE  the only file using localStorage (the save + the settings, incl. sub-tabs)
+    ├── art.js         ← VIEW    pixel sprites as text grids + palette (+ per-draw palette overrides for fur);
+    │                             symbol/machine/upgrade/tree node/capsule → sprite maps; UI frames + bedding tile
+    ├── theme.js       ← VIEW    turns the UI frame sprites into CSS variables (9-slice borders), painted in token colours
+    ├── skins.js       ← VIEW    what each skin looks like (fur colours, cage theme tokens) + swatches
+    ├── dom.js         ← VIEW    shared helpers: formatCoins (+ short/full numbers), mix, setText, setHTML,
+    │                             replayClass, iconHTML, createSubTabs, formatSeconds/Duration/Wait
+    ├── sound.js       ← VIEW    synthesized sound effects (Web Audio), volume + mute
+    ├── fx.js          ← VIEW    pixel particles on one canvas over the page: sparkles, confetti, fountains,
+    │                             dust, embers, motes (capped at 400; none with Motion "Less")
+    ├── reels.js       ← VIEW    scrolling reel strips (3 visible rows; real rows on grid machines) that stop one
+    │                             at a time, payline tags (or badges on many-line machines), winning cells +
+    │                             lines, feature cells, anticipation, quick reels
+    ├── winshow.js     ← VIEW    the win show: everything lit + the WIN meter counting up, then one line at a
+    │                             time with a label, then the scatters; loops; a tap skips (view only, D92)
+    ├── shop.js        ← VIEW    the Upgrades tab (sub-tabs Hamster / [machine] / Machines): machine cards with
+    │                             feature chips, ×1/×10/Max, upgrade tiles, "ready in" hints; describeEffect
+    │                             (also used by the family tree)
+    ├── payouts.js     ← VIEW    the Info tab (sub-tabs): paytable (scatter, blank and locked rows), payline
+    │                             diagrams, Features (Luck, unlocks and the real odds of every feature), recent wins
+    ├── ui.js          ← VIEW    HUD (coins + seeds, tab title), cage stage (wheel + prize wheel, tube, machine
+    │                             per type, tags, bubble, bet box, pots, clover + streak badges, card gamble panel,
+    │                             delivery tube, fit-to-width), tray tabs, Family tab (retire + tree), menu +
+    │                             settings, skins on the stage, capsule prop, win celebrations (WIN_FX + particles),
+    │                             reel clunks + dust, sounds, welcome-back + stats dialogs
+    ├── capsules.js    ← VIEW    the Capsules tab (sub-tabs): machine card + reveal, Wardrobe, Hamster Diary
+    ├── debug.js       ← VIEW    debug panel (stats incl. Luck and feature odds, coins, free spins, jackpot wheel,
+    │                             offer a gamble, time speed, reload data)
+    └── main.js        ← BOOT    load data.json → game → load save → settings, theme, sound, debug + UI
+                                  → offline earnings → frame loop + autosave (+ offline earnings after a hidden tab)
+```
+
+## Events (emitted by `game.js`, listened to with `game.on(name, fn)`)
+
+| Event | Payload | When |
+|---|---|---|
+| `spinStarted` | `{ machineId, result, source, cost, bet, free }` | A spin started (`source`: `"manual"` / `"auto"` / `"free"`). `result` is the grid: `result[reel][row]`; `bet` = the bet it REALLY uses (after a step-down); `cost` is 0 for a free spin |
+| `spinResolved` | `{ machineId, result, wins, payout, fullLine, tier, bet, free, streak, featureCells }` | The spin finished. `wins` = the winning lines `[{ line, symbolId, count, basePayout, fullLine, usedWild, payout }]`; `payout` = their total with every multiplier (bet, free-spin ×2 or Hot Streak); `fullLine` = some line matched on every reel; `tier` = `none`/`win`/`nice`/`big`/`jackpot` (base payouts together, × the free-spin multiplier; never × the bet); `streak` = the machine's win streak now; `featureCells` = `[[reel, row]…]` of the scatters that started free spins or the jackpot wheel. After a switch, the old machine's last spin still resolves (with its own `machineId`) |
+| `spinBlocked` | `{ reason, source, cost? }` | A spin was refused: `reason` is `"coins"` (with the ×1 cost), `"delivery"`, `"gamble"` (a gamble is under way) or `"bonus"` (the jackpot wheel is turning) |
+| `betChanged` | `{ machineId, index, bet }` | The chosen bet changed (`setBet`) |
+| `freeSpinsStarted` | `{ machineId, count, retrigger, bet, left }` | Free spins were won (`retrigger` = during free spins; also the debug button) |
+| `freeSpinsEnded` | `{ machineId, spins, won }` | The last free spin of a batch landed |
+| `jackpotStarted` | `{ machineId, pot, duration, bet }` | The jackpot wheel started; `pot` is already decided (the wheel only animates to it) |
+| `jackpotWon` | `{ machineId, pot, amount }` | The wheel stopped and paid the pot (it resets to its seed) |
+| `gambleOffered` | `{ machineId, stake }` | A win you pulled yourself can be gambled (or the debug offer) |
+| `gambleResolved` | `{ machineId, win, pick, card: { suit, color }, multiplier, stake, round, next }` | A card was drawn for a pick (`pick`: `red`/`black` or a suit; `multiplier` 2 or 4; `next` = the new stake after a win) |
+| `gambleEnded` | `{ machineId, reason, won, rounds, started }` | `reason`: `collect`, `lose`, `max`, `spin`, `expired`, `switch`, `retire`; `won` = coins gained (negative after a loss) |
+| `coinsChanged` | `{ coins, amount }` | Any coin change |
+| `seedsChanged` | `{ seeds, amount }` | Heirloom Seeds changed (retire, plant, debug) |
+| `upgradeBought` | `{ id, level, cost, count }` | Upgrade levels were bought (`count` > 1 for ×10 / Max; `cost` is the total) |
+| `machineBought` | `{ id, cost }` | A new machine was bought (a `machineSwitched` to it follows) |
+| `machineSwitched` | `{ id, from }` | The hamster now runs machine `id` |
+| `treeNodeBought` | `{ id, level, cost }` | A Family Tree node was planted (`cost` in seeds) |
+| `retired` | `{ generation, seedsGained, oldName, newName, runEarned }` | The hamster retired; `generation` is the NEW pup's |
+| `deliveryStarted` | `{ duration, reward, source }` | The hamster left (`source`: `"manual"` / `"auto"` from Self-Starter) |
+| `deliveryFinished` | `{ reward }` | The hamster came back and was paid |
+| `tokensChanged` | `{ tokens, amount, source }` | Hamster Tokens changed. `source`: `sticker`, `jackpot`, `delivery`, `retire`, `pull`, `refund`, `debug` |
+| `stickerEarned` | `{ id, tokens }` | A Hamster Diary goal was reached (also fires on load for old saves) |
+| `capsuleOpened` | `{ skinId, rarity, duplicate, refund, pity }` | A capsule was pulled; `pity` = it was the guaranteed one |
+| `skinEquipped` | `{ id, category }` | A skin was put on |
+| `offlineEarned` | `{ awaySeconds, seconds, coins }` | Coins were paid for time away (`seconds` = the part that counted, after the cap) |
+| `dataReloaded` | `{}` | `setData()` applied a new data.json |
+| `stateLoaded` | `{}` | A save was loaded |
+
+## Game API (`createGame(data, rng)` in `js/game.js`)
+
+- **Actions** (return `true`/`false`): `spin(source)` (a manual spin asked for mid-spin is queued, D82), `startDelivery(source)`, `buyUpgrade(id, count = 1)` (count 10, or `Infinity` for Max), `buyMachine(id)` (also switches to it), `switchMachine(id)`, `retire()`, `buyTreeNode(id)`, `pullCapsule()`, `equipSkin(id)`, `setBet(index)`, `gamble(pick)` (`'red'`, `'black'`, `'hearts'`, `'diamonds'`, `'clubs'`, `'spades'`), `collectGamble()` (Take win), `applyOfflineEarnings(seconds)`. Plus debug `addCoins(n, asEarned = false)` (asEarned counts toward seeds), `addSeeds(n)`, `addTokens(n)`, `addFreeSpins(n)`, `triggerJackpot(potId)`, `triggerGamble(stake)` (offer the gamble now), and `setData(data)` (hot reload).
+- **Time:** `update(dt)` advances game time in fixed 1/60 s ticks (`TICK`).
+- **Queries (the machine you're running, upgrades):** `getMachineData()`, `getSpinCost()`, `getSpinDuration()`, `getPayoutMultiplier()`, `getHeirloomBonus()`, `getFullLineMultiplier()`, `getAutoInterval(overrides?, machine?)` (null = off; never below spin time + rest), `getReelCount()`, `getRowCount()`, `getLineCount()`, `getPaylines()` (the active lines, row per reel), `getSymbols(overrides?, machine?)` (the weights the reels really use: locks, family shifts, wild, Luck), `getSymbolChance(id)`, `getLuck(overrides?, machine?)` → `{hamster, machine, total}`, `isSymbolLocked(id, overrides?, machine?)`, `getSymbolUnlock(id)` (the upgrade that opens it, or null), `getDeliveryDuration()`, `getDeliveryReward()`, `hasAutoDelivery()`, `getAvailableUpgrades()` (the hamster's + this machine's), `getUpgradeLevel/Cost(id)`, `getUpgradeBulk(id, count)` → `{count, cost, affordable}`, `isMaxed(id)`, `canAfford(n)`, `canBuyUpgrade(id)`, `previewUpgrade(id, levels = 1)` → `{type, now, next}`, `getSpinProgress()` (0–1), `getDeliveryProgress()` (0–1), `getEconomy()` (EV, hit rate, RTP, lines, profit/s…), `getWinTier(basePayout)`, `getOfflineEarnings(seconds)` → `{seconds, coins}`.
+- **Queries (machines):** `getMachineInfo(id)` → `{owned, active, spinning, cost, spinCost, bet, reels, maxReels, lines, maxLines, rows, luck, symbols: {unlocked, lockable}, features: {wild, wildNow, freeSpins, jackpot}, freeSpinsLeft, bonus}` (works for machines you don't own yet), `getMachineCost(id)`, `ownsMachine(id)`, `canBuyMachine(id)`.
+- **Queries (bets and features):** `getBetSteps()`, `getMaxBetIndex()`, `getBetIndex()`, `getBet()` (the chosen ×), `getBetCost(bet?)`, `getSpinBet()` (what the next paid spin really uses; null = not even ×1), `getFreeSpins()` → `{left, total, played, won, bet}` or null, `hasFreeSpins()`, `getJackpotPots()` → `[{id, name, base, value}]` (value = coins at your bet), `getBonusProgress()` (0–1 while the wheel turns, else null), `getStreakMultiplier()` (for the next win), `getMaxStreakMultiplier()`, `getFeatureOdds()` (wild chance, free spins, pots, Luck, the card gamble's `color`/`suit` chance and multiplier, streak, hit rate), `canGamble()`, `getGambleInfo()` → `{stake, rounds, maxRounds, won, started, canPick, timeLeft, colorWin, suitWin, history}` or null, `getCardHistory()` → the last cards `[{suit, color}]`, newest first (never saved). `getEconomy()` also returns `lineEv`, `streakFactor`, `luck`, `freeSpins`, `jackpot`, `bet`, `betCost` and `extraSecondsPerSpin` (time the features add), and its `profitPerSpin` is at the chosen bet. `previewUpgrade()` for a Luck upgrade gives `{luck, hitRate}` values, for a symbol unlock `{open, hitRate, win}`. Exported from game.js: `SUITS` (the deck), `CARD_COLORS`.
+- **Queries (family):** `getPendingSeeds()`, `canRetire()`, `getSeedProgress()` → `{earned, total, nextAt, progress}`, `getPupName(gen?)`, `getTreeNodeDef(id)`, `getTreeLevel(id)`, `getTreeCost(id)`, `isTreeMaxed(id)`, `isTreeNodeUnlocked(id)`, `canBuyTreeNode(id)`, `previewTreeNode(id)`, `getStartingLevel(upgradeId)`.
+- **Queries (tokens, capsules, skins):** `getDiaryProgress(id)` → `{value, target, done}`, `getPullCost()`, `canPull()`, `getPityRemaining()`, `getCapsuleOdds()` → `[{id, name, chance, withPity, duplicateRefund}]`, `getSkinDef(id)`, `isSkinOwned(id)`, `getEquippedSkin(category)`.
+- **State you'll read:** `state.coins`, `state.machines` (owned: `{typeId, upgrades, bet, spinning, spinTimer, spinBet, spinFree, spinSource, result, streak, freeSpins, pots, bonus}`), `state.gamble` (never saved), `state.activeMachine` (index), `state.run` (this life), `state.generation`, `state.seeds`, `state.seedsEarned`, `state.tree`, `state.tokens`, `state.diary`, `state.skins` (`owned`, `equipped`), `state.capsules.sincePity`, `state.stats` (lifetime, incl. `coinsEarned`, `goldenJackpots`, `capsulesOpened`, `tokensEarned`, `machinesBought`, `mostLinesWon`, `biggestBet`, `freeSpins`, `freeSpinTriggers`, `freeSpinCoins`, `wildWins`, `bestStreak`, `jackpotsWon`, `grandJackpots`, `gambleWins`, `gambleLosses`, `bestGambleRun`, `symbolsUnlocked`, `bestLuck`, `suitWins`).
+- **Saving:** `toSaveData()`, `loadSaveData(obj)`.
+- **Read-only:** `game.state`, `game.data`, `game.rng`. In the browser console: `hamster.game`, `hamster.clock.timeScale`, `hamster.ui.render()`, `hamster.sound`.
