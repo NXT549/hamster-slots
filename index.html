@@ -9,11 +9,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Pixelify+Sans:wght@500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="src/view/style.css">
 </head>
 <body>
-  <!-- This file is just the page skeleton. The js/ files fill in the reels,
-       machine cards, upgrade tiles, paytable and sprites from data.json and js/art.js.
+  <!-- This file is just the page skeleton. The src/ files fill in the reels,
+       machine cards, upgrade tiles, paytable and sprites from data.json and src/view/art.js.
        The look: the game is the inside of a hamster cage (wire bars, wood-shaving
        bedding, a plastic base), and the UI is cardboard and paper. -->
   <div class="app">
@@ -304,7 +304,7 @@
   </dialog>
 
   <aside id="debug-panel" class="debug hidden" aria-label="Debug panel"></aside>
-  <!-- Pixel particles (js/fx.js): sparkles, confetti, embers. Over the whole page, never clickable. -->
+  <!-- Pixel particles (src/view/fx.js): sparkles, confetti, embers. Over the whole page, never clickable. -->
   <canvas id="fx" class="fx" aria-hidden="true"></canvas>
   <div id="boot-error" class="boot-error hidden"></div>
 
@@ -324,6 +324,6 @@
   <!-- type="module" lets the JS files import each other. Vite serves it while you
        work (`npm run dev`, which play.bat starts) and bundles it for players
        (`npm run build`); see AGENTS.md → How to run. -->
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>

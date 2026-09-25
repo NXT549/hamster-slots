@@ -2,8 +2,8 @@
    The stage is the inside of a hamster cage: wire bars in front of the room's wall,
    wood-shaving bedding, and a coloured plastic base. The wheel, the machine and a
    water bottle live inside it, and deliveries run through a clear tube.
-   The UI is made of cardboard and paper: pixel-art frames (js/art.js) turned into
-   CSS variables by js/theme.js and used as "9-slice" borders (border-image).
+   The UI is made of cardboard and paper: pixel-art frames (src/view/art.js) turned into
+   CSS variables by src/view/theme.js and used as "9-slice" borders (border-image).
    Colours, fonts and sizes are THEME TOKENS in :root. Skins override some of them
    on the stage (Godot: a Theme resource). */
 
@@ -55,7 +55,7 @@
   --card-black: #5a4a45;    --card-black-dark: #3b2f2b; /* the card gamble's Black button */
   --luck: #6cc26a;          --luck-dark: #3f8f45;      /* Luck: the clover badge, luck numbers */
   --lcd: #3a2a20;           --lcd-glow: #ffd35c;       /* the WIN meter's little screen */
-  /* capsule rarities (match the capsule sprites in js/art.js) */
+  /* capsule rarities (match the capsule sprites in src/view/art.js) */
   --rarity-starter: #eddccb; --rarity-common: #93cfe8; --rarity-rare: #f59aa5; --rarity-epic: #ffd35c;
   /* Old Clunky (machine skins override these) */
   --machine: #7fcbb8;       --machine-dark: #58a894;
@@ -89,7 +89,7 @@
   --outline: 3px;
   --outline-thin: 2px;
   --outline-ink: #57402f;
-  --cell: 72px; /* reel cell height; must match CELL in js/reels.js */
+  --cell: 72px; /* reel cell height; must match CELL in src/view/reels.js */
   /* A notched "pixel" corner for small flat things (bars, strips, chips) */
   --notch: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px),
     calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
@@ -122,7 +122,7 @@ img { image-rendering: pixelated; }
 kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(--ink-faint); border-radius: 4px; padding: 0 5px; }
 
 /* ── Pixel frames ───────────────────────────────────────
-   These elements get a crisp pixel-art border: a 12×12 frame from js/art.js,
+   These elements get a crisp pixel-art border: a 12×12 frame from src/view/art.js,
    sliced into corners + edges + middle (see theme.js). --frame says which frame,
    --fw how wide the border is: 8px = the frame drawn at 2×, 12px = 3×.
    Whole-number scales keep the pixels square.
@@ -808,7 +808,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .feature-card .tile-desc { margin-top: 3px; }
 .feature-card b { font-family: var(--font-num); font-weight: 900; color: var(--ink); }
 
-/* The particle canvas (js/fx.js): over everything, never catches clicks */
+/* The particle canvas (src/view/fx.js): over everything, never catches clicks */
 .fx { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 40; pointer-events: none; image-rendering: pixelated; }
 
 .paytable { width: 100%; border-collapse: separate; border-spacing: 0 5px; }

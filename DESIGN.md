@@ -82,7 +82,7 @@ This rule works unchanged for 4, 5 or more reels later.
 
 Since milestone 7 Old Clunky **starts with Sunflower Seeds and Wood Shavings only**; **New Seeds** (a machine upgrade, §5) unlocks the Baby Carrot, then the Golden Seed (§21).
 
-| id       | Name            | Sprite (js/art.js)               | Weight | Chance per reel (fresh → both unlocked) |
+| id       | Name            | Sprite (src/view/art.js)               | Weight | Chance per reel (fresh → both unlocked) |
 |----------|-----------------|----------------------------------|-------:|----------------:|
 | `seed`   | Sunflower Seed  | grey striped seed                | 50     | 52.6% → 37.9%   |
 | `carrot` | Baby Carrot 🔒  | orange carrot, green leaves      | 25     | locked → 18.9%  |
@@ -430,10 +430,10 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | **Welcome back** | A paper dialog after time away: how long, what the hamster earned, and a "Yay!" that sends coins flying into the counter | Makes coming back feel good (§15). |
 
 **Style rules**
-- Soft pastel palette with warm brown outlines (never pure black). All colours are **theme tokens** in `style.css :root`: the room (`--page`), the cage (`--wall-*`, `--wire*`, `--floor*` for the plastic base, `--tube*`), cardboard and paper (`--kraft*`, `--paper*`), buttons, machines (`--machine*`, `--stacker*`, `--bonanza*`, `--palace*`), payline colours (`--line-1` … `--line-10`; line 11 on reuses them).
-- **Pixel frames (9-slice):** the UI borders are 12×12 sprites in `js/art.js` (cardboard, paper, a paper tab, a button). `js/theme.js` turns them into CSS variables, and CSS stretches them with `border-image` at 2× (8 px) or 3× (12 px). A button is ONE sprite repainted in each button's token colours (face and lip, plus a light and an outline mixed from them). Paper frames also come with coloured edges: green = you can afford it, gold = maxed / running, heirloom = planted, blue = selected.
+- Soft pastel palette with warm brown outlines (never pure black). All colours are **theme tokens** in `src/view/style.css :root`: the room (`--page`), the cage (`--wall-*`, `--wire*`, `--floor*` for the plastic base, `--tube*`), cardboard and paper (`--kraft*`, `--paper*`), buttons, machines (`--machine*`, `--stacker*`, `--bonanza*`, `--palace*`), payline colours (`--line-1` … `--line-10`; line 11 on reuses them).
+- **Pixel frames (9-slice):** the UI borders are 12×12 sprites in `src/view/art.js` (cardboard, paper, a paper tab, a button). `src/view/theme.js` turns them into CSS variables, and CSS stretches them with `border-image` at 2× (8 px) or 3× (12 px). A button is ONE sprite repainted in each button's token colours (face and lip, plus a light and an outline mixed from them). Paper frames also come with coloured edges: green = you can afford it, gold = maxed / running, heirloom = planted, blue = selected.
 - The pixel font (Pixelify Sans, weight 500) is for words. The clean rounded font (Nunito) is for **all numbers** and body text, because pixel digits like 5 and 8 read as "S".
-- **Sprites** (the full style guide is at the top of `js/art.js`): main sprites 24×24 (hamster, reel symbols, machines, cage props, the bedding tile), icons 16×16, currency icons 12×12, UI frames 12×12. They're drawn at **whole-number scales only** (mostly 2×), so pixels stay crisp squares. Each material has a small ramp (base, shade, light) and its **own darker outline**. Light comes from the top-left. See them all at `tools/sprites.html`.
+- **Sprites** (the full style guide is at the top of `src/view/art.js`): main sprites 24×24 (hamster, reel symbols, machines, cage props, the bedding tile), icons 16×16, currency icons 12×12, UI frames 12×12. They're drawn at **whole-number scales only** (mostly 2×), so pixels stay crisp squares. Each material has a small ramp (base, shade, light) and its **own darker outline**. Light comes from the top-left. See them all at `tools/sprites.html`.
 - **Stage outlines** are 3 px (2 px for small parts) in a slightly softer ink (`--outline`, `--outline-thin`, `--outline-ink`). Small flat things (bars, chips, strips) get notched "pixel" corners (`--notch`) instead of round ones.
 - Feedback: the win glow sits *behind* the symbols (never tint the symbol itself), plus a "+N" popup, and the coin tag pops when coins come in. Bigger wins add more (§15), and pixel particles add sparkle (§20).
 - Works from phone width up. On narrow screens the machine rig **zooms out just enough to fit** (measured by `ui.js`), so every reel and the lever always show. The speech bubble text is scaled back up so it stays readable.
@@ -618,7 +618,7 @@ The first five goals (First Spin, Beginner's Luck, Look No Paws!, Warming Up, Th
 
 18 skins are in the capsule pool: 9 common, 5 rare, 4 epic. Collecting all of them takes **~110 pulls on average** (median 98; 1 in 10 players needs 177+; measured over 2,000 seeds), because the last Epics are the hard part. With refunds that's roughly 800–900 tokens.
 
-- data.json lists each skin's id, name, category and rarity. **What a skin looks like lives in `js/skins.js`**, because data.json never holds colours. Fur skins recolour the hamster sprite's palette letters. Wheel, machine and room skins override theme tokens (`--wheel-*`, `--machine`, `--marquee`, `--wall-*`, `--floor*`), set **on the stage element only**.
+- data.json lists each skin's id, name, category and rarity. **What a skin looks like lives in `src/view/skins.js`**, because data.json never holds colours. Fur skins recolour the hamster sprite's palette letters. Wheel, machine and room skins override theme tokens (`--wheel-*`, `--machine`, `--marquee`, `--wall-*`, `--floor*`), set **on the stage element only**.
 - The **Wardrobe** shows every skin (unfound ones greyed out, with their names and rarities), grouped by category. Tap an owned skin to wear it. The choice is saved.
 
 ### The Capsules tab
@@ -987,7 +987,7 @@ A hamster upgrade (§5): every machine counts its winning paid spins in a row, a
 
 *"Cool particle effects and animations."* (the user)
 
-- **js/fx.js** draws pixel particles on one canvas over the page: little squares at whole-pixel positions in the theme's colours, so they match the pixel art. At most 400 at once; with Motion "Less" (or the system's reduced motion) none are drawn.
+- **src/view/fx.js** draws pixel particles on one canvas over the page: little squares at whole-pixel positions in the theme's colours, so they match the pixel art. At most 400 at once; with Motion "Less" (or the system's reduced motion) none are drawn.
 - Wins: sparkles from every lit cell in its line's colour (more for bigger tiers); big wins add confetti; jackpots add confetti and a gold coin fountain.
 - Free spins: confetti and a burst of party colours when they start. The jackpot wheel: sparks off the rim as it ticks, then a big coin fountain and confetti when it lands (more for the Grand).
 - The gamble: a gold burst from the card when you're right (bigger for a suit), a puff of dust when you're wrong (M7).
@@ -995,7 +995,7 @@ A hamster upgrade (§5): every machine counts its winning paid spins in a row, a
 - Buying: sparkles over the upgrade tile; buying a machine: confetti.
 - The cage: dust kicked up from the bedding by a fast wheel, and soft motes drifting in the air.
 - Animations: **anticipation** (reels that could still complete a feature shimmer and land a beat later, within the same spin time), win banners that **count the win up**, a gold glow around the machine during free spins, pot plaques that flash when won.
-- Sounds (synthesized, `js/sound.js`): bet click, anticipation rise, free-spins fanfare, wheel ticks, pot fanfare, gamble win and "wah-wah", streak chimes.
+- Sounds (synthesized, `src/view/sound.js`): bet click, anticipation rise, free-spins fanfare, wheel ticks, pot fanfare, gamble win and "wah-wah", streak chimes.
 - **Milestone 7:** a clunk and a puff of dust as **each reel lands** (quieter for auto-spins); **sparkles along each line** as the win show names it; the WIN meter's **rolling digits** with a soft tick; a **card flip** (sound + animation); a **clover sparkle** and a pop of the Luck badge when Luck goes up; a **"new symbol" fanfare** and confetti over the machine on an unlock. Motion "Less" turns the particles and the flip off, and the meter jumps straight to the total.
 
 ---
@@ -1013,7 +1013,7 @@ A hamster upgrade (§5): every machine counts its winning paid spins in a row, a
 - **Slower auto-spin:** Wheel Training goes 4.6 s → 3.8 s over 4 levels (§5), and the interval is **never shorter than the spin time + 0.8 s rest** (data: `rest`), so there's always a beat to see the win. A keen clicker (a spin every 3 s) is a little faster than auto-spin.
 - *Quick reels* (§17) stays view only: it never changes game time (D69).
 
-### The win show (view only, `js/winshow.js`)
+### The win show (view only, `src/view/winshow.js`)
 
 Like a real pokie, a win is shown in steps once the last reel lands:
 

@@ -1,4 +1,4 @@
-// theme.js — VIEW layer. Turns the pixel-art frame sprites (js/art.js) into CSS
+// theme.js — VIEW layer. Turns the pixel-art frame sprites (src/view/art.js) into CSS
 // variables, so style.css can use them as crisp pixel borders:
 //   .btn-primary { --btn-frame: var(--frame-btn-primary); }
 //

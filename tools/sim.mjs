@@ -1,5 +1,5 @@
 // sim.mjs — the balance simulator. A headless bot plays the REAL game logic
-// (js/game.js, no page, no browser) and prints how long things take, so balance
+// (src/logic/game.js, no page, no browser) and prints how long things take, so balance
 // changes can be compared with the targets in DESIGN.md section 10.
 //
 // Run it from the hamster_slots folder:
@@ -12,8 +12,8 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { createRng } from '../js/rng.js';
-import { createGame } from '../js/game.js';
+import { createRng } from '../src/logic/rng.js';
+import { createGame } from '../src/logic/game.js';
 
 const HELP = `node tools/sim.mjs [options]
   --player idle|active   idle: clicks every 1.5 s until Wheel Training, then only auto-spin

@@ -1,13 +1,13 @@
-// test_art.mjs — checks the text sprites in js/art.js are well-formed.
+// test_art.mjs — checks the text sprites in src/view/art.js are well-formed.
 // Run from the hamster_slots folder:   node tools/test_art.mjs
 //
 // A typo in a sprite (a row one pixel too short, or a letter with no colour)
 // is easy to make by hand and hard to spot on screen. This catches it.
 
 import { readFileSync } from 'node:fs';
-import { SPRITES, PALETTE, SYMBOL_SPRITES, CAPSULE_SPRITES, MACHINE_SPRITES, upgradeIcon, treeIcon } from '../js/art.js';
-import { SKIN_ART, SKIN_TOKENS } from '../js/skins.js';
-import { FRAME_SPRITES, THEME_TOKENS } from '../js/theme.js';
+import { SPRITES, PALETTE, SYMBOL_SPRITES, CAPSULE_SPRITES, MACHINE_SPRITES, upgradeIcon, treeIcon } from '../src/view/art.js';
+import { SKIN_ART, SKIN_TOKENS } from '../src/view/skins.js';
+import { FRAME_SPRITES, THEME_TOKENS } from '../src/view/theme.js';
 
 const data = JSON.parse(readFileSync(new URL('../data.json', import.meta.url), 'utf8'));
 
@@ -25,7 +25,7 @@ for (const [name, rows] of Object.entries(SPRITES)) {
   check(`${name}: every pixel letter has a palette colour`, unknown.length === 0, `unknown: ${unknown.join(' ')}`);
 }
 
-// Style guide (see the top of js/art.js): square sprites of 24, 16 or 12 pixels.
+// Style guide (see the top of src/view/art.js): square sprites of 24, 16 or 12 pixels.
 for (const [name, rows] of Object.entries(SPRITES)) {
   check(`${name}: is a square 24, 16 or 12 px sprite`, rows.length === rows[0].length && [24, 16, 12].includes(rows.length),
     `${rows[0].length}x${rows.length}`);
@@ -61,10 +61,10 @@ for (const r of data.capsules.rarities) {
   check(`capsule rarity "${r.id}" has a capsule sprite`, CAPSULE_SPRITES[r.id] in SPRITES);
 }
 
-// Skins: data.json lists them, js/skins.js says what they look like.
+// Skins: data.json lists them, src/view/skins.js says what they look like.
 for (const skin of data.skins) {
   const art = SKIN_ART[skin.id];
-  check(`skin "${skin.id}" has art in js/skins.js`, !!art);
+  check(`skin "${skin.id}" has art in src/view/skins.js`, !!art);
   if (!art) continue;
   if (skin.category === 'fur') {
     const letters = Object.keys(art.colors || {});
@@ -79,7 +79,7 @@ for (const skin of data.skins) {
   check(`skin "${skin.id}": starter skins are the plain classic look`, starterEmpty);
 }
 // A skin token that isn't a theme token in style.css :root would silently do nothing.
-const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../src/view/style.css', import.meta.url), 'utf8');
 const rootBlock = css.slice(css.indexOf(':root {'), css.indexOf('}', css.indexOf(':root {')));
 for (const name of SKIN_TOKENS) {
   check(`skin token ${name} is a theme token in style.css :root`, rootBlock.includes(`${name}:`));

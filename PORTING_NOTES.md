@@ -22,7 +22,7 @@ Each platform gets a detailed plan here when its turn comes.
 
 ## The platform layer
 
-*A plan, not built yet.* The game logic never knows which platform it's on (rule 1). Everything platform-specific goes through one small interface, and each platform brings its own implementation. Today that job is done by `js/save.js` (localStorage) and the clock and tab-visibility code in `js/main.js`.
+*A plan, not built yet.* The game logic never knows which platform it's on (rule 1). Everything platform-specific goes through one small interface, and each platform brings its own implementation. Today that job is done by `src/platform/save.js` (localStorage) and the clock and tab-visibility code in `src/main.js`.
 
 | Service | What the game needs | Web / itch.io | Steam (Electron or Tauri) | Mobile (Capacitor) |
 |---|---|---|---|---|
@@ -80,8 +80,8 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 |---|---|---|
 | 3.0 | Git baseline: `git init`, `.gitignore`, `.gitattributes`; commit today's game + docs on `main`, tag `v0.1.0`; branch `web-migration` | **Done** |
 | 3.1 | npm + Vite, still JavaScript: `package.json` (0.1.0), Vite (`base: './'`); data.json bundled, with live reload of data edits in `npm run dev`; `play.bat` runs Vite on **port 8765** (the same site, so the player's save carries over); `tools/serve.py` removed; preview configs switched to Vite (+ `hamster-slots-build` for `dist/`). Vite 8.3.1 | **Done** (the user tested play.bat: it opens and the save was kept) |
-| 3.2 | Move files into layers, no code changes (a separate commit keeps git history): `src/logic/`, `src/platform/`, `src/view/`, `src/main.js` | Next |
-| 3.3 | Vitest: all 687 checks as Vitest tests, art tests too, `npm run economy` for DESIGN's tables; the **golden run** (scripted sessions on fixed seeds, recorded from today's code, replayed by a test); real v7 save fixtures | |
+| 3.2 | Move files into layers, no code changes (a separate commit keeps git history): `src/logic/`, `src/platform/`, `src/view/` (with style.css), `src/main.js`; data.json stays at the top | **Done**, waiting for the user's OK |
+| 3.3 | Vitest: all 687 checks as Vitest tests, art tests too, `npm run economy` for DESIGN's tables; the **golden run** (scripted sessions on fixed seeds, recorded from today's code, replayed by a test); real v7 save fixtures | Next |
 | 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the simulator runs as `.ts` on Node 24 | |
 | 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main | |
 | 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform | |
@@ -102,7 +102,7 @@ These were the "gotchas for the port". They still hold for the TypeScript migrat
 - **Sprite scale must stay a whole number** (`max(1, floor(size / width))`), or pixel art gets uneven pixels.
 - **Tokens and skins survive retiring.** They're outside the list of fields `retire()` resets. Only a full Reset clears them.
 - **Retire keeps lifetime stats but resets the rest:** copy the list of reset fields from `retire()` exactly (coins, upgrades, machines, active machine, delivery, auto timer, run totals), then re-apply "start with" traits.
-- **mulberry32 must stay bit-exact** (`>>> 0` and `Math.imul` in `js/rng.js`), so the same seed gives the same spins before and after the migration.
+- **mulberry32 must stay bit-exact** (`>>> 0` and `Math.imul` in `src/logic/rng.js`), so the same seed gives the same spins before and after the migration.
 - **Spin results are `result[reel][row]`** (save v5). A v4 save's flat result becomes one-row columns; check the row count against the machine's `rows` when loading.
 - **Multi-line payouts round each line to cents, then add them up.** Rounding the total once gives different cents, and then payouts won't match.
 - **EV scales with lines, the hit rate doesn't** (D62). Keep the exact reel-1-and-2 count for the hit rate, and cache it; it needs every 2-match to pay (a data test checks this).

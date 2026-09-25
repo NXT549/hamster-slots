@@ -16,7 +16,7 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 > **Keep this block accurate.** Update it in the same commit as any change it describes.
 
 - **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 7 (game.js) and the data is `schemaVersion` 7 (data.json).
-- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). Next is 3.2 (move files into layers). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
+- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). **3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done and waiting for the user's OK.** Next is 3.3 (Vitest + the golden run). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
 - **The code today** is still plain JavaScript, now run and built by **Vite** (`npm run dev`, `npm run build`). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
 - **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). Friends can join that playtest from the Pages link once it's deployed. After that come M8 The Big Cage → M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M8+ early. Known issue for M8: from generation ~9, lives shrink to 3–10 min (D102).
 - **Last verified (M7):** `node tools/test_logic.mjs` 687/687, `node tools/test_art.mjs` all OK, the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
@@ -47,13 +47,13 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 ## Tech stack and architecture
 
 - **TypeScript + Vite.**
-- **Game logic and state live in their own modules with no DOM/UI code.** **Rule 1: logic never touches the DOM.** Logic modules (today `js/rng.js`, `events.js`, `machine.js` and `game.js`) never use `document`, `window`, `localStorage`, `Date`, `performance` or `Math.random`, and they run headless in Node (tests, simulator). UI code reads `game.state` and listens to events. It never changes state directly: it calls actions (`game.spin()`, `game.buyUpgrade(id)`, …).
-- **Platform-specific features (saving, storage, achievements) go through a small platform layer**, so the Steam and mobile versions can swap in their own implementations later (PORTING_NOTES → The platform layer). Today that layer is `js/save.js` plus the clock and tab-visibility code in `js/main.js`.
+- **Game logic and state live in their own modules with no DOM/UI code.** **Rule 1: logic never touches the DOM.** Logic modules (`src/logic/`: `rng.js`, `events.js`, `machine.js`, `game.js`) never use `document`, `window`, `localStorage`, `Date`, `performance` or `Math.random`, and they run headless in Node (tests, simulator). UI code reads `game.state` and listens to events. It never changes state directly: it calls actions (`game.spin()`, `game.buyUpgrade(id)`, …).
+- **Platform-specific features (saving, storage, achievements) go through a small platform layer**, so the Steam and mobile versions can swap in their own implementations later (PORTING_NOTES → The platform layer). Today that layer is `src/platform/save.js` plus the clock and tab-visibility code in `src/main.js` (step 3.6 turns them into the real platform layer).
 - **Use break_eternity.js for all currency and large numbers.**
 - **Rule 2: all balance numbers (costs, payouts, rebirth formulas, slot odds) live in data files, not hardcoded.** Today that's `data.json`: symbols, weights, payouts, spin cost and duration, delivery, upgrade costs, growth rates, effect values. No magic numbers in code. Data files stay plain JSON (no comments, no trailing commas), because the game, the tests and the simulator all read them. They hold **no art or colours**.
 - **Rule 5: the stack and its dependencies.** TypeScript + Vite; break_eternity.js at runtime; Vitest for tests. No UI framework. Ask the user before adding any other dependency.
-- **Rule 11: art lives in the view.** Sprites are text grids in `js/art.js`. Colours, fonts and sizes are theme tokens in `style.css` `:root`; `js/theme.js` repaints the UI frame sprites in those token colours (so button colours still live in `:root`). What each skin looks like is in `js/skins.js` (fur = palette colours, the rest = token overrides set on the stage); data.json only lists skin ids/names/rarities. Numbers always use `--font-num` (clean font). The pixel font is always weight 500 (in bold its C looks like an O). Highlights go *behind* symbols, never on top (a tint once made grey seeds look golden). Every framed element sets its own `--frame`/`--fw` (custom properties inherit: a paper tile inside the cardboard tray would otherwise turn to cardboard).
-- **Until migrated:** the code is plain JavaScript ES modules. Vite runs and builds it, and data.json is bundled into the build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are as in the File map below. Only migrate through the approved step-by-step plan.
+- **Rule 11: art lives in the view.** Sprites are text grids in `src/view/art.js`. Colours, fonts and sizes are theme tokens in `src/view/style.css` `:root`; `src/view/theme.js` repaints the UI frame sprites in those token colours (so button colours still live in `:root`). What each skin looks like is in `src/view/skins.js` (fur = palette colours, the rest = token overrides set on the stage); data.json only lists skin ids/names/rarities. Numbers always use `--font-num` (clean font). The pixel font is always weight 500 (in bold its C looks like an O). Highlights go *behind* symbols, never on top (a tint once made grey seeds look golden). Every framed element sets its own `--frame`/`--fw` (custom properties inherit: a paper tile inside the cardboard tray would otherwise turn to cardboard).
+- **Until migrated:** the code is plain JavaScript ES modules. Vite runs and builds it, and data.json is bundled into the build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are already in their layer folders (File map below). Only migrate through the approved step-by-step plan.
 
 ## Saves
 
@@ -103,7 +103,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 ## Code style
 
 - **Rule 7: comment for a learner.** The user is learning. Add short comments that explain *why*, at key points. Don't comment every line.
-- **Rule 9: prototype art.** Pixel sprites in `js/art.js` follow the style guide at the top of that file (24/16/12 px, colour ramps, matching outlines, whole-number scales; 12×12 UI frames are 9-slice and must keep their edges uniform). The palette's letters are all used: new colours go on free digits/punctuation (the purple ramp uses `8 9 0 +`); M7's sprites (Wood Shaving, clover, horseshoe, seed packet, card back, four suits) reuse existing ramps. The cage itself (bars, base, tubes, machines, the WIN meter, the gamble card) is CSS. Particles (`js/fx.js`) are whole-pixel squares in token colours and must stay off with Motion "Less". Spend effort on feel and clarity, not detail.
+- **Rule 9: prototype art.** Pixel sprites in `src/view/art.js` follow the style guide at the top of that file (24/16/12 px, colour ramps, matching outlines, whole-number scales; 12×12 UI frames are 9-slice and must keep their edges uniform). The palette's letters are all used: new colours go on free digits/punctuation (the purple ramp uses `8 9 0 +`); M7's sprites (Wood Shaving, clover, horseshoe, seed packet, card back, four suits) reuse existing ramps. The cage itself (bars, base, tubes, machines, the WIN meter, the gamble card) is CSS. Particles (`src/view/fx.js`) are whole-pixel squares in token colours and must stay off with Motion "Less". Spend effort on feel and clarity, not detail.
 
 ## How to run (the code is still plain JS; the migration updates this as it goes)
 
@@ -146,62 +146,65 @@ hamster_slots/
 │                         luck + unlockSymbol), retirement + familyTree, tokens, capsules, skins, diary
 ├── index.html         ← page skeleton (HUD, cage stage + bet box + card gamble panel + pots + WIN meter + clover
 │                         badge, tray tabs and sub-tabs, menu + settings, the particle canvas) + file:// warning
-├── style.css          ← the "hamster cage" look; THEME TOKENS in :root (colours, fonts, sizes)
 ├── package.json       ← npm: the version, scripts (dev, build, preview, test, sim) and tools (Vite)
 ├── package-lock.json  ← the exact tool versions npm installed (committed, so every install matches)
 ├── vite.config.js     ← Vite settings: relative paths for any host, dev server on port 8765
 ├── play.bat           ← double-click launcher (npm install if needed, then Vite on port 8765 + opens the browser)
-├── .claude/launch.json ← Claude Code preview servers (ports 8766 and 8767)
+├── .claude/launch.json ← Claude Code preview servers (dev on 8766 and 8767, the built dist/ on 8768)
 ├── .gitignore / .gitattributes ← what git skips (node_modules/, dist/); line endings stored as LF (.bat keeps CRLF)
 ├── node_modules/, dist/ ← made by npm install / npm run build; never committed
 ├── tools/
 │   ├── test_logic.mjs ← headless logic test: node tools/test_logic.mjs
 │   ├── test_art.mjs   ← sprite + skin + frame sanity test: node tools/test_art.mjs
 │   ├── sim.mjs        ← the balance simulator: a bot plays the real logic (node tools/sim.mjs --help)
-│   └── sprites.html   ← sprite gallery (dev page): every sprite in js/art.js, big
-└── js/
-    ├── rng.js         ← LOGIC   seedable RNG (mulberry32) + pickWeighted
-    ├── events.js      ← LOGIC   tiny event emitter (the UI, tests and simulator listen)
-    ├── machine.js     ← LOGIC   pure rules: rollGrid (reels × rows), paylines, evaluate (one line, left to right,
-    │                             wilds: best of two readings; scatters and blanks never on a line), evaluateGrid
-    │                             (every line), findSymbol, expectedValue (exact, with wilds; exact hit rate, fast
-    │                             on grids), scatter maths (freeSpinStats, jackpotStats) and spinExpectation
-    ├── game.js        ← LOGIC   state, actions, upgrades (+ ×10/Max), machines (buy/switch, per-machine upgrades),
-    │                             symbols (locks → family shifts → wild → Luck), Luck (Hamster + Machine), bets
-    │                             (High Roller, step-down), free spins, jackpot pots + wheel, the card gamble (SUITS),
-    │                             Hot Streak, the queued click, deliveries, auto-spin (+ the rest floor), retirement
-    │                             + Family Tree, effects from both lists (effectsOfType), Hamster Tokens + diary,
-    │                             Capsule Machine + skins, 60 Hz tick, save format + migrations
-    ├── save.js        ← BRIDGE  the only file using localStorage (the save + the settings, incl. sub-tabs)
-    ├── art.js         ← VIEW    pixel sprites as text grids + palette (+ per-draw palette overrides for fur);
-    │                             symbol/machine/upgrade/tree node/capsule → sprite maps; UI frames + bedding tile
-    ├── theme.js       ← VIEW    turns the UI frame sprites into CSS variables (9-slice borders), painted in token colours
-    ├── skins.js       ← VIEW    what each skin looks like (fur colours, cage theme tokens) + swatches
-    ├── dom.js         ← VIEW    shared helpers: formatCoins (+ short/full numbers), mix, setText, setHTML,
-    │                             replayClass, iconHTML, createSubTabs, formatSeconds/Duration/Wait
-    ├── sound.js       ← VIEW    synthesized sound effects (Web Audio), volume + mute
-    ├── fx.js          ← VIEW    pixel particles on one canvas over the page: sparkles, confetti, fountains,
-    │                             dust, embers, motes (capped at 400; none with Motion "Less")
-    ├── reels.js       ← VIEW    scrolling reel strips (3 visible rows; real rows on grid machines) that stop one
-    │                             at a time, payline tags (or badges on many-line machines), winning cells +
-    │                             lines, feature cells, anticipation, quick reels
-    ├── winshow.js     ← VIEW    the win show: everything lit + the WIN meter counting up, then one line at a
-    │                             time with a label, then the scatters; loops; a tap skips (view only, D92)
-    ├── shop.js        ← VIEW    the Upgrades tab (sub-tabs Hamster / [machine] / Machines): machine cards with
-    │                             feature chips, ×1/×10/Max, upgrade tiles, "ready in" hints; describeEffect
-    │                             (also used by the family tree)
-    ├── payouts.js     ← VIEW    the Info tab (sub-tabs): paytable (scatter, blank and locked rows), payline
-    │                             diagrams, Features (Luck, unlocks and the real odds of every feature), recent wins
-    ├── ui.js          ← VIEW    HUD (coins + seeds, tab title), cage stage (wheel + prize wheel, tube, machine
-    │                             per type, tags, bubble, bet box, pots, clover + streak badges, card gamble panel,
-    │                             delivery tube, fit-to-width), tray tabs, Family tab (retire + tree), menu +
-    │                             settings, skins on the stage, capsule prop, win celebrations (WIN_FX + particles),
-    │                             reel clunks + dust, sounds, welcome-back + stats dialogs
-    ├── capsules.js    ← VIEW    the Capsules tab (sub-tabs): machine card + reveal, Wardrobe, Hamster Diary
-    ├── debug.js       ← VIEW    debug panel (stats incl. Luck and feature odds, coins, free spins, jackpot wheel,
-    │                             offer a gamble, time speed, reload data)
-    └── main.js        ← BOOT    data.json (bundled; hot-applied in dev) → game → load save → settings, theme, sound, debug + UI
-                                  → offline earnings → frame loop + autosave (+ offline earnings after a hidden tab)
+│   └── sprites.html   ← sprite gallery (dev page): every sprite in src/view/art.js, big
+└── src/
+    ├── main.js        ← BOOT: data.json (bundled; hot-applied in dev) → game → load save → settings, theme, sound,
+    │                    debug + UI → offline earnings → frame loop + autosave (+ offline earnings after a hidden tab)
+    ├── logic/         ← LOGIC: no DOM, no clock, runs headless in Node (rule 1)
+    │   ├── rng.js     ← seedable RNG (mulberry32) + pickWeighted
+    │   ├── events.js  ← tiny event emitter (the UI, tests and simulator listen)
+    │   ├── machine.js ← pure rules: rollGrid (reels × rows), paylines, evaluate (one line, left to right, wilds:
+    │   │                best of two readings; scatters and blanks never on a line), evaluateGrid (every line),
+    │   │                findSymbol, expectedValue (exact, with wilds; exact hit rate, fast on grids), scatter
+    │   │                maths (freeSpinStats, jackpotStats) and spinExpectation
+    │   └── game.js    ← state, actions, upgrades (+ ×10/Max), machines (buy/switch, per-machine upgrades), symbols
+    │                    (locks → family shifts → wild → Luck), Luck (Hamster + Machine), bets (High Roller,
+    │                    step-down), free spins, jackpot pots + wheel, the card gamble (SUITS), Hot Streak, the
+    │                    queued click, deliveries, auto-spin (+ the rest floor), retirement + Family Tree, effects
+    │                    from both lists (effectsOfType), Hamster Tokens + diary, Capsule Machine + skins, 60 Hz
+    │                    tick, save format + migrations
+    ├── platform/      ← PLATFORM: talks to the browser for storage (becomes the platform layer in step 3.6)
+    │   └── save.js    ← the only file using localStorage (the save + the settings, incl. sub-tabs)
+    └── view/          ← VIEW: draws the game and turns clicks and keys into game actions
+        ├── style.css  ← the "hamster cage" look; THEME TOKENS in :root (colours, fonts, sizes)
+        ├── art.js     ← pixel sprites as text grids + palette (+ per-draw palette overrides for fur);
+        │                symbol/machine/upgrade/tree node/capsule → sprite maps; UI frames + bedding tile
+        ├── theme.js   ← turns the UI frame sprites into CSS variables (9-slice borders), painted in token colours
+        ├── skins.js   ← what each skin looks like (fur colours, cage theme tokens) + swatches
+        ├── dom.js     ← shared helpers: formatCoins (+ short/full numbers), mix, setText, setHTML, replayClass,
+        │                iconHTML, createSubTabs, formatSeconds/Duration/Wait
+        ├── sound.js   ← synthesized sound effects (Web Audio), volume + mute
+        ├── fx.js      ← pixel particles on one canvas over the page: sparkles, confetti, fountains, dust, embers,
+        │                motes (capped at 400; none with Motion "Less")
+        ├── reels.js   ← scrolling reel strips (3 visible rows; real rows on grid machines) that stop one at a
+        │                time, payline tags (or badges on many-line machines), winning cells + lines, feature
+        │                cells, anticipation, quick reels
+        ├── winshow.js ← the win show: everything lit + the WIN meter counting up, then one line at a time with
+        │                a label, then the scatters; loops; a tap skips (view only, D92)
+        ├── shop.js    ← the Upgrades tab (sub-tabs Hamster / [machine] / Machines): machine cards with feature
+        │                chips, ×1/×10/Max, upgrade tiles, "ready in" hints; describeEffect (also used by the
+        │                family tree)
+        ├── payouts.js ← the Info tab (sub-tabs): paytable (scatter, blank and locked rows), payline diagrams,
+        │                Features (Luck, unlocks and the real odds of every feature), recent wins
+        ├── ui.js      ← HUD (coins + seeds, tab title), cage stage (wheel + prize wheel, tube, machine per type,
+        │                tags, bubble, bet box, pots, clover + streak badges, card gamble panel, delivery tube,
+        │                fit-to-width), tray tabs, Family tab (retire + tree), menu + settings, skins on the
+        │                stage, capsule prop, win celebrations (WIN_FX + particles), reel clunks + dust, sounds,
+        │                welcome-back + stats dialogs
+        ├── capsules.js ← the Capsules tab (sub-tabs): machine card + reveal, Wardrobe, Hamster Diary
+        └── debug.js   ← debug panel (stats incl. Luck and feature odds, coins, free spins, jackpot wheel, offer
+                         a gamble, time speed, reload data in dev)
 ```
 
 ## Events (emitted by `game.js`, listened to with `game.on(name, fn)`)
@@ -236,7 +239,7 @@ hamster_slots/
 | `dataReloaded` | `{}` | `setData()` applied a new data.json |
 | `stateLoaded` | `{}` | A save was loaded |
 
-## Game API (`createGame(data, rng)` in `js/game.js`)
+## Game API (`createGame(data, rng)` in `src/logic/game.js`)
 
 - **Actions** (return `true`/`false`): `spin(source)` (a manual spin asked for mid-spin is queued, D82), `startDelivery(source)`, `buyUpgrade(id, count = 1)` (count 10, or `Infinity` for Max), `buyMachine(id)` (also switches to it), `switchMachine(id)`, `retire()`, `buyTreeNode(id)`, `pullCapsule()`, `equipSkin(id)`, `setBet(index)`, `gamble(pick)` (`'red'`, `'black'`, `'hearts'`, `'diamonds'`, `'clubs'`, `'spades'`), `collectGamble()` (Take win), `applyOfflineEarnings(seconds)`. Plus debug `addCoins(n, asEarned = false)` (asEarned counts toward seeds), `addSeeds(n)`, `addTokens(n)`, `addFreeSpins(n)`, `triggerJackpot(potId)`, `triggerGamble(stake)` (offer the gamble now), and `setData(data)` (hot reload).
 - **Time:** `update(dt)` advances game time in fixed 1/60 s ticks (`TICK`).

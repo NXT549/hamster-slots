@@ -8,13 +8,13 @@
 // Vite bundles data.json into the game's code, so there's no separate file to
 // load: it works the same on every platform (and even offline).
 import bundledData from '../data.json';
-import { createRng } from './rng.js';
-import { createGame } from './game.js';
-import { saveGame, loadGame, clearSave, loadSettings, saveSettings } from './save.js';
-import { createSound } from './sound.js';
-import { applyTheme } from './theme.js';
-import { createUI } from './ui.js';
-import { createDebugPanel } from './debug.js';
+import { createRng } from './logic/rng.js';
+import { createGame } from './logic/game.js';
+import { saveGame, loadGame, clearSave, loadSettings, saveSettings } from './platform/save.js';
+import { createSound } from './view/sound.js';
+import { applyTheme } from './view/theme.js';
+import { createUI } from './view/ui.js';
+import { createDebugPanel } from './view/debug.js';
 
 // Max real seconds processed per frame. If the tab stalls (or was in the
 // background), we don't try to catch up frame by frame: time away is paid

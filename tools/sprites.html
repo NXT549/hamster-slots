@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Hamster Slots · sprite gallery</title>
-  <!-- A dev page: every sprite in js/art.js, big, on light and dark backgrounds.
+  <!-- A dev page: every sprite in src/view/art.js, big, on light and dark backgrounds.
        Open it with the game's server running: http://localhost:8765/tools/sprites.html -->
   <style>
     body { margin: 0; padding: 20px; background: #efe2d3; font: 13px system-ui, sans-serif; color: #4a3428; }
@@ -24,7 +24,7 @@
   </div>
   <div class="grid" id="grid"></div>
   <script type="module">
-    import { SPRITES, spriteImg } from '../js/art.js';
+    import { SPRITES, spriteImg } from '../src/view/art.js';
     const grid = document.getElementById('grid');
     // ?only=seed,carrot shows just those sprites; ?zoom=8 sets the zoom.
     const params = new URLSearchParams(location.search);

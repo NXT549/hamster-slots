@@ -6,7 +6,7 @@
 // unblurred pixels (image-rendering: pixelated).
 //
 // Why text? Anyone can edit a sprite in a text editor, and a SKIN can be as small
-// as a different set of colours for some letters (see js/skins.js). For Godot,
+// as a different set of colours for some letters (see src/view/skins.js). For Godot,
 // these same grids can be exported to PNG files and imported as textures.
 // See every sprite big: tools/sprites.html (with the game's server running).
 //
@@ -19,7 +19,7 @@
 //   · Light comes from the top-left.
 //   · UI frames (frameCard, framePaper, frameButton …) are 12×12 "9-slice" pictures:
 //     4 px corners, and the middle 4 px of every edge are the same all along, so
-//     CSS (border-image) can stretch them to any size. js/theme.js turns them into
+//     CSS (border-image) can stretch them to any size. src/view/theme.js turns them into
 //     CSS variables. Tiles (bedding) repeat seamlessly: their edges wrap around.
 //
 // Rule: art never goes in data.json (that file is balance only).

@@ -8,12 +8,12 @@
 // economy numbers, so you can copy them into DESIGN.md after a balance change.
 
 import { readFileSync } from 'node:fs';
-import { createRng } from '../js/rng.js';
+import { createRng } from '../src/logic/rng.js';
 import {
   evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol,
   scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation,
-} from '../js/machine.js';
-import { createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS } from '../js/game.js';
+} from '../src/logic/machine.js';
+import { createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS } from '../src/logic/game.js';
 
 const data = JSON.parse(readFileSync(new URL('../data.json', import.meta.url), 'utf8'));
 
