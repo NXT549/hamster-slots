@@ -8,6 +8,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Added
+
+- **Save backup** (Menu → Save backup): your whole save as a one-line code to copy and keep somewhere safe. Paste a code back in to load it: to get your hamster back, or to carry on in another browser or on another computer. It tells you what's in a code before you load it.
+
 ### Changed
 
 - **No more upper limit.** Coins, Heirloom Seeds and Hamster Tokens can now grow far past 1.8e308, where they used to turn into "Infinity". Your save carries over as it is.

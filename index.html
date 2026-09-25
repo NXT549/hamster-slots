@@ -279,9 +279,24 @@
     <div class="menu-row"><span>Motion <span class="note">(hops, shakes, flying coins)</span></span><span class="seg" id="set-motion"></span></div>
     <div class="menu-row"><span>Reels <span class="note">(spins take the same time)</span></span><span class="seg" id="set-reels"></span></div>
     <div class="menu-row"><span>Numbers</span><span class="seg" id="set-numbers"></span></div>
+    <button class="btn btn-soft" id="backup-btn">Save backup</button>
     <button class="btn btn-soft" id="stats-btn">Stats</button>
     <button class="btn btn-soft" id="debug-btn">Toggle debug panel</button>
     <button class="btn btn-danger" id="reset-btn">Reset progress</button>
+    <form method="dialog"><button class="btn btn-primary">Close</button></form>
+  </dialog>
+
+  <!-- ── Save backup (Menu → Save backup): the save as a one-line code (view/backup.ts) ── -->
+  <dialog class="dialog" id="backup">
+    <h2>Save backup</h2>
+    <p class="note backup-intro">Your game saves itself in this browser. A save code is your backup: copy it and keep it somewhere safe (a note, a message to yourself). Paste it back here to get your hamster back, or to carry on in another browser or on another computer.</p>
+    <h3 class="backup-head">Your save code</h3>
+    <textarea class="code-box" id="backup-code" rows="3" readonly spellcheck="false" aria-label="Your save code"></textarea>
+    <button class="btn btn-soft" id="backup-copy">Copy code</button>
+    <h3 class="backup-head">Load a save code</h3>
+    <textarea class="code-box" id="backup-paste" rows="3" spellcheck="false" autocomplete="off" placeholder="Paste a save code here. It starts with HS1:" aria-label="Paste a save code"></textarea>
+    <p class="backup-status" id="backup-status"></p>
+    <button class="btn btn-danger" id="backup-load" disabled>Load this save</button>
     <form method="dialog"><button class="btn btn-primary">Close</button></form>
   </dialog>
 

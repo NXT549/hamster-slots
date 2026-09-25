@@ -1013,6 +1013,21 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .dialog .btn.btn-small { width: auto; margin: 0; padding: 0 6px 1px; font-size: 14px; }
 .btn.off { --frame: var(--frame-btn-off); color: var(--ink-soft); }
 
+/* Save backup (Menu → Save backup): the code boxes and the check under them */
+#backup { max-height: 92vh; overflow: auto; }
+.backup-intro { margin: 0 0 4px; line-height: 1.45; }
+.backup-head { font-family: var(--font-display); font-weight: 500; font-size: 16px; margin: 12px 0 6px; }
+.code-box {
+  display: block; width: 100%; box-sizing: border-box; resize: none; padding: 6px 8px;
+  font: 12px/1.35 ui-monospace, "Cascadia Mono", Consolas, monospace; word-break: break-all;
+  color: var(--ink); background: var(--paper-2); border: 2px solid var(--paper-edge); border-radius: 8px;
+}
+.code-box:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+.backup-status { margin: 8px 0 0; min-height: 1.4em; font-size: 13px; line-height: 1.45; color: var(--ink-soft); font-weight: 600; }
+.backup-status.good { color: var(--ink); }
+.backup-status.bad { color: var(--danger-dark); }
+.backup-status b { font-family: var(--font-num); font-weight: 900; }
+
 .stats-list { display: flex; flex-direction: column; max-height: 60vh; overflow: auto; }
 .stat-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 2px dashed var(--paper-2); font-size: 14px; }
 .stat-row span { color: var(--ink-soft); font-weight: 600; }

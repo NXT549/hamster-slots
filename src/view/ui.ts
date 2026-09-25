@@ -14,6 +14,7 @@ import { createWinShow } from './winshow.ts';
 import { formatCoins, formatWhole, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle } from './dom.ts';
 import { furColors, applyStageSkins } from './skins.ts';
 import { createCapsulesView } from './capsules.ts';
+import { createBackupView } from './backup.ts';
 import { createShopView, describeEffect } from './shop.ts';
 import { createPayoutsView } from './payouts.ts';
 import { createFx } from './fx.ts';
@@ -21,6 +22,7 @@ import { effectAs } from '../logic/game.ts';
 import { divide } from '../logic/money.ts';
 import type { Money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
+import type { BackupActions } from './backup.ts';
 import type { Game } from '../logic/game.ts';
 import type { Card, MachineState, Named, SpinSource, TreeNodeDef, UpgradeDef } from '../logic/types.ts';
 import type { Settings } from '../platform/save.ts';
@@ -81,8 +83,8 @@ const SETTING_ROWS: Record<string, [keyof Settings, [unknown, string][]]> = {
 
 export function createUI(
   game: Game,
-  { onReset, onToggleDebug, sound, settings, onSettingsChange }:
-    { onReset: () => void; onToggleDebug: () => void; sound: Sound; settings: Settings; onSettingsChange: () => void },
+  { onReset, onToggleDebug, sound, settings, onSettingsChange, backup }:
+    { onReset: () => void; onToggleDebug: () => void; sound: Sound; settings: Settings; onSettingsChange: () => void; backup: BackupActions },
 ) {
   // The element with this id (every id used here is in index.html).
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -108,7 +110,7 @@ export function createUI(
     heirloomPerSeed: $('heirloom-per-seed'), retireBtn: $<HTMLButtonElement>('retire-btn'),
     tree: $('tree'), treeDetail: $('tree-detail'),
     capsulesTab: $('capsules-tab'), stageGacha: $('stage-gacha'), tray: document.querySelector<HTMLElement>('.tray')!,
-    muteBtn: $('mute-btn'), volume: $<HTMLInputElement>('volume'), statsBtn: $('stats-btn'), stats: $<HTMLDialogElement>('stats'), statsList: $('stats-list'),
+    muteBtn: $('mute-btn'), volume: $<HTMLInputElement>('volume'), statsBtn: $('stats-btn'), backupBtn: $('backup-btn'), stats: $<HTMLDialogElement>('stats'), statsList: $('stats-list'),
     welcome: $<HTMLDialogElement>('welcome'), welcomeText: $('welcome-text'), welcomeCoins: $('welcome-coins'),
   };
 
@@ -711,6 +713,12 @@ export function createUI(
   });
   el.volume.addEventListener('change', () => sound.play('win'));
 
+  // Save backup: the save as a code to copy, or a code to load (backup.ts).
+  el.backupBtn.addEventListener('click', () => {
+    el.menu.close();
+    backupView.open();
+  });
+
   // Stats: a snapshot of the lifetime stats, built when the dialog opens.
   el.statsBtn.addEventListener('click', () => {
     el.menu.close();
@@ -1159,6 +1167,7 @@ export function createUI(
   }
 
   const capsules = createCapsulesView(game, { say, sound, settings, onSettingsChange });
+  const backupView = createBackupView(game, backup);
   const shop = createShopView(game, { settings, onSettingsChange });
   const payouts = createPayoutsView(game, { settings, onSettingsChange });
   buildTree();

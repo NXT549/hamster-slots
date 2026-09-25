@@ -258,7 +258,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 ## 7. Save data
 
 - Autosave every 10 s, and also when the tab is hidden or closed. On the web the save lives in `localStorage`; saving goes through the platform layer, so Steam and mobile can store it their own way (PORTING_NOTES → The platform layer).
-- **Export / import (planned, not built yet):** the save as a text string you can copy out and paste back in, as a backup and to move a save between sites or devices (the user asked for it with the web-first plan, 2026-09-25; AGENTS → Saves).
+- **Save backup (Menu → Save backup, since 3.8):** the save as a one-line code (`HS1:…`, about 1.5–4 KB) to copy out and paste back in, as a backup and to move a save between sites or devices (the user asked for it with the web-first plan, 2026-09-25). A pasted code is checked first and says what's in it (pup, generation, coins, seeds, machines, when it was made) or what's wrong with it; loading it needs two taps, replaces the game, and pays no offline earnings for the time since the code was made. Old codes load like old saves (the migrations).
 - The save holds **player state only**: coins, upgrade levels, any in-progress spin or delivery, this life's totals, the family (generation, Heirloom Seeds, seeds ever earned, tree levels), lifetime stats, and a `saveVersion` number. Amounts of money are saved as text ("1.5e400"), so they can grow without limit (save v8). It never holds balance values. That way, a change to `data.json` applies straight away to an existing save.
 - When a save loads, unknown upgrades and tree nodes are dropped and levels are capped at the current max, in case `data.json` changed.
 - **Save version 2** (milestone 2) added the family. A version 1 save is migrated: the hamster becomes generation 1, and everything it had already earned counts towards its first seeds.
@@ -395,7 +395,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 - ~~**Rebirth system**~~ → built as **Retirement** (milestone 2, §13).
 - ~~**Skins**~~ → built as the **Capsule Machine** with Hamster Tokens (milestone 3, §14), as the user asked: a separate gacha system with its own tokens.
 - **Art & UI direction:** the user picked **the hamster cage** (milestone 5, §12): the stage is the inside of a cage, the UI is cardboard and paper. Still a prototype look; the playtest decides whether it's the final direction.
-- **QoL:** the user picked *Buy ×10 / Max* and *Settings & info* first (§17). Not picked yet: keyboard shortcuts for buying and tabs. The save backup (export/import code) is now planned: the user asked for it with the web-first plan (2026-09-25, §7).
+- **QoL:** the user picked *Buy ×10 / Max* and *Settings & info* first (§17). Not picked yet: keyboard shortcuts for buying and tabs. The save backup (export/import code) was built in 3.8: the user asked for it with the web-first plan (2026-09-25, §7).
 - **Milestone 6 goals (user):** "different denoms like actual pokies", "features where you can win more", "more slot machines", "better game balances", "new and unique upgrade", "different tabs for upgrades and stuff", "cool particle effects and animations" → milestone 6. "Hats that give different buffs", "skins give different buffs", "new Heirloom Seed upgrades" → planned as milestone 7, now M10 (hats, skins) and M8 (tree traits).
 - **After M6 (user, 2026-09-25):** new: "more slot machines" → M9 · "rebirths for slot machines" → M8 · "unlock/buy new seeds (carrot, sunflower, golden)", which the user explained as *unlockable symbols you don't start with, kept balanced* → M7 · "more new fun upgrades" → every milestone (luck M7, stars M8, casino M11) · "roulette, blackjack etc in a hamster casino" → M11 · "late game you can eventually start your own casino" → M12 · "hats & skins which both give unique changes and improvements" → M10 · "fun particle effects and animations" → every milestone. Balancing: "slow down spin speed… early game to feel like a slog" → M7 (the user picked "real slog") · "with new symbols added change how likely you are to actually get wins therefore making players buy the luck upgrade" → M7 · "a reason to both rebirth and hold heirloom seeds" → M8. Changes: "change how the double or nothing system works" → M7 (the user picked the pokies card gamble) · "make it more like slot machines… make them go one by one" → M7 · "luck upgrades so you can see how much luck you have… hamster luck and machine luck" → M7 · "when you rebirth it takes you to a fully in-depth page of just the upgrades" → M8.
 
@@ -900,6 +900,7 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 | **Reels** | Scroll · Quick | *Quick* makes the reels drop a few symbols and land early instead of scrolling. **A spin still takes the same game time** (view only), so it's calmer, not faster: faster spins are a paid trait (Quick Paws). |
 | **Numbers** | 47.2K · 47,275 | Short numbers (default) or full numbers below a million. From a million up it's always 1.5M, and from a quadrillion up 1.23e15. |
 
+- **Save backup** (Menu, since 3.8): your save as a code to copy, or paste one to load it (§7).
 - **Coins in the browser tab's title** ("47.27K coins · Hamster Slots"), so you can peek from another tab.
 - **Recent wins** (Info → Recent wins since M6): the last 10 wins on any machine (machine, symbol × count for every winning line, the bet, tier, coins, how long ago), plus free-spin totals, jackpot pots and gambles (M6). View only: it's not saved and starts empty each visit.
 - **Payline diagrams** (Info → Paylines) (locked lines faded), and numbered payline tags on the Stacker's window that pulse when their line wins.
@@ -912,7 +913,6 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 ### Not done yet
 
 - Keyboard shortcuts for buying upgrades and switching tabs/machines (the user didn't pick them).
-- A save backup (export your save as a text code, import it again): **planned**. The user asked for it with the web-first plan (2026-09-25; §7, AGENTS → Saves).
 
 ### Questions the prototype must answer
 

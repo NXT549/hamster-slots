@@ -15,6 +15,7 @@ import { createGame } from './logic/game.ts';
 import { createWebPlatform } from './platform/web.ts';
 import { loadGame, clearSave, loadSettings, saveSettings } from './platform/save.ts';
 import { createAutosave } from './platform/autosave.ts';
+import { makeSaveCode, readSaveCode, loadSaveCode } from './platform/savecode.ts';
 import { createSound } from './view/sound.ts';
 import { applyTheme } from './view/theme.ts';
 import { createUI } from './view/ui.ts';
@@ -86,6 +87,17 @@ function boot(platform: Platform) {
       settings.muted = sound.muted;
       settings.volume = sound.volume;
       saveSettings(platform, settings);
+    },
+    // Menu → Save backup (savecode.ts). A loaded save is stored, then the page
+    // restarts from it, like after Reset, so every screen starts fresh.
+    backup: {
+      makeCode: () => makeSaveCode(game, platform),
+      readCode: (text) => readSaveCode(text, game.data),
+      load(save) {
+        if (!loadSaveCode(game, platform, save)) return false;
+        location.reload();
+        return true;
+      },
     },
   });
 

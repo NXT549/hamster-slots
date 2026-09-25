@@ -28,12 +28,12 @@ Each platform gets a detailed plan here when its turn comes.
 - `src/platform/save.ts` (the save and the settings) and `autosave.ts` (the timer, save on hide/close, pay for a hidden tab's time) only use the interface, so every platform shares them.
 - `src/platform/memory.ts`: a pretend platform for the tests.
 
-Save backup and app actions aren't in the interface yet: the backup comes in 3.8, and Quit / open-a-link when a platform needs them.
+The save backup (`src/platform/savecode.ts`, 3.8) needed no new service: it only uses storage and `now()`, so every platform gets it. App actions (Quit, open a link) come when a platform needs them.
 
 | Service | What the game needs | Web / itch.io | Steam (Electron or Tauri) | Mobile (Capacitor) |
 |---|---|---|---|---|
 | **Storage** | Read/write the save and the settings as text, under two keys (settings survive Reset) | `localStorage` (one per site) | A file in the app's user-data folder; Steam Cloud can sync that folder | Native key-value storage (e.g. Capacitor Preferences) rather than the webview's `localStorage` (iOS may clear that when storage runs low) |
-| **Save backup** | Export the save as a text string; import one | Copy and paste the text (a file download/upload is optional) | Same | Same (the share sheet helps) |
+| **Save backup** | Export the save as a text string; import one | Copy and paste the text: built (Menu → Save backup, D116). A file download/upload is optional | Same | Same (the share sheet helps) |
 | **Lifecycle** | "Going away" → save now and remember when; "back" → pay offline earnings (DESIGN §15) | `visibilitychange` + `pagehide` | Window hidden/minimised, and quitting | App pause/resume events |
 | **Clock** | Real-world time, only for offline earnings | `Date.now()` | Same | Same |
 | **Achievements** | Unlock one by id | Nothing: the in-game Hamster Diary is the achievement list | Steam achievements through a Steamworks library for the chosen wrapper | Maybe Game Center / Google Play Games |
@@ -91,9 +91,9 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 | 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the tools run the `.ts` logic straight on Node 24. TypeScript 7.0.2 (D112) | **Done** (the user OK'd it) |
 | 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main (and save.ts, which holds the Settings type the screens need) (D113) | **Done** (the user OK'd it) |
 | 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform (D114) | **Done** (the user said to continue) |
-| 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× (D115) | **Done**, waiting for the user's OK |
-| 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations | Next |
-| 3.9 | Bundled fonts, the debug-panel rule, cleanup, docs; release **0.2.0**; merge into `main` | |
+| 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× (D115) | **Done** (the user OK'd it) |
+| 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations (D116) | **Done**, waiting for the user's OK |
+| 3.9 | Bundled fonts, the debug-panel rule, cleanup, docs; release **0.2.0**; merge into `main` | Next |
 | Step 4 | GitHub Pages: the user creates the repo (`NXT549`) and sets Pages → Source = GitHub Actions; `.github/workflows/deploy.yml` tests, builds and deploys on every push to `main` | |
 
 ## Invariants any rewrite must keep
@@ -456,6 +456,14 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Speed at 50×** (4 machines, every upgrade, the Pouch Palace, 30 s of frames): the logic takes 0.110 ms a frame (was 0.098 ms), with the same 339 spins. A frame has 16.7 ms.
 - **Found in the browser, fixed:** the coin counter never quite reached a huge amount (it showed 9.99e399 for 1e400), so it now lands once it's within a billionth (below 10 million coins that's still "within a cent", as before); and seeds and tokens (`formatWhole`) are written like money from a quadrillion up ("2.77e198"), in full below that as before.
 - **Checked in the browser:** a real v7 save (4 machines, 1.17B coins) loaded at start-up as v8 and paid its 20 minutes away (+902.57K); every tab and sub-tab, the gamble, the recent wins, the paytable, the debug panel's figures; 1e400 coins, Max buying (1,000 levels in 6 ms), retiring for 2.77e198 seeds, 5e300 tokens and a pull, a reload keeping all of it; 375 px wide; no errors.
+
+**D116 — Save backup: a one-line save code** (step 3.8, the user's rule "export/import of the save as a text string"). Menu → Save backup.
+- **The code is `HS1:` + the save's JSON in base64** (through UTF-8, so any text survives). "HS1" = Hamster Slots save code, format 1; the save inside keeps its own `saveVersion`, so an old code loads through the save migrations like an old save. About 1.5 KB for a first life, 4 KB late on (the save fixtures). Spaces and line breaks inside a pasted code are ignored (chat apps wrap long lines), and a save file's plain JSON is accepted too. *Rejected: compressing the code* (a new dependency, or the browser's asynchronous CompressionStream, for codes that already paste fine) and *a file download/upload* (maybe later, for desktop).
+- **A pasted code is checked before anything happens**, as you paste: nothing yet, not a code, damaged or cut short, from a newer game, or not a save this game can read, each in plain words. A good one shows what it holds (pup, generation, coins, seeds, machines, when it was made), read from the save as the game would really load it.
+- **Loading needs two taps** (like Reset and Retire), because it replaces the game. The save is stored straight away with today's time, then the page restarts from it (like Reset), so every screen starts fresh, and **no offline earnings are paid** for the time since the code was made (the D110 default). If the platform won't store it (storage full or blocked), the game says so; the save is loaded anyway, for this visit.
+- **Copy** uses the clipboard; if the browser refuses, or doesn't answer within a second (the Claude Code preview never answers), the code is selected instead with "Selected: now copy it". One tap on the code box selects all of it too.
+- The code logic is platform code (`src/platform/savecode.ts`: it uses `btoa`/`TextEncoder`, which browsers and Node both have) built only on the Platform interface; the dialog is `src/view/backup.ts`; `main.ts` hands the view three actions (make, check, load).
+- **Checked:** 25 tests (tests/savecode.test.js: the format, every problem, codes cut short, UTF-8, loading exactly, stored with no offline pay, full storage, all four old v7 fixtures as codes → exactly their v8 files). In the browser: the dialog, Copy (the fallback here), every message, a v7 code (generation 3) loaded with two taps and the page restarted as it (stored as v8, no welcome-back pay); 375 px wide; no errors.
 
 ---
 
