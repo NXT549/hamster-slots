@@ -1,0 +1,91 @@
+{
+ "activeMachine": 0,
+ "autoTimer": 0,
+ "capsules": {
+  "sincePity": 0
+ },
+ "coins": 4,
+ "delivery": {
+  "active": true,
+  "duration": 45,
+  "timer": 10.750000000001387
+ },
+ "diary": {
+  "firstDelivery": true,
+  "firstSpin": true,
+  "firstWin": true
+ },
+ "generation": 1,
+ "machines": [
+  {
+   "bet": 0,
+   "bonus": null,
+   "freeSpins": null,
+   "pots": {},
+   "result": [
+    [
+     "blank"
+    ],
+    [
+     "blank"
+    ]
+   ],
+   "spinBet": 1,
+   "spinFree": false,
+   "spinSource": "manual",
+   "spinTimer": 0,
+   "spinning": false,
+   "streak": 0,
+   "typeId": "clunky",
+   "upgrades": {}
+  }
+ ],
+ "run": {
+  "coinsEarned": 707,
+  "playTime": 599.999999999783
+ },
+ "saveVersion": 7,
+ "seeds": 0,
+ "seedsEarned": 0,
+ "skins": {
+  "equipped": {},
+  "owned": {}
+ },
+ "stats": {
+  "autoSpins": 0,
+  "bestGambleRun": 1,
+  "bestLuck": 0,
+  "bestStreak": 4,
+  "biggestBet": 1,
+  "biggestWin": 27,
+  "capsulesOpened": 0,
+  "coinsEarned": 707,
+  "coinsSpent": 425,
+  "coinsWon": 567,
+  "deliveries": 7,
+  "deliveryCoins": 140,
+  "freeSpinCoins": 0,
+  "freeSpinTriggers": 0,
+  "freeSpins": 0,
+  "gambleLosses": 15,
+  "gambleWins": 1,
+  "goldenJackpots": 0,
+  "grandJackpots": 0,
+  "jackpotsWon": 0,
+  "machinesBought": 0,
+  "manualSpins": 85,
+  "mostLinesWon": 1,
+  "offlineCoins": 0,
+  "playTime": 599.999999999783,
+  "spins": 85,
+  "suitWins": 0,
+  "symbolsUnlocked": 0,
+  "tokensEarned": 6,
+  "upgradesBought": 0,
+  "wildWins": 0,
+  "wins": 21
+ },
+ "tokens": 6,
+ "tree": {},
+ "upgrades": {}
+}

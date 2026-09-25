@@ -14,4 +14,8 @@ export default defineConfig({
     port: 8765,
     strictPort: true, // if 8765 is busy, stop with a message instead of quietly picking another port
   },
+  // Vitest (`npm test`) reads this file too. The tests live in tests/.
+  test: {
+    include: ['tests/**/*.test.js'],
+  },
 });

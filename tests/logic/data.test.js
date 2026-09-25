@@ -1,0 +1,135 @@
+// data.test.js — data.json sanity checks.
+// Moved from tools/test_logic.mjs (migration step 3.3): each section's code is
+// unchanged; check(name, condition) registers one Vitest test per check.
+
+import { describe } from 'vitest';
+import { check } from '../check.js';
+import {
+  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+} from './helpers.js';
+
+// ─────────────────────────────────────────────────────────────
+describe('data.json sanity', () => {
+  const knownTypes = ['payoutMultiplier', 'autoSpin', 'spinCostMultiplier', 'extraReel', 'extraPayline',
+    'betSteps', 'winStreak', 'symbolWeight', 'extraFreeSpins', 'jackpotGrowth', 'luck', 'unlockSymbol'];
+  const treeTypes = ['payoutMultiplier', 'shiftWeight', 'fullLineMultiplier', 'startingLevel', 'spinSpeed',
+    'deliveryTime', 'deliveryPayoutBonus', 'autoDelivery'];
+  check('every upgrade has a known effect type', data.upgrades.every((u) => knownTypes.includes(u.effect.type)));
+  check('every tree node has a known effect type', nodes.every((n) => treeTypes.includes(n.effect.type)),
+    nodes.filter((n) => !treeTypes.includes(n.effect.type)).map((n) => n.id).join(', '));
+  const allIds = [...data.upgrades.map((u) => u.id), ...nodeIds];
+  check('upgrade and tree ids are all unique', new Set(allIds).size === allIds.length);
+  const branchIds = data.familyTree.branches.map((b) => b.id);
+  check('every tree node is on a listed branch', nodes.every((n) => branchIds.includes(n.branch)));
+  // "requires" may only point at nodes listed EARLIER, which also rules out loops.
+  check('tree requires only point at earlier nodes (no loops)',
+    nodes.every((n, i) => n.requires.every((r) => nodeIds.slice(0, i).includes(r))));
+  check('exactly one tree node has no requirements (the root)', nodes.filter((n) => n.requires.length === 0).length === 1);
+  check('startingLevel effects name real upgrades',
+    nodes.filter((n) => n.effect.type === 'startingLevel').every((n) => data.upgrades.some((u) => u.id === n.effect.upgrade)));
+  const symbolIds = clunky.symbols.map((s) => s.id);
+  check('shiftWeight effects name real symbols',
+    nodes.filter((n) => n.effect.type === 'shiftWeight').every((n) => symbolIds.includes(n.effect.from) && symbolIds.includes(n.effect.to)));
+  check('every tree node costs at least 1 seed', nodes.every((n) => n.baseCost >= 1));
+  check('every upgrade scope is global or machine', data.upgrades.every((u) => ['global', 'machine'].includes(u.scope)));
+  // A symbol may start at weight 0 only if an upgrade raises it (the Stacker's Hamster Wild).
+  const raised = (m, s) => data.upgrades.some((u) => u.effect.type === 'symbolWeight' && u.effect.symbol === s.id && (!u.machines || u.machines.includes(m.id)));
+  check('every symbol has a positive weight (or an upgrade raises it from 0)',
+    data.machines.every((m) => m.symbols.every((s) => s.weight > 0 || (s.weight === 0 && raised(m, s)))));
+  check('every line symbol has a payout table; scatters and blanks have none',
+    data.machines.every((m) => m.symbols.every((s) => (s.scatter || s.blank ? !m.payouts[s.id] : !!m.payouts[s.id]))));
+  // The exact hit-rate count in machine.js relies on every 2-match paying something.
+  check('every line symbol\'s 2-match pays (wilds too)', data.machines.every((m) => m.symbols.every((s) => s.scatter || s.blank || m.payouts[s.id]['2'] > 0)));
+  check('at most one wild per machine, and no symbol is two kinds at once (wild, scatter, blank)',
+    data.machines.every((m) => m.symbols.filter((s) => s.wild).length <= 1 && m.symbols.every((s) => [s.wild, s.scatter, s.blank].filter(Boolean).length <= 1)));
+
+  // Milestone 7: the blank, symbols you unlock, Luck.
+  check('every machine has exactly one blank (the Wood Shaving), with a weight, never locked',
+    data.machines.every((m) => m.symbols.filter((s) => s.blank).length === 1 && m.symbols.filter((s) => s.blank).every((s) => s.weight > 0 && !s.locked)));
+  const unlocks = data.upgrades.filter((u) => u.effect.type === 'unlockSymbol');
+  check('symbol unlocks are one-per-machine machine upgrades, one level per symbol in their list',
+    unlocks.every((u) => u.scope === 'machine' && u.machines && u.machines.length === 1 && u.maxLevel === u.effect.symbols.length));
+  check('every locked symbol is opened by exactly one unlock sold on its machine, and unlocks only list locked symbols',
+    data.machines.every((m) => m.symbols.filter((s) => s.locked).every((s) => soldOn(m, 'unlockSymbol').filter((u) => u.effect.symbols.includes(s.id)).length === 1))
+    && unlocks.every((u) => u.machines.every((id) => u.effect.symbols.every((sym) => data.machines.find((m) => m.id === id).symbols.some((s) => s.id === sym && s.locked)))));
+  check('only plain line symbols can be locked (not wilds, scatters or blanks), and every machine starts with some',
+    data.machines.every((m) => m.symbols.every((s) => !s.locked || (!s.wild && !s.scatter && !s.blank)) && m.symbols.some((s) => !s.locked && !s.blank && !s.scatter && s.weight > 0)));
+  const lucks = data.upgrades.filter((u) => u.effect.type === 'luck');
+  check('Hamster Luck (a hamster upgrade) exists, and every machine sells its own Machine Luck',
+    lucks.some((u) => u.scope === 'global') && data.machines.every((m) => lucks.some((u) => u.scope === 'machine' && u.machines && u.machines.includes(m.id))));
+  check('luck upgrades have a max level and add positive Luck', lucks.every((u) => u.maxLevel > 0 && u.effect.perLevel > 0));
+  check('Wheel Training rests between auto-spins (autoSpin "rest" > 0)', data.upgrades.filter((u) => u.effect.type === 'autoSpin').every((u) => u.effect.rest > 0));
+  check('free spins and the jackpot wheel each name a scatter symbol of their machine',
+    data.machines.every((m) => ['freeSpins', 'jackpot'].every((f) => !m[f] || m.symbols.some((s) => s.id === m[f].symbol && s.scatter))));
+  check('every scatter symbol starts something (free spins or the jackpot wheel)',
+    data.machines.every((m) => m.symbols.filter((s) => s.scatter).every((s) => [m.freeSpins, m.jackpot].some((f) => f && f.symbol === s.id))));
+  check('jackpot pots have a positive weight and seed, and growth >= 0',
+    data.machines.every((m) => !m.jackpot || m.jackpot.pots.every((p) => p.weight > 0 && p.seed > 0 && p.growth >= 0)));
+  check('symbolWeight upgrades name a symbol of every machine that sells them',
+    data.upgrades.filter((u) => u.effect.type === 'symbolWeight')
+      .every((u) => (u.machines || []).every((id) => data.machines.find((m) => m.id === id).symbols.some((s) => s.id === u.effect.symbol))));
+  check('extraFreeSpins / jackpotGrowth upgrades are only sold on machines with that feature',
+    data.upgrades.filter((u) => u.effect.type === 'extraFreeSpins').every((u) => u.machines.every((id) => data.machines.find((m) => m.id === id).freeSpins))
+    && data.upgrades.filter((u) => u.effect.type === 'jackpotGrowth').every((u) => u.machines.every((id) => data.machines.find((m) => m.id === id).jackpot)));
+
+  // Bets
+  const steps = data.betSteps;
+  check('betSteps start at x1 and go up', steps[0] === 1 && steps.every((b, i) => i === 0 || b > steps[i - 1]));
+  const stepUps = data.upgrades.filter((u) => u.effect.type === 'betSteps').reduce((sum, u) => sum + u.maxLevel * u.effect.stepsPerLevel, 0);
+  check('High Roller unlocks exactly every bet step', stepUps === steps.length - 1, stepUps);
+  check('the gamble has a round limit, an offer time and a card history', data.gamble.maxRounds >= 1 && data.gamble.offerSeconds > 0 && data.gamble.history >= 1);
+
+  // Machines
+  const machineIds = data.machines.map((m) => m.id);
+  check('machine ids are unique', new Set(machineIds).size === machineIds.length);
+  check('the first machine is free (unlockCost 0)', (data.machines[0].unlockCost || 0) === 0);
+  check('every other machine has a price', data.machines.slice(1).every((m) => m.unlockCost > 0));
+  check('machine-only upgrades name real machines and are machine-scoped',
+    data.upgrades.filter((u) => u.machines).every((u) => u.scope === 'machine' && u.machines.every((id) => machineIds.includes(id))));
+  for (const m of data.machines) {
+    const lines = allPaylines(m);
+    check(`${m.name}: every payline gives a row for every reel, inside the grid`,
+      lines.every((l) => l.length >= m.maxReels && l.every((row) => Number.isInteger(row) && row >= 0 && row < rowCount(m))));
+    check(`${m.name}: startLines fits the list of paylines`, !m.startLines || (m.startLines >= 1 && m.startLines <= lines.length));
+    // Every extra reel (and payline) this machine sells must fit exactly.
+    const sold = data.upgrades.filter((u) => u.scope === 'global' || !u.machines || u.machines.includes(m.id));
+    const extraReels = sold.filter((u) => u.effect.type === 'extraReel').reduce((sum, u) => sum + u.maxLevel * u.effect.reelsPerLevel, 0);
+    check(`${m.name}: extra reel upgrades add up to maxReels - startReels`, extraReels === m.maxReels - m.startReels, extraReels);
+    const extraLines = sold.filter((u) => u.effect.type === 'extraPayline').reduce((sum, u) => sum + u.maxLevel * u.effect.linesPerLevel, 0);
+    check(`${m.name}: extra payline upgrades add up to all its lines`, (m.startLines || lines.length) + extraLines === lines.length, extraLines);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('data.json sanity: tokens, capsules, skins, diary', () => {
+  const cats = data.skinCategories.map((c) => c.id);
+  const rarities = data.capsules.rarities.map((r) => r.id);
+  check('every skin is in a listed category', data.skins.every((s) => cats.includes(s.category)));
+  check('every skin rarity is "starter" or a capsule rarity', data.skins.every((s) => s.rarity === 'starter' || rarities.includes(s.rarity)));
+  check('every category has exactly one starter skin',
+    cats.every((c) => data.skins.filter((s) => s.category === c && s.rarity === 'starter').length === 1));
+  check('every capsule rarity has at least one skin', rarities.every((r) => data.skins.some((s) => s.rarity === r)));
+  check('the pity rarity is a real rarity', rarities.includes(data.capsules.pityRarity));
+  const skinIds = data.skins.map((s) => s.id);
+  check('skin ids are unique', new Set(skinIds).size === skinIds.length);
+  const stickerIds = data.diary.map((d) => d.id);
+  check('diary ids are unique', new Set(stickerIds).size === stickerIds.length);
+  const goalTypes = ['stat', 'upgradeLevel', 'generation', 'treeNodes', 'skinsOwned', 'machinesOwned'];
+  check('"machinesOwned" goals are reachable', data.diary.filter((d) => d.goal.type === 'machinesOwned').every((d) => d.goal.target <= data.machines.length));
+  check('every diary goal has a known type', data.diary.every((d) => goalTypes.includes(d.goal.type)));
+  const statKeys = Object.keys(newGame().state.stats);
+  check('"stat" goals name real stats', data.diary.filter((d) => d.goal.type === 'stat').every((d) => statKeys.includes(d.goal.stat)));
+  check('"upgradeLevel" goals are reachable',
+    data.diary.filter((d) => d.goal.type === 'upgradeLevel').every((d) => {
+      const u = data.upgrades.find((x) => x.id === d.goal.upgrade);
+      return u && (u.maxLevel === null || d.goal.target <= u.maxLevel);
+    }));
+  check('"treeNodes" goals are reachable', data.diary.filter((d) => d.goal.type === 'treeNodes').every((d) => d.goal.target <= nodes.length));
+  const poolSize = data.skins.filter((s) => s.rarity !== 'starter').length;
+  check('"skinsOwned" goals are reachable', data.diary.filter((d) => d.goal.type === 'skinsOwned').every((d) => d.goal.target <= poolSize));
+  check('every sticker pays at least 1 token', data.diary.every((d) => d.tokens >= 1));
+  // The first capsule should come from early goals alone (before any luck).
+  const early = ['firstSpin', 'firstWin', 'wheelTraining', 'spins100', 'thirdReel'];
+  const earlyTokens = data.diary.filter((d) => early.includes(d.id)).reduce((sum, d) => sum + d.tokens, 0);
+  check(`early stickers (${earlyTokens} tokens) pay for the first pull (${data.capsules.pullCost})`, earlyTokens >= data.capsules.pullCost);
+});

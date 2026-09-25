@@ -1,21 +1,18 @@
-// test_art.mjs — checks the text sprites in src/view/art.js are well-formed.
-// Run from the hamster_slots folder:   node tools/test_art.mjs
+// art.test.js — checks the text sprites in src/view/art.js are well-formed, and
+// that every skin and theme token they rely on exists. Runs with `npm test`.
+// (Moved from tools/test_art.mjs in migration step 3.3; the checks are unchanged.)
 //
 // A typo in a sprite (a row one pixel too short, or a letter with no colour)
 // is easy to make by hand and hard to spot on screen. This catches it.
 
 import { readFileSync } from 'node:fs';
+import { check } from './check.js';
 import { SPRITES, PALETTE, SYMBOL_SPRITES, CAPSULE_SPRITES, MACHINE_SPRITES, upgradeIcon, treeIcon } from '../src/view/art.js';
 import { SKIN_ART, SKIN_TOKENS } from '../src/view/skins.js';
 import { FRAME_SPRITES, THEME_TOKENS } from '../src/view/theme.js';
 
 const data = JSON.parse(readFileSync(new URL('../data.json', import.meta.url), 'utf8'));
 
-let failed = 0;
-function check(name, condition, detail = '') {
-  console.log(`${condition ? 'PASS' : 'FAIL'}  ${name}${!condition && detail ? `   -> ${detail}` : ''}`);
-  if (!condition) failed++;
-}
 
 for (const [name, rows] of Object.entries(SPRITES)) {
   const width = rows[0].length;
@@ -91,6 +88,3 @@ for (const name of THEME_TOKENS) {
   const match = rootBlock.match(new RegExp(`${name}:\\s*([^;]+);`));
   check(`theme token ${name} is a #rrggbb colour in style.css :root`, !!match && /^#[0-9a-f]{6}$/i.test(match[1].trim()), match && match[1]);
 }
-
-console.log(failed ? `\n${failed} failed` : '\nall sprites OK');
-process.exit(failed ? 1 : 0);

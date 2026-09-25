@@ -80,9 +80,9 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 |---|---|---|
 | 3.0 | Git baseline: `git init`, `.gitignore`, `.gitattributes`; commit today's game + docs on `main`, tag `v0.1.0`; branch `web-migration` | **Done** |
 | 3.1 | npm + Vite, still JavaScript: `package.json` (0.1.0), Vite (`base: './'`); data.json bundled, with live reload of data edits in `npm run dev`; `play.bat` runs Vite on **port 8765** (the same site, so the player's save carries over); `tools/serve.py` removed; preview configs switched to Vite (+ `hamster-slots-build` for `dist/`). Vite 8.3.1 | **Done** (the user tested play.bat: it opens and the save was kept) |
-| 3.2 | Move files into layers, no code changes (a separate commit keeps git history): `src/logic/`, `src/platform/`, `src/view/` (with style.css), `src/main.js`; data.json stays at the top | **Done**, waiting for the user's OK |
-| 3.3 | Vitest: all 687 checks as Vitest tests, art tests too, `npm run economy` for DESIGN's tables; the **golden run** (scripted sessions on fixed seeds, recorded from today's code, replayed by a test); real v7 save fixtures | Next |
-| 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the simulator runs as `.ts` on Node 24 | |
+| 3.2 | Move files into layers, no code changes (a separate commit keeps git history): `src/logic/`, `src/platform/`, `src/view/` (with style.css), `src/main.js`; data.json stays at the top | **Done** (the built files came out byte-for-byte the same; the user tested it) |
+| 3.3 | Vitest: all 687 checks as Vitest tests, art tests too, `npm run economy` for DESIGN's tables; the **golden run** (scripted sessions on fixed seeds, recorded from today's code, replayed by a test); real v7 save fixtures. Vitest 5.0.2; 1,108 tests in ~10 s (D111) | **Done**, waiting for the user's OK |
+| 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the simulator runs as `.ts` on Node 24 | Next |
 | 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main | |
 | 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform | |
 | 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× | |
@@ -370,6 +370,18 @@ Keeping the format in the logic means the Node test can check save round-trips a
   - Numbers past trillions show as `1.23e15`.
   - Importing a save pays no offline earnings for the time since it was exported.
 - **Git commits use the name "nxt"** and GitHub's private address for the user's account (`NXT549`), so no personal email is published.
+
+**D111 — The tests move to Vitest through a `check()` bridge, and a golden run guards the migration** (step 3.3). *Rejected: rewriting the 687 checks as idiomatic `describe` / `it` / `expect` tests* (2,400 lines retyped is the easiest way to change what a test checks without noticing).
+- **The conversion:** a one-off script copied every section's code unchanged into 9 files by area, and each section became a `describe`. `tests/check.js` turns each `check(name, condition)` into a Vitest test.
+- **The economy printout** became `tools/economy.mjs` (`npm run economy`), and its 107 lines came out identical.
+- **The result:** the same 1,070 checks, now run in parallel: ~10 s instead of ~28 s.
+- **The golden run:** three scripted sessions record 29 checkpoints (the full save, the RNG's position, event counts, coins paid):
+  - a first life with clicking, deliveries, card gambles and retiring
+  - every machine at max bet, with free spins, all four pots, a switch mid-spin, offline earnings and a save + load
+  - a family with two retirements, 37 capsules and skins
+- **It catches small changes:** a test change of one number (a delivery paying 20.5 instead of 20) failed every first-life checkpoint.
+- **Fixtures:** four checkpoints are also saved as real v7 save files, ready for the v8 migration test (3.7).
+- **Overwrite guard:** `tools/golden.mjs` refuses to overwrite the recording without `--confirm`.
 
 ---
 

@@ -16,10 +16,11 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 > **Keep this block accurate.** Update it in the same commit as any change it describes.
 
 - **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 7 (game.js) and the data is `schemaVersion` 7 (data.json).
-- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). **3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done and waiting for the user's OK.** Next is 3.3 (Vitest + the golden run). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
+- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. **3.3 (Vitest + the golden run) is done and waiting for the user's OK.** Next is 3.4 (TypeScript for the logic). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
 - **The code today** is still plain JavaScript, now run and built by **Vite** (`npm run dev`, `npm run build`). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
 - **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). Friends can join that playtest from the Pages link once it's deployed. After that come M8 The Big Cage → M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M8+ early. Known issue for M8: from generation ~9, lives shrink to 3–10 min (D102).
-- **Last verified (M7):** `node tools/test_logic.mjs` 687/687, `node tools/test_art.mjs` all OK, the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
+- **Tests now:** `npm test` (Vitest) runs 1,108 tests in about 10 s: M7's 687 logic checks and 383 art checks (unchanged, now Vitest tests), the golden run (33) and the save fixtures (5).
+- **Last verified (M7):** the logic checks 687/687 and the art checks all OK (then `node tools/test_logic.mjs` / `test_art.mjs`), the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
 - **Not yet verified:** how the M7 sounds *sound* (tick, card, luck, unlock, softer auto clunks); the label on a natural jackpot-wheel trigger; the look in Firefox and Safari.
 
 ## Project docs
@@ -34,7 +35,7 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 |---|---|
 | Anything | **Current status** above, if it's no longer true |
 | Something players will notice | `CHANGELOG.md` → `[Unreleased]`, in plain language for players |
-| A number in a data file | `PORTING_NOTES.md` → Balance log (old → new, *why*, the simulator's before/after), and the DESIGN.md tables that show it (the logic test prints fresh EV/RTP numbers at the end) |
+| A number in a data file | `PORTING_NOTES.md` → Balance log (old → new, *why*, the simulator's before/after), and the DESIGN.md tables that show it (`npm run economy` prints fresh EV/RTP numbers). The game now plays differently on purpose, so re-record the golden run (`node tools/golden.mjs --confirm`) |
 | A mechanic, symbol, upgrade or currency | `DESIGN.md` |
 | Architecture, a file's role, an event, or a public game method | The **File map** / **Events** / **Game API** sections below |
 | Platforms, the build, deploying, storage | `PORTING_NOTES.md` → the platform plan |
@@ -83,8 +84,13 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Game logic has unit tests (Vitest).**
 - **Run the tests and a build before every commit. Don't commit if either fails.**
 - **Bug fixes should include a test that would have caught the bug.**
-- **Rule 10:** run the logic tests after any logic or data change, and the sprite tests after any sprite change. Both must stay all PASS.
-- **Until migrated:** there's no Vitest yet. The tests are plain Node scripts, `node tools/test_logic.mjs` (687 checks) and `node tools/test_art.mjs`; `npm test` runs both, and both must pass along with `npm run build`.
+- **Rule 10:** `npm test` after any change to logic, data or sprites. Everything must stay passing.
+- **What the tests are** (all in `tests/`, run by `npm test`):
+  - `tests/logic/*.test.js`: the logic checks, one file per area (machine maths, economy, family, capsules, machines, features, saves, determinism, data). They keep the old `check(name, condition)` style: `tests/check.js` turns each check into a Vitest test. Shared helpers are in `tests/logic/helpers.js`. New tests can use Vitest's `test`/`expect` directly.
+  - `tests/art.test.js`: sprites, skins and theme tokens.
+  - `tests/golden.test.js`: **the golden run**, the migration's safety net. Scripted sessions (`tests/golden/sessions.js`) play the real logic on fixed seeds and must reproduce `tests/golden/golden.json` exactly: every save, the RNG's position, event counts, coins paid. It was recorded from the plain-JS game. **Never re-record it to make a failing test pass.** Only re-record (`node tools/golden.mjs --confirm`) for an intended, approved gameplay change (a balance change, a new feature), and say so in the commit message.
+  - `tests/fixtures.test.js`: real v7 saves (`tests/fixtures/`) must load and save back unchanged. They're the old-format saves that future save migrations are tested against.
+- **Until migrated:** the tests are still JavaScript (`.test.js`); they become TypeScript with the code.
 
 ## Git and releases
 
@@ -108,10 +114,10 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 ## How to run (the code is still plain JS; the migration updates this as it goes)
 
 - **Play:** double-click **`play.bat`**. It checks the tools are installed (`npm install`; the first time downloads them into `node_modules/`), then starts **Vite** (`npm run dev`) in its own window on `http://localhost:8765/` and opens the browser. Port 8765 is where the game has always run, so the player's save is still there (a browser keeps one save per address + port). Close the server window to stop. (Opening `index.html` directly shows a "use play.bat" message, because browsers won't run JS modules from `file://`.)
-- **npm scripts** (from this folder): `npm run dev` (the same as play.bat, without opening a browser), `npm run build` (the players' version → `dist/`, relative paths), `npm run preview` (serves `dist/` on port 4173 to try the build), `npm test` (both test scripts below), `npm run sim` (the simulator).
+- **npm scripts** (from this folder): `npm run dev` (the same as play.bat, without opening a browser), `npm run build` (the players' version → `dist/`, relative paths), `npm run preview` (serves `dist/` on port 4173 to try the build), `npm test` (Vitest), `npm run test:watch`, `npm run economy`, `npm run sim` (the simulator).
 - **Editing data.json while `npm run dev` runs:** save the file and the running game swaps in the new numbers by itself, keeping your progress (Vite hot update → `game.setData`). The debug panel's **Reload data.json** does the same by hand; it's hidden in a built game, where data.json is bundled into the code.
-- **Test the logic (headless):** from this folder, `node tools/test_logic.mjs`
-- **Test the sprites and skins:** `node tools/test_art.mjs` (row widths, palette letters, every symbol/upgrade/tree node/capsule/skin has art, every skin token exists in `:root`)
+- **Tests:** `npm test` runs every test once (about 10 s); `npm run test:watch` re-runs them as you edit; `npx vitest run tests/logic/family.test.js` runs one file. A failing check shows its name and details.
+- **Economy tables:** `npm run economy` prints EV, RTP and hit rate of every machine setup, feature odds and more, for DESIGN.md's tables after a balance change.
 - **Balance simulator:** `node tools/sim.mjs` (idle player, 5 seeds, 7 lives; a few seconds). Options: `--player active`, `--lives 12`, `--seeds 3`, `--minutes 120` (the longest a life may last), `--retire 0.5`, `--first-minutes 60`, `--bankroll 40`, `--data other.json` (try a variant without touching data.json; relative or absolute path), `--verbose` (every purchase, and every 10 minutes what the bot is saving up for), `--help`. It plays the real game logic and prints, per life: length, seeds, coins earned, time to each milestone (first buy, Family/Capsules tab, Wheel 1, each symbol unlock on Old Clunky, Third Reel, Wheel maxed, each machine, bet ×2/×10), income snapshots, Luck and hit rate at 10/30/60 min, and feature rates. It buys by "time to afford + time to pay back" (D100).
 - **Debug panel:** press **`` ` ``** (backtick) in the game, or Menu → Toggle debug panel.
 - **Fonts** load from Google Fonts (Pixelify Sans + Nunito). Offline, the browser uses system fonts and everything still works.
@@ -146,17 +152,25 @@ hamster_slots/
 │                         luck + unlockSymbol), retirement + familyTree, tokens, capsules, skins, diary
 ├── index.html         ← page skeleton (HUD, cage stage + bet box + card gamble panel + pots + WIN meter + clover
 │                         badge, tray tabs and sub-tabs, menu + settings, the particle canvas) + file:// warning
-├── package.json       ← npm: the version, scripts (dev, build, preview, test, sim) and tools (Vite)
+├── package.json       ← npm: the version, scripts (dev, build, preview, test, economy, sim) and tools (Vite, Vitest)
 ├── package-lock.json  ← the exact tool versions npm installed (committed, so every install matches)
-├── vite.config.js     ← Vite settings: relative paths for any host, dev server on port 8765
+├── vite.config.js     ← Vite settings (relative paths for any host, dev server on port 8765) + where Vitest finds tests
 ├── play.bat           ← double-click launcher (npm install if needed, then Vite on port 8765 + opens the browser)
 ├── .claude/launch.json ← Claude Code preview servers (dev on 8766 and 8767, the built dist/ on 8768)
 ├── .gitignore / .gitattributes ← what git skips (node_modules/, dist/); line endings stored as LF (.bat keeps CRLF)
 ├── node_modules/, dist/ ← made by npm install / npm run build; never committed
+├── tests/             ← Vitest (npm test)
+│   ├── check.js       ← check(name, condition) → one Vitest test (the old test style)
+│   ├── logic/         ← helpers.js + one .test.js per area of the game logic
+│   ├── art.test.js    ← sprites, skins, theme tokens
+│   ├── golden.test.js ← the golden run: the game must play exactly as recorded
+│   ├── golden/        ← sessions.js (the scripted players) + golden.json (the recording)
+│   ├── fixtures.test.js ← real saves must load and save back unchanged
+│   └── fixtures/      ← real v7 save files (old-format saves for future migrations)
 ├── tools/
-│   ├── test_logic.mjs ← headless logic test: node tools/test_logic.mjs
-│   ├── test_art.mjs   ← sprite + skin + frame sanity test: node tools/test_art.mjs
 │   ├── sim.mjs        ← the balance simulator: a bot plays the real logic (node tools/sim.mjs --help)
+│   ├── economy.mjs    ← prints the economy tables for DESIGN.md (npm run economy)
+│   ├── golden.mjs     ← records the golden run + v7 save fixtures (only for approved gameplay changes: --confirm)
 │   └── sprites.html   ← sprite gallery (dev page): every sprite in src/view/art.js, big
 └── src/
     ├── main.js        ← BOOT: data.json (bundled; hot-applied in dev) → game → load save → settings, theme, sound,
