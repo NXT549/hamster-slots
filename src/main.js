@@ -8,8 +8,8 @@
 // Vite bundles data.json into the game's code, so there's no separate file to
 // load: it works the same on every platform (and even offline).
 import bundledData from '../data.json';
-import { createRng } from './logic/rng.js';
-import { createGame } from './logic/game.js';
+import { createRng } from './logic/rng.ts';
+import { createGame } from './logic/game.ts';
 import { saveGame, loadGame, clearSave, loadSettings, saveSettings } from './platform/save.js';
 import { createSound } from './view/sound.js';
 import { applyTheme } from './view/theme.js';

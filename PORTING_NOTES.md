@@ -81,9 +81,9 @@ Moving the plain-JS prototype to TypeScript + Vite (D107). The user approved thi
 | 3.0 | Git baseline: `git init`, `.gitignore`, `.gitattributes`; commit today's game + docs on `main`, tag `v0.1.0`; branch `web-migration` | **Done** |
 | 3.1 | npm + Vite, still JavaScript: `package.json` (0.1.0), Vite (`base: './'`); data.json bundled, with live reload of data edits in `npm run dev`; `play.bat` runs Vite on **port 8765** (the same site, so the player's save carries over); `tools/serve.py` removed; preview configs switched to Vite (+ `hamster-slots-build` for `dist/`). Vite 8.3.1 | **Done** (the user tested play.bat: it opens and the save was kept) |
 | 3.2 | Move files into layers, no code changes (a separate commit keeps git history): `src/logic/`, `src/platform/`, `src/view/` (with style.css), `src/main.js`; data.json stays at the top | **Done** (the built files came out byte-for-byte the same; the user tested it) |
-| 3.3 | Vitest: all 687 checks as Vitest tests, art tests too, `npm run economy` for DESIGN's tables; the **golden run** (scripted sessions on fixed seeds, recorded from today's code, replayed by a test); real v7 save fixtures. Vitest 5.0.2; 1,108 tests in ~10 s (D111) | **Done**, waiting for the user's OK |
-| 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the simulator runs as `.ts` on Node 24 | Next |
-| 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main | |
+| 3.3 | Vitest: all 687 checks as Vitest tests, art tests too, `npm run economy` for DESIGN's tables; the **golden run** (scripted sessions on fixed seeds, recorded from today's code, replayed by a test); real v7 save fixtures. Vitest 5.0.2; 1,108 tests in ~10 s (D111) | **Done** (the user OK'd it) |
+| 3.4 | TypeScript for the logic (strict; JS and TS side by side meanwhile): types for data.json, state and event payloads; rng → events → machine → game; the build type-checks first; the tools run the `.ts` logic straight on Node 24. TypeScript 7.0.2 (D112) | **Done**, waiting for the user's OK |
+| 3.5 | TypeScript for the view: helpers first (dom, art, theme, skins, sound, fx), then the screens and main | Next |
 | 3.6 | The platform layer: a `Platform` interface (storage, going away / coming back, clock, achievements as a no-op) + the web version; tests with a fake in-memory platform | |
 | 3.7 | break_eternity.js for all three currencies and everything priced in them (odds stay plain numbers); `money.ts`; **save v8** with a v7 → v8 migration tested on the fixtures; a speed check at 50× | |
 | 3.8 | **Save backup** (new feature): Menu → Save backup, Export (a one-line code + Copy) and Import (paste, two-tap "Load this save", friendly errors); old codes load through the migrations | |
@@ -102,7 +102,7 @@ These were the "gotchas for the port". They still hold for the TypeScript migrat
 - **Sprite scale must stay a whole number** (`max(1, floor(size / width))`), or pixel art gets uneven pixels.
 - **Tokens and skins survive retiring.** They're outside the list of fields `retire()` resets. Only a full Reset clears them.
 - **Retire keeps lifetime stats but resets the rest:** copy the list of reset fields from `retire()` exactly (coins, upgrades, machines, active machine, delivery, auto timer, run totals), then re-apply "start with" traits.
-- **mulberry32 must stay bit-exact** (`>>> 0` and `Math.imul` in `src/logic/rng.js`), so the same seed gives the same spins before and after the migration.
+- **mulberry32 must stay bit-exact** (`>>> 0` and `Math.imul` in `src/logic/rng.ts`), so the same seed gives the same spins before and after the migration.
 - **Spin results are `result[reel][row]`** (save v5). A v4 save's flat result becomes one-row columns; check the row count against the machine's `rows` when loading.
 - **Multi-line payouts round each line to cents, then add them up.** Rounding the total once gives different cents, and then payouts won't match.
 - **EV scales with lines, the hit rate doesn't** (D62). Keep the exact reel-1-and-2 count for the hit rate, and cache it; it needs every 2-match to pay (a data test checks this).
@@ -118,7 +118,7 @@ These were the "gotchas for the port". They still hold for the TypeScript migrat
 - **The weights the reels use (M7), in this order:** locked symbols → 0 (unless their unlock is open) → family weight shifts (skipped when either symbol has weight 0) → the Hamster Wild's added weight → × (1 + Luck ÷ 100) on every symbol except the blank. A different order gives different odds.
 - **An unlock upgrade opens its list in order:** level n = the first n symbols. The v6 → v7 migration sets every unlock a machine sells to its max level (so `migrateSave` needs the data file).
 - **A blank ends a run and never pairs,** even with a wild next to it: wild, blank = nothing; wild, wild, blank = the 2-wild prize.
-- **The multi-line hit rate** (machine.js `gridHitRate`): try every way reel 1's rows can land, then multiply, over reel 2's rows, the chance that that cell pairs with none of its lines' reel-1 cells. It's exact and fast (8 symbols on 3 cells = 512 cases), and the answer is cached by weights.
+- **The multi-line hit rate** (machine.ts `gridHitRate`): try every way reel 1's rows can land, then multiply, over reel 2's rows, the chance that that cell pairs with none of its lines' reel-1 cells. It's exact and fast (8 symbols on 3 cells = 512 cases), and the answer is cached by weights.
 - **The auto-spin interval** is `max(baseInterval × multiplier^(level−1) × Quick Paws, spin time (with Quick Paws) + rest)`, and the spin time depends on the machine, so ask per machine.
 - **The card draw** is `SUITS[floor(rng.next() × 4)]` with SUITS in the order hearts, diamonds, clubs, spades: one draw per pick. Keep it for seeded parity.
 - **`pickWeighted`'s float-rounding fallback** returns the last item with weight > 0 (a locked symbol must never land).
@@ -382,6 +382,21 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **It catches small changes:** a test change of one number (a delivery paying 20.5 instead of 20) failed every first-life checkpoint.
 - **Fixtures:** four checkpoints are also saved as real v7 save files, ready for the v8 migration test (3.7).
 - **Overwrite guard:** `tools/golden.mjs` refuses to overwrite the recording without `--confirm`.
+
+**D112 — TypeScript for the logic: types added, not a line of behaviour changed** (step 3.4). TypeScript 7.0.2, **strict**.
+- **Two configs.** `tsconfig.logic.json` checks `src/logic` with only the plain JavaScript library, no DOM. So rule 1 is now enforced by the compiler: `document`, `window`, `localStorage` or `performance` in the logic won't compile. (`Date` and `Math.random` are still plain JavaScript, so tests and review keep guarding those.)
+- **`.ts` import extensions and only erasable syntax** (no enums): Node 24 strips the types itself, so the simulator and tools run the `.ts` logic directly with no extra tool.
+- **The tools and tests stay JavaScript for now.** Typing them needs `@types/node`, a new dependency (rule 5): that's for later, with the user's OK.
+- **How:** the files were renamed with `git mv` (history kept), then only annotations were added, through a script of exact find-and-replace pairs.
+- **`src/logic/types.ts`** describes data.json (`GameData`, with every effect as a tagged union), the state/save (`GameState`, `SaveData`) and every event's payload (`GameEvents`, used by the typed emitter).
+- **Where the data guarantees something exists** (the machine a spin is on has data; a pity rarity is listed), a `!` says so: it changes nothing at runtime.
+- **Save input** (`sanitizeState`, `migrateSave`) is typed `Untrusted` (`any`), because it's checked value by value anyway. Typing `md` there found that it had silently been `any` in the cleanup loop.
+- **Proof it's the same game:**
+  - the golden run: every checkpoint identical
+  - all 1,108 tests pass
+  - `npm run economy` output identical
+  - the simulator's output identical, JS vs TS side by side, at the same speed
+  - the dev and built game played in the browser with no errors
 
 ---
 

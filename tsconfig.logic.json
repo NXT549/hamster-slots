@@ -1,0 +1,10 @@
+{
+  // The game rules (src/logic) checked on their own: only the plain JavaScript
+  // library, no DOM. Using document, window, localStorage or performance there
+  // is an error, which keeps rule 1 ("logic never touches the page") honest.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"]
+  },
+  "include": ["src/logic"]
+}

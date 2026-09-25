@@ -8,8 +8,8 @@
 
 import { test, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
-import { createRng } from '../src/logic/rng.js';
-import { createGame, SAVE_VERSION } from '../src/logic/game.js';
+import { createRng } from '../src/logic/rng.ts';
+import { createGame, SAVE_VERSION } from '../src/logic/game.ts';
 import { data, canonical } from './golden/sessions.js';
 
 const dir = new URL('./fixtures/', import.meta.url);

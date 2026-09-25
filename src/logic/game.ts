@@ -1,4 +1,4 @@
-// game.js — LOGIC layer. The whole game: state, spinning, payouts, upgrades,
+// game.ts — LOGIC layer. The whole game: state, spinning, payouts, upgrades,
 // machines, symbols you unlock, Luck, deliveries, auto-spin, the card gamble,
 // retirement + the family tree, Hamster Tokens + the Capsule Machine (skins),
 // and the save format.
@@ -6,7 +6,7 @@
 // Golden rule: this file never touches the page (no document/window/localStorage)
 // and never reads the clock. Time only moves when someone calls update(dt).
 // That's what lets the same code run in the browser, in a Node test, or in a
-// balance simulator, and what makes it easy to port to a Godot autoload.
+// balance simulator (and later inside a desktop or mobile app, unchanged).
 //
 // How the outside world uses it:
 //   game.spin(), game.startDelivery(), game.buyUpgrade(id, count)  ← actions (return true/false)
@@ -19,8 +19,14 @@
 //   game.on("spinResolved", fn)                                     ← listen for events
 //   game.state                                                      ← read-only snapshot for drawing
 
-import { createEmitter } from './events.js';
-import { rollGrid, evaluateGrid, rowCount, allPaylines, symbolRules, findSymbol, freeSpinAward, spinExpectation } from './machine.js';
+import { createEmitter } from './events.ts';
+import { rollGrid, evaluateGrid, rowCount, allPaylines, symbolRules, findSymbol, freeSpinAward, spinExpectation } from './machine.ts';
+import type { SpinValue } from './machine.ts';
+import type { Rng } from './rng.ts';
+import type {
+  GameData, GameState, GameEvents, MachineDef, MachineState, SymbolDef, UpgradeDef, TreeNodeDef, Priced, Effect, EffectType,
+  EffectOf, Levels, Overrides, Stats, SaveData, Goal, Grid, SpinSource, Suit, CardColor, Card, GambleEndReason, TokenSource,
+} from './types.ts';
 
 // v2 added retirement: generation, Heirloom Seeds, the family tree, per-run
 // totals, stats.coinsEarned and delivery.duration.
@@ -38,13 +44,13 @@ export const SAVE_VERSION = 7;
 // endless deck), so the cards you saw before tell you nothing about the next one.
 // The prizes are the fair odds of the deck, so they're not balance numbers:
 // a colour is 2 of 4 suits (pays ×2), a suit is 1 of 4 (pays ×4).
-export const SUITS = [
+export const SUITS: readonly Suit[] = [
   { id: 'hearts', color: 'red' },
   { id: 'diamonds', color: 'red' },
   { id: 'clubs', color: 'black' },
   { id: 'spades', color: 'black' },
 ];
-export const CARD_COLORS = ['red', 'black'];
+export const CARD_COLORS: readonly CardColor[] = ['red', 'black'];
 
 // The logic runs in fixed 1/60 s steps ("ticks"), whatever the frame rate.
 // update(1.0) and 60 × update(1/60) therefore give identical results.
@@ -55,23 +61,52 @@ const EPS = 1e-9;
 
 // Coins are always rounded to cents. Otherwise float drift (4.4999999…) could
 // make you unable to afford a 4.5-coin spin while the screen shows "4.5".
-export function roundMoney(x) {
+export function roundMoney(x: number): number {
   return Math.round(x * 100) / 100;
 }
 
 // The one cost formula for EVERY purchase (coin upgrades and family tree nodes):
 // floor(baseCost × growthRate ^ owned).
-export function costAtLevel(def, owned) {
+export function costAtLevel(def: Priced, owned: number): number {
   return Math.floor(def.baseCost * Math.pow(def.growthRate, owned));
 }
 
-function maxedAtLevel(def, owned) {
+function maxedAtLevel(def: Priced, owned: number): boolean {
   return def.maxLevel !== null && def.maxLevel !== undefined && owned >= def.maxLevel;
 }
 
-export function createGame(initialData, rng) {
+// An effect someone owns, and at what level: from a coin upgrade (scope "global"
+// or "machine") or from a Family Tree node (scope "tree").
+interface OwnedEffect<T extends EffectType> {
+  effect: EffectOf<T>;
+  level: number;
+  fromTree: boolean;
+  scope: 'global' | 'machine' | 'tree';
+}
+
+// Is this effect of the given type? (It also tells TypeScript which fields the
+// effect has, e.g. a "shiftWeight" effect has "from", "to" and "amount".)
+function isEffect<T extends EffectType>(effect: Effect, type: T): effect is EffectOf<T> {
+  return effect.type === type;
+}
+
+// A def's effect, as the type we already know it has (used where the effect was
+// looked up by its type, so the type is certain).
+function effectAs<T extends EffectType>(def: { effect: Effect }, _type: T): EffectOf<T> {
+  return def.effect as EffectOf<T>;
+}
+
+// What the shop's "now → next" shows for an upgrade or tree node.
+type PreviewValue = number | boolean | null | { luck: number; hitRate: number } | { open: number; hitRate: number; win: number };
+
+// Anything read from a save (or a state being cleaned up) could hold anything at
+// all, so it's typed "any", and every value is checked before it's used.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Untrusted = any;
+
+export function createGame(initialData: GameData, rng: Rng) {
   let data = initialData;
-  const events = createEmitter();
+  const events = createEmitter<GameEvents>();
   let state = newState(data);
   let accumulator = 0; // leftover time smaller than one tick
   // A click on Spin while the machine is still spinning isn't lost: it queues ONE
@@ -80,11 +115,11 @@ export function createGame(initialData, rng) {
   let queuedManual = false;
   // The last few gamble cards, newest first (shown along the top of the gamble
   // panel, like a real pokie). Just for show: never saved.
-  let cardHistory = [];
+  let cardHistory: Card[] = [];
 
   // ───────────────────────── Lookups ─────────────────────────
 
-  function getUpgradeDef(id) {
+  function getUpgradeDef(id: string): UpgradeDef | null {
     return data.upgrades.find((u) => u.id === id) || null;
   }
 
@@ -92,39 +127,39 @@ export function createGame(initialData, rng) {
     return (data.familyTree && data.familyTree.nodes) || [];
   }
 
-  function getTreeNodeDef(id) {
+  function getTreeNodeDef(id: string): TreeNodeDef | null {
     return treeNodes().find((n) => n.id === id) || null;
   }
 
-  function activeMachine() {
+  function activeMachine(): MachineState {
     return state.machines[state.activeMachine];
   }
 
   // The data.json entry for a machine in the state (default: the active one).
-  function getMachineData(machine = activeMachine()) {
-    return data.machines.find((m) => m.id === machine.typeId);
+  function getMachineData(machine: MachineState = activeMachine()): MachineDef {
+    return data.machines.find((m) => m.id === machine.typeId)!;
   }
 
   // Global upgrades belong to the hamster (state.upgrades). Machine upgrades
   // belong to one machine (state.machines[i].upgrades), and an upgrade can list
   // the machines it's sold for ("machines": ["clunky"]). No list = every machine.
-  function isUpgradeAvailable(def, machine = activeMachine()) {
+  function isUpgradeAvailable(def: UpgradeDef | null, machine: MachineState = activeMachine()): def is UpgradeDef {
     if (!def) return false;
     return def.scope !== 'machine' || !def.machines || def.machines.includes(machine.typeId);
   }
 
-  function levelStore(def, machine = activeMachine()) {
+  function levelStore(def: UpgradeDef, machine: MachineState = activeMachine()): Levels {
     return def.scope === 'machine' ? machine.upgrades : state.upgrades;
   }
 
   // An upgrade the active machine doesn't sell counts as level 0.
-  function getUpgradeLevel(id, machine = activeMachine()) {
+  function getUpgradeLevel(id: string, machine: MachineState = activeMachine()): number {
     const def = getUpgradeDef(id);
     return isUpgradeAvailable(def, machine) ? levelStore(def, machine)[id] || 0 : 0;
   }
 
   // The highest level on any machine (for diary goals like "get the Third Reel").
-  function getBestUpgradeLevel(id) {
+  function getBestUpgradeLevel(id: string): number {
     const def = getUpgradeDef(id);
     if (!def) return 0;
     if (def.scope !== 'machine') return state.upgrades[id] || 0;
@@ -136,23 +171,23 @@ export function createGame(initialData, rng) {
     return data.upgrades.filter((def) => isUpgradeAvailable(def));
   }
 
-  function getTreeLevel(id) {
+  function getTreeLevel(id: string): number {
     return state.tree[id] || 0;
   }
 
-  function getUpgradeCost(id) {
-    return costAtLevel(getUpgradeDef(id), getUpgradeLevel(id));
+  function getUpgradeCost(id: string): number {
+    return costAtLevel(getUpgradeDef(id)!, getUpgradeLevel(id));
   }
 
-  function isMaxed(id) {
-    return maxedAtLevel(getUpgradeDef(id), getUpgradeLevel(id));
+  function isMaxed(id: string): boolean {
+    return maxedAtLevel(getUpgradeDef(id)!, getUpgradeLevel(id));
   }
 
-  function canAfford(cost) {
+  function canAfford(cost: number): boolean {
     return state.coins >= cost;
   }
 
-  function canBuyUpgrade(id) {
+  function canBuyUpgrade(id: string): boolean {
     const def = getUpgradeDef(id);
     return isUpgradeAvailable(def) && !isMaxed(id) && canAfford(getUpgradeCost(id));
   }
@@ -169,21 +204,21 @@ export function createGame(initialData, rng) {
 
   // Every effect of one type, with the level it's owned at:
   //   [{ effect, level, fromTree, scope }]   (scope: "global", "machine" or "tree")
-  function effectsOfType(type, overrides, machine = activeMachine()) {
-    const out = [];
-    const levelFor = (id, current) => (overrides && id in overrides ? overrides[id] : current);
+  function effectsOfType<T extends EffectType>(type: T, overrides?: Overrides, machine: MachineState = activeMachine()): OwnedEffect<T>[] {
+    const out: OwnedEffect<T>[] = [];
+    const levelFor = (id: string, current: number) => (overrides && id in overrides ? overrides[id] : current);
     for (const def of data.upgrades) {
-      if (def.effect.type !== type || !isUpgradeAvailable(def, machine)) continue;
+      if (!isEffect(def.effect, type) || !isUpgradeAvailable(def, machine)) continue;
       out.push({ effect: def.effect, level: levelFor(def.id, levelStore(def, machine)[def.id] || 0), fromTree: false, scope: def.scope });
     }
     for (const def of treeNodes()) {
-      if (def.effect.type === type) out.push({ effect: def.effect, level: levelFor(def.id, state.tree[def.id] || 0), fromTree: true, scope: 'tree' });
+      if (isEffect(def.effect, type)) out.push({ effect: def.effect, level: levelFor(def.id, state.tree[def.id] || 0), fromTree: true, scope: 'tree' });
     }
     return out;
   }
 
   // Product of multiplier ^ level over one effect type (1 if nothing is owned).
-  function productOf(type, overrides, machine) {
+  function productOf(type: 'spinSpeed' | 'fullLineMultiplier' | 'deliveryTime', overrides?: Overrides, machine?: MachineState): number {
     let m = 1;
     for (const { effect, level } of effectsOfType(type, overrides, machine)) m *= Math.pow(effect.multiplier, level);
     return m;
@@ -194,7 +229,7 @@ export function createGame(initialData, rng) {
   // Family bonuses = family tree nodes + the heirloom bonus (see below).
   // e.g. Chubby Cheeks Lv 2 (+50%) with Family Pride (+25%) → 1.5 × 1.25 = ×1.875.
   // Multiplying is what makes the family feel strong in every new life.
-  function getPayoutMultiplier(overrides) {
+  function getPayoutMultiplier(overrides?: Overrides): number {
     let upgrades = 1;
     let family = 1 + getHeirloomBonus();
     for (const { effect, level, fromTree } of effectsOfType('payoutMultiplier', overrides)) {
@@ -207,20 +242,20 @@ export function createGame(initialData, rng) {
   // Heirloom bonus: every seed the family has EVER earned adds a little to payouts,
   // even after it's planted in the tree. Planting never makes you weaker, and
   // each generation starts stronger than the last.
-  function getHeirloomBonus() {
+  function getHeirloomBonus(): number {
     const perSeed = (data.retirement && data.retirement.payoutBonusPerSeedEarned) || 0;
     return perSeed * state.seedsEarned;
   }
 
   // Oiled Lever / Smooth Gears: base spin cost × perLevel ^ level
-  function getSpinCost(overrides, machine = activeMachine()) {
+  function getSpinCost(overrides?: Overrides, machine: MachineState = activeMachine()): number {
     let cost = getMachineData(machine).spinCost;
     for (const { effect, level } of effectsOfType('spinCostMultiplier', overrides, machine)) cost *= Math.pow(effect.perLevel, level);
     return roundMoney(cost);
   }
 
   // Quick Paws: a multiplier on spin time AND the auto-spin interval (both get faster together).
-  function getSpinDuration(overrides, machine = activeMachine()) {
+  function getSpinDuration(overrides?: Overrides, machine: MachineState = activeMachine()): number {
     return getMachineData(machine).spinDuration * productOf('spinSpeed', overrides, machine);
   }
 
@@ -229,8 +264,8 @@ export function createGame(initialData, rng) {
   // but never quicker than the spin itself plus a short rest ("rest" in data.json),
   // so there's always a beat to see each win before the next spin starts.
   // The spin time depends on the machine, so the floor does too.
-  function getAutoInterval(overrides, machine = activeMachine()) {
-    let interval = null;
+  function getAutoInterval(overrides?: Overrides, machine: MachineState = activeMachine()): number | null {
+    let interval: number | null = null;
     let rest = 0;
     for (const { effect: e, level } of effectsOfType('autoSpin', overrides, machine)) {
       if (level <= 0) continue;
@@ -243,7 +278,7 @@ export function createGame(initialData, rng) {
   }
 
   // Third Reel / Fourth Reel: startReels + reelsPerLevel × level, capped at maxReels
-  function getReelCount(overrides, machine = activeMachine()) {
+  function getReelCount(overrides?: Overrides, machine: MachineState = activeMachine()): number {
     const md = getMachineData(machine);
     let reels = md.startReels;
     for (const { effect, level } of effectsOfType('extraReel', overrides, machine)) reels += effect.reelsPerLevel * level;
@@ -252,7 +287,7 @@ export function createGame(initialData, rng) {
 
   // Extra Paylines: startLines + linesPerLevel × level, capped at the machine's
   // list of paylines. A machine without startLines uses all of its lines.
-  function getLineCount(overrides, machine = activeMachine()) {
+  function getLineCount(overrides?: Overrides, machine: MachineState = activeMachine()): number {
     const md = getMachineData(machine);
     const all = allPaylines(md).length;
     let lines = md.startLines || all;
@@ -261,11 +296,11 @@ export function createGame(initialData, rng) {
   }
 
   // The paylines that pay right now, each as the row it crosses on every reel.
-  function getPaylines(overrides, machine = activeMachine()) {
+  function getPaylines(overrides?: Overrides, machine: MachineState = activeMachine()): number[][] {
     return allPaylines(getMachineData(machine)).slice(0, getLineCount(overrides, machine));
   }
 
-  function getRowCount(machine = activeMachine()) {
+  function getRowCount(machine: MachineState = activeMachine()): number {
     return rowCount(getMachineData(machine));
   }
 
@@ -279,9 +314,9 @@ export function createGame(initialData, rng) {
   //   4) Luck: every symbol except the blank has its weight × (1 + Luck ÷ 100), so
   //      with more Luck the reels land on the Wood Shaving less often. That raises
   //      the hit rate AND the average win (a test checks both).
-  function getSymbols(overrides, machine = activeMachine()) {
+  function getSymbols(overrides?: Overrides, machine: MachineState = activeMachine()): SymbolDef[] {
     const md = getMachineData(machine);
-    const weight = {};
+    const weight: Record<string, number> = {};
     for (const s of md.symbols) weight[s.id] = isSymbolLocked(s.id, overrides, machine) ? 0 : s.weight;
     for (const { effect: e, level } of effectsOfType('shiftWeight', overrides, machine)) {
       if (!(weight[e.from] > 0) || !(weight[e.to] > 0)) continue; // not on this machine, or still locked
@@ -301,21 +336,21 @@ export function createGame(initialData, rng) {
   // the first n of them: Old Clunky's New Seeds opens the Baby Carrot, then the
   // Golden Seed. (The order matters for the balance: a test checks that every
   // level raises the average win and lowers the hit rate.)
-  function isSymbolLocked(symbolId, overrides, machine = activeMachine()) {
+  function isSymbolLocked(symbolId: string, overrides?: Overrides, machine: MachineState = activeMachine()): boolean {
     const s = getMachineData(machine).symbols.find((x) => x.id === symbolId);
     if (!s || !s.locked) return false;
     return !effectsOfType('unlockSymbol', overrides, machine).some((x) => x.effect.symbols.slice(0, x.level).includes(symbolId));
   }
 
   // The upgrade that unlocks a symbol on a machine (for the paytable's "unlock it" hint).
-  function getSymbolUnlock(symbolId, machine = activeMachine()) {
+  function getSymbolUnlock(symbolId: string, machine: MachineState = activeMachine()): UpgradeDef | null {
     return data.upgrades.find((u) => u.effect.type === 'unlockSymbol' && u.effect.symbols.includes(symbolId) && isUpgradeAvailable(u, machine)) || null;
   }
 
   // Luck = Hamster Luck + Machine Luck, one number you can see (a clover on the machine).
   //   Hamster Luck: the hamster's own upgrades (and family traits): every machine.
   //   Machine Luck: this machine's upgrades only.
-  function getLuck(overrides, machine = activeMachine()) {
+  function getLuck(overrides?: Overrides, machine: MachineState = activeMachine()): { hamster: number; machine: number; total: number } {
     let hamster = 0;
     let own = 0;
     for (const { effect, level, scope } of effectsOfType('luck', overrides, machine)) {
@@ -326,7 +361,7 @@ export function createGame(initialData, rng) {
   }
 
   // Chance (0–1) that one reel lands on a symbol, after luck traits.
-  function getSymbolChance(symbolId, overrides) {
+  function getSymbolChance(symbolId: string, overrides?: Overrides): number {
     const symbols = getSymbols(overrides);
     const total = symbols.reduce((sum, s) => sum + s.weight, 0);
     const s = symbols.find((x) => x.id === symbolId);
@@ -334,12 +369,12 @@ export function createGame(initialData, rng) {
   }
 
   // Jackpot Dance: wins where every reel matches pay × this.
-  function getFullLineMultiplier(overrides) {
+  function getFullLineMultiplier(overrides?: Overrides): number {
     return productOf('fullLineMultiplier', overrides);
   }
 
   // Warm-up Laps / Heirloom Reel: free upgrade levels at the start of every life.
-  function getStartingLevel(upgradeId, overrides) {
+  function getStartingLevel(upgradeId: string, overrides?: Overrides): number {
     let levels = 0;
     for (const { effect, level } of effectsOfType('startingLevel', overrides)) {
       if (effect.upgrade === upgradeId) levels += effect.levels * level;
@@ -349,18 +384,18 @@ export function createGame(initialData, rng) {
   }
 
   // Speedy Scooter: delivery time × multiplier
-  function getDeliveryDuration(overrides) {
+  function getDeliveryDuration(overrides?: Overrides): number {
     return data.delivery.duration * productOf('deliveryTime', overrides);
   }
 
   // Big Backpack: deliveries get your payout multiplier too.
-  function getDeliveryReward(overrides) {
+  function getDeliveryReward(overrides?: Overrides): number {
     const boosted = effectsOfType('deliveryPayoutBonus', overrides).some((x) => x.level > 0);
     return boosted ? roundMoney(data.delivery.reward * getPayoutMultiplier(overrides)) : data.delivery.reward;
   }
 
   // Self-Starter: when you're broke, the hamster starts a delivery by itself.
-  function hasAutoDelivery(overrides) {
+  function hasAutoDelivery(overrides?: Overrides): boolean {
     return effectsOfType('autoDelivery', overrides).some((x) => x.level > 0);
   }
 
@@ -369,35 +404,35 @@ export function createGame(initialData, rng) {
   // changes the RTP: it only makes each spin bigger (and riskier). The bet sizes
   // are data.json betSteps; High Roller unlocks the next one on every machine.
 
-  function getBetSteps() {
+  function getBetSteps(): number[] {
     return data.betSteps && data.betSteps.length ? data.betSteps : [1];
   }
 
   // The biggest bet step you've unlocked (an index into betSteps).
-  function getMaxBetIndex(overrides) {
+  function getMaxBetIndex(overrides?: Overrides): number {
     let steps = 0;
     for (const { effect, level } of effectsOfType('betSteps', overrides)) steps += effect.stepsPerLevel * level;
     return Math.min(getBetSteps().length - 1, steps);
   }
 
   // The bet this machine is set to (an index), never above what's unlocked.
-  function getBetIndex(machine = activeMachine()) {
+  function getBetIndex(machine: MachineState = activeMachine()): number {
     return clamp(machine.bet || 0, 0, getMaxBetIndex());
   }
 
-  function getBet(machine = activeMachine()) {
+  function getBet(machine: MachineState = activeMachine()): number {
     return getBetSteps()[getBetIndex(machine)];
   }
 
   // What a paid spin costs at a bet (default: the chosen one).
-  function getBetCost(bet = getBet(), machine = activeMachine()) {
+  function getBetCost(bet: number = getBet(), machine: MachineState = activeMachine()): number {
     return roundMoney(getSpinCost(undefined, machine) * bet);
   }
 
   // The bet the next paid spin will REALLY use: the chosen one if you can afford
   // it, otherwise the biggest unlocked bet you can. null = not even ×1.
   // This "step down" is why a high bet never stalls auto-spin.
-  function getSpinBet(machine = activeMachine()) {
+  function getSpinBet(machine: MachineState = activeMachine()): number | null {
     const steps = getBetSteps();
     for (let i = getBetIndex(machine); i >= 0; i--) {
       if (canAfford(getBetCost(steps[i], machine))) return steps[i];
@@ -405,7 +440,7 @@ export function createGame(initialData, rng) {
     return null;
   }
 
-  function setBet(index) {
+  function setBet(index: number): boolean {
     const machine = activeMachine();
     const i = clamp(Math.floor(index), 0, getMaxBetIndex());
     if (!Number.isFinite(i) || i === getBetIndex(machine)) return false;
@@ -417,38 +452,38 @@ export function createGame(initialData, rng) {
   // ── Hot Streak ──
   // Every machine counts its winning paid spins in a row (machine.streak).
   // With Hot Streak, a line win pays × (1 + perStack × level × min(streak, maxStacks)).
-  function getStreakPerStack(overrides) {
+  function getStreakPerStack(overrides?: Overrides): number {
     let per = 0;
     for (const { effect, level } of effectsOfType('winStreak', overrides)) per += effect.perStack * level;
     return per;
   }
 
-  function getStreakCap(overrides) {
+  function getStreakCap(overrides?: Overrides): number {
     let cap = 0;
     for (const { effect, level } of effectsOfType('winStreak', overrides)) if (level > 0) cap = Math.max(cap, effect.maxStacks);
     return cap;
   }
 
   // The multiplier the NEXT winning paid spin on this machine gets.
-  function getStreakMultiplier(machine = activeMachine(), overrides) {
+  function getStreakMultiplier(machine: MachineState = activeMachine(), overrides?: Overrides): number {
     return 1 + getStreakPerStack(overrides) * Math.min(machine.streak || 0, getStreakCap(overrides));
   }
 
   // The best a streak can get (for the shop card).
-  function getMaxStreakMultiplier(overrides) {
+  function getMaxStreakMultiplier(overrides?: Overrides): number {
     return 1 + getStreakPerStack(overrides) * getStreakCap(overrides);
   }
 
   // ── Free spins and the jackpot wheel ──
   // Bouncy Ball: extra free spins every time they trigger.
-  function getExtraFreeSpins(overrides, machine = activeMachine()) {
+  function getExtraFreeSpins(overrides?: Overrides, machine: MachineState = activeMachine()): number {
     let extra = 0;
     for (const { effect, level } of effectsOfType('extraFreeSpins', overrides, machine)) extra += effect.perLevel * level;
     return extra;
   }
 
   // Free spins for the smallest trigger (for the shop card), or 0.
-  function getFreeSpinAward(overrides, machine = activeMachine()) {
+  function getFreeSpinAward(overrides?: Overrides, machine: MachineState = activeMachine()): number {
     const fs = getMachineData(machine).freeSpins;
     if (!fs) return 0;
     const min = Math.min(...Object.keys(fs.awards).map(Number));
@@ -456,29 +491,29 @@ export function createGame(initialData, rng) {
   }
 
   // Pouch Polish: every pot grows faster, × (1 + perLevel × level).
-  function getJackpotGrowth(overrides, machine = activeMachine()) {
+  function getJackpotGrowth(overrides?: Overrides, machine: MachineState = activeMachine()): number {
     let growth = 1;
     for (const { effect, level } of effectsOfType('jackpotGrowth', overrides, machine)) growth += effect.perLevel * level;
     return growth;
   }
 
   // For the shop cards: which stat an effect type changes.
-  const STAT_FOR_EFFECT = {
+  const STAT_FOR_EFFECT: { [K in EffectType]: (def: UpgradeDef | TreeNodeDef, o?: Overrides) => PreviewValue } = {
     payoutMultiplier: (def, o) => getPayoutMultiplier(o),
     spinCostMultiplier: (def, o) => getSpinCost(o),
     autoSpin: (def, o) => getAutoInterval(o),
     extraReel: (def, o) => getReelCount(o),
     extraPayline: (def, o) => getLineCount(o),
-    shiftWeight: (def, o) => getSymbolChance(def.effect.to, o),
+    shiftWeight: (def, o) => getSymbolChance(effectAs(def, 'shiftWeight').to, o),
     fullLineMultiplier: (def, o) => getFullLineMultiplier(o),
-    startingLevel: (def, o) => getStartingLevel(def.effect.upgrade, o),
+    startingLevel: (def, o) => getStartingLevel(effectAs(def, 'startingLevel').upgrade, o),
     spinSpeed: (def, o) => getSpinDuration(o),
     deliveryTime: (def, o) => getDeliveryDuration(o),
     deliveryPayoutBonus: (def, o) => getDeliveryReward(o),
     autoDelivery: (def, o) => hasAutoDelivery(o),
     betSteps: (def, o) => getBetSteps()[getMaxBetIndex(o)],
     winStreak: (def, o) => getMaxStreakMultiplier(o),
-    symbolWeight: (def, o) => getSymbolChance(def.effect.symbol, o),
+    symbolWeight: (def, o) => getSymbolChance(effectAs(def, 'symbolWeight').symbol, o),
     extraFreeSpins: (def, o) => getFreeSpinAward(o),
     jackpotGrowth: (def, o) => getJackpotGrowth(o),
     // Milestone 7: these show what they do in plain numbers ("hit rate 24% → 27%").
@@ -486,13 +521,13 @@ export function createGame(initialData, rng) {
     // "win" = the average win per paid spin at ×1, with every payout bonus.
     unlockSymbol: (def, o) => {
       const v = spinValue(activeMachine(), o);
-      return { open: def.effect.symbols.filter((id) => !isSymbolLocked(id, o)).length, hitRate: v.hitRate, win: v.ev * getPayoutMultiplier(o) };
+      return { open: effectAs(def, 'unlockSymbol').symbols.filter((id) => !isSymbolLocked(id, o)).length, hitRate: v.hitRate, win: v.ev * getPayoutMultiplier(o) };
     },
   };
 
   // The affected stat now, and after `levels` more levels (next = null when maxed).
   // The shop passes levels > 1 when it's buying ×10 or Max.
-  function preview(def, level, levels = 1) {
+  function preview(def: UpgradeDef | TreeNodeDef, level: number, levels = 1) {
     const statFn = STAT_FOR_EFFECT[def.effect.type];
     const cap = def.maxLevel === null || def.maxLevel === undefined ? Infinity : def.maxLevel;
     return {
@@ -502,14 +537,14 @@ export function createGame(initialData, rng) {
     };
   }
 
-  function previewUpgrade(id, levels = 1) {
-    return preview(getUpgradeDef(id), getUpgradeLevel(id), levels);
+  function previewUpgrade(id: string, levels = 1) {
+    return preview(getUpgradeDef(id)!, getUpgradeLevel(id), levels);
   }
 
   // ─────────────────────── Economy info ───────────────────────
   // Everything the debug panel (and the tests, and the balance simulator) want to
   // know about the maths. All of it is exact (machine.js spinExpectation).
-  function spinValue(machine = activeMachine(), overrides) {
+  function spinValue(machine: MachineState = activeMachine(), overrides?: Overrides): SpinValue {
     const md = { ...getMachineData(machine), symbols: getSymbols(overrides, machine) };
     const reels = getReelCount(overrides, machine);
     return spinExpectation(md, reels, {
@@ -523,7 +558,7 @@ export function createGame(initialData, rng) {
     });
   }
 
-  function getEconomy(machine = activeMachine()) {
+  function getEconomy(machine: MachineState = activeMachine()) {
     const md = getMachineData(machine);
     const value = spinValue(machine);
     const payoutMultiplier = getPayoutMultiplier();
@@ -560,11 +595,11 @@ export function createGame(initialData, rng) {
   }
 
   // The odds of the active machine's features, for the Info tab ("1 in N spins").
-  function getFeatureOdds(machine = activeMachine()) {
+  function getFeatureOdds(machine: MachineState = activeMachine()) {
     const md = getMachineData(machine);
     const value = spinValue(machine);
     return {
-      wild: md.symbols.some((s) => s.wild) ? getSymbolChance(md.symbols.find((s) => s.wild).id) : 0,
+      wild: md.symbols.some((s) => s.wild) ? getSymbolChance(md.symbols.find((s) => s.wild)!.id) : 0,
       freeSpins: md.freeSpins ? { ...value.freeSpins, multiplier: md.freeSpins.multiplier } : null,
       jackpot: md.jackpot ? value.jackpot : null,
       hitRate: value.hitRate,
@@ -581,19 +616,19 @@ export function createGame(initialData, rng) {
 
   // ─────────────────────── Actions ───────────────────────────
 
-  function changeCoins(amount) {
+  function changeCoins(amount: number): void {
     state.coins = roundMoney(state.coins + amount);
     events.emit('coinsChanged', { coins: state.coins, amount });
   }
 
-  function changeSeeds(amount) {
+  function changeSeeds(amount: number): void {
     state.seeds += amount;
     events.emit('seedsChanged', { seeds: state.seeds, amount });
   }
 
   // Every coin EARNED by playing (spin wins, deliveries) goes through here, so the
   // totals that decide Heirloom Seeds can never miss one. Spending doesn't lower them.
-  function earn(amount) {
+  function earn(amount: number): void {
     state.stats.coinsEarned = roundMoney(state.stats.coinsEarned + amount);
     state.run.coinsEarned = roundMoney(state.run.coinsEarned + amount);
     changeCoins(amount);
@@ -601,7 +636,7 @@ export function createGame(initialData, rng) {
 
   // Is anything still waiting to play on this machine? (free spins left, or the
   // last free spin still in the air)
-  function hasFreeSpins(machine = activeMachine()) {
+  function hasFreeSpins(machine: MachineState = activeMachine()): boolean {
     return !!machine.freeSpins && (machine.freeSpins.left > 0 || (machine.spinning && machine.spinFree));
   }
 
@@ -609,7 +644,7 @@ export function createGame(initialData, rng) {
   // stop) but paid when the spin finishes, spinDuration seconds later.
   // source: "manual" (the player), "auto" (Wheel Training) or "free" (a free spin,
   // which the machine plays by itself; see tick()).
-  function spin(source = 'manual') {
+  function spin(source: SpinSource = 'manual'): boolean {
     const machine = activeMachine();
     if (state.delivery.active) {
       // The hamster is out delivering, so nobody is running the wheel.
@@ -633,11 +668,11 @@ export function createGame(initialData, rng) {
     // Free spins play themselves, one after another; paid spins wait until they're done.
     if (free !== (!!machine.freeSpins && machine.freeSpins.left > 0)) return false;
 
-    let bet;
+    let bet: number | null;
     let cost = 0;
     if (free) {
-      bet = machine.freeSpins.bet;
-      machine.freeSpins.left--;
+      bet = machine.freeSpins!.bet;
+      machine.freeSpins!.left--;
     } else {
       bet = getSpinBet(machine);
       if (bet === null) {
@@ -680,9 +715,9 @@ export function createGame(initialData, rng) {
   //   × Jackpot Dance on a line where EVERY reel matched
   //   × the free-spin multiplier (free spins) or × Hot Streak (paid spins)
   // Then the scatters are counted: free spins, or the jackpot wheel.
-  function resolveSpin(machine) {
+  function resolveSpin(machine: MachineState): void {
     const md = getMachineData(machine);
-    const { wins, basePayout } = evaluateGrid(machine.result, getPaylines(undefined, machine), md.payouts, symbolRules(md));
+    const { wins, basePayout } = evaluateGrid(machine.result!, getPaylines(undefined, machine), md.payouts, symbolRules(md));
     const bet = machine.spinBet || 1;
     const free = !!machine.spinFree;
     const manual = machine.spinSource === 'manual';
@@ -719,14 +754,14 @@ export function createGame(initialData, rng) {
     }
 
     // Scatters anywhere on the grid.
-    const scatterCells = md.freeSpins ? findSymbol(machine.result, md.freeSpins.symbol) : [];
-    const pouchCells = md.jackpot ? findSymbol(machine.result, md.jackpot.symbol) : [];
+    const scatterCells = md.freeSpins ? findSymbol(machine.result!, md.freeSpins.symbol) : [];
+    const pouchCells = md.jackpot ? findSymbol(machine.result!, md.jackpot.symbol) : [];
     const award = md.freeSpins ? freeSpinAward(md.freeSpins, scatterCells.length, getExtraFreeSpins(undefined, machine)) : 0;
     const wheel = !free && !!md.jackpot && pouchCells.length >= md.jackpot.min; // the jackpot wheel only starts on paid spins
 
     const tier = getWinTier(basePayout * featureMultiplier, md);
     events.emit('spinResolved', {
-      machineId: machine.typeId, result: copyGrid(machine.result), wins: paid, payout, fullLine: paid.some((w) => w.fullLine), tier,
+      machineId: machine.typeId, result: copyGrid(machine.result!), wins: paid, payout, fullLine: paid.some((w) => w.fullLine), tier,
       bet, free, streak: machine.streak || 0,
       featureCells: award > 0 ? scatterCells : wheel ? pouchCells : [],
     });
@@ -734,7 +769,7 @@ export function createGame(initialData, rng) {
     // Golden jackpot (the jackpot symbol on every reel of a line, 3+ reels): a
     // Hamster Token for each such line. Wilds may fill in; a line of wilds alone doesn't count.
     const t = data.tokens;
-    if (t && machine.result.length >= t.jackpotMinReels) {
+    if (t && machine.result!.length >= t.jackpotMinReels) {
       for (const w of paid) {
         if (!w.fullLine || w.symbolId !== t.jackpotSymbol) continue;
         state.stats.goldenJackpots++;
@@ -757,7 +792,7 @@ export function createGame(initialData, rng) {
   // with the machine's BASE spin cost, so upgrades that multiply every payout (and
   // the bet) don't turn every win into a "big win". On Old Clunky: a Golden pair
   // is nice, a Carrot line is big, a Golden line is a jackpot.
-  function getWinTier(basePayout, md = getMachineData()) {
+  function getWinTier(basePayout: number, md: MachineDef = getMachineData()): string {
     if (!(basePayout > 0)) return 'none';
     const multiple = basePayout / md.spinCost;
     let tier = 'win';
@@ -769,33 +804,33 @@ export function createGame(initialData, rng) {
   // 3+ scatters give free spins. The machine plays them by itself (see tick()),
   // they cost nothing, use the bet that won them, and every win is × multiplier.
   // More scatters during free spins add more (a "retrigger").
-  function startFreeSpins(machine, count, bet) {
+  function startFreeSpins(machine: MachineState, count: number, bet: number): void {
     const md = getMachineData(machine);
     const retrigger = !!machine.freeSpins;
     if (retrigger) {
-      machine.freeSpins.left += count;
-      machine.freeSpins.total += count;
+      machine.freeSpins!.left += count;
+      machine.freeSpins!.total += count;
     } else {
-      machine.freeSpins = { left: count, total: count, bet, won: 0, timer: md.freeSpins.pause };
+      machine.freeSpins = { left: count, total: count, bet, won: 0, timer: md.freeSpins!.pause };
     }
     state.stats.freeSpinTriggers++;
-    events.emit('freeSpinsStarted', { machineId: machine.typeId, count, retrigger, bet, left: machine.freeSpins.left });
+    events.emit('freeSpinsStarted', { machineId: machine.typeId, count, retrigger, bet, left: machine.freeSpins!.left });
   }
 
-  function endFreeSpins(machine) {
-    const fs = machine.freeSpins;
+  function endFreeSpins(machine: MachineState): void {
+    const fs = machine.freeSpins!;
     machine.freeSpins = null;
     events.emit('freeSpinsEnded', { machineId: machine.typeId, spins: fs.total, won: fs.won });
     checkDiary();
   }
 
-  function getFreeSpins(machine = activeMachine()) {
+  function getFreeSpins(machine: MachineState = activeMachine()) {
     const fs = machine.freeSpins;
     return fs ? { left: fs.left, total: fs.total, played: fs.total - fs.left, won: fs.won, bet: fs.bet } : null;
   }
 
   // Debug only: free spins on the active machine (if it has them).
-  function addFreeSpins(count) {
+  function addFreeSpins(count: number): boolean {
     const machine = activeMachine();
     if (!getMachineData(machine).freeSpins || !(count > 0)) return false;
     startFreeSpins(machine, Math.floor(count), getBet(machine));
@@ -806,7 +841,7 @@ export function createGame(initialData, rng) {
   // Each pot is kept in base units (×1 bet, before payout bonuses). Every paid
   // spin adds its growth; winning it pays pot × bet × payout multiplier, and the
   // pot goes back to its seed.
-  function growPots(machine) {
+  function growPots(machine: MachineState): void {
     const jp = getMachineData(machine).jackpot;
     if (!jp) return;
     const growth = getJackpotGrowth(undefined, machine);
@@ -814,17 +849,17 @@ export function createGame(initialData, rng) {
   }
 
   // The wheel picks a pot NOW (like a spin's result) and pays when it stops.
-  function startJackpotWheel(machine, bet, potId = null) {
-    const jp = getMachineData(machine).jackpot;
+  function startJackpotWheel(machine: MachineState, bet: number, potId: string | null = null): void {
+    const jp = getMachineData(machine).jackpot!;
     const pot = potId || rng.pickWeighted(jp.pots).id;
     machine.bonus = { pot, timer: jp.duration, bet };
     events.emit('jackpotStarted', { machineId: machine.typeId, pot, duration: jp.duration, bet });
   }
 
-  function payJackpot(machine) {
-    const jp = getMachineData(machine).jackpot;
-    const { pot, bet } = machine.bonus;
-    const def = jp.pots.find((p) => p.id === pot);
+  function payJackpot(machine: MachineState): void {
+    const jp = getMachineData(machine).jackpot!;
+    const { pot, bet } = machine.bonus!;
+    const def = jp.pots.find((p) => p.id === pot)!;
     const amount = roundMoney((machine.pots[pot] || def.seed) * bet * getPayoutMultiplier());
     machine.bonus = null;
     machine.pots[pot] = def.seed;
@@ -837,7 +872,7 @@ export function createGame(initialData, rng) {
   }
 
   // Debug only: spin the jackpot wheel now, landing on a chosen pot.
-  function triggerJackpot(potId) {
+  function triggerJackpot(potId: string): boolean {
     const machine = activeMachine();
     const jp = getMachineData(machine).jackpot;
     if (!jp || machine.bonus || machine.spinning || !jp.pots.some((p) => p.id === potId)) return false;
@@ -846,7 +881,7 @@ export function createGame(initialData, rng) {
   }
 
   // The pots of a machine as coins at its current bet (what the marquee shows).
-  function getJackpotPots(machine = activeMachine()) {
+  function getJackpotPots(machine: MachineState = activeMachine()) {
     const jp = getMachineData(machine).jackpot;
     if (!jp) return [];
     const scale = getBet(machine) * getPayoutMultiplier();
@@ -857,9 +892,9 @@ export function createGame(initialData, rng) {
   }
 
   // 0 → 1 while the jackpot wheel turns (null when it isn't).
-  function getBonusProgress(machine = activeMachine()) {
+  function getBonusProgress(machine: MachineState = activeMachine()): number | null {
     if (!machine.bonus) return null;
-    const duration = getMachineData(machine).jackpot.duration;
+    const duration = getMachineData(machine).jackpot!.duration;
     return Math.min(1, Math.max(0, 1 - machine.bonus.timer / duration));
   }
 
@@ -870,31 +905,31 @@ export function createGame(initialData, rng) {
   // Wrong: the stake is gone, and it's over. Both are exactly fair bets (on
   // average they never pay), and gamble coins are NOT "earned": otherwise wins
   // would count toward Heirloom Seeds and losses wouldn't, and gambling would farm seeds.
-  function offerGamble(machine, stake) {
+  function offerGamble(machine: MachineState, stake: number): void {
     const g = data.gamble;
     if (!g) return;
     state.gamble = { machineId: machine.typeId, stake, rounds: 0, won: 0, started: false, timer: g.offerSeconds };
     events.emit('gambleOffered', { machineId: machine.typeId, stake });
   }
 
-  function canGamble() {
+  function canGamble(): boolean {
     const g = state.gamble;
     return !!g && !!data.gamble && g.rounds < data.gamble.maxRounds && g.machineId === activeMachine().typeId && state.coins >= g.stake;
   }
 
   // The fair prize for a pick: the cards in the deck ÷ the cards that win.
   // "red" → 4 ÷ 2 = ×2, "spades" → 4 ÷ 1 = ×4. 0 = not a real pick.
-  function gambleMultiplier(pick) {
+  function gambleMultiplier(pick: string): number {
     const winners = SUITS.filter((s) => s.color === pick || s.id === pick).length;
     return winners > 0 ? SUITS.length / winners : 0;
   }
 
   // pick: "red", "black", or a suit id. Returns false for anything else.
-  function gamble(pick) {
+  function gamble(pick: string): boolean {
     const multiplier = gambleMultiplier(pick);
     if (!(multiplier > 0) || !canGamble()) return false;
-    const byColor = CARD_COLORS.includes(pick);
-    const g = state.gamble;
+    const byColor = (CARD_COLORS as readonly string[]).includes(pick);
+    const g = state.gamble!;
     g.started = true;
     const card = SUITS[Math.floor(rng.next() * SUITS.length)]; // a fresh card every time
     const stake = g.stake;
@@ -925,7 +960,7 @@ export function createGame(initialData, rng) {
 
   // Debug only: offer the gamble on the active machine for `stake` coins, as if a
   // spin you pulled had just won that much (to try the card panel quickly).
-  function triggerGamble(stake) {
+  function triggerGamble(stake: number): boolean {
     const machine = activeMachine();
     if (!(stake > 0) || state.gamble || machine.spinning || machine.bonus) return false;
     offerGamble(machine, roundMoney(stake));
@@ -933,14 +968,14 @@ export function createGame(initialData, rng) {
   }
 
   // Keep what you have: the gamble ends (its coins are already in your pile).
-  function collectGamble() {
+  function collectGamble(): boolean {
     if (!state.gamble) return false;
     endGamble('collect');
     return true;
   }
 
   // reason: "collect", "lose", "max", "spin", "expired", "switch", "retire"
-  function endGamble(reason) {
+  function endGamble(reason: GambleEndReason): void {
     const g = state.gamble;
     if (!g) return;
     state.gamble = null;
@@ -959,14 +994,14 @@ export function createGame(initialData, rng) {
   }
 
   // The last gamble cards, newest first: [{ suit, color }].
-  function getCardHistory() {
+  function getCardHistory(): Card[] {
     return cardHistory.map((c) => ({ ...c }));
   }
 
   // Food delivery: always allowed (even at 0 coins) unless one is already running.
   // This is what makes spin costs safe: you can never get stuck.
   // source: "manual" (the player) or "auto" (the Self-Starter family trait).
-  function startDelivery(source = 'manual') {
+  function startDelivery(source: 'manual' | 'auto' = 'manual'): boolean {
     if (state.delivery.active) return false;
     const duration = getDeliveryDuration();
     state.delivery.active = true;
@@ -976,7 +1011,7 @@ export function createGame(initialData, rng) {
     return true;
   }
 
-  function finishDelivery() {
+  function finishDelivery(): void {
     const reward = getDeliveryReward();
     state.delivery.active = false;
     state.delivery.timer = 0;
@@ -998,7 +1033,7 @@ export function createGame(initialData, rng) {
   //   want = Infinity  → "Max": as many levels as you can afford right now
   // Returns { count, cost, affordable }. When you can't afford even one level,
   // "Max" still returns the next level's price, so the button can show it.
-  function getUpgradeBulk(id, want = 1) {
+  function getUpgradeBulk(id: string, want = 1): { count: number; cost: number; affordable: boolean } {
     const def = getUpgradeDef(id);
     if (!isUpgradeAvailable(def)) return { count: 0, cost: 0, affordable: false };
     const start = getUpgradeLevel(id);
@@ -1015,7 +1050,7 @@ export function createGame(initialData, rng) {
     return { count, cost, affordable: count > 0 && canAfford(cost) };
   }
 
-  function buyUpgrade(id, want = 1) {
+  function buyUpgrade(id: string, want = 1): boolean {
     const def = getUpgradeDef(id);
     const { count, cost, affordable } = getUpgradeBulk(id, want);
     if (!def || !affordable) return false;
@@ -1035,31 +1070,31 @@ export function createGame(initialData, rng) {
   // keeps its own machine upgrades; the hamster's upgrades work on all of them.
   // Machines are bought with coins, so they reset when the hamster retires.
 
-  function findMachine(id) {
+  function findMachine(id: string): MachineState | null {
     return state.machines.find((m) => m.typeId === id) || null;
   }
 
-  function ownsMachine(id) {
+  function ownsMachine(id: string): boolean {
     return !!findMachine(id);
   }
 
   // A one-time price (the first machine is free: unlockCost 0).
-  function getMachineCost(id) {
+  function getMachineCost(id: string): number {
     const md = data.machines.find((m) => m.id === id);
     return md ? md.unlockCost || 0 : Infinity;
   }
 
-  function canBuyMachine(id) {
+  function canBuyMachine(id: string): boolean {
     return data.machines.some((m) => m.id === id) && !ownsMachine(id) && canAfford(getMachineCost(id));
   }
 
   // Buying a machine also switches to it straight away. It starts at the bet you
   // were using (so a new machine never feels like a step down).
-  function buyMachine(id) {
+  function buyMachine(id: string): boolean {
     if (!canBuyMachine(id)) return false;
     const cost = getMachineCost(id);
     changeCoins(-cost);
-    const machine = newMachineState(data.machines.find((m) => m.id === id));
+    const machine = newMachineState(data.machines.find((m) => m.id === id)!);
     machine.bet = getBetIndex();
     state.machines.push(machine);
     state.stats.machinesBought++;
@@ -1072,7 +1107,7 @@ export function createGame(initialData, rng) {
 
   // Switching is free and instant. If the old machine was mid-spin, that spin
   // still finishes and pays (it was already paid for); see tick().
-  function switchMachine(id) {
+  function switchMachine(id: string): boolean {
     const index = state.machines.findIndex((m) => m.typeId === id);
     if (index < 0 || index === state.activeMachine) return false;
     const from = activeMachine().typeId;
@@ -1085,7 +1120,7 @@ export function createGame(initialData, rng) {
 
   // Everything the machine cards show, for owned and not-yet-owned machines.
   // A machine you don't own yet is shown as it would be when bought (no upgrades).
-  function getMachineInfo(id) {
+  function getMachineInfo(id: string) {
     const md = data.machines.find((m) => m.id === id);
     if (!md) return null;
     const owned = findMachine(id);
@@ -1122,7 +1157,7 @@ export function createGame(initialData, rng) {
 
   // Debug only: free coins. Normally NOT counted as earned, so they don't give
   // Heirloom Seeds. asEarned = true counts them (for testing retirement quickly).
-  function addCoins(amount, asEarned = false) {
+  function addCoins(amount: number, asEarned = false): void {
     const clamped = Math.max(amount, -state.coins);
     if (asEarned && clamped > 0) {
       earn(clamped);
@@ -1133,12 +1168,12 @@ export function createGame(initialData, rng) {
   }
 
   // Debug only: free Hamster Tokens (not counted as earned).
-  function addTokens(amount) {
+  function addTokens(amount: number): void {
     changeTokens(Math.max(Math.floor(amount), -state.tokens), 'debug');
   }
 
   // Debug only: free Heirloom Seeds (not counted in seedsEarned).
-  function addSeeds(amount) {
+  function addSeeds(amount: number): void {
     changeSeeds(Math.max(Math.floor(amount), -state.seeds));
   }
 
@@ -1150,25 +1185,25 @@ export function createGame(initialData, rng) {
   // there's no trick where retiring every minute beats playing on.
   // With exponent 0.5 (a square root), 4× the coins gives 2× the seeds.
 
-  function seedsForCoins(coins) {
+  function seedsForCoins(coins: number): number {
     const r = data.retirement;
     if (!r) return 0;
     return Math.floor(Math.pow(Math.max(0, coins) / r.seedDivisor, r.seedExponent) + EPS);
   }
 
   // The inverse: lifetime coins needed for a total of n seeds.
-  function coinsForSeeds(n) {
+  function coinsForSeeds(n: number): number {
     const r = data.retirement;
     return r.seedDivisor * Math.pow(n, 1 / r.seedExponent);
   }
 
-  function getPendingSeeds() {
+  function getPendingSeeds(): number {
     return Math.max(0, seedsForCoins(state.stats.coinsEarned) - state.seedsEarned);
   }
 
   // Not while the jackpot wheel is turning or a gamble is under way (their coins
   // would vanish with the old life).
-  function canRetire() {
+  function canRetire(): boolean {
     return getPendingSeeds() >= 1 && !state.machines.some((m) => m.bonus) && !(state.gamble && state.gamble.started);
   }
 
@@ -1182,7 +1217,7 @@ export function createGame(initialData, rng) {
   }
 
   // Names cycle through the list in data.json: generation 1 is the first name.
-  function getPupName(generation = state.generation) {
+  function getPupName(generation: number = state.generation): string {
     const names = (data.retirement && data.retirement.pupNames) || [];
     return names.length ? names[(generation - 1) % names.length] : `Hamster ${generation}`;
   }
@@ -1190,7 +1225,7 @@ export function createGame(initialData, rng) {
   // Family tree nodes like Warm-up Laps give free upgrade levels. Raise any
   // upgrade that is below its free level (never lower one the player bought).
   // A machine upgrade is only raised on the machines that sell it.
-  function applyStartingLevels() {
+  function applyStartingLevels(): void {
     for (const def of data.upgrades) {
       const free = getStartingLevel(def.id);
       if (free <= 0) continue;
@@ -1206,7 +1241,7 @@ export function createGame(initialData, rng) {
   // Retire to the Big Cage: collect the pending seeds, and a new pup starts a new
   // life. Coins, upgrades, machines, deliveries and timers go back to the start.
   // The family keeps: generation, Heirloom Seeds, the tree, and lifetime stats.
-  function retire() {
+  function retire(): boolean {
     if (!canRetire()) return false;
     const gained = getPendingSeeds();
     if (state.gamble) endGamble('retire');
@@ -1234,25 +1269,25 @@ export function createGame(initialData, rng) {
     return true;
   }
 
-  function getTreeCost(id) {
-    return costAtLevel(getTreeNodeDef(id), getTreeLevel(id));
+  function getTreeCost(id: string): number {
+    return costAtLevel(getTreeNodeDef(id)!, getTreeLevel(id));
   }
 
-  function isTreeMaxed(id) {
-    return maxedAtLevel(getTreeNodeDef(id), getTreeLevel(id));
+  function isTreeMaxed(id: string): boolean {
+    return maxedAtLevel(getTreeNodeDef(id)!, getTreeLevel(id));
   }
 
   // A node is unlocked once every node it "requires" has at least level 1.
-  function isTreeNodeUnlocked(id) {
+  function isTreeNodeUnlocked(id: string): boolean {
     const def = getTreeNodeDef(id);
     return !!def && def.requires.every((r) => getTreeLevel(r) > 0);
   }
 
-  function canBuyTreeNode(id) {
+  function canBuyTreeNode(id: string): boolean {
     return !!getTreeNodeDef(id) && isTreeNodeUnlocked(id) && !isTreeMaxed(id) && state.seeds >= getTreeCost(id);
   }
 
-  function buyTreeNode(id) {
+  function buyTreeNode(id: string): boolean {
     if (!canBuyTreeNode(id)) return false;
     const cost = getTreeCost(id);
     const level = getTreeLevel(id) + 1;
@@ -1264,8 +1299,8 @@ export function createGame(initialData, rng) {
     return true;
   }
 
-  function previewTreeNode(id) {
-    return preview(getTreeNodeDef(id), getTreeLevel(id));
+  function previewTreeNode(id: string) {
+    return preview(getTreeNodeDef(id)!, getTreeLevel(id));
   }
 
   // ─────────────── Hamster Tokens + the Hamster Diary ───────────────
@@ -1273,20 +1308,20 @@ export function createGame(initialData, rng) {
   // power. They're earned from diary stickers, golden jackpots, every Nth
   // delivery and retiring, and they're kept when the hamster retires.
 
-  function changeTokens(amount, source) {
+  function changeTokens(amount: number, source: TokenSource): void {
     state.tokens += amount;
     events.emit('tokensChanged', { tokens: state.tokens, amount, source });
   }
 
   // Earning (not refunds or debug) also counts toward stats.tokensEarned.
-  function earnTokens(amount, source) {
+  function earnTokens(amount: number, source: TokenSource): void {
     if (!(amount > 0)) return;
     state.stats.tokensEarned += amount;
     changeTokens(amount, source);
   }
 
   // How far along a diary goal is. Each goal "type" is one line here.
-  function getDiaryValue(goal) {
+  function getDiaryValue(goal: Goal): number {
     switch (goal.type) {
       case 'stat': return state.stats[goal.stat] || 0;
       case 'upgradeLevel': return getBestUpgradeLevel(goal.upgrade);
@@ -1298,7 +1333,7 @@ export function createGame(initialData, rng) {
     }
   }
 
-  function getDiaryProgress(id) {
+  function getDiaryProgress(id: string) {
     const sticker = (data.diary || []).find((d) => d.id === id);
     if (!sticker) return null;
     const value = getDiaryValue(sticker.goal);
@@ -1308,7 +1343,7 @@ export function createGame(initialData, rng) {
   // Award every sticker whose goal is met. Called after anything that can move
   // a goal (spins, deliveries, purchases, retiring, capsules) and after loading,
   // so goals reached in an older save are awarded too.
-  function checkDiary() {
+  function checkDiary(): void {
     // Luck only changes when something is bought, but it isn't one event, so the
     // best Luck any machine has reached is noted here, just before the goals are read.
     for (const m of state.machines) state.stats.bestLuck = Math.max(state.stats.bestLuck, getLuck(undefined, m).total);
@@ -1329,28 +1364,28 @@ export function createGame(initialData, rng) {
   //   Duplicates: a skin you already own refunds some tokens instead.
   // It uses the game's seeded RNG, like the reels, so tests can check the odds.
 
-  function getSkinDef(id) {
+  function getSkinDef(id: string) {
     return (data.skins || []).find((s) => s.id === id) || null;
   }
 
   // Starter skins (one per category) are owned from the start.
-  function isSkinOwned(id) {
+  function isSkinOwned(id: string): boolean {
     const def = getSkinDef(id);
     return !!def && (def.rarity === 'starter' || !!state.skins.owned[id]);
   }
 
-  function getEquippedSkin(category) {
+  function getEquippedSkin(category: string): string | null {
     const id = state.skins.equipped[category];
     if (id && isSkinOwned(id)) return id;
     const starter = (data.skins || []).find((s) => s.category === category && s.rarity === 'starter');
     return starter ? starter.id : null;
   }
 
-  function getPullCost() {
+  function getPullCost(): number {
     return data.capsules ? data.capsules.pullCost : Infinity;
   }
 
-  function canPull() {
+  function canPull(): boolean {
     return !!data.capsules && state.tokens >= getPullCost();
   }
 
@@ -1363,7 +1398,7 @@ export function createGame(initialData, rng) {
     const c = data.capsules;
     if (!c) return [];
     const totalWeight = c.rarities.reduce((sum, r) => sum + r.weight, 0);
-    const pityChance = c.rarities.find((r) => r.id === c.pityRarity).weight / totalWeight;
+    const pityChance = c.rarities.find((r) => r.id === c.pityRarity)!.weight / totalWeight;
     const pityShare = pityChance / (1 - Math.pow(1 - pityChance, c.pityPulls));
     return c.rarities.map((r) => {
       const chance = r.weight / totalWeight;
@@ -1373,11 +1408,11 @@ export function createGame(initialData, rng) {
   }
 
   // Pulls left until the pity rarity is guaranteed (1 = the next pull).
-  function getPityRemaining() {
+  function getPityRemaining(): number {
     return data.capsules ? data.capsules.pityPulls - state.capsules.sincePity : 0;
   }
 
-  function pullCapsule() {
+  function pullCapsule(): boolean {
     if (!canPull()) return false;
     const c = data.capsules;
     changeTokens(-c.pullCost, 'pull');
@@ -1392,7 +1427,7 @@ export function createGame(initialData, rng) {
     const duplicate = !!state.skins.owned[skin.id];
     let refund = 0;
     if (duplicate) {
-      refund = c.rarities.find((r) => r.id === rarity).duplicateRefund;
+      refund = c.rarities.find((r) => r.id === rarity)!.duplicateRefund;
       changeTokens(refund, 'refund');
     } else {
       state.skins.owned[skin.id] = true;
@@ -1402,7 +1437,7 @@ export function createGame(initialData, rng) {
     return true;
   }
 
-  function equipSkin(id) {
+  function equipSkin(id: string): boolean {
     const def = getSkinDef(id);
     if (!def || !isSkinOwned(id)) return false;
     state.skins.equipped[def.category] = id;
@@ -1417,7 +1452,7 @@ export function createGame(initialData, rng) {
   // simulating every spin, so it's instant and doesn't touch the RNG.
   // main.js says how long the player was away: this file never reads the clock.
   // No Wheel Training = no auto-spin = nothing earned while away.
-  function getOfflineEarnings(seconds) {
+  function getOfflineEarnings(seconds: number): { seconds: number; coins: number } {
     const o = data.offline;
     if (!o || !(seconds >= o.minSeconds)) return { seconds: 0, coins: 0 };
     const counted = Math.min(seconds, o.maxSeconds);
@@ -1425,7 +1460,7 @@ export function createGame(initialData, rng) {
     return { seconds: counted, coins: roundMoney(perSecond * counted * o.efficiency) };
   }
 
-  function applyOfflineEarnings(seconds) {
+  function applyOfflineEarnings(seconds: number): boolean {
     const { seconds: counted, coins } = getOfflineEarnings(seconds);
     if (coins <= 0) return false;
     state.stats.offlineCoins = roundMoney(state.stats.offlineCoins + coins);
@@ -1440,7 +1475,7 @@ export function createGame(initialData, rng) {
   // Advance the game by dt seconds of game time. Time is saved up in an
   // "accumulator" and spent in fixed TICK-sized steps. This keeps the results
   // identical whether dt is 1/60 s (a normal frame) or 12 s (debug speed 50×).
-  function update(dt) {
+  function update(dt: number): void {
     if (!(dt > 0)) return; // also ignores NaN
     accumulator += dt;
     const steps = Math.floor((accumulator + EPS) / TICK);
@@ -1449,7 +1484,7 @@ export function createGame(initialData, rng) {
   }
 
   // One fixed step. Order matters: finish things first, then start new things.
-  function tick(dt) {
+  function tick(dt: number): void {
     state.stats.playTime += dt;
     state.run.playTime += dt;
 
@@ -1498,7 +1533,7 @@ export function createGame(initialData, rng) {
     const gambling = !!state.gamble && state.gamble.started;
     if (fs && fs.left > 0 && !state.delivery.active && !machine.spinning && !machine.bonus && !gambling) {
       fs.timer -= dt;
-      if (fs.timer <= EPS && spin('free')) fs.timer = getMachineData(machine).freeSpins.pause;
+      if (fs.timer <= EPS && spin('free')) fs.timer = getMachineData(machine).freeSpins!.pause;
     }
 
     // 6) Auto-spin (Wheel Training) on the active machine. Paused while the
@@ -1531,13 +1566,13 @@ export function createGame(initialData, rng) {
 
   // 0 → 1 over the active machine's current spin (1 when idle). The UI uses this
   // to decide when each reel stops, so animations automatically follow game speed.
-  function getSpinProgress() {
+  function getSpinProgress(): number {
     const machine = activeMachine();
     if (!machine.spinning) return 1;
     return Math.min(1, Math.max(0, 1 - machine.spinTimer / getSpinDuration()));
   }
 
-  function getDeliveryProgress() {
+  function getDeliveryProgress(): number {
     if (!state.delivery.active) return 0;
     return Math.min(1, Math.max(0, 1 - state.delivery.timer / state.delivery.duration));
   }
@@ -1546,7 +1581,7 @@ export function createGame(initialData, rng) {
 
   // Hot-reload balance data (debug "Reload data.json"). Progress is kept, but
   // cleaned up against the new data (e.g. levels capped at a lowered maxLevel).
-  function setData(newData) {
+  function setData(newData: GameData): void {
     data = newData;
     state = sanitizeState(state, data);
     applyStartingLevels();
@@ -1559,13 +1594,13 @@ export function createGame(initialData, rng) {
   // so changes to data.json apply straight away to existing saves.
   // An open gamble isn't saved: dropping it is the same as collecting (its coins
   // are already in the pile).
-  function toSaveData() {
+  function toSaveData(): SaveData {
     const copy = JSON.parse(JSON.stringify(state));
     delete copy.gamble;
     return { saveVersion: SAVE_VERSION, ...copy };
   }
 
-  function loadSaveData(obj) {
+  function loadSaveData(obj: unknown): boolean {
     const save = migrateSave(obj, data);
     if (!save) return false;
     state = sanitizeState(save, data);
@@ -1622,11 +1657,14 @@ export function createGame(initialData, rng) {
   };
 }
 
+// Everything createGame gives back: the type the UI, tests and tools use for a game.
+export type Game = ReturnType<typeof createGame>;
+
 // ─────────────────── State shape (module level) ───────────────────
 
 // A fresh machine of one type (md = its data.json entry).
-function newMachineState(md) {
-  const pots = {};
+function newMachineState(md: MachineDef): MachineState {
+  const pots: Record<string, number> = {};
   if (md.jackpot) for (const pot of md.jackpot.pots) pots[pot.id] = pot.seed;
   return {
     typeId: md.id, // which machine in data.json
@@ -1645,12 +1683,12 @@ function newMachineState(md) {
   };
 }
 
-function copyGrid(grid) {
+function copyGrid(grid: Grid): Grid {
   return grid.map((column) => [...column]);
 }
 
 // Lifetime stats: they keep counting across retirements (only Reset wipes them).
-function newStats() {
+function newStats(): Stats {
   return {
     spins: 0, manualSpins: 0, autoSpins: 0, wins: 0,
     coinsWon: 0, coinsSpent: 0, deliveries: 0, deliveryCoins: 0,
@@ -1675,7 +1713,7 @@ function newStats() {
   };
 }
 
-export function newState(data) {
+export function newState(data: GameData): GameState {
   return {
     // ── this hamster's life (reset when it retires) ──
     coins: data.startCoins,
@@ -1707,7 +1745,7 @@ export function newState(data) {
 // bump SAVE_VERSION and add a step that upgrades an old save by one version.
 // Returns null for anything unusable (not an object, or an unknown version).
 // `data` (data.json) is needed by steps that depend on the balance file (v7).
-export function migrateSave(obj, data) {
+export function migrateSave(obj: unknown, data: GameData | null): SaveData | null {
   if (!obj || typeof obj !== 'object') return null;
   const save = JSON.parse(JSON.stringify(obj));
 
@@ -1751,7 +1789,7 @@ export function migrateSave(obj, data) {
   // Two new stats: no machines were bought yet; any old win was on 1 line.
   if (save.saveVersion === 4) {
     for (const m of Array.isArray(save.machines) ? save.machines : []) {
-      if (m && Array.isArray(m.result)) m.result = m.result.map((id) => [id]);
+      if (m && Array.isArray(m.result)) m.result = m.result.map((id: string) => [id]);
     }
     if (save.stats && typeof save.stats === 'object') {
       save.stats.machinesBought = 0;
@@ -1776,7 +1814,7 @@ export function migrateSave(obj, data) {
     for (const m of Array.isArray(save.machines) ? save.machines : []) {
       if (!m || typeof m !== 'object') continue;
       if (!m.upgrades || typeof m.upgrades !== 'object') m.upgrades = {};
-      for (const def of unlocks) if (!def.machines || def.machines.includes(m.typeId)) m.upgrades[def.id] = def.effect.symbols.length;
+      for (const def of unlocks) if (!def.machines || def.machines.includes(m.typeId)) m.upgrades[def.id] = effectAs(def, 'unlockSymbol').symbols.length;
     }
     save.saveVersion = 7;
   }
@@ -1785,17 +1823,17 @@ export function migrateSave(obj, data) {
   return save;
 }
 
-function num(x, fallback) {
+function num(x: unknown, fallback: number): number {
   return typeof x === 'number' && Number.isFinite(x) ? x : fallback;
 }
 
-function clamp(x, lo, hi) {
+function clamp(x: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, x));
 }
 
 // Keep only levels that exist in the current data, capped at maxLevel.
-function cleanLevels(raw, defs) {
-  const out = {};
+function cleanLevels(raw: Untrusted, defs: (Priced & { id: string })[]): Levels {
+  const out: Levels = {};
   if (!raw || typeof raw !== 'object') return out;
   for (const def of defs) {
     let level = Math.floor(num(raw[def.id], 0));
@@ -1808,7 +1846,7 @@ function cleanLevels(raw, defs) {
 
 // A spin result is kept only if it fits the machine: 1 to maxReels columns,
 // each with exactly one symbol per row, all of them real symbols.
-function isValidGrid(grid, md) {
+function isValidGrid(grid: Untrusted, md: MachineDef): grid is Grid {
   const rows = rowCount(md);
   const ids = md.symbols.map((s) => s.id);
   return Array.isArray(grid) && grid.length >= 1 && grid.length <= md.maxReels
@@ -1817,7 +1855,7 @@ function isValidGrid(grid, md) {
 
 // Build a clean, valid state from a save (or a live state after a data reload).
 // Anything missing or broken falls back to the fresh-game value.
-export function sanitizeState(raw, data) {
+export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   const s = newState(data);
   if (!raw || typeof raw !== 'object') return s;
 
@@ -1828,18 +1866,18 @@ export function sanitizeState(raw, data) {
   // is free, so it's always owned (it's what makes "never stuck" true).
   const rawMachines = Array.isArray(raw.machines) ? raw.machines : [];
   const rawActive = rawMachines[Math.floor(num(raw.activeMachine, 0))];
-  const kept = [];
+  const kept: MachineState[] = [];
   const steps = data.betSteps && data.betSteps.length ? data.betSteps : [1];
-  const validBet = (x) => (steps.includes(x) ? x : 1);
+  const validBet = (x: Untrusted) => (steps.includes(x) ? x : 1);
   for (const m of rawMachines) {
-    const md = m && data.machines.find((x) => x.id === m.typeId);
+    const md: MachineDef | undefined = m && data.machines.find((x) => x.id === m.typeId);
     if (!md || kept.some((k) => k.typeId === md.id)) continue; // unknown type, or a duplicate
     const clean = newMachineState(md);
     clean.upgrades = cleanLevels(m.upgrades, data.upgrades.filter((u) => u.scope === 'machine' && (!u.machines || u.machines.includes(md.id))));
     clean.bet = clamp(Math.floor(num(m.bet, 0)), 0, steps.length - 1); // (game.js also caps it at what's unlocked)
     clean.streak = Math.max(0, Math.floor(num(m.streak, 0)));
     if (isValidGrid(m.result, md)) {
-      clean.result = m.result.map((column) => [...column]);
+      clean.result = m.result.map((column: string[]) => [...column]);
       if (m.spinning === true) {
         clean.spinning = true;
         clean.spinTimer = clamp(num(m.spinTimer, 0), 0, md.spinDuration);
@@ -1881,7 +1919,7 @@ export function sanitizeState(raw, data) {
   }
   s.autoTimer = Math.max(0, num(raw.autoTimer, 0));
   if (raw.run && typeof raw.run === 'object') {
-    for (const key of Object.keys(s.run)) s.run[key] = Math.max(0, num(raw.run[key], 0));
+    for (const key of Object.keys(s.run) as (keyof GameState['run'])[]) s.run[key] = Math.max(0, num(raw.run[key], 0));
   }
 
   s.generation = Math.max(1, Math.floor(num(raw.generation, 1)));
@@ -1908,7 +1946,7 @@ export function sanitizeState(raw, data) {
   s.capsules.sincePity = clamp(Math.floor(num(raw.capsules && raw.capsules.sincePity, 0)), 0, maxSincePity);
 
   if (raw.stats && typeof raw.stats === 'object') {
-    for (const key of Object.keys(s.stats)) s.stats[key] = Math.max(0, num(raw.stats[key], 0));
+    for (const key of Object.keys(s.stats) as (keyof Stats)[]) s.stats[key] = Math.max(0, num(raw.stats[key], 0));
   }
   return s;
 }

@@ -15,9 +15,9 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 
 > **Keep this block accurate.** Update it in the same commit as any change it describes.
 
-- **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 7 (game.js) and the data is `schemaVersion` 7 (data.json).
-- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. **3.3 (Vitest + the golden run) is done and waiting for the user's OK.** Next is 3.4 (TypeScript for the logic). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
-- **The code today** is still plain JavaScript, now run and built by **Vite** (`npm run dev`, `npm run build`). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
+- **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 7 (game.ts) and the data is `schemaVersion` 7 (data.json).
+- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. 3.3 (Vitest + the golden run) is done. **3.4 (TypeScript for the game logic) is done and waiting for the user's OK.** Next is 3.5 (TypeScript for the view). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
+- **The code today:** the game logic (`src/logic/`) is **TypeScript** (strict); the view, boot, platform, tests and tools are still JavaScript. Vite runs and builds it (`npm run dev`, `npm run build`, which type-checks first). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
 - **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). Friends can join that playtest from the Pages link once it's deployed. After that come M8 The Big Cage → M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M8+ early. Known issue for M8: from generation ~9, lives shrink to 3–10 min (D102).
 - **Tests now:** `npm test` (Vitest) runs 1,108 tests in about 10 s: M7's 687 logic checks and 383 art checks (unchanged, now Vitest tests), the golden run (33) and the save fixtures (5).
 - **Last verified (M7):** the logic checks 687/687 and the art checks all OK (then `node tools/test_logic.mjs` / `test_art.mjs`), the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
@@ -48,28 +48,28 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 ## Tech stack and architecture
 
 - **TypeScript + Vite.**
-- **Game logic and state live in their own modules with no DOM/UI code.** **Rule 1: logic never touches the DOM.** Logic modules (`src/logic/`: `rng.js`, `events.js`, `machine.js`, `game.js`) never use `document`, `window`, `localStorage`, `Date`, `performance` or `Math.random`, and they run headless in Node (tests, simulator). UI code reads `game.state` and listens to events. It never changes state directly: it calls actions (`game.spin()`, `game.buyUpgrade(id)`, …).
+- **Game logic and state live in their own modules with no DOM/UI code.** **Rule 1: logic never touches the DOM.** Logic modules (`src/logic/`: `rng.ts`, `events.ts`, `machine.ts`, `game.ts`) never use `document`, `window`, `localStorage`, `Date`, `performance` or `Math.random`, and they run headless in Node (tests, simulator). `tsconfig.logic.json` checks `src/logic` with no browser types at all, so `document`, `window` or `localStorage` there doesn't even compile. UI code reads `game.state` and listens to events. It never changes state directly: it calls actions (`game.spin()`, `game.buyUpgrade(id)`, …).
 - **Platform-specific features (saving, storage, achievements) go through a small platform layer**, so the Steam and mobile versions can swap in their own implementations later (PORTING_NOTES → The platform layer). Today that layer is `src/platform/save.js` plus the clock and tab-visibility code in `src/main.js` (step 3.6 turns them into the real platform layer).
 - **Use break_eternity.js for all currency and large numbers.**
 - **Rule 2: all balance numbers (costs, payouts, rebirth formulas, slot odds) live in data files, not hardcoded.** Today that's `data.json`: symbols, weights, payouts, spin cost and duration, delivery, upgrade costs, growth rates, effect values. No magic numbers in code. Data files stay plain JSON (no comments, no trailing commas), because the game, the tests and the simulator all read them. They hold **no art or colours**.
 - **Rule 5: the stack and its dependencies.** TypeScript + Vite; break_eternity.js at runtime; Vitest for tests. No UI framework. Ask the user before adding any other dependency.
 - **Rule 11: art lives in the view.** Sprites are text grids in `src/view/art.js`. Colours, fonts and sizes are theme tokens in `src/view/style.css` `:root`; `src/view/theme.js` repaints the UI frame sprites in those token colours (so button colours still live in `:root`). What each skin looks like is in `src/view/skins.js` (fur = palette colours, the rest = token overrides set on the stage); data.json only lists skin ids/names/rarities. Numbers always use `--font-num` (clean font). The pixel font is always weight 500 (in bold its C looks like an O). Highlights go *behind* symbols, never on top (a tint once made grey seeds look golden). Every framed element sets its own `--frame`/`--fw` (custom properties inherit: a paper tile inside the cardboard tray would otherwise turn to cardboard).
-- **Until migrated:** the code is plain JavaScript ES modules. Vite runs and builds it, and data.json is bundled into the build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are already in their layer folders (File map below). Only migrate through the approved step-by-step plan.
+- **Until migrated:** only `src/logic/` is TypeScript so far; the view, boot and platform files are plain JavaScript ES modules (3.5 and 3.6 convert them). Vite runs and builds it all, and data.json is bundled into the build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are already in their layer folders (File map below). Only migrate through the approved step-by-step plan.
 
 ## Saves
 
-- **Save files include a version number** (`saveVersion`; `SAVE_VERSION` in game.js, 7 today).
-- **Rule 6: the save stores player state only** (never balance values), so a data change applies straight away to an existing save. The save format lives in the logic (`toSaveData` / `loadSaveData` / `migrateSave` in game.js); the platform layer only moves text. Settings are stored apart from the save, so Reset keeps them.
+- **Save files include a version number** (`saveVersion`; `SAVE_VERSION` in game.ts, 7 today).
+- **Rule 6: the save stores player state only** (never balance values), so a data change applies straight away to an existing save. The save format lives in the logic (`toSaveData` / `loadSaveData` / `migrateSave` in game.ts); the platform layer only moves text. Settings are stored apart from the save, so Reset keeps them.
 - **Any change to the save format needs a migration function, so old saves never break** (bump `SAVE_VERSION`, add a step to `migrateSave`), **plus a test that loads an old-format save and checks it migrates correctly.**
 - **Autosave** (every `autosaveSeconds`, and whenever the page is hidden or closed), **plus export/import of the save as a text string.** *Export/import isn't built yet:* it's planned (DESIGN §7, §17).
 - **Offline progress is calculated when the player returns** (`applyOfflineEarnings(seconds)`, DESIGN §15). The boot code tells the logic how many seconds passed; the logic never reads the clock.
 
 ## Adding content and features
 
-- **New content** (upgrades, slot symbols, rebirth layers, etc.) **should be added through the data files wherever possible, following existing patterns.** A new upgrade of an existing effect type needs only data. A new effect type needs one small function in game.js (D7).
+- **New content** (upgrades, slot symbols, rebirth layers, etc.) **should be added through the data files wherever possible, following existing patterns.** A new upgrade of an existing effect type needs only data. A new effect type needs one small function in game.ts (D7) and its fields in the `Effect` type (`src/logic/types.ts`).
 - **If a new feature needs a new system, describe the plan to the user before building it.**
 - **Never change game design, balance direction or core mechanics without asking first.** If a request conflicts with DESIGN.md, point out the conflict and ask.
-- **Rule 3: one cost formula for everything you buy** (coin upgrades AND Family Tree nodes): `cost = floor(baseCost × growthRate ^ owned)` (`costAtLevel()` in game.js). Don't invent per-upgrade cost curves.
+- **Rule 3: one cost formula for everything you buy** (coin upgrades AND Family Tree nodes): `cost = floor(baseCost × growthRate ^ owned)` (`costAtLevel()` in game.ts). Don't invent per-upgrade cost curves.
 - **Rule 8: build one milestone at a time,** then stop so the user can test. Don't add roadmap features early.
 
 ## Balance changes
@@ -77,14 +77,14 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Use the simulation/balance scripts in `tools/` to compare pacing before and after any balance change.** `node tools/sim.mjs` plays the real logic (options under How to run). Try a variant without touching the real file with `--data variant.json`, and check both players (`--player active`) and enough lives (`--lives 12`).
 - **Report the key before/after numbers in the summary** (e.g. time to the first retirement, the first life's length, when each machine arrives), and paste the tables into PORTING_NOTES → Playtest notes.
 - **If the tools can't measure something needed, suggest an addition to them.**
-- **Rule 4: the balance rules are tested and must keep holding** (DESIGN §9). Every machine's RTP is above 100% in every setup: every reel count, payline count, wild level and **step of its symbol unlocks, locked symbols included**, counting its features; the bet never changes it. **Every symbol unlock raises the EV and lowers the hit rate** (in every setup, at no Luck and at max Luck). **Every Luck level raises both the hit rate and the EV.** The auto-spin interval is never shorter than the spin time + the rest. Delivery coins/s stays below auto-spin profit/s at Wheel Training level 1 (also with the whole Family Tree). One delivery covers a base spin on the free first machine. The card gamble is exactly fair (colour and suit) and never counts as earned. Free spins always end (the retrigger loop stays < 1, even with max Luck). **Every feature's EV is exact** (machine.js `spinExpectation`); keep it that way when you add one.
+- **Rule 4: the balance rules are tested and must keep holding** (DESIGN §9). Every machine's RTP is above 100% in every setup: every reel count, payline count, wild level and **step of its symbol unlocks, locked symbols included**, counting its features; the bet never changes it. **Every symbol unlock raises the EV and lowers the hit rate** (in every setup, at no Luck and at max Luck). **Every Luck level raises both the hit rate and the EV.** The auto-spin interval is never shorter than the spin time + the rest. Delivery coins/s stays below auto-spin profit/s at Wheel Training level 1 (also with the whole Family Tree). One delivery covers a base spin on the free first machine. The card gamble is exactly fair (colour and suit) and never counts as earned. Free spins always end (the retrigger loop stays < 1, even with max Luck). **Every feature's EV is exact** (machine.ts `spinExpectation`); keep it that way when you add one.
 
 ## Testing
 
 - **Game logic has unit tests (Vitest).**
 - **Run the tests and a build before every commit. Don't commit if either fails.**
 - **Bug fixes should include a test that would have caught the bug.**
-- **Rule 10:** `npm test` after any change to logic, data or sprites. Everything must stay passing.
+- **Rule 10:** `npm test` after any change to logic, data or sprites. Everything must stay passing. `npm run build` also type-checks (`npm run typecheck` on its own): a type error fails the build.
 - **What the tests are** (all in `tests/`, run by `npm test`):
   - `tests/logic/*.test.js`: the logic checks, one file per area (machine maths, economy, family, capsules, machines, features, saves, determinism, data). They keep the old `check(name, condition)` style: `tests/check.js` turns each check into a Vitest test. Shared helpers are in `tests/logic/helpers.js`. New tests can use Vitest's `test`/`expect` directly.
   - `tests/art.test.js`: sprites, skins and theme tokens.
@@ -114,7 +114,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 ## How to run (the code is still plain JS; the migration updates this as it goes)
 
 - **Play:** double-click **`play.bat`**. It checks the tools are installed (`npm install`; the first time downloads them into `node_modules/`), then starts **Vite** (`npm run dev`) in its own window on `http://localhost:8765/` and opens the browser. Port 8765 is where the game has always run, so the player's save is still there (a browser keeps one save per address + port). Close the server window to stop. (Opening `index.html` directly shows a "use play.bat" message, because browsers won't run JS modules from `file://`.)
-- **npm scripts** (from this folder): `npm run dev` (the same as play.bat, without opening a browser), `npm run build` (the players' version → `dist/`, relative paths), `npm run preview` (serves `dist/` on port 4173 to try the build), `npm test` (Vitest), `npm run test:watch`, `npm run economy`, `npm run sim` (the simulator).
+- **npm scripts** (from this folder): `npm run dev` (the same as play.bat, without opening a browser), `npm run typecheck` (TypeScript checks the code, strict), `npm run build` (type-checks, then builds the players' version → `dist/`, relative paths), `npm run preview` (serves `dist/` on port 4173 to try the build), `npm test` (Vitest), `npm run test:watch`, `npm run economy`, `npm run sim` (the simulator).
 - **Editing data.json while `npm run dev` runs:** save the file and the running game swaps in the new numbers by itself, keeping your progress (Vite hot update → `game.setData`). The debug panel's **Reload data.json** does the same by hand; it's hidden in a built game, where data.json is bundled into the code.
 - **Tests:** `npm test` runs every test once (about 10 s); `npm run test:watch` re-runs them as you edit; `npx vitest run tests/logic/family.test.js` runs one file. A failing check shows its name and details.
 - **Economy tables:** `npm run economy` prints EV, RTP and hit rate of every machine setup, feature odds and more, for DESIGN.md's tables after a balance change.
@@ -133,11 +133,11 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
   - **A fresh game:** Menu → Reset (twice). Clearing localStorage from the console doesn't stick, because the game saves itself when the page unloads.
   - **Offline earnings:** debug panel → pretend you were away 10 min / 1 h / 10 h. **Sound:** Menu → Sound; `hamster.sound.ready` in the console says whether audio is on.
 - **Sprite gallery:** `http://localhost:8765/tools/sprites.html` shows every sprite big (`?only=seed,carrot&zoom=8` for close-ups).
-- Requires Node.js with npm (the user has Node 24, npm 11). Python isn't needed any more.
+- Requires Node.js with npm (the user has Node 24, npm 11). Python isn't needed any more. The tools (`sim.mjs`, `economy.mjs`, `golden.mjs`) run the `.ts` logic straight from Node 24, which strips the types itself: that's why imports name the `.ts` file.
 
 ## File map
 
-> **File map, Events and Game API describe today's plain-JS code.** After the migration they will point to the typed modules instead.
+> **File map, Events and Game API describe today's code.** The logic's types (`src/logic/types.ts`, `Game` in game.ts) are the exact reference; these sections are the readable overview.
 
 ```
 hamster_slots/
@@ -152,7 +152,9 @@ hamster_slots/
 │                         luck + unlockSymbol), retirement + familyTree, tokens, capsules, skins, diary
 ├── index.html         ← page skeleton (HUD, cage stage + bet box + card gamble panel + pots + WIN meter + clover
 │                         badge, tray tabs and sub-tabs, menu + settings, the particle canvas) + file:// warning
-├── package.json       ← npm: the version, scripts (dev, build, preview, test, economy, sim) and tools (Vite, Vitest)
+├── package.json       ← npm: the version, scripts (dev, typecheck, build, preview, test, economy, sim) and tools (Vite, Vitest, TypeScript)
+├── tsconfig.json      ← TypeScript settings (strict; .ts imports; only erasable syntax, so Node can run it)
+├── tsconfig.logic.json ← src/logic checked with no browser types (rule 1)
 ├── package-lock.json  ← the exact tool versions npm installed (committed, so every install matches)
 ├── vite.config.js     ← Vite settings (relative paths for any host, dev server on port 8765) + where Vitest finds tests
 ├── play.bat           ← double-click launcher (npm install if needed, then Vite on port 8765 + opens the browser)
@@ -176,13 +178,14 @@ hamster_slots/
     ├── main.js        ← BOOT: data.json (bundled; hot-applied in dev) → game → load save → settings, theme, sound,
     │                    debug + UI → offline earnings → frame loop + autosave (+ offline earnings after a hidden tab)
     ├── logic/         ← LOGIC: no DOM, no clock, runs headless in Node (rule 1)
-    │   ├── rng.js     ← seedable RNG (mulberry32) + pickWeighted
-    │   ├── events.js  ← tiny event emitter (the UI, tests and simulator listen)
-    │   ├── machine.js ← pure rules: rollGrid (reels × rows), paylines, evaluate (one line, left to right, wilds:
+    │   ├── types.ts   ← the shapes of data.json (GameData), the state/save (GameState) and every event (GameEvents)
+    │   ├── rng.ts     ← seedable RNG (mulberry32) + pickWeighted
+    │   ├── events.ts  ← tiny event emitter (the UI, tests and simulator listen)
+    │   ├── machine.ts ← pure rules: rollGrid (reels × rows), paylines, evaluate (one line, left to right, wilds:
     │   │                best of two readings; scatters and blanks never on a line), evaluateGrid (every line),
     │   │                findSymbol, expectedValue (exact, with wilds; exact hit rate, fast on grids), scatter
     │   │                maths (freeSpinStats, jackpotStats) and spinExpectation
-    │   └── game.js    ← state, actions, upgrades (+ ×10/Max), machines (buy/switch, per-machine upgrades), symbols
+    │   └── game.ts    ← createGame (its type: Game): state, actions, upgrades (+ ×10/Max), machines (buy/switch, per-machine upgrades), symbols
     │                    (locks → family shifts → wild → Luck), Luck (Hamster + Machine), bets (High Roller,
     │                    step-down), free spins, jackpot pots + wheel, the card gamble (SUITS), Hot Streak, the
     │                    queued click, deliveries, auto-spin (+ the rest floor), retirement + Family Tree, effects
@@ -221,7 +224,9 @@ hamster_slots/
                          a gamble, time speed, reload data in dev)
 ```
 
-## Events (emitted by `game.js`, listened to with `game.on(name, fn)`)
+## Events (emitted by `game.ts`, listened to with `game.on(name, fn)`)
+
+The payload of every event is typed in `GameEvents` (`src/logic/types.ts`).
 
 | Event | Payload | When |
 |---|---|---|
@@ -253,13 +258,13 @@ hamster_slots/
 | `dataReloaded` | `{}` | `setData()` applied a new data.json |
 | `stateLoaded` | `{}` | A save was loaded |
 
-## Game API (`createGame(data, rng)` in `src/logic/game.js`)
+## Game API (`createGame(data, rng)` in `src/logic/game.ts`)
 
 - **Actions** (return `true`/`false`): `spin(source)` (a manual spin asked for mid-spin is queued, D82), `startDelivery(source)`, `buyUpgrade(id, count = 1)` (count 10, or `Infinity` for Max), `buyMachine(id)` (also switches to it), `switchMachine(id)`, `retire()`, `buyTreeNode(id)`, `pullCapsule()`, `equipSkin(id)`, `setBet(index)`, `gamble(pick)` (`'red'`, `'black'`, `'hearts'`, `'diamonds'`, `'clubs'`, `'spades'`), `collectGamble()` (Take win), `applyOfflineEarnings(seconds)`. Plus debug `addCoins(n, asEarned = false)` (asEarned counts toward seeds), `addSeeds(n)`, `addTokens(n)`, `addFreeSpins(n)`, `triggerJackpot(potId)`, `triggerGamble(stake)` (offer the gamble now), and `setData(data)` (hot reload).
 - **Time:** `update(dt)` advances game time in fixed 1/60 s ticks (`TICK`).
 - **Queries (the machine you're running, upgrades):** `getMachineData()`, `getSpinCost()`, `getSpinDuration()`, `getPayoutMultiplier()`, `getHeirloomBonus()`, `getFullLineMultiplier()`, `getAutoInterval(overrides?, machine?)` (null = off; never below spin time + rest), `getReelCount()`, `getRowCount()`, `getLineCount()`, `getPaylines()` (the active lines, row per reel), `getSymbols(overrides?, machine?)` (the weights the reels really use: locks, family shifts, wild, Luck), `getSymbolChance(id)`, `getLuck(overrides?, machine?)` → `{hamster, machine, total}`, `isSymbolLocked(id, overrides?, machine?)`, `getSymbolUnlock(id)` (the upgrade that opens it, or null), `getDeliveryDuration()`, `getDeliveryReward()`, `hasAutoDelivery()`, `getAvailableUpgrades()` (the hamster's + this machine's), `getUpgradeLevel/Cost(id)`, `getUpgradeBulk(id, count)` → `{count, cost, affordable}`, `isMaxed(id)`, `canAfford(n)`, `canBuyUpgrade(id)`, `previewUpgrade(id, levels = 1)` → `{type, now, next}`, `getSpinProgress()` (0–1), `getDeliveryProgress()` (0–1), `getEconomy()` (EV, hit rate, RTP, lines, profit/s…), `getWinTier(basePayout)`, `getOfflineEarnings(seconds)` → `{seconds, coins}`.
 - **Queries (machines):** `getMachineInfo(id)` → `{owned, active, spinning, cost, spinCost, bet, reels, maxReels, lines, maxLines, rows, luck, symbols: {unlocked, lockable}, features: {wild, wildNow, freeSpins, jackpot}, freeSpinsLeft, bonus}` (works for machines you don't own yet), `getMachineCost(id)`, `ownsMachine(id)`, `canBuyMachine(id)`.
-- **Queries (bets and features):** `getBetSteps()`, `getMaxBetIndex()`, `getBetIndex()`, `getBet()` (the chosen ×), `getBetCost(bet?)`, `getSpinBet()` (what the next paid spin really uses; null = not even ×1), `getFreeSpins()` → `{left, total, played, won, bet}` or null, `hasFreeSpins()`, `getJackpotPots()` → `[{id, name, base, value}]` (value = coins at your bet), `getBonusProgress()` (0–1 while the wheel turns, else null), `getStreakMultiplier()` (for the next win), `getMaxStreakMultiplier()`, `getFeatureOdds()` (wild chance, free spins, pots, Luck, the card gamble's `color`/`suit` chance and multiplier, streak, hit rate), `canGamble()`, `getGambleInfo()` → `{stake, rounds, maxRounds, won, started, canPick, timeLeft, colorWin, suitWin, history}` or null, `getCardHistory()` → the last cards `[{suit, color}]`, newest first (never saved). `getEconomy()` also returns `lineEv`, `streakFactor`, `luck`, `freeSpins`, `jackpot`, `bet`, `betCost` and `extraSecondsPerSpin` (time the features add), and its `profitPerSpin` is at the chosen bet. `previewUpgrade()` for a Luck upgrade gives `{luck, hitRate}` values, for a symbol unlock `{open, hitRate, win}`. Exported from game.js: `SUITS` (the deck), `CARD_COLORS`.
+- **Queries (bets and features):** `getBetSteps()`, `getMaxBetIndex()`, `getBetIndex()`, `getBet()` (the chosen ×), `getBetCost(bet?)`, `getSpinBet()` (what the next paid spin really uses; null = not even ×1), `getFreeSpins()` → `{left, total, played, won, bet}` or null, `hasFreeSpins()`, `getJackpotPots()` → `[{id, name, base, value}]` (value = coins at your bet), `getBonusProgress()` (0–1 while the wheel turns, else null), `getStreakMultiplier()` (for the next win), `getMaxStreakMultiplier()`, `getFeatureOdds()` (wild chance, free spins, pots, Luck, the card gamble's `color`/`suit` chance and multiplier, streak, hit rate), `canGamble()`, `getGambleInfo()` → `{stake, rounds, maxRounds, won, started, canPick, timeLeft, colorWin, suitWin, history}` or null, `getCardHistory()` → the last cards `[{suit, color}]`, newest first (never saved). `getEconomy()` also returns `lineEv`, `streakFactor`, `luck`, `freeSpins`, `jackpot`, `bet`, `betCost` and `extraSecondsPerSpin` (time the features add), and its `profitPerSpin` is at the chosen bet. `previewUpgrade()` for a Luck upgrade gives `{luck, hitRate}` values, for a symbol unlock `{open, hitRate, win}`. Exported from game.ts: `SUITS` (the deck), `CARD_COLORS`.
 - **Queries (family):** `getPendingSeeds()`, `canRetire()`, `getSeedProgress()` → `{earned, total, nextAt, progress}`, `getPupName(gen?)`, `getTreeNodeDef(id)`, `getTreeLevel(id)`, `getTreeCost(id)`, `isTreeMaxed(id)`, `isTreeNodeUnlocked(id)`, `canBuyTreeNode(id)`, `previewTreeNode(id)`, `getStartingLevel(upgradeId)`.
 - **Queries (tokens, capsules, skins):** `getDiaryProgress(id)` → `{value, target, done}`, `getPullCost()`, `canPull()`, `getPityRemaining()`, `getCapsuleOdds()` → `[{id, name, chance, withPity, duplicateRefund}]`, `getSkinDef(id)`, `isSkinOwned(id)`, `getEquippedSkin(category)`.
 - **State you'll read:** `state.coins`, `state.machines` (owned: `{typeId, upgrades, bet, spinning, spinTimer, spinBet, spinFree, spinSource, result, streak, freeSpins, pots, bonus}`), `state.gamble` (never saved), `state.activeMachine` (index), `state.run` (this life), `state.generation`, `state.seeds`, `state.seedsEarned`, `state.tree`, `state.tokens`, `state.diary`, `state.skins` (`owned`, `equipped`), `state.capsules.sincePity`, `state.stats` (lifetime, incl. `coinsEarned`, `goldenJackpots`, `capsulesOpened`, `tokensEarned`, `machinesBought`, `mostLinesWon`, `biggestBet`, `freeSpins`, `freeSpinTriggers`, `freeSpinCoins`, `wildWins`, `bestStreak`, `jackpotsWon`, `grandJackpots`, `gambleWins`, `gambleLosses`, `bestGambleRun`, `symbolsUnlocked`, `bestLuck`, `suitWins`).

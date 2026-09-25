@@ -3,12 +3,12 @@
 // No Vitest in here, so tools/economy.mjs can use these too.
 
 import { readFileSync } from 'node:fs';
-import { createRng } from '../../src/logic/rng.js';
+import { createRng } from '../../src/logic/rng.ts';
 import {
   evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol,
   scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation,
-} from '../../src/logic/machine.js';
-import { createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS } from '../../src/logic/game.js';
+} from '../../src/logic/machine.ts';
+import { createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS } from '../../src/logic/game.ts';
 
 const data = JSON.parse(readFileSync(new URL('../../data.json', import.meta.url), 'utf8'));
 

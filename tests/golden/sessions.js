@@ -14,8 +14,8 @@
 // cheapest thing it can): the point is to touch every system, not to play well.
 
 import { readFileSync } from 'node:fs';
-import { createRng } from '../../src/logic/rng.js';
-import { createGame } from '../../src/logic/game.js';
+import { createRng } from '../../src/logic/rng.ts';
+import { createGame } from '../../src/logic/game.ts';
 
 export const data = JSON.parse(readFileSync(new URL('../../data.json', import.meta.url), 'utf8'));
 

@@ -1,8 +1,7 @@
-// machine.js — LOGIC layer. Pure slot-machine rules, with no state and no timing.
+// machine.ts — LOGIC layer. Pure slot-machine rules, with no state and no timing.
 //
 // Everything here is a plain function: give it the machine's data (from data.json),
-// get an answer back. That makes it easy to test and easy to port to Godot as
-// static functions.
+// get an answer back. That makes it easy to test.
 //
 // A spin fills a GRID: grid[reel][row] is one symbol id. A machine with one row
 // (Old Clunky) has a single payline straight across. A machine with more rows
@@ -15,41 +14,44 @@
 //                    Ball starts free spins, the Cheek Pouch the jackpot wheel)
 //   "blank": true    the Wood Shaving: the "empty stop" of a real reel strip. It
 //                    never pays, a wild can't stand in for it, and it ends a run.
-//                    Luck works against it (game.js getSymbols).
+//                    Luck works against it (game.ts getSymbols).
+
+import type { MachineDef, Payouts, SymbolRules, LineResult, LineWin, Grid, Cell, FreeSpinsDef } from './types.ts';
+import type { Rng } from './rng.ts';
 
 // How many rows count on a machine. Old Clunky has 1: the rows above and below
 // its payline are only decoration.
-export function rowCount(machineData) {
+export function rowCount(machineData: MachineDef): number {
   return machineData.rows || 1;
 }
 
 // Every payline the machine could ever have, in the order they unlock.
 // A one-row machine has a single line straight across row 0.
-export function allPaylines(machineData) {
+export function allPaylines(machineData: MachineDef): number[][] {
   return machineData.paylines || [new Array(machineData.maxReels).fill(0)];
 }
 
 // Which symbols are special on this machine:
 //   { wild: id or null, scatters: Set of ids, blanks: Set of ids }
-export function symbolRules(machineData) {
+export function symbolRules(machineData: MachineDef): SymbolRules {
   const wild = machineData.symbols.find((s) => s.wild);
-  const ids = (flag) => new Set(machineData.symbols.filter((s) => s[flag]).map((s) => s.id));
+  const ids = (flag: 'scatter' | 'blank') => new Set(machineData.symbols.filter((s) => s[flag]).map((s) => s.id));
   return { wild: wild ? wild.id : null, scatters: ids('scatter'), blanks: ids('blank') };
 }
 
-const NO_RULES = { wild: null, scatters: new Set(), blanks: new Set() };
+const NO_RULES: SymbolRules = { wild: null, scatters: new Set(), blanks: new Set() };
 
 // Scatters and blanks never count on a line: they end a run where they stand.
-const endsRun = (rules, id) => rules.scatters.has(id) || (!!rules.blanks && rules.blanks.has(id));
+const endsRun = (rules: SymbolRules, id: string) => rules.scatters.has(id) || (!!rules.blanks && rules.blanks.has(id));
 
 // Spin the reels: every cell independently picks a symbol by weight.
 // Cells are filled reel by reel, top to bottom. (The order matters: it decides
 // which random number goes where, so the same seed always gives the same grid.)
-export function rollGrid(machineData, reelCount, rng) {
+export function rollGrid(machineData: MachineDef, reelCount: number, rng: Rng): Grid {
   const rows = rowCount(machineData);
-  const grid = [];
+  const grid: Grid = [];
   for (let reel = 0; reel < reelCount; reel++) {
-    const column = [];
+    const column: string[] = [];
     for (let row = 0; row < rows; row++) column.push(rng.pickWeighted(machineData.symbols).id);
     grid.push(column);
   }
@@ -57,12 +59,12 @@ export function rollGrid(machineData, reelCount, rng) {
 }
 
 // The symbols one payline crosses, reading left to right.
-export function lineSymbols(grid, line) {
+export function lineSymbols(grid: Grid, line: number[]): string[] {
   return grid.map((column, reel) => column[line[reel]]);
 }
 
 // payouts[symbol]["count"], or 0. (JSON object keys are always strings.)
-function payFor(payouts, symbolId, count) {
+function payFor(payouts: Payouts, symbolId: string | null | undefined, count: number): number {
   if (count < 2 || !symbolId) return 0;
   const table = payouts[symbolId] || {};
   return table[String(count)] || 0;
@@ -81,7 +83,7 @@ function payFor(payouts, symbolId, count) {
 // A scatter or a blank never counts on a line and ends a run:
 //   [seed, wild, blank, seed] = 2 seeds;  [wild, wild, blank, …] = 2 wilds.
 // Returns { symbolId, count, basePayout, usedWild }.
-export function evaluate(symbols, payouts, rules = NO_RULES) {
+export function evaluate(symbols: string[], payouts: Payouts, rules: SymbolRules = NO_RULES): LineResult {
   const R = symbols.length;
   const wild = rules.wild;
   let j = 0; // leading wilds
@@ -107,8 +109,8 @@ export function evaluate(symbols, payouts, rules = NO_RULES) {
 // add up. Returns only the lines that won:
 //   { wins: [{ line, symbolId, count, basePayout, fullLine, usedWild }], basePayout }
 // `line` is the index into the machine's paylines; fullLine = every reel matched.
-export function evaluateGrid(grid, lines, payouts, rules = NO_RULES) {
-  const wins = [];
+export function evaluateGrid(grid: Grid, lines: number[][], payouts: Payouts, rules: SymbolRules = NO_RULES): { wins: LineWin[]; basePayout: number } {
+  const wins: LineWin[] = [];
   let basePayout = 0;
   lines.forEach((line, index) => {
     const r = evaluate(lineSymbols(grid, line), payouts, rules);
@@ -120,14 +122,14 @@ export function evaluateGrid(grid, lines, payouts, rules = NO_RULES) {
 }
 
 // Where a symbol landed anywhere on the grid (for scatters): [[reel, row], …].
-export function findSymbol(grid, symbolId) {
-  const cells = [];
+export function findSymbol(grid: Grid, symbolId: string): Cell[] {
+  const cells: Cell[] = [];
   grid.forEach((column, reel) => column.forEach((id, row) => { if (id === symbolId) cells.push([reel, row]); }));
   return cells;
 }
 
 // Each symbol's chance per cell, from the weights.
-function chances(machineData) {
+function chances(machineData: MachineDef): { id: string; p: number }[] {
   let total = 0;
   for (const s of machineData.symbols) total += s.weight;
   return machineData.symbols.map((s) => ({ id: s.id, p: total > 0 ? s.weight / total : 0 }));
@@ -152,18 +154,18 @@ function chances(machineData) {
 //
 // fullLineMultiplier (from the Jackpot Dance family trait) boosts only wins where
 // EVERY reel matches (k = R). Pass machine data with adjusted symbol weights to
-// get the EV after luck traits (game.js does this).
-export function expectedValue(machineData, reelCount, fullLineMultiplier = 1, lineCount = 1) {
+// get the EV after luck traits (game.ts does this).
+export function expectedValue(machineData: MachineDef, reelCount: number, fullLineMultiplier = 1, lineCount = 1): { ev: number; hitRate: number } {
   const R = reelCount;
   const rules = symbolRules(machineData);
   const symbols = chances(machineData);
   const payouts = machineData.payouts;
-  const w = rules.wild ? symbols.find((s) => s.id === rules.wild).p : 0;
-  const wildPay = (j) => (j >= 2 ? payFor(payouts, rules.wild, j) : 0);
+  const w = rules.wild ? symbols.find((s) => s.id === rules.wild)!.p : 0;
+  const wildPay = (j: number) => (j >= 2 ? payFor(payouts, rules.wild, j) : 0);
 
   let ev = 0;
   let hitRate = 0;
-  const add = (chance, base, full) => {
+  const add = (chance: number, base: number, full: boolean) => {
     if (!(chance > 0) || !(base > 0)) return;
     ev += chance * base * (full ? fullLineMultiplier : 1);
     hitRate += chance;
@@ -205,21 +207,21 @@ export function expectedValue(machineData, reelCount, fullLineMultiplier = 1, li
 //                                its lines start from)
 // and the hit rate is 1 − the average of that over reel 1.
 // The answer is remembered, because the UI asks for the economy every frame.
-const hitRateCache = new Map();
-function gridHitRate(machineData, lines) {
+const hitRateCache = new Map<string, number>();
+function gridHitRate(machineData: MachineDef, lines: number[][]): number {
   const rules = symbolRules(machineData);
   const key = JSON.stringify([machineData.symbols.map((s) => [s.id, s.weight, !!s.blank]), rules.wild, lines.map((l) => [l[0], l[1]])]);
-  if (hitRateCache.has(key)) return hitRateCache.get(key);
+  if (hitRateCache.has(key)) return hitRateCache.get(key)!;
 
   const symbols = chances(machineData).filter((s) => s.p > 0);
-  const onLine = (id) => !endsRun(rules, id);
-  const pair = (a, b) => onLine(a) && onLine(b) && (a === b || a === rules.wild || b === rules.wild);
+  const onLine = (id: string) => !endsRun(rules, id);
+  const pair = (a: string, b: string) => onLine(a) && onLine(b) && (a === b || a === rules.wild || b === rules.wild);
   const rows0 = [...new Set(lines.map((l) => l[0]))]; // the rows of reel 1 that some line starts on
   const rows1 = [...new Set(lines.map((l) => l[1]))]; // the rows of reel 2 that some line crosses
-  const picked = {}; // reel-1 row → symbol id, filled in by the loop below
+  const picked: Record<number, string> = {}; // reel-1 row → symbol id, filled in by the loop below
 
   let miss = 0; // the chance that NO line wins
-  (function tryRow(i, chance) {
+  (function tryRow(i: number, chance: number): void {
     if (i < rows0.length) {
       for (const s of symbols) {
         picked[rows0[i]] = s.id;
@@ -249,8 +251,8 @@ function gridHitRate(machineData, lines) {
 //   P(exactly k of n cells) = C(n, k) × p^k × (1 − p)^(n − k)
 
 // P(exactly k scatters) for k = 0 … cells.
-export function scatterDistribution(p, cells) {
-  const out = [];
+export function scatterDistribution(p: number, cells: number): number[] {
+  const out: number[] = [];
   let choose = 1; // C(cells, k), built up step by step
   for (let k = 0; k <= cells; k++) {
     if (k > 0) choose = (choose * (cells - k + 1)) / k;
@@ -260,14 +262,14 @@ export function scatterDistribution(p, cells) {
 }
 
 // The chance of one symbol per cell.
-export function symbolChance(machineData, symbolId) {
+export function symbolChance(machineData: MachineDef, symbolId: string): number {
   const s = chances(machineData).find((x) => x.id === symbolId);
   return s ? s.p : 0;
 }
 
 // Free spins won for `count` scatters: the award for the biggest listed count
 // that fits ("5" means 5 or more), plus extra spins from upgrades. 0 = no trigger.
-export function freeSpinAward(freeSpins, count, extra = 0) {
+export function freeSpinAward(freeSpins: FreeSpinsDef, count: number, extra = 0): number {
   let award = 0;
   for (const [k, spins] of Object.entries(freeSpins.awards)) {
     if (count >= Number(k) && spins > 0) award = Math.max(award, spins);
@@ -276,7 +278,7 @@ export function freeSpinAward(freeSpins, count, extra = 0) {
 }
 
 // The fewest scatters that trigger anything.
-export function minTrigger(awards) {
+export function minTrigger(awards: Record<string, number>): number {
   return Math.min(...Object.keys(awards).map(Number));
 }
 
@@ -286,7 +288,7 @@ export function minTrigger(awards) {
 //   total      = the average number of free spins per trigger INCLUDING retriggers.
 //                Each free spin can retrigger with chance q, so total = N + q·N·total,
 //                which gives total = N / (1 − q·N).
-export function freeSpinStats(machineData, reelCount, extra = 0) {
+export function freeSpinStats(machineData: MachineDef, reelCount: number, extra = 0): { q: number; perTrigger: number; total: number } {
   const fs = machineData.freeSpins;
   if (!fs) return { q: 0, perTrigger: 0, total: 0 };
   const cells = reelCount * rowCount(machineData);
@@ -308,7 +310,7 @@ export function freeSpinStats(machineData, reelCount, extra = 0) {
 // spin is won after 1/c spins on average, holding seed + growth/c by then. So on
 // average each pot pays c × seed + growth per spin: everything that flows in
 // flows back out. (All in base units: before the bet and payout bonuses.)
-export function jackpotStats(machineData, reelCount, growthMultiplier = 1) {
+export function jackpotStats(machineData: MachineDef, reelCount: number, growthMultiplier = 1): { q: number; ev: number; pots: { id: string; chance: number }[] } {
   const jp = machineData.jackpot;
   if (!jp) return { q: 0, ev: 0, pots: [] };
   const cells = reelCount * rowCount(machineData);
@@ -324,6 +326,28 @@ export function jackpotStats(machineData, reelCount, growthMultiplier = 1) {
   return { q, ev, pots };
 }
 
+// What spinExpectation can be told (all optional).
+export interface SpinOptions {
+  lines?: number;
+  fullLineMultiplier?: number;
+  streakPerStack?: number;
+  streakCap?: number;
+  extraFreeSpins?: number;
+  jackpotGrowth?: number;
+  spinDuration?: number;
+}
+
+// What a paid spin is worth, and where that comes from.
+export interface SpinValue {
+  ev: number;
+  lineEv: number;
+  hitRate: number;
+  streakFactor: number;
+  freeSpins: { chance: number; perTrigger: number; perTriggerWithRetriggers: number; perSpin: number; ev: number };
+  jackpot: { chance: number; ev: number; pots: { id: string; chance: number }[] };
+  extraSeconds: number;
+}
+
 // Everything a PAID spin is worth on average, in base units (×1 bet, before the
 // payout bonuses), with every feature the machine has:
 //   ev = line EV × streak factor          (Hot Streak, paid spins only)
@@ -334,7 +358,7 @@ export function jackpotStats(machineData, reelCount, growthMultiplier = 1) {
 // P(n ≥ k) = h^k (h = hit rate), so the average bonus is perStack × (h + h² + … + h^cap).
 // extraSeconds = how much time the features add per paid spin on average
 // (free spins and the jackpot wheel pause auto-spin while they play).
-export function spinExpectation(machineData, reelCount, opts = {}) {
+export function spinExpectation(machineData: MachineDef, reelCount: number, opts: SpinOptions = {}): SpinValue {
   const {
     lines = 1, fullLineMultiplier = 1, streakPerStack = 0, streakCap = 0,
     extraFreeSpins = 0, jackpotGrowth = 1, spinDuration = machineData.spinDuration,
