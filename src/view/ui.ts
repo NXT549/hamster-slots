@@ -1,32 +1,36 @@
-// ui.js — VIEW layer. Draws the game and turns clicks and keys into game actions.
+// ui.ts — VIEW layer. Draws the game and turns clicks and keys into game actions.
 //
 // The UI never changes game state directly. It:
 //   1) calls actions:      game.spin(), game.startDelivery(), game.switchMachine(id), game.retire() …
 //   2) listens to events:  game.on("spinResolved", …) for one-off effects (popups)
 //   3) redraws from state: render() runs every frame and reads game.state
-// Godot: HUD, Stage (Cage + Machine + Reels + HamsterWheel), Tray (TabContainer) scenes.
-// Other tray tabs live in their own files: shop.js (Upgrades), capsules.js
-// (Capsules), payouts.js (Info). Skin colours live in skins.js, the pixel frames
-// for the cardboard/paper look are made in theme.js, and the particles in fx.js.
+// Other tray tabs live in their own files: shop.ts (Upgrades), capsules.ts
+// (Capsules), payouts.ts (Info). Skin colours live in skins.ts, the pixel frames
+// for the cardboard/paper look are made in theme.ts, and the particles in fx.ts.
 
 import { applySprite, spriteImg, treeIcon, MACHINE_SPRITES, SUIT_SPRITES } from './art.ts';
-import { createReels } from './reels.js';
-import { createWinShow } from './winshow.js';
+import { createReels } from './reels.ts';
+import { createWinShow } from './winshow.ts';
 import { formatCoins, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle } from './dom.ts';
 import { furColors, applyStageSkins } from './skins.ts';
-import { createCapsulesView } from './capsules.js';
-import { createShopView, describeEffect } from './shop.js';
-import { createPayoutsView } from './payouts.js';
+import { createCapsulesView } from './capsules.ts';
+import { createShopView, describeEffect } from './shop.ts';
+import { createPayoutsView } from './payouts.ts';
 import { createFx } from './fx.ts';
+import { effectAs } from '../logic/game.ts';
+import type { Sound } from './sound.ts';
+import type { Game } from '../logic/game.ts';
+import type { Card, MachineState, Named, SpinSource, TreeNodeDef, UpgradeDef } from '../logic/types.ts';
+import type { Settings } from '../platform/save.ts';
 
 // The jackpot wheel's four segments, clockwise from the top (the colours are
 // theme tokens). The wheel turns so the pot the game already picked ends up
-// under the pointer; which pot is decided in game.js, never here.
+// under the pointer; which pot is decided in game.ts, never here.
 const PRIZE_SEGMENTS = ['--soft', '--buy', '--token', '--gold'];
 
-// Win celebrations by tier (the tier comes from game.js / data.json winTiers).
+// Win celebrations by tier (the tier comes from game.ts / data.json winTiers).
 // coins = how many coins fly to the counter; banner = the big text on the machine.
-const WIN_FX = {
+const WIN_FX: Record<string, { coins: number; sound: string; hop?: boolean; banner?: string; shake?: boolean }> = {
   win: { coins: 0, sound: 'win' },
   nice: { coins: 5, sound: 'nice', hop: true },
   big: { coins: 10, sound: 'big', hop: true, banner: 'Big win!' },
@@ -37,7 +41,7 @@ const WIN_FX = {
 const systemReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 // What the hamster says after buying an upgrade or planting a family trait (by effect type).
-const UPGRADE_LINES = {
+const UPGRADE_LINES: Record<string, (level: number, game: Game, def: UpgradeDef) => string> = {
   payoutMultiplier: () => 'Bigger cheeks, bigger wins!',
   autoSpin: (level) => (level === 1 ? "I'll run the wheel for you now!" : 'Faster paws!'),
   spinCostMultiplier: () => 'Smooth as butter. Spins are cheaper!',
@@ -50,12 +54,12 @@ const UPGRADE_LINES = {
   jackpotGrowth: () => 'Shiny pouches! The jackpot pots grow faster.',
   luck: (level, game) => `Luck ${game.getLuck().total}! Fewer Wood Shavings, more wins.`,
   unlockSymbol: (level, game, def) => {
-    const id = def.effect.symbols[level - 1];
+    const id = effectAs(def, 'unlockSymbol').symbols[level - 1];
     const s = game.getMachineData().symbols.find((x) => x.id === id);
     return `A new symbol on the reels: the ${s ? s.name : id}! Bigger prizes, but wins come a little less often. Luck helps!`;
   },
 };
-const TREE_LINES = {
+const TREE_LINES: Record<string, (level: number) => string> = {
   payoutMultiplier: () => 'Family pride! Every win pays more.',
   shiftWeight: () => 'My whiskers are tingling. Feeling lucky!',
   fullLineMultiplier: () => 'Line up every reel and watch me dance!',
@@ -67,41 +71,46 @@ const TREE_LINES = {
 };
 
 // The Menu's segmented settings: [setting key, [value, label] …].
-const SETTING_ROWS = {
+const SETTING_ROWS: Record<string, [keyof Settings, [unknown, string][]]> = {
   'set-motion': ['motion', [['auto', 'Auto'], ['less', 'Less'], ['full', 'Full']]],
   'set-reels': ['quickReels', [[false, 'Scroll'], [true, 'Quick']]],
   'set-numbers': ['numbers', [['short', '47.2K'], ['full', '47,275']]],
 };
 
-export function createUI(game, { onReset, onToggleDebug, sound, settings, onSettingsChange }) {
-  const $ = (id) => document.getElementById(id);
+export function createUI(
+  game: Game,
+  { onReset, onToggleDebug, sound, settings, onSettingsChange }:
+    { onReset: () => void; onToggleDebug: () => void; sound: Sound; settings: Settings; onSettingsChange: () => void },
+) {
+  // The element with this id (every id used here is in index.html).
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
     coinPill: $('coin-pill'), coins: $('coin-count'), coinRate: $('coin-rate'),
     seedPill: $('seed-pill'), seedCount: $('seed-count'),
-    menuBtn: $('menu-btn'), menu: $('menu'), debugBtn: $('debug-btn'), resetBtn: $('reset-btn'),
-    stage: $('stage'), wall: $('wall'), rig: document.querySelector('.rig'), machineTags: $('machine-tags'),
-    bubble: $('bubble'), spokes: $('spokes'), hamster: $('hamster'), belt: $('belt'),
+    menuBtn: $('menu-btn'), menu: $<HTMLDialogElement>('menu'), debugBtn: $('debug-btn'), resetBtn: $('reset-btn'),
+    stage: $('stage'), wall: $('wall'), rig: document.querySelector<HTMLElement>('.rig')!, machineTags: $('machine-tags'),
+    bubble: $('bubble'), spokes: $('spokes'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
     machine: $('machine'), machineName: $('machine-name'), reels: $('reels'), winLayer: $('win-layer'),
-    spinBtn: $('spin-btn'), spinTitle: $('spin-title'), spinMeta: $('spin-meta'),
-    deliverBtn: $('deliver-btn'), deliverMeta: $('deliver-meta'),
-    betBox: $('bet-box'), betDown: $('bet-down'), betUp: $('bet-up'), betAmount: $('bet-amount'), betHint: $('bet-hint'),
+    spinBtn: $<HTMLButtonElement>('spin-btn'), spinTitle: $('spin-title'), spinMeta: $('spin-meta'),
+    deliverBtn: $<HTMLButtonElement>('deliver-btn'), deliverMeta: $('deliver-meta'),
+    betBox: $('bet-box'), betDown: $<HTMLButtonElement>('bet-down'), betUp: $<HTMLButtonElement>('bet-up'), betAmount: $('bet-amount'), betHint: $('bet-hint'),
     wheel: $('wheel'), prizeFace: $('prize-face'), pots: $('pots'), streakBadge: $('streak-badge'), streakText: $('streak-text'),
     luckBadge: $('luck-badge'), luckText: $('luck-text'),
     winMeter: $('win-meter'), winMeterValue: $('win-meter-value'), lineLabel: $('line-label'),
     gamble: $('gamble'), gambleTitle: $('gamble-title'), gambleNote: $('gamble-note'), gambleTimer: $('gamble-timer'),
     gambleCard: $('gamble-card'), gambleHistory: $('gamble-history'), gambleKeep: $('gamble-keep'),
-    gamblePicks: [...document.querySelectorAll('#gamble [data-pick]')],
-    road: $('road'), roadFill: $('road-fill'), roadHamster: $('road-hamster'), roadLabel: $('road-label'),
+    gamblePicks: [...document.querySelectorAll<HTMLButtonElement>('#gamble [data-pick]')],
+    road: $('road'), roadFill: $('road-fill'), roadHamster: $<HTMLImageElement>('road-hamster'), roadLabel: $('road-label'),
     familyTab: $('family-tab'), pupName: $('pup-name'), pupGen: $('pup-gen'),
     retireGain: $('retire-gain'), seedBarFill: $('seed-bar-fill'), seedNext: $('seed-next'),
-    heirloomPerSeed: $('heirloom-per-seed'), retireBtn: $('retire-btn'),
+    heirloomPerSeed: $('heirloom-per-seed'), retireBtn: $<HTMLButtonElement>('retire-btn'),
     tree: $('tree'), treeDetail: $('tree-detail'),
-    capsulesTab: $('capsules-tab'), stageGacha: $('stage-gacha'), tray: document.querySelector('.tray'),
-    muteBtn: $('mute-btn'), volume: $('volume'), statsBtn: $('stats-btn'), stats: $('stats'), statsList: $('stats-list'),
-    welcome: $('welcome'), welcomeText: $('welcome-text'), welcomeCoins: $('welcome-coins'),
+    capsulesTab: $('capsules-tab'), stageGacha: $('stage-gacha'), tray: document.querySelector<HTMLElement>('.tray')!,
+    muteBtn: $('mute-btn'), volume: $<HTMLInputElement>('volume'), statsBtn: $('stats-btn'), stats: $<HTMLDialogElement>('stats'), statsList: $('stats-list'),
+    welcome: $<HTMLDialogElement>('welcome'), welcomeText: $('welcome-text'), welcomeCoins: $('welcome-coins'),
   };
 
-  let lastSpinSource = 'manual'; // spins you pulled yourself clunk louder
+  let lastSpinSource: SpinSource = 'manual'; // spins you pulled yourself clunk louder
   let lastManualSpinAt = performance.now(); // for the sleepy "Zzz" hint
   // Every reel clunks as it lands (they stop one at a time), with a puff of dust.
   // Since M7 auto-spin is slow enough that its clunks aren't a buzz: they're just softer.
@@ -118,17 +127,17 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     quick: () => settings.quickReels,
   });
   // The prize wheel: { machineId, pot, turns, start, landedAt } while the jackpot wheel shows.
-  let prize = null;
+  let prize: { machineId: string; pot: string; index: number; count: number; turns: number; landedAt: number | null } | null = null;
   let lastTick = -1; // which segment the wheel last "ticked" past (for the clicking sound)
-  let nodeEls = new Map(); // tree node id → its button
-  let selectedNode = null; // which tree node the detail panel shows
-  let tagEls = new Map(); // machine id → its tag on the stage
+  let nodeEls = new Map<string, HTMLButtonElement>(); // tree node id → its button
+  let selectedNode: string | null = null; // which tree node the detail panel shows
+  let tagEls = new Map<string, HTMLButtonElement>(); // machine id → its tag on the stage
   let wheelAngle = 0;
   let lastPlayTime = game.state.stats.playTime;
   let shownCoins = game.state.coins; // the counter "rolls" towards the real value
   let lastFrame = performance.now();
   let lastTitle = 0; // when the browser tab title was last updated
-  let speech = null; // a temporary line from the hamster: { text, until }
+  let speech: { text: string; until: number } | null = null; // a temporary line from the hamster: { text, until }
   let resetArmed = 0; // reset needs two taps; this is when the first tap expires
   let retireArmed = 0; // same for retiring
   let rigFitKey = ''; // stage width + machine + reel count the rig was last fitted for
@@ -140,7 +149,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   const winShow = createWinShow({
     game, reels, meter: el.winMeter, meterValue: el.winMeterValue, label: el.lineLabel, reelsEl: el.reels, fx, sound, lessMotion,
   });
-  let cardShown = null; // the gamble card turned face up: { card, win, until } (view only)
+  let cardShown: { card: Card; win: boolean; until: number } | null = null; // the gamble card turned face up: { card, win, until } (view only)
   let lastLuck = game.getLuck().total;
 
   // The Family tab appears once the hamster could retire for its first seed.
@@ -164,8 +173,8 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   // sprites get the equipped fur colours; call again after a fur change.
   function paintStaticSprites() {
     const fur = furColors(game);
-    for (const img of document.querySelectorAll('img[data-sprite]')) {
-      const name = img.dataset.sprite;
+    for (const img of document.querySelectorAll<HTMLImageElement>('img[data-sprite]')) {
+      const name = img.dataset.sprite!;
       applySprite(img, name, Number(img.dataset.size || 48), name.startsWith('hamster') ? fur : null);
     }
   }
@@ -178,14 +187,14 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
 
   // ─────────────────────── small helpers ───────────────────────
 
-  function floatText(text, big = false) {
+  function floatText(text: string, big = false): void {
     const node = document.createElement('div');
     node.className = `float-text${big ? ' big' : ''}`;
     node.textContent = text;
     el.winLayer.appendChild(node);
     node.addEventListener('animationend', () => node.remove());
   }
-  function say(text, ms = 2600) {
+  function say(text: string, ms = 2600): void {
     speech = { text, until: performance.now() + ms };
   }
   // Coins fly from the machine up into the coin counter (view only, for fun).
@@ -193,12 +202,12 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   // flood the page with hundreds of coins.
   const MAX_FLYING = 40;
   let flying = 0;
-  function coinBurst(want, from = el.machine) {
+  function coinBurst(want: number, from: HTMLElement = el.machine): void {
     const count = Math.min(want, MAX_FLYING - flying);
     if (lessMotion() || count <= 0) return;
     flying += count;
     const start = from.getBoundingClientRect();
-    const target = el.coinPill.querySelector('img').getBoundingClientRect();
+    const target = el.coinPill.querySelector('img')!.getBoundingClientRect();
     const ex = target.left + target.width / 2;
     const ey = target.top + target.height / 2;
     for (let i = 0; i < count; i++) {
@@ -224,28 +233,28 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   }
   // One banner at a time: a new big win replaces the last banner. With an amount,
   // the number under the words counts up from 0 (a classic pokie "rollup").
-  function banner(text, cls, amount = null) {
+  function banner(text: string, cls: string, amount: number | null = null): void {
     for (const old of el.winLayer.querySelectorAll('.win-banner')) old.remove();
     const node = document.createElement('div');
     node.className = `win-banner ${cls}`;
     node.innerHTML = '<span class="banner-text"></span><span class="banner-amount"></span>';
-    node.firstChild.textContent = text;
+    node.firstChild!.textContent = text;
     el.winLayer.appendChild(node);
     node.addEventListener('animationend', () => node.remove());
     if (amount === null) {
-      node.lastChild.remove();
+      node.lastChild!.remove();
       return;
     }
     const start = performance.now();
-    const rollup = (now) => {
+    const rollup = (now: number) => {
       if (!node.isConnected) return;
       const t = lessMotion() ? 1 : Math.min(1, (now - start) / 800);
-      node.lastChild.textContent = `+${formatCoins(amount * (1 - (1 - t) * (1 - t)))}`;
+      node.lastChild!.textContent = `+${formatCoins(amount * (1 - (1 - t) * (1 - t)))}`;
       if (t < 1) requestAnimationFrame(rollup);
     };
     requestAnimationFrame(rollup);
   }
-  const seedLabel = (text) => `${iconHTML('heirloom')}${text}`;
+  const seedLabel = (text: string | number) => `${iconHTML('heirloom')}${text}`;
 
   // ─────────────────────── building ───────────────────────
 
@@ -263,16 +272,16 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     const ft = game.data.familyTree;
     if (!ft) return;
     const [trunkBranch, ...branches] = ft.branches;
-    const nodesOn = (branch) => ft.nodes.filter((n) => n.branch === branch.id);
+    const nodesOn = (branch: Named) => ft.nodes.filter((n) => n.branch === branch.id);
 
-    const makeNode = (def) => {
+    const makeNode = (def: TreeNodeDef) => {
       const btn = document.createElement('button');
       btn.className = 'node';
       btn.innerHTML = '<span class="node-icon"></span><span class="node-name"></span><span class="node-cost"></span>';
-      btn.querySelector('.node-icon').appendChild(spriteImg(treeIcon(def), 32, def.name[0]));
-      btn.querySelector('.node-name').textContent = def.name;
+      btn.querySelector('.node-icon')!.appendChild(spriteImg(treeIcon(def), 32, def.name[0]));
+      btn.querySelector('.node-name')!.textContent = def.name;
       btn.addEventListener('click', (e) => {
-        e.currentTarget.blur();
+        (e.currentTarget as HTMLElement).blur();
         selectedNode = def.id;
       });
       nodeEls.set(def.id, btn);
@@ -321,7 +330,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
       name.textContent = md.name;
       tag.appendChild(name);
       tag.addEventListener('click', (e) => {
-        e.currentTarget.blur();
+        (e.currentTarget as HTMLElement).blur();
         game.switchMachine(md.id);
       });
       el.machineTags.appendChild(tag);
@@ -348,7 +357,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
         b.className = 'seg-btn';
         b.textContent = label;
         b.addEventListener('click', () => {
-          settings[key] = value;
+          (settings as unknown as Record<string, unknown>)[key] = value;
           applySettings();
           onSettingsChange();
         });
@@ -432,7 +441,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
 
   // The jackpot wheel: the hamster wheel turns into a prize wheel (see render()).
   game.on('jackpotStarted', (e) => {
-    const pots = (game.data.machines.find((m) => m.id === e.machineId).jackpot || { pots: [] }).pots;
+    const pots = (game.data.machines.find((m) => m.id === e.machineId)!.jackpot || { pots: [] }).pots;
     const index = Math.max(0, pots.findIndex((p) => p.id === e.pot));
     prize = { machineId: e.machineId, pot: e.pot, index, count: pots.length, turns: 4 + Math.floor(Math.random() * 2), landedAt: null };
     lastTick = -1;
@@ -441,14 +450,14 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     say('Three Cheek Pouches! Spin, wheel, spin!', 3500);
   });
   game.on('jackpotWon', (e) => {
-    const md = game.data.machines.find((m) => m.id === e.machineId);
-    const pot = md.jackpot.pots.find((p) => p.id === e.pot);
+    const md = game.data.machines.find((m) => m.id === e.machineId)!;
+    const pot = md.jackpot!.pots.find((p) => p.id === e.pot)!;
     if (prize) prize.landedAt = performance.now();
     sound.play('pot');
     banner(`${pot.name.toUpperCase()} JACKPOT!`, 'jackpot', e.amount);
     coinBurst(30);
     fx.fountain(el.wheel, 60);
-    fx.confetti(pot === md.jackpot.pots[md.jackpot.pots.length - 1] ? 160 : 80);
+    fx.confetti(pot === md.jackpot!.pots[md.jackpot!.pots.length - 1] ? 160 : 80);
     if (!lessMotion()) {
       replayClass(el.stage, 'shake-stage');
       replayClass(el.hamster, 'hop');
@@ -458,7 +467,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
 
   // The card gamble: its panel is drawn in render(); here the card turns over,
   // with a sound, a gold burst (right) or a puff of dust (wrong), and a line.
-  const suitName = (suit) => suit.charAt(0).toUpperCase() + suit.slice(1, -1); // "hearts" → "Heart"
+  const suitName = (suit: string) => suit.charAt(0).toUpperCase() + suit.slice(1, -1); // "hearts" → "Heart"
   game.on('gambleResolved', (e) => {
     cardShown = { card: e.card, win: e.win, until: performance.now() + (e.win ? 1100 : 1600) };
     replayClass(el.gambleCard, 'flip');
@@ -494,7 +503,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     }
     // On a pricey machine, a cheaper one you own is the other way out.
     const cheaper = game.data.machines.find((m) => m.id !== activeId() && game.ownsMachine(m.id)
-      && game.getMachineInfo(m.id).spinCost <= game.state.coins);
+      && game.getMachineInfo(m.id)!.spinCost <= game.state.coins);
     say(cheaper ? `Not enough coins for a spin here. Switch to ${cheaper.name}, or send me on a delivery?`
       : 'Not enough coins for a spin. Send me on a delivery?');
   });
@@ -516,7 +525,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   });
 
   game.on('upgradeBought', (e) => {
-    const def = game.getUpgradeDef(e.id);
+    const def = game.getUpgradeDef(e.id)!;
     sound.play(def.effect.type === 'unlockSymbol' ? 'unlock' : def.effect.type === 'luck' ? 'luck' : 'buy');
     const line = UPGRADE_LINES[def.effect.type];
     if (line) say(line(e.level, game, def), def.effect.type === 'unlockSymbol' ? 5000 : 2600);
@@ -527,10 +536,10 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
 
   game.on('machineBought', (e) => {
     sound.play('machine');
-    const md = game.data.machines.find((m) => m.id === e.id);
+    const md = game.data.machines.find((m) => m.id === e.id)!;
     const extra = md.jackpot ? 'Three Cheek Pouches spin the jackpot wheel!'
       : md.freeSpins ? 'Wilds, and three Hamster Balls give free spins!'
-        : md.rows > 1 ? 'Three rows and more paylines: so many ways to win!' : 'Let\'s give it a spin!';
+        : (md.rows ?? 1) > 1 ? 'Three rows and more paylines: so many ways to win!' : 'Let\'s give it a spin!';
     say(`A brand-new ${md.name}! ${extra}`, 5000);
     fx.confetti(70);
   });
@@ -545,7 +554,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     sound.play('plant');
     const node = nodeEls.get(e.id);
     if (node) replayClass(node, 'bought');
-    const line = TREE_LINES[game.getTreeNodeDef(e.id).effect.type];
+    const line = TREE_LINES[game.getTreeNodeDef(e.id)!.effect.type];
     if (line) say(line(e.level));
   });
 
@@ -562,7 +571,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   // so a brand-new player isn't told about a currency they can't see yet.
   game.on('stickerEarned', (e) => {
     if (!capsulesShown) return;
-    const sticker = game.data.diary.find((d) => d.id === e.id);
+    const sticker = game.data.diary.find((d) => d.id === e.id)!;
     sound.play('sticker');
     say(`Diary sticker: ${sticker.name}! +${e.tokens} Hamster Token${e.tokens === 1 ? '' : 's'}.`, 3500);
   });
@@ -602,17 +611,17 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   // ─────────────────────── input ───────────────────────
 
   el.spinBtn.addEventListener('click', (e) => {
-    e.currentTarget.blur();
+    (e.currentTarget as HTMLElement).blur();
     game.spin('manual');
   });
   el.deliverBtn.addEventListener('click', (e) => {
-    e.currentTarget.blur();
+    (e.currentTarget as HTMLElement).blur();
     game.startDelivery();
   });
 
   // The bet: one step up or down. Past the biggest unlocked bet, the hamster
   // points you to High Roller instead.
-  function changeBet(step) {
+  function changeBet(step: number): void {
     const next = game.getBetIndex() + step;
     if (step > 0 && next > game.getMaxBetIndex()) {
       sound.play('error');
@@ -622,22 +631,22 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     }
     if (game.setBet(next)) sound.play('bet', step > 0);
   }
-  el.betDown.addEventListener('click', (e) => { e.currentTarget.blur(); changeBet(-1); });
-  el.betUp.addEventListener('click', (e) => { e.currentTarget.blur(); changeBet(1); });
+  el.betDown.addEventListener('click', (e) => { (e.currentTarget as HTMLElement).blur(); changeBet(-1); });
+  el.betUp.addEventListener('click', (e) => { (e.currentTarget as HTMLElement).blur(); changeBet(1); });
 
   // The card gamble: pick a colour or a suit (the buttons say which with data-pick),
   // or take what you have.
   for (const button of el.gamblePicks) {
-    button.addEventListener('click', (e) => { e.currentTarget.blur(); game.gamble(button.dataset.pick); });
+    button.addEventListener('click', (e) => { (e.currentTarget as HTMLElement).blur(); game.gamble(button.dataset.pick!); });
   }
   el.gambleKeep.addEventListener('click', (e) => {
-    e.currentTarget.blur();
+    (e.currentTarget as HTMLElement).blur();
     if (game.collectGamble()) sound.play('coin');
   });
 
   // Tabs: show one panel, hide the rest.
-  function openTab(name) {
-    for (const tab of document.querySelectorAll('.tab')) {
+  function openTab(name: string): void {
+    for (const tab of document.querySelectorAll<HTMLElement>('.tab')) {
       const active = tab.dataset.tab === name;
       tab.classList.toggle('active', active);
       $(`tab-${tab.dataset.tab}`).classList.toggle('hidden', !active);
@@ -645,20 +654,20 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     if (name === 'family') familyNew = false;
     if (name === 'capsules') capsulesNew = false;
   }
-  for (const tab of document.querySelectorAll('.tab')) {
-    tab.addEventListener('click', () => openTab(tab.dataset.tab));
+  for (const tab of document.querySelectorAll<HTMLElement>('.tab')) {
+    tab.addEventListener('click', () => openTab(tab.dataset.tab!));
   }
 
   // The little capsule machine standing in the cage opens the Capsules tab.
   el.stageGacha.addEventListener('click', (e) => {
-    e.currentTarget.blur();
+    (e.currentTarget as HTMLElement).blur();
     openTab('capsules');
     el.tray.scrollIntoView({ behavior: lessMotion() ? 'auto' : 'smooth', block: 'start' });
   });
 
   // Retiring needs two taps within 3 s, like Reset: it can't happen by accident.
   el.retireBtn.addEventListener('click', (e) => {
-    e.currentTarget.blur();
+    (e.currentTarget as HTMLElement).blur();
     if (!game.canRetire()) return;
     if (performance.now() < retireArmed) {
       game.retire();
@@ -670,7 +679,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   // The detail panel's button is redrawn often, so listen on the panel itself
   // ("event delegation") instead of on the button.
   el.treeDetail.addEventListener('click', (e) => {
-    const button = e.target.closest('.buy-btn');
+    const button = (e.target as Element).closest<HTMLElement>('.buy-btn');
     if (!button || !selectedNode) return;
     button.blur();
     game.buyTreeNode(selectedNode);
@@ -739,7 +748,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
       game.gamble(e.code === 'ArrowLeft' ? 'red' : 'black');
     } else if (game.getGambleInfo() && /^(Digit|Numpad)[1-4]$/.test(e.code)) {
       // 1–4 = the suit buttons, in the order they're shown.
-      const suits = el.gamblePicks.map((b) => b.dataset.pick).filter((p) => p !== 'red' && p !== 'black');
+      const suits = el.gamblePicks.map((b) => b.dataset.pick!).filter((p) => p !== 'red' && p !== 'black');
       game.gamble(suits[Number(e.code.slice(-1)) - 1]);
     } else if (e.code === 'KeyC' && game.collectGamble()) {
       sound.play('coin');
@@ -750,7 +759,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     const s = game.state;
     const st = s.stats;
     const pool = (game.data.skins || []).filter((x) => x.rarity !== 'starter');
-    const count = (n) => n.toLocaleString('en-US');
+    const count = (n: number) => n.toLocaleString('en-US');
     const rows = [
       ['Time played (all lives)', formatDuration(st.playTime)],
       ['Generation', `${s.generation} · ${game.getPupName()}`],
@@ -782,8 +791,8 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
       const row = document.createElement('div');
       row.className = 'stat-row';
       row.innerHTML = '<span></span><b></b>';
-      row.firstChild.textContent = label;
-      row.lastChild.textContent = value;
+      row.firstChild!.textContent = label;
+      row.lastChild!.textContent = value;
       return row;
     }));
   }
@@ -801,7 +810,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     el.rig.style.setProperty('--rig-zoom', String(zoom));
   }
 
-  function renderFamily(now) {
+  function renderFamily(now: number): void {
     const s = game.state;
 
     // Unlock the tab the first time a seed is on offer.
@@ -839,7 +848,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
       btn.classList.toggle('ready', game.canBuyTreeNode(id));
       btn.classList.toggle('selected', id === selectedNode);
       const costText = maxed ? 'Owned' : level > 0 ? `Lv ${level} · ${seedLabel(game.getTreeCost(id))}` : seedLabel(game.getTreeCost(id));
-      setHTML(btn.querySelector('.node-cost'), costText);
+      setHTML(btn.querySelector<HTMLElement>('.node-cost')!, costText);
     }
 
     // Detail panel for the selected node
@@ -855,7 +864,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     const affordable = game.canBuyTreeNode(def.id);
     const branch = game.data.familyTree.branches.find((b) => b.id === def.branch);
     const maxText = def.maxLevel ? `Lv ${level}/${def.maxLevel}` : `Lv ${level}`;
-    const needs = unlocked ? '' : `<div class="note">Needs ${def.requires.map((r) => game.getTreeNodeDef(r).name).join(' + ')} first.</div>`;
+    const needs = unlocked ? '' : `<div class="note">Needs ${def.requires.map((r) => game.getTreeNodeDef(r)!.name).join(' + ')} first.</div>`;
     const fill = maxed || affordable || !unlocked ? 0 : Math.min(100, (game.state.seeds / cost) * 100);
     const buttonClass = maxed ? 'maxed' : affordable ? '' : 'poor';
     const buttonText = maxed ? 'Owned' : unlocked ? seedLabel(`Plant ${cost}`) : 'Locked';
@@ -902,7 +911,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     }
     pots.forEach((p, i) => {
       const node = el.pots.children[i];
-      setText(node.lastChild, formatCoins(p.value));
+      setText(node.lastChild!, formatCoins(p.value));
       node.classList.toggle('lit', !!prize && prize.landedAt !== null && prize.pot === p.id);
     });
   }
@@ -922,7 +931,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   }
 
   // Hot Streak: "×1.25" with embers that grow with the streak.
-  function renderStreak(machine, realDt) {
+  function renderStreak(machine: MachineState, realDt: number): void {
     const mult = game.getStreakMultiplier();
     const show = mult > 1;
     el.streakBadge.classList.toggle('hidden', !show);
@@ -936,14 +945,14 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
   // The card is face down, or turned over for a moment after a pick (cardShown).
   let historyKey = '';
   let cardKey = '';
-  function renderGamble(now) {
+  function renderGamble(now: number): void {
     const g = game.getGambleInfo();
     const show = !!g && g.machineId === activeId();
     // The last card stays turned over a moment after the gamble ends too (a loss, or the last round).
     const lingering = !show && cardShown && now < cardShown.until;
     el.gamble.classList.toggle('hidden', !show && !lingering);
     if (!show && !lingering) return;
-    const num = (n) => `<b class="num">${formatCoins(n)}</b>`; // numbers always in the clean font
+    const num = (n: number) => `<b class="num">${formatCoins(n)}</b>`; // numbers always in the clean font
     if (show) {
       setHTML(el.gambleTitle, `${g.rounds > 0 ? 'Gamble again?' : 'Gamble your win?'} ${num(g.stake)}`);
       setHTML(el.gambleNote, g.canPick
@@ -983,7 +992,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
 
   // The prize wheel: the wheel face turns (following the game's bonus progress,
   // so it follows debug speed-ups too) and lands with the chosen pot under the pointer.
-  function renderPrize(now) {
+  function renderPrize(now: number): void {
     const bonus = prize && prize.machineId === activeId() ? game.getBonusProgress() : null;
     if (prize && bonus === null && (prize.landedAt === null || now - prize.landedAt > 2500)) prize = null;
     el.wheel.classList.toggle('prize', !!prize);
@@ -1051,7 +1060,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     const free = game.getFreeSpins();
     const spinBet = game.getSpinBet();
     const gambling = !!s.gamble && s.gamble.started;
-    const busy = machine.spinning || !!machine.bonus || gambling || (free && free.left > 0);
+    const busy = machine.spinning || !!machine.bonus || gambling || (!!free && free.left > 0);
     if (free) {
       setText(el.spinTitle, 'Free');
       setHTML(el.spinMeta, `${free.left} left · ×${free.bet}`);
@@ -1133,7 +1142,7 @@ export function createUI(game, { onReset, onToggleDebug, sound, settings, onSett
     renderCapsules(now);
   }
 
-  function renderCapsules(now) {
+  function renderCapsules(now: number): void {
     if (!capsulesShown && capsulesUnlocked()) {
       capsulesShown = true;
       capsulesNew = true;

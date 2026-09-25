@@ -436,7 +436,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 - **Sprites** (the full style guide is at the top of `src/view/art.ts`): main sprites 24×24 (hamster, reel symbols, machines, cage props, the bedding tile), icons 16×16, currency icons 12×12, UI frames 12×12. They're drawn at **whole-number scales only** (mostly 2×), so pixels stay crisp squares. Each material has a small ramp (base, shade, light) and its **own darker outline**. Light comes from the top-left. See them all at `tools/sprites.html`.
 - **Stage outlines** are 3 px (2 px for small parts) in a slightly softer ink (`--outline`, `--outline-thin`, `--outline-ink`). Small flat things (bars, chips, strips) get notched "pixel" corners (`--notch`) instead of round ones.
 - Feedback: the win glow sits *behind* the symbols (never tint the symbol itself), plus a "+N" popup, and the coin tag pops when coins come in. Bigger wins add more (§15), and pixel particles add sparkle (§20).
-- Works from phone width up. On narrow screens the machine rig **zooms out just enough to fit** (measured by `ui.js`), so every reel and the lever always show. The speech bubble text is scaled back up so it stays readable.
+- Works from phone width up. On narrow screens the machine rig **zooms out just enough to fit** (measured by `ui.ts`), so every reel and the lever always show. The speech bubble text is scaled back up so it stays readable.
 - Numbers from a thousand up are **short by default** (47.27K, 1.5M; Menu → Numbers can switch to 47,275).
 - **Skins** recolour the cage through theme tokens set on the stage element: wheel skins (`--wheel-*`); machine skins recolour **Old Clunky** (`--machine*`, `--marquee`; their names say "Clunky"); room skins recolour the wall, the wire and the **plastic base** (`--wall-*`, `--wire*`, `--floor`, `--floor-dark`, `--floor-ink`). Fur skins are a palette swap for the hamster sprite. Everything outside the stage keeps the classic tokens.
 
@@ -1013,7 +1013,7 @@ A hamster upgrade (§5): every machine counts its winning paid spins in a row, a
 - **Slower auto-spin:** Wheel Training goes 4.6 s → 3.8 s over 4 levels (§5), and the interval is **never shorter than the spin time + 0.8 s rest** (data: `rest`), so there's always a beat to see the win. A keen clicker (a spin every 3 s) is a little faster than auto-spin.
 - *Quick reels* (§17) stays view only: it never changes game time (D69).
 
-### The win show (view only, `src/view/winshow.js`)
+### The win show (view only, `src/view/winshow.ts`)
 
 Like a real pokie, a win is shown in steps once the last reel lands:
 

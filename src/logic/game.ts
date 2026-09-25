@@ -91,8 +91,8 @@ function isEffect<T extends EffectType>(effect: Effect, type: T): effect is Effe
 }
 
 // A def's effect, as the type we already know it has (used where the effect was
-// looked up by its type, so the type is certain).
-function effectAs<T extends EffectType>(def: { effect: Effect }, _type: T): EffectOf<T> {
+// looked up by its type, so the type is certain). The view uses it for the same reason.
+export function effectAs<T extends EffectType>(def: { effect: Effect }, _type: T): EffectOf<T> {
   return def.effect as EffectOf<T>;
 }
 
@@ -101,7 +101,6 @@ type PreviewValue = number | boolean | null | { luck: number; hitRate: number } 
 
 // Anything read from a save (or a state being cleaned up) could hold anything at
 // all, so it's typed "any", and every value is checked before it's used.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Untrusted = any;
 
 export function createGame(initialData: GameData, rng: Rng) {

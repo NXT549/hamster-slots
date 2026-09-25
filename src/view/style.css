@@ -5,7 +5,7 @@
    The UI is made of cardboard and paper: pixel-art frames (src/view/art.ts) turned into
    CSS variables by src/view/theme.ts and used as "9-slice" borders (border-image).
    Colours, fonts and sizes are THEME TOKENS in :root. Skins override some of them
-   on the stage (Godot: a Theme resource). */
+   on the stage (src/view/skins.ts). */
 
 :root {
   /* ink */

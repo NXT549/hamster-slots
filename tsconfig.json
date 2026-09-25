@@ -7,7 +7,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": [],
+    "types": ["vite/client"],
 
     // Strict: TypeScript checks everything it can (no silent "any", null checks …).
     "strict": true,

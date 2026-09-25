@@ -4,7 +4,8 @@
   // is an error, which keeps rule 1 ("logic never touches the page") honest.
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "lib": ["ES2022"]
+    "lib": ["ES2022"],
+    "types": []
   },
   "include": ["src/logic"]
 }

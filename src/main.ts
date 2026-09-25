@@ -1,20 +1,30 @@
-// main.js — BOOT. Wires everything together and runs the frame loop.
+// main.ts — BOOT. Wires everything together and runs the frame loop.
 //
 // Order: data.json (bundled in) → create RNG + game → load save → settings, theme
 // frames, sound, UI + debug → pay offline earnings → loop.
 // This is the only place that knows about all the layers (and the only place,
-// besides save.js, that reads the real-world clock with Date.now()).
+// besides save.ts, that reads the real-world clock with Date.now()).
 
 // Vite bundles data.json into the game's code, so there's no separate file to
 // load: it works the same on every platform (and even offline).
 import bundledData from '../data.json';
 import { createRng } from './logic/rng.ts';
 import { createGame } from './logic/game.ts';
-import { saveGame, loadGame, clearSave, loadSettings, saveSettings } from './platform/save.js';
+import { saveGame, loadGame, clearSave, loadSettings, saveSettings } from './platform/save.ts';
 import { createSound } from './view/sound.ts';
 import { applyTheme } from './view/theme.ts';
-import { createUI } from './view/ui.js';
-import { createDebugPanel } from './view/debug.js';
+import { createUI } from './view/ui.ts';
+import { createDebugPanel } from './view/debug.ts';
+import type { Game } from './logic/game.ts';
+import type { GameData } from './logic/types.ts';
+import type { Sound } from './view/sound.ts';
+
+// `hamster` in the browser console (see the end of boot()).
+declare global {
+  interface Window {
+    hamster: { game: Game; clock: { timeScale: number }; ui: ReturnType<typeof createUI>; sound: Sound };
+  }
+}
 
 // Max real seconds processed per frame. If the tab stalls (or was in the
 // background), we don't try to catch up frame by frame: time away is paid
@@ -23,14 +33,16 @@ const MAX_FRAME_SECONDS = 0.25;
 
 // Debug "Reload data.json" (only while developing with `npm run dev`): fetch the
 // file fresh from the dev server. A built game has no data.json to fetch.
-async function fetchData() {
+async function fetchData(): Promise<GameData> {
   const response = await fetch('data.json', { cache: 'no-store' });
   if (!response.ok) throw new Error(`data.json: HTTP ${response.status}`);
   return response.json();
 }
 
 function boot() {
-  const data = bundledData;
+  // TypeScript reads data.json's own shape; GameData (types.ts) describes it more
+  // exactly (e.g. which effect types exist), so the data is treated as a GameData.
+  const data = bundledData as unknown as GameData;
 
   // A new random seed each session. The debug panel shows it, so a weird
   // session can be replayed in a test with createRng(thatSeed).
@@ -82,7 +94,7 @@ function boot() {
   // (~60×/s). We pass the elapsed time, scaled by debug speed, to the logic,
   // then redraw.
   let last = performance.now();
-  function frame(nowMs) {
+  function frame(nowMs: number) {
     const realDt = Math.min((nowMs - last) / 1000, MAX_FRAME_SECONDS);
     last = nowMs;
     game.update(realDt * clock.timeScale);
@@ -96,7 +108,7 @@ function boot() {
   // A hidden tab stops the frame loop, so when it comes back, the time it was
   // hidden is paid out as offline earnings too.
   setInterval(save, data.autosaveSeconds * 1000);
-  let hiddenAt = null;
+  let hiddenAt: number | null = null;
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       save();

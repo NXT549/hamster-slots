@@ -18,7 +18,6 @@ interface NoteOptions {
 }
 
 // A sound recipe. Each takes its own few arguments (a reel's index, bet up/down …).
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Recipe = (...args: any[]) => void;
 
 export function createSound({ volume = 0.6, muted = false }: { volume?: number; muted?: boolean } = {}) {
@@ -144,3 +143,6 @@ export function createSound({ volume = 0.6, muted = false }: { volume?: number; 
     setVolume(value: number) { volume = Math.min(1, Math.max(0, value)); applyVolume(); },
   };
 }
+
+// What createSound gives back (the UI and the win show play sounds through it).
+export type Sound = ReturnType<typeof createSound>;

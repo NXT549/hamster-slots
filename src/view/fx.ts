@@ -245,3 +245,6 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
     get count() { return parts.length; },
   };
 }
+
+// What createFx gives back.
+export type Fx = ReturnType<typeof createFx>;

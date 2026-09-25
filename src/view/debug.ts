@@ -1,16 +1,19 @@
-// debug.js — VIEW layer. A balance-testing panel, toggled with the ` (backtick) key.
+// debug.ts — VIEW layer. A balance-testing panel, toggled with the ` (backtick) key.
 //
 // It only uses the same public game API as the UI, plus the shared "clock"
-// object from main.js for time speed. Godot: a DebugPanel scene on a CanvasLayer,
-// using Engine.time_scale for speed-up.
+// object from main.ts for time speed.
 
 import { formatCoins } from './dom.ts';
+import type { Game } from '../logic/game.ts';
 
 const SPEEDS = [1, 2, 5, 10, 50];
 const WINDOW = 10; // seconds of game time used for "measured coins/s"
 
-export function createDebugPanel(game, { clock, reloadData, saveNow }) {
-  const panel = document.getElementById('debug-panel');
+export function createDebugPanel(
+  game: Game,
+  { clock, reloadData, saveNow }: { clock: { timeScale: number }; reloadData: (() => Promise<void>) | null; saveNow: () => boolean },
+) {
+  const panel = document.getElementById('debug-panel')!;
   panel.innerHTML = `
     <h3>DEBUG <span class="small">(press \` to hide)</span></h3>
     <pre id="dbg-stats"></pre>
@@ -37,9 +40,9 @@ export function createDebugPanel(game, { clock, reloadData, saveNow }) {
     </div>
     <div class="status" id="dbg-status"></div>`;
 
-  const statsEl = panel.querySelector('#dbg-stats');
-  const statusEl = panel.querySelector('#dbg-status');
-  const speedsEl = panel.querySelector('#dbg-speeds');
+  const statsEl = panel.querySelector('#dbg-stats')!;
+  const statusEl = panel.querySelector('#dbg-status')!;
+  const speedsEl = panel.querySelector('#dbg-speeds')!;
 
   // Time speed buttons
   const speedButtons = SPEEDS.map((speed) => {
@@ -50,51 +53,51 @@ export function createDebugPanel(game, { clock, reloadData, saveNow }) {
     return { b, speed };
   });
 
-  panel.querySelectorAll('[data-add]').forEach((b) => {
+  panel.querySelectorAll<HTMLElement>('[data-add]').forEach((b) => {
     b.addEventListener('click', () => game.addCoins(Number(b.dataset.add)));
   });
   // "Earn" counts as coins earned by playing, so it moves you towards Heirloom Seeds.
-  panel.querySelectorAll('[data-earn]').forEach((b) => {
+  panel.querySelectorAll<HTMLElement>('[data-earn]').forEach((b) => {
     b.addEventListener('click', () => game.addCoins(Number(b.dataset.earn), true));
   });
-  panel.querySelector('#dbg-seeds').addEventListener('click', () => game.addSeeds(5));
-  panel.querySelectorAll('[data-tokens]').forEach((b) => {
+  panel.querySelector('#dbg-seeds')!.addEventListener('click', () => game.addSeeds(5));
+  panel.querySelectorAll<HTMLElement>('[data-tokens]').forEach((b) => {
     b.addEventListener('click', () => game.addTokens(Number(b.dataset.tokens)));
   });
-  panel.querySelector('#dbg-free').addEventListener('click', () => {
+  panel.querySelector('#dbg-free')!.addEventListener('click', () => {
     if (!game.addFreeSpins(5)) setStatus('This machine has no free spins (try the Burrow Bonanza).');
   });
-  panel.querySelectorAll('[data-pot]').forEach((b) => {
+  panel.querySelectorAll<HTMLElement>('[data-pot]').forEach((b) => {
     b.addEventListener('click', () => {
-      if (!game.triggerJackpot(b.dataset.pot)) setStatus('No jackpot wheel here (try the Pouch Palace), or the machine is busy.');
+      if (!game.triggerJackpot(b.dataset.pot!)) setStatus('No jackpot wheel here (try the Pouch Palace), or the machine is busy.');
     });
   });
-  panel.querySelector('#dbg-gamble').addEventListener('click', () => {
+  panel.querySelector('#dbg-gamble')!.addEventListener('click', () => {
     if (!game.triggerGamble(100)) setStatus('Can\'t offer a gamble now (one is open, or the machine is busy).');
   });
-  panel.querySelectorAll('[data-away]').forEach((b) => {
+  panel.querySelectorAll<HTMLElement>('[data-away]').forEach((b) => {
     b.addEventListener('click', () => {
       if (!game.applyOfflineEarnings(Number(b.dataset.away))) setStatus('Nothing earned: offline earnings need Wheel Training.');
     });
   });
 
-  function setStatus(text) {
+  function setStatus(text: string): void {
     statusEl.textContent = text;
   }
 
   // reloadData is null in a built game (there's no data.json file to re-read
   // there; it's bundled into the code), so the button only shows in `npm run dev`.
-  const reloadButton = panel.querySelector('#dbg-reload');
+  const reloadButton = panel.querySelector<HTMLButtonElement>('#dbg-reload')!;
   if (!reloadData) reloadButton.hidden = true;
   reloadButton.addEventListener('click', async () => {
     try {
-      await reloadData();
+      await reloadData!();
       setStatus('data.json reloaded, progress kept ✓');
     } catch (err) {
-      setStatus(`Reload failed: ${err.message}`);
+      setStatus(`Reload failed: ${(err as Error).message}`);
     }
   });
-  panel.querySelector('#dbg-save').addEventListener('click', () => {
+  panel.querySelector('#dbg-save')!.addEventListener('click', () => {
     setStatus(saveNow() ? 'Saved ✓' : 'Save failed (see console)');
   });
 
@@ -102,7 +105,7 @@ export function createDebugPanel(game, { clock, reloadData, saveNow }) {
   // Every coin in or out from playing (spin costs, payouts, deliveries) is logged
   // with its game time. Upgrade purchases and debug coins are left out on purpose:
   // we want the rate the machine is actually producing.
-  const log = [];
+  const log: { t: number; amount: number }[] = [];
   let logStart = game.state.stats.playTime;
   const now = () => game.state.stats.playTime;
   game.on('spinStarted', (e) => log.push({ t: now(), amount: -e.cost }));
@@ -165,7 +168,7 @@ export function createDebugPanel(game, { clock, reloadData, saveNow }) {
       `Spin cost      ${formatCoins(e.spinCost)} at ×1 · ${formatCoins(e.betCost)} at your bet`,
       `RTP            ${(e.rtp * 100).toFixed(1)}%   (profit/spin ${e.profitPerSpin.toFixed(2)}, +${e.extraSecondsPerSpin.toFixed(3)} s of features a spin)`,
       `Hit rate       ${(e.hitRate * 100).toFixed(1)}% expected · ${actualHit} actual (all machines)`,
-      `Luck           ${e.luck.total} (Hamster ${e.luck.hamster} + Machine ${e.luck.machine}) · symbols ${game.getMachineInfo(md.id).symbols.unlocked}/${game.getMachineInfo(md.id).symbols.lockable} unlocked`,
+      `Luck           ${e.luck.total} (Hamster ${e.luck.hamster} + Machine ${e.luck.machine}) · symbols ${game.getMachineInfo(md.id)!.symbols.unlocked}/${game.getMachineInfo(md.id)!.symbols.lockable} unlocked`,
       `Auto interval  ${e.autoInterval ? `${e.autoInterval.toFixed(2)} s (${(1 / e.autoInterval).toFixed(2)} spins/s)` : 'off'}`,
       `Auto profit/s  ${e.expectedAutoProfitPerSecond.toFixed(2)} expected`,
       `Net coins/s    ${measuredPerSecond().toFixed(2)} measured (last ${WINDOW}s game time)`,

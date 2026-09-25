@@ -1,30 +1,44 @@
-// shop.js — VIEW layer. The Upgrades tab, in three sub-tabs:
+// shop.ts — VIEW layer. The Upgrades tab, in three sub-tabs:
 //   1) Hamster:   the hamster's own upgrades (they work on every machine)
 //   2) [Machine]: the upgrades of the machine you're running (named after it)
 //   3) Machines:  a card for every machine in data.json. Buy it, or switch to it.
 // The ×1 / ×10 / Max toggle (a saved setting) sits next to the sub-tabs, and tiles
 // show "ready in ~2 min" hints for the ones you're saving up for.
-// Like ui.js, it only calls game actions (buyUpgrade, buyMachine, switchMachine)
-// and reads state. Godot: ShopPanel.tscn with MachineCard and UpgradeTile scenes.
+// Like ui.ts, it only calls game actions (buyUpgrade, buyMachine, switchMachine)
+// and reads state.
 
 import { spriteImg, upgradeIcon, MACHINE_SPRITES } from './art.ts';
 import { formatCoins, formatSeconds, formatWait, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
+import { effectAs } from '../logic/game.ts';
+import type { Game } from '../logic/game.ts';
+import type { UpgradeDef, TreeNodeDef } from '../logic/types.ts';
+import type { Settings } from '../platform/save.ts';
+
+// What game.previewUpgrade / previewTreeNode return: the value now and after buying.
+// Each effect type has its own kind of value (a number, on/off, Luck's
+// { luck, hitRate } …) and its format below knows which, so it's loosely typed here.
+type Preview = { now: any; next: any };
+type Format = (value: any) => string;
+type Def = UpgradeDef | TreeNodeDef;
+
+// Everything a machine card shows (game.getMachineInfo).
+type MachineInfo = NonNullable<ReturnType<Game['getMachineInfo']>>;
 
 // How each effect type is shown on a tile: [label, value format].
-// Shared by upgrade tiles and family tree nodes (ui.js uses describeEffect too).
-function effectFormats(game) {
-  const symbolName = (id) => (game.getMachineData().symbols.find((s) => s.id === id) || { name: id }).name;
-  const upgradeName = (id) => (game.getUpgradeDef(id) || { name: id }).name;
-  const percent = (v) => `${v < 0.1 ? (v * 100).toFixed(1) : Math.round(v * 100)}%`;
+// Shared by upgrade tiles and family tree nodes (ui.ts uses describeEffect too).
+function effectFormats(game: Game): Record<string, (def: Def) => [string, Format]> {
+  const symbolName = (id: string) => (game.getMachineData().symbols.find((s) => s.id === id) || { name: id }).name;
+  const upgradeName = (id: string) => (game.getUpgradeDef(id) || { name: id }).name;
+  const percent = (v: number) => `${v < 0.1 ? (v * 100).toFixed(1) : Math.round(v * 100)}%`;
   return {
     payoutMultiplier: () => ['Payouts', (v) => `×${v.toFixed(2)}`],
     autoSpin: () => ['Auto-spin', (v) => (v === null ? 'off' : formatSeconds(v))],
     spinCostMultiplier: () => ['Spin cost', formatCoins],
     extraReel: () => ['Reels', String],
     extraPayline: () => ['Paylines', String],
-    shiftWeight: (def) => [`${symbolName(def.effect.to)} chance`, percent],
+    shiftWeight: (def) => [`${symbolName(effectAs(def, 'shiftWeight').to)} chance`, percent],
     fullLineMultiplier: () => ['Full-line wins', (v) => `×${Number(v.toFixed(2))}`],
-    startingLevel: (def) => [`Free ${upgradeName(def.effect.upgrade)}`, (v) => `Lv ${v}`],
+    startingLevel: (def) => [`Free ${upgradeName(effectAs(def, 'startingLevel').upgrade)}`, (v) => `Lv ${v}`],
     spinSpeed: () => ['Spin time', formatSeconds],
     deliveryTime: () => ['Delivery trip', formatSeconds],
     deliveryPayoutBonus: () => ['Delivery reward', formatCoins],
@@ -32,7 +46,7 @@ function effectFormats(game) {
     // Milestone 6
     betSteps: () => ['Biggest bet', (v) => `×${v}`],
     winStreak: () => ['Best streak bonus', (v) => `×${v.toFixed(2)}`],
-    symbolWeight: (def) => [`${symbolName(def.effect.symbol)} chance`, percent],
+    symbolWeight: (def) => [`${symbolName(effectAs(def, 'symbolWeight').symbol)} chance`, percent],
     extraFreeSpins: () => ['Free spins a trigger', String],
     jackpotGrowth: () => ['Pot growth', (v) => `×${v.toFixed(2)}`],
   };
@@ -40,16 +54,16 @@ function effectFormats(game) {
 
 // Milestone 7: Luck and symbol unlocks change two things at once, so their line
 // shows both in plain numbers: "Luck 10 → 15 · hit rate 24% → 27%".
-const pct = (v) => `${Math.round(v * 100)}%`;
-const arrow = (a, b) => (b === undefined ? a : `${a} → <span class="next">${b}</span>`);
-function describeTwoWay(game, def, { now, next }) {
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const arrow = (a: string | number, b?: string | number) => (b === undefined ? a : `${a} → <span class="next">${b}</span>`);
+function describeTwoWay(game: Game, def: Def, { now, next }: Preview): string {
   if (def.effect.type === 'luck') {
     return next === null
       ? `Luck ${now.luck} · hit rate ${pct(now.hitRate)} <span class="note">(max)</span>`
       : `Luck ${arrow(now.luck, next.luck)} · hit rate ${arrow(pct(now.hitRate), pct(next.hitRate))}`;
   }
   // unlockSymbol: which symbol comes next, and what that does to wins.
-  const symbols = def.effect.symbols;
+  const symbols = effectAs(def, 'unlockSymbol').symbols;
   if (next === null) return `Every symbol unlocked · avg win ${formatCoins(now.win)} <span class="note">(max)</span>`;
   const md = game.getMachineData();
   const names = symbols.slice(now.open, next.open).map((id) => (md.symbols.find((s) => s.id === id) || { name: id }).name).join(' + ');
@@ -57,9 +71,9 @@ function describeTwoWay(game, def, { now, next }) {
 }
 
 // The "now → next" line, as HTML with the next value highlighted.
-export function describeEffect(game, def, { now, next }) {
+export function describeEffect(game: Game, def: Def, { now, next }: Preview): string {
   if (def.effect.type === 'luck' || def.effect.type === 'unlockSymbol') return describeTwoWay(game, def, { now, next });
-  const format = effectFormats(game)[def.effect.type] || (() => ['', String]);
+  const format = effectFormats(game)[def.effect.type] || ((): [string, Format] => ['', String]);
   const [label, fmt] = format(def);
   const tail = next === null ? ' <span class="note">(max)</span>' : ` → <span class="next">${fmt(next)}</span>`;
   return `${label} ${fmt(now)}${tail}`;
@@ -67,7 +81,7 @@ export function describeEffect(game, def, { now, next }) {
 
 // Little chips on a machine card for the bonus features it has (and its Luck and
 // how many of its symbols are unlocked).
-export function featureChips(info) {
+export function featureChips(info: MachineInfo): string {
   const f = info.features;
   const chips = [];
   if (info.luck > 0) chips.push(`<span class="feature-chip chip-luck">${iconHTML('clover', 16)}Luck ${info.luck}</span>`);
@@ -78,24 +92,49 @@ export function featureChips(info) {
   return chips.join('');
 }
 
-const AMOUNTS = [[1, '×1'], [10, '×10'], ['max', 'Max']];
+const AMOUNTS: [Settings['buyAmount'], string][] = [[1, '×1'], [10, '×10'], ['max', 'Max']];
 
-export function createShopView(game, { settings, onSettingsChange }) {
-  const $ = (id) => document.getElementById(id);
+// An upgrade tile and a machine card: the elements render() updates.
+interface Tile {
+  id: string;
+  def: UpgradeDef;
+  tile: HTMLElement;
+  button: HTMLButtonElement;
+  pips: HTMLElement[];
+  level: HTMLElement;
+  effect: HTMLElement;
+  fill: HTMLElement;
+  label: HTMLElement;
+  wait: HTMLElement;
+}
+interface Card {
+  id: string;
+  card: HTMLElement;
+  button: HTMLButtonElement;
+  stats: HTMLElement;
+  features: HTMLElement;
+  fill: HTMLElement;
+  label: HTMLElement;
+  wait: HTMLElement;
+}
+
+export function createShopView(game: Game, { settings, onSettingsChange }: { settings: Settings; onSettingsChange: () => void }) {
+  // The element with this id (every id used here is in index.html).
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
     machines: $('machine-list'), hamster: $('upgrade-list-hamster'), machine: $('upgrade-list-machine'),
     amount: $('buy-amount'), machineNote: $('machine-upgrades-note'),
   };
   const subtabs = createSubTabs($('upgrades-subtabs'), $('tab-upgrades'), { key: 'upgrades', settings, onSettingsChange });
-  let tiles = [];
-  let cards = [];
+  let tiles: Tile[] = [];
+  let cards: Card[] = [];
   let tileKey = ''; // which upgrades the tiles were built for (they change with the machine)
 
   const want = () => (settings.buyAmount === 'max' ? Infinity : settings.buyAmount);
-  const coinLabel = (text) => `${iconHTML('coin')}${text}`;
+  const coinLabel = (text: string) => `${iconHTML('coin')}${text}`;
 
   // "ready in ~2 min" at the current auto-spin income ('' when there's no auto-spin).
-  function waitText(cost, rate) {
+  function waitText(cost: number, rate: number): string {
     const missing = cost - game.state.coins;
     return missing > 0 && rate > 0 ? `ready in ~${formatWait(missing / rate)}` : '';
   }
@@ -108,7 +147,7 @@ export function createShopView(game, { settings, onSettingsChange }) {
       b.className = 'seg-btn';
       b.textContent = label;
       b.addEventListener('click', (e) => {
-        e.currentTarget.blur();
+        (e.currentTarget as HTMLElement).blur();
         settings.buyAmount = value;
         onSettingsChange();
       });
@@ -128,25 +167,25 @@ export function createShopView(game, { settings, onSettingsChange }) {
           <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>
           <span class="wait-hint"></span>
         </div>`;
-      card.querySelector('.mc-icon').appendChild(spriteImg(MACHINE_SPRITES[md.id], 48, md.name[0]));
-      card.querySelector('.tile-name').textContent = md.name;
-      card.querySelector('.tile-desc').textContent = md.description;
-      const button = card.querySelector('.buy-btn');
+      card.querySelector('.mc-icon')!.appendChild(spriteImg(MACHINE_SPRITES[md.id], 48, md.name[0]));
+      card.querySelector('.tile-name')!.textContent = md.name;
+      card.querySelector('.tile-desc')!.textContent = md.description;
+      const button = card.querySelector<HTMLButtonElement>('.buy-btn')!;
       button.addEventListener('click', (e) => {
-        e.currentTarget.blur();
+        (e.currentTarget as HTMLElement).blur();
         if (game.ownsMachine(md.id)) game.switchMachine(md.id);
         else game.buyMachine(md.id);
       });
       el.machines.appendChild(card);
       return {
         id: md.id, card, button,
-        stats: card.querySelector('.mc-stats'), features: card.querySelector('.mc-features'), fill: card.querySelector('.buy-fill'),
-        label: card.querySelector('.buy-label'), wait: card.querySelector('.wait-hint'),
+        stats: card.querySelector<HTMLElement>('.mc-stats')!, features: card.querySelector<HTMLElement>('.mc-features')!, fill: card.querySelector<HTMLElement>('.buy-fill')!,
+        label: card.querySelector<HTMLElement>('.buy-label')!, wait: card.querySelector<HTMLElement>('.wait-hint')!,
       };
     });
   }
 
-  function makeTile(def) {
+  function makeTile(def: UpgradeDef): Tile {
     const tile = document.createElement('div');
     tile.className = 'tile';
     tile.innerHTML = `
@@ -159,15 +198,15 @@ export function createShopView(game, { settings, onSettingsChange }) {
       <div class="pips"></div>
       <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>
       <span class="wait-hint"></span>`;
-    tile.querySelector('.tile-icon').appendChild(spriteImg(upgradeIcon(def), 32, def.name[0]));
-    tile.querySelector('.tile-name').textContent = def.name;
+    tile.querySelector('.tile-icon')!.appendChild(spriteImg(upgradeIcon(def), 32, def.name[0]));
+    tile.querySelector('.tile-name')!.textContent = def.name;
     // Machine upgrades name their machine, so it's clear they stay with it.
-    tile.querySelector('.tile-scope').textContent = def.scope === 'machine' ? game.getMachineData().name : 'Hamster';
-    tile.querySelector('.tile-desc').textContent = def.description;
+    tile.querySelector('.tile-scope')!.textContent = def.scope === 'machine' ? game.getMachineData().name : 'Hamster';
+    tile.querySelector('.tile-desc')!.textContent = def.description;
 
     // Level pips only make sense for upgrades with a small max level.
-    const pipsEl = tile.querySelector('.pips');
-    const pips = [];
+    const pipsEl = tile.querySelector('.pips')!;
+    const pips: HTMLElement[] = [];
     if (def.maxLevel && def.maxLevel > 1) {
       for (let i = 0; i < def.maxLevel; i++) {
         const pip = document.createElement('span');
@@ -179,18 +218,18 @@ export function createShopView(game, { settings, onSettingsChange }) {
       pipsEl.remove();
     }
 
-    const button = tile.querySelector('.buy-btn');
+    const button = tile.querySelector<HTMLButtonElement>('.buy-btn')!;
     button.addEventListener('click', (e) => {
-      e.currentTarget.blur(); // so Space doesn't "click" it again later
+      (e.currentTarget as HTMLElement).blur(); // so Space doesn't "click" it again later
       game.buyUpgrade(def.id, want());
     });
     return {
       id: def.id, def, tile, button, pips,
-      level: tile.querySelector('.tile-level'),
-      effect: tile.querySelector('.tile-effect'),
-      fill: tile.querySelector('.buy-fill'),
-      label: tile.querySelector('.buy-label'),
-      wait: tile.querySelector('.wait-hint'),
+      level: tile.querySelector<HTMLElement>('.tile-level')!,
+      effect: tile.querySelector<HTMLElement>('.tile-effect')!,
+      fill: tile.querySelector<HTMLElement>('.buy-fill')!,
+      label: tile.querySelector<HTMLElement>('.buy-label')!,
+      wait: tile.querySelector<HTMLElement>('.wait-hint')!,
     };
   }
 
@@ -217,7 +256,7 @@ export function createShopView(game, { settings, onSettingsChange }) {
   }
 
   // A buy button: affordable (green), saving up (grey, filling up), maxed (gold).
-  function paintBuy(button, fill, { maxed, affordable, progress }) {
+  function paintBuy(button: HTMLElement, fill: HTMLElement, { maxed, affordable, progress }: { maxed: boolean; affordable: boolean; progress: number }): void {
     button.classList.toggle('maxed', maxed);
     button.classList.toggle('poor', !maxed && !affordable);
     fill.style.width = maxed || affordable ? '0%' : `${Math.min(100, progress * 100).toFixed(1)}%`;
@@ -233,7 +272,7 @@ export function createShopView(game, { settings, onSettingsChange }) {
   });
 
   // The tile (or card) element for an upgrade or machine id, for the particle effects.
-  function elementFor(id) {
+  function elementFor(id: string): HTMLElement | null {
     const t = tiles.find((x) => x.id === id);
     if (t) return t.tile;
     const c = cards.find((x) => x.id === id);
@@ -253,7 +292,7 @@ export function createShopView(game, { settings, onSettingsChange }) {
     // Machine cards
     let machineReady = false;
     for (const c of cards) {
-      const info = game.getMachineInfo(c.id);
+      const info = game.getMachineInfo(c.id)!;
       const reels = info.reels < info.maxReels ? `${info.reels} of ${info.maxReels} reels` : `${info.reels} reels`;
       const lines = info.maxLines > 1 ? ` · ${info.lines} of ${info.maxLines} paylines` : ' · 1 payline';
       const bet = info.owned && info.bet > 1 ? ` · bet ×${info.bet}` : '';

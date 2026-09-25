@@ -1,32 +1,39 @@
-// capsules.js — VIEW layer. The Capsules tab, in three sub-tabs:
+// capsules.ts — VIEW layer. The Capsules tab, in three sub-tabs:
 //   1) the Capsule Machine: tokens, Pull button, odds, pity counter, the reveal
 //   2) the Wardrobe: every skin, grouped by category; tap one you own to wear it
 //   3) the Hamster Diary: goals that pay Hamster Tokens, with progress bars
-// Like ui.js, it only calls game actions (pullCapsule, equipSkin) and reads state.
-// Godot: CapsulesPanel.tscn with CapsuleMachine, Wardrobe (GridContainers) and Diary (VBoxContainer).
+// Like ui.ts, it only calls game actions (pullCapsule, equipSkin) and reads state.
 
 import { CAPSULE_SPRITES } from './art.ts';
 import { formatCoins, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
 import { skinPreview } from './skins.ts';
+import type { Sound } from './sound.ts';
+import type { Game } from '../logic/game.ts';
+import type { GameEvents } from '../logic/types.ts';
+import type { Settings } from '../platform/save.ts';
 
 // The capsule wobbles this long before it opens. View only: the game already
 // decided what's inside the moment you pulled.
 const REVEAL_MS = 900;
 
-export function createCapsulesView(game, { say, sound, settings, onSettingsChange }) {
-  const $ = (id) => document.getElementById(id);
+export function createCapsulesView(
+  game: Game,
+  { say, sound, settings, onSettingsChange }: { say: (text: string, ms?: number) => void; sound: Sound; settings: Settings; onSettingsChange: () => void },
+) {
+  // The element with this id (every id used here is in index.html).
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
-    tokens: $('cap-tokens'), pullBtn: $('pull-btn'), odds: $('cap-odds'), pity: $('cap-pity'),
+    tokens: $('cap-tokens'), pullBtn: $<HTMLButtonElement>('pull-btn'), odds: $('cap-odds'), pity: $('cap-pity'),
     machine: $('cap-machine'), reveal: $('cap-reveal'), wardrobe: $('wardrobe'), diary: $('diary'),
   };
   const subtabs = createSubTabs($('capsules-subtabs'), $('tab-capsules'), { key: 'capsules', settings, onSettingsChange });
   let stickersSeen = Object.keys(game.state.diary).length; // for the Diary dot
-  let reveal = null; // the capsule being opened: { e (capsuleOpened event), at }
-  let skinTiles = new Map(); // skin id → its tile button
-  let diaryRows = new Map(); // sticker id → { row, fill, count }
+  let reveal: { e: GameEvents['capsuleOpened']; at: number; announced?: boolean } | null = null; // the capsule being opened
+  let skinTiles = new Map<string, HTMLButtonElement>(); // skin id → its tile button
+  let diaryRows = new Map<string, { row: HTMLElement; fill: HTMLElement; count: HTMLElement }>(); // sticker id → its row
 
-  const rarityName = (id) => (id === 'starter' ? 'Starter' : (game.data.capsules.rarities.find((r) => r.id === id) || { name: id }).name);
-  const categoryName = (id) => (game.data.skinCategories.find((c) => c.id === id) || { name: id }).name;
+  const rarityName = (id: string) => (id === 'starter' ? 'Starter' : (game.data.capsules.rarities.find((r) => r.id === id) || { name: id }).name);
+  const categoryName = (id: string) => (game.data.skinCategories.find((c) => c.id === id) || { name: id }).name;
 
   // ─────────────────────── building ───────────────────────
 
@@ -61,10 +68,10 @@ export function createCapsulesView(game, { say, sound, settings, onSettingsChang
         tile.className = 'skin-tile';
         tile.innerHTML = `<span class="skin-preview"></span><span class="skin-name"></span>
           <span class="rarity-chip rarity-${def.rarity}">${rarityName(def.rarity)}</span><span class="skin-state"></span>`;
-        tile.querySelector('.skin-preview').appendChild(skinPreview(def, 48));
-        tile.querySelector('.skin-name').textContent = def.name;
+        tile.querySelector('.skin-preview')!.appendChild(skinPreview(def, 48));
+        tile.querySelector('.skin-name')!.textContent = def.name;
         tile.addEventListener('click', (e) => {
-          e.currentTarget.blur();
+          (e.currentTarget as HTMLElement).blur();
           if (game.equipSkin(def.id)) say(def.category === 'fur' ? 'Ooh, new fur! How do I look?' : `${def.name}! Looking cozy.`);
         });
         grid.appendChild(tile);
@@ -86,17 +93,17 @@ export function createCapsulesView(game, { say, sound, settings, onSettingsChang
         <div class="diary-text"><div class="diary-name"></div><div class="note"></div></div>
         <div class="diary-progress"><div class="diary-bar"><div class="diary-fill"></div></div><span class="diary-count"></span></div>
         <span class="diary-reward">${iconHTML('token', 24)}+${sticker.tokens}</span>`;
-      row.querySelector('.diary-name').textContent = sticker.name;
-      row.querySelector('.note').textContent = sticker.description;
+      row.querySelector('.diary-name')!.textContent = sticker.name;
+      row.querySelector('.note')!.textContent = sticker.description;
       el.diary.appendChild(row);
-      diaryRows.set(sticker.id, { row, fill: row.querySelector('.diary-fill'), count: row.querySelector('.diary-count') });
+      diaryRows.set(sticker.id, { row, fill: row.querySelector<HTMLElement>('.diary-fill')!, count: row.querySelector<HTMLElement>('.diary-count')! });
     }
   }
 
   // "1st", "2nd", "3rd", "5th", "12th" …
-  function ordinal(n) {
+  function ordinal(n: number): string {
     if (n % 100 >= 11 && n % 100 <= 13) return `${n}th`;
-    return `${n}${{ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th'}`;
+    return `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] || 'th'}`;
   }
 
   // The other ways to earn tokens, built from data.json so the text never goes stale.
@@ -125,22 +132,22 @@ export function createCapsulesView(game, { say, sound, settings, onSettingsChang
   });
 
   el.pullBtn.addEventListener('click', (e) => {
-    e.currentTarget.blur();
+    (e.currentTarget as HTMLElement).blur();
     if (reveal && performance.now() - reveal.at < REVEAL_MS) return; // let the last one open first
     game.pullCapsule();
   });
 
   // The reveal card is redrawn, so listen on its container ("event delegation").
   el.reveal.addEventListener('click', (e) => {
-    const button = e.target.closest('.wear-btn');
+    const button = (e.target as Element).closest<HTMLElement>('.wear-btn');
     if (!button) return;
     button.blur();
-    if (game.equipSkin(button.dataset.skin)) say('Ooh, how do I look?');
+    if (game.equipSkin(button.dataset.skin!)) say('Ooh, how do I look?');
   });
 
   // ─────────────────────── drawing ───────────────────────
 
-  function renderReveal(now) {
+  function renderReveal(now: number): void {
     if (!reveal) return;
     const { e } = reveal;
     const opening = now - reveal.at < REVEAL_MS;
@@ -150,7 +157,7 @@ export function createCapsulesView(game, { say, sound, settings, onSettingsChang
     }
     if (!reveal.announced) {
       reveal.announced = true;
-      const def = game.getSkinDef(e.skinId);
+      const def = game.getSkinDef(e.skinId)!;
       const name = rarityName(e.rarity);
       sound.play(e.rarity === game.data.capsules.pityRarity ? 'epic' : 'capsulePop');
       if (e.duplicate) {
@@ -161,7 +168,7 @@ export function createCapsulesView(game, { say, sound, settings, onSettingsChang
         say(`A new ${categoryName(def.category).toLowerCase()} skin: ${def.name}!`);
       }
     }
-    const def = game.getSkinDef(e.skinId);
+    const def = game.getSkinDef(e.skinId)!;
     const wearing = game.getEquippedSkin(def.category) === def.id;
     const badge = e.duplicate ? `<span class="note">Duplicate · ${iconHTML('token', 24)}+${e.refund} back</span>` : '<span class="new-badge">NEW!</span>';
     const button = wearing ? '<button class="btn btn-soft wear-btn" disabled>Wearing it</button>'
@@ -179,11 +186,11 @@ export function createCapsulesView(game, { say, sound, settings, onSettingsChang
             ${badge}</div>
           ${button}
         </div>`;
-      el.reveal.querySelector('.reveal-preview').appendChild(skinPreview(def, 48));
+      el.reveal.querySelector('.reveal-preview')!.appendChild(skinPreview(def, 48));
     }
   }
 
-  function render(now) {
+  function render(now: number): void {
     const s = game.state;
     setText(el.tokens, String(s.tokens));
     const cost = game.getPullCost();
@@ -198,19 +205,19 @@ export function createCapsulesView(game, { say, sound, settings, onSettingsChang
 
     for (const [id, tile] of skinTiles) {
       const owned = game.isSkinOwned(id);
-      const wearing = game.getEquippedSkin(game.getSkinDef(id).category) === id;
+      const wearing = game.getEquippedSkin(game.getSkinDef(id)!.category) === id;
       tile.classList.toggle('locked', !owned);
       tile.classList.toggle('wearing', wearing);
       tile.disabled = !owned;
-      setText(tile.querySelector('.skin-state'), wearing ? 'Wearing' : owned ? 'Tap to wear' : 'Not found yet');
+      setText(tile.querySelector('.skin-state')!, wearing ? 'Wearing' : owned ? 'Tap to wear' : 'Not found yet');
     }
 
     for (const [id, r] of diaryRows) {
-      const p = game.getDiaryProgress(id);
+      const p = game.getDiaryProgress(id)!;
       const value = Math.min(p.value, p.target);
       r.row.classList.toggle('done', p.done);
       r.fill.style.width = `${((value / p.target) * 100).toFixed(1)}%`;
-      const fmt = (n) => (p.target >= 1000 ? formatCoins(n) : String(Math.floor(n)));
+      const fmt = (n: number) => (p.target >= 1000 ? formatCoins(n) : String(Math.floor(n)));
       setText(r.count, p.done ? 'Done!' : `${fmt(value)} / ${fmt(p.target)}`);
     }
 

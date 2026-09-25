@@ -16,8 +16,8 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 > **Keep this block accurate.** Update it in the same commit as any change it describes.
 
 - **Version:** **0.1.0** (CHANGELOG.md) = milestones 1–7. These are separate numbers: the save format is `SAVE_VERSION` 7 (game.ts) and the data is `schemaVersion` 7 (data.json).
-- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. 3.3 (Vitest + the golden run) is done. 3.4 (TypeScript for the game logic) is done. **3.5 (TypeScript for the view) is under way:** the helpers (art, dom, theme, skins, sound, fx) are done; the screens and main are next. After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
-- **The code today:** the game logic (`src/logic/`) and the view helpers are **TypeScript** (strict); the view screens, boot, platform, tests and tools are still JavaScript. Vite runs and builds it (`npm run dev`, `npm run build`, which type-checks first). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
+- **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is under way:** the plan and its progress are in PORTING_NOTES → Web migration (D110). 3.0 (the git baseline) is done. 3.1 (npm + Vite) is done and tested by the user (play.bat opens the game, and their save was kept). 3.2 (files moved into `src/logic`, `src/platform`, `src/view`) is done. 3.3 (Vitest + the golden run) is done. 3.4 (TypeScript for the game logic) is done. **3.5 (TypeScript for the view) is done and waiting for the user's OK:** every file in `src/` is TypeScript now. Next is 3.6 (the platform layer). After Step 3 comes **Step 4**, a GitHub Actions workflow that tests and deploys to GitHub Pages on every push to `main` (repo owner: `NXT549`).
+- **The code today:** everything in `src/` (logic, view, platform, boot) is **TypeScript** (strict); the tests and tools are still JavaScript (typing them needs `@types/node`, a new dependency: ask first). Vite runs and builds it (`npm run dev`, `npm run build`, which type-checks first). It's a git repo now: `main` holds the tagged `v0.1.0` baseline, and the migration happens on the `web-migration` branch. The stack rules below are the target. Where the migration hasn't arrived yet, the **Until migrated** notes say how things work now.
 - **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). Friends can join that playtest from the Pages link once it's deployed. After that come M8 The Big Cage → M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M8+ early. Known issue for M8: from generation ~9, lives shrink to 3–10 min (D102).
 - **Tests now:** `npm test` (Vitest) runs 1,108 tests in about 10 s: M7's 687 logic checks and 383 art checks (unchanged, now Vitest tests), the golden run (33) and the save fixtures (5).
 - **Last verified (M7):** the logic checks 687/687 and the art checks all OK (then `node tools/test_logic.mjs` / `test_art.mjs`), the simulator over 12 lives × 5 seeds, and a browser check in Chromium (PORTING_NOTES → Playtest notes, 2026-09-25).
@@ -49,12 +49,12 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 
 - **TypeScript + Vite.**
 - **Game logic and state live in their own modules with no DOM/UI code.** **Rule 1: logic never touches the DOM.** Logic modules (`src/logic/`: `rng.ts`, `events.ts`, `machine.ts`, `game.ts`) never use `document`, `window`, `localStorage`, `Date`, `performance` or `Math.random`, and they run headless in Node (tests, simulator). `tsconfig.logic.json` checks `src/logic` with no browser types at all, so `document`, `window` or `localStorage` there doesn't even compile. UI code reads `game.state` and listens to events. It never changes state directly: it calls actions (`game.spin()`, `game.buyUpgrade(id)`, …).
-- **Platform-specific features (saving, storage, achievements) go through a small platform layer**, so the Steam and mobile versions can swap in their own implementations later (PORTING_NOTES → The platform layer). Today that layer is `src/platform/save.js` plus the clock and tab-visibility code in `src/main.js` (step 3.6 turns them into the real platform layer).
+- **Platform-specific features (saving, storage, achievements) go through a small platform layer**, so the Steam and mobile versions can swap in their own implementations later (PORTING_NOTES → The platform layer). Today that layer is `src/platform/save.ts` plus the clock and tab-visibility code in `src/main.ts` (step 3.6 turns them into the real platform layer).
 - **Use break_eternity.js for all currency and large numbers.**
 - **Rule 2: all balance numbers (costs, payouts, rebirth formulas, slot odds) live in data files, not hardcoded.** Today that's `data.json`: symbols, weights, payouts, spin cost and duration, delivery, upgrade costs, growth rates, effect values. No magic numbers in code. Data files stay plain JSON (no comments, no trailing commas), because the game, the tests and the simulator all read them. They hold **no art or colours**.
 - **Rule 5: the stack and its dependencies.** TypeScript + Vite; break_eternity.js at runtime; Vitest for tests. No UI framework. Ask the user before adding any other dependency.
 - **Rule 11: art lives in the view.** Sprites are text grids in `src/view/art.ts`. Colours, fonts and sizes are theme tokens in `src/view/style.css` `:root`; `src/view/theme.ts` repaints the UI frame sprites in those token colours (so button colours still live in `:root`). What each skin looks like is in `src/view/skins.ts` (fur = palette colours, the rest = token overrides set on the stage); data.json only lists skin ids/names/rarities. Numbers always use `--font-num` (clean font). The pixel font is always weight 500 (in bold its C looks like an O). Highlights go *behind* symbols, never on top (a tint once made grey seeds look golden). Every framed element sets its own `--frame`/`--fw` (custom properties inherit: a paper tile inside the cardboard tray would otherwise turn to cardboard).
-- **Until migrated:** only `src/logic/` is TypeScript so far; the view, boot and platform files are plain JavaScript ES modules (3.5 and 3.6 convert them). Vite runs and builds it all, and data.json is bundled into the build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are already in their layer folders (File map below). Only migrate through the approved step-by-step plan.
+- **Until migrated:** all of `src/` is TypeScript; the platform layer is still just `src/platform/save.ts` plus the clock and tab-visibility code in `src/main.ts` (3.6 makes it a real layer). Vite runs and builds it all, and data.json is bundled into the build. Numbers are plain JS numbers, and money is rounded to cents (`roundMoney()`). The files are already in their layer folders (File map below). Only migrate through the approved step-by-step plan.
 
 ## Saves
 
@@ -175,7 +175,7 @@ hamster_slots/
 │   ├── golden.mjs     ← records the golden run + v7 save fixtures (only for approved gameplay changes: --confirm)
 │   └── sprites.html   ← sprite gallery (dev page): every sprite in src/view/art.ts, big
 └── src/
-    ├── main.js        ← BOOT: data.json (bundled; hot-applied in dev) → game → load save → settings, theme, sound,
+    ├── main.ts        ← BOOT: data.json (bundled; hot-applied in dev) → game → load save → settings, theme, sound,
     │                    debug + UI → offline earnings → frame loop + autosave (+ offline earnings after a hidden tab)
     ├── logic/         ← LOGIC: no DOM, no clock, runs headless in Node (rule 1)
     │   ├── types.ts   ← the shapes of data.json (GameData), the state/save (GameState) and every event (GameEvents)
@@ -192,7 +192,7 @@ hamster_slots/
     │                    from both lists (effectsOfType), Hamster Tokens + diary, Capsule Machine + skins, 60 Hz
     │                    tick, save format + migrations
     ├── platform/      ← PLATFORM: talks to the browser for storage (becomes the platform layer in step 3.6)
-    │   └── save.js    ← the only file using localStorage (the save + the settings, incl. sub-tabs)
+    │   └── save.ts    ← the only file using localStorage (the save + the settings, incl. sub-tabs); the Settings type
     └── view/          ← VIEW: draws the game and turns clicks and keys into game actions
         ├── style.css  ← the "hamster cage" look; THEME TOKENS in :root (colours, fonts, sizes)
         ├── art.ts     ← pixel sprites as text grids + palette (+ per-draw palette overrides for fur);
@@ -204,23 +204,23 @@ hamster_slots/
         ├── sound.ts   ← synthesized sound effects (Web Audio), volume + mute
         ├── fx.ts      ← pixel particles on one canvas over the page: sparkles, confetti, fountains, dust, embers,
         │                motes (capped at 400; none with Motion "Less")
-        ├── reels.js   ← scrolling reel strips (3 visible rows; real rows on grid machines) that stop one at a
+        ├── reels.ts   ← scrolling reel strips (3 visible rows; real rows on grid machines) that stop one at a
         │                time, payline tags (or badges on many-line machines), winning cells + lines, feature
         │                cells, anticipation, quick reels
-        ├── winshow.js ← the win show: everything lit + the WIN meter counting up, then one line at a time with
+        ├── winshow.ts ← the win show: everything lit + the WIN meter counting up, then one line at a time with
         │                a label, then the scatters; loops; a tap skips (view only, D92)
-        ├── shop.js    ← the Upgrades tab (sub-tabs Hamster / [machine] / Machines): machine cards with feature
+        ├── shop.ts    ← the Upgrades tab (sub-tabs Hamster / [machine] / Machines): machine cards with feature
         │                chips, ×1/×10/Max, upgrade tiles, "ready in" hints; describeEffect (also used by the
         │                family tree)
-        ├── payouts.js ← the Info tab (sub-tabs): paytable (scatter, blank and locked rows), payline diagrams,
+        ├── payouts.ts ← the Info tab (sub-tabs): paytable (scatter, blank and locked rows), payline diagrams,
         │                Features (Luck, unlocks and the real odds of every feature), recent wins
-        ├── ui.js      ← HUD (coins + seeds, tab title), cage stage (wheel + prize wheel, tube, machine per type,
+        ├── ui.ts      ← HUD (coins + seeds, tab title), cage stage (wheel + prize wheel, tube, machine per type,
         │                tags, bubble, bet box, pots, clover + streak badges, card gamble panel, delivery tube,
         │                fit-to-width), tray tabs, Family tab (retire + tree), menu + settings, skins on the
         │                stage, capsule prop, win celebrations (WIN_FX + particles), reel clunks + dust, sounds,
         │                welcome-back + stats dialogs
-        ├── capsules.js ← the Capsules tab (sub-tabs): machine card + reveal, Wardrobe, Hamster Diary
-        └── debug.js   ← debug panel (stats incl. Luck and feature odds, coins, free spins, jackpot wheel, offer
+        ├── capsules.ts ← the Capsules tab (sub-tabs): machine card + reveal, Wardrobe, Hamster Diary
+        └── debug.ts   ← debug panel (stats incl. Luck and feature odds, coins, free spins, jackpot wheel, offer
                          a gamble, time speed, reload data in dev)
 ```
 

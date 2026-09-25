@@ -1,4 +1,4 @@
-// winshow.js — VIEW layer. The pokie "win show" that plays after a spin lands:
+// winshow.ts — VIEW layer. The pokie "win show" that plays after a spin lands:
 //   1) every winning cell glows (and every winning line is drawn), while the WIN
 //      meter under the reels counts up to the total: faster or slower by win tier;
 //   2) then the winning lines take turns, ONE AT A TIME: only that line is drawn
@@ -9,47 +9,79 @@
 // View only (D92): the coins were already paid when the spin ended, so the show can
 // be cut short, skipped or turned off and nothing about the economy changes.
 // It runs on real time (performance.now()), so it looks the same at any game speed.
-// Godot: an AnimationPlayer (or a Tween chain) on the machine scene.
 
-import { lineClass } from './reels.js';
+import { lineClass } from './reels.ts';
 import { formatCoins } from './dom.ts';
+import type { Reels } from './reels.ts';
+import type { Fx } from './fx.ts';
+import type { Sound } from './sound.ts';
+import type { Game } from '../logic/game.ts';
+import type { GameEvents, PaidWin, Cell } from '../logic/types.ts';
 
-// Real seconds the meter takes to count up, by win tier (see WIN_FX in ui.js).
-const COUNT_SECONDS = { win: 0.5, nice: 0.9, big: 1.4, jackpot: 2.2 };
+// One turn of the show: everything lit, one line, or the feature's scatters.
+type Step = { kind: 'all' } | { kind: 'line'; win: PaidWin } | { kind: 'feature'; cells: Cell[] };
+
+// The show that's playing (null when there's none).
+interface Show {
+  steps: Step[];
+  total: number;
+  countFor: number; // ms the meter takes to count up
+  start: number;
+  step: number; // which step is showing (-1 = the first "everything lit" count-up)
+  stepStart: number;
+  skipped: boolean;
+  featureText: string;
+}
+
+// What the win show draws on and uses.
+interface WinShowParts {
+  game: Game;
+  reels: Reels;
+  meter: HTMLElement;
+  meterValue: HTMLElement;
+  label: HTMLElement;
+  reelsEl: HTMLElement;
+  fx: Fx;
+  sound: Sound;
+  lessMotion: () => boolean;
+}
+
+// Real seconds the meter takes to count up, by win tier (see WIN_FX in ui.ts).
+const COUNT_SECONDS: Record<string, number> = { win: 0.5, nice: 0.9, big: 1.4, jackpot: 2.2 };
 const HOLD_ALL = 0.7; // the "everything lit" view before the lines take turns (and between loops)
 const LINE_SECONDS = 1.0; // one line's turn
 const FEATURE_SECONDS = 1.4; // the scatters' turn
 
-export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, fx, sound, lessMotion }) {
-  let show = null; // { steps, total, countFor, start, step, stepStart, skipped, featureText }
+export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, fx, sound, lessMotion }: WinShowParts) {
+  let show: Show | null = null; // { steps, total, countFor, start, step, stepStart, skipped, featureText }
   let lastTick = 0;
 
-  const symbolName = (id) => {
+  const symbolName = (id: string | null) => {
     const s = game.getMachineData().symbols.find((x) => x.id === id);
     return s ? s.name : id;
   };
-  const num = (n) => `<b class="num">${formatCoins(n)}</b>`;
+  const num = (n: number) => `<b class="num">${formatCoins(n)}</b>`;
 
   // What a line's turn says. One-line machines don't number their line.
-  function lineText(w) {
+  function lineText(w: PaidWin): string {
     const many = game.getLineCount() > 1;
     const wild = w.usedWild && w.symbolId !== 'wild' ? ' (with a wild)' : '';
     return `${many ? `Line ${w.line + 1} · ` : ''}${symbolName(w.symbolId)} ×${w.count}${wild} · ${num(w.payout)}`;
   }
 
   // The label takes the colour of the line it names (line-N classes set --lc).
-  function setLabel(html, line = null) {
+  function setLabel(html: string, line: number | null = null): void {
     label.className = `line-label${html ? '' : ' hidden'}${line === null ? '' : ` ${lineClass(line)}`}`;
     label.innerHTML = html || '';
   }
 
-  function setMeter(value) {
+  function setMeter(value: number | null): void {
     meterValue.textContent = value === null ? '' : formatCoins(value);
   }
 
   // Called on "spinResolved" for the machine you're looking at.
-  function start(e) {
-    const steps = [];
+  function start(e: GameEvents['spinResolved']): void {
+    const steps: Step[] = [];
     if (e.wins.length > 1 || (e.wins.length && e.featureCells.length)) steps.push({ kind: 'all' });
     for (const w of e.wins) steps.push({ kind: 'line', win: w });
     if (e.featureCells.length) steps.push({ kind: 'feature', cells: e.featureCells });
@@ -66,11 +98,11 @@ export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, 
     setLabel(e.wins.length === 1 && !e.featureCells.length ? lineText(e.wins[0]) : '', e.wins.length === 1 ? e.wins[0].line : null);
   }
 
-  // The feature's own words, once ui.js knows them ("8 free spins!", "The jackpot wheel!").
+  // The feature's own words, once ui.ts knows them ("8 free spins!", "The jackpot wheel!").
   // (The game says what a feature won just after the spin lands.) It's shown right
   // away, during the first "everything lit" step too: free spins start playing after
   // a 1 s pause, before the show would reach the scatters' own turn.
-  function setFeatureText(text) {
+  function setFeatureText(text: string): void {
     if (!show) return;
     show.featureText = text;
     const s = show.steps[show.step];
@@ -104,7 +136,8 @@ export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, 
   reelsEl.addEventListener('click', skip);
 
   // Show one turn of the cycle.
-  function enterStep(i, now) {
+  function enterStep(i: number, now: number): void {
+    if (!show) return;
     show.step = i;
     show.stepStart = now;
     const s = show.steps[i];
@@ -127,7 +160,7 @@ export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, 
   }
 
   // Called every frame.
-  function render(now) {
+  function render(now: number): void {
     if (!show) return;
     // The meter counts up (ease-out), with a soft tick now and then.
     const t = show.countFor > 0 ? Math.min(1, (now - show.start) / show.countFor) : 1;

@@ -1,41 +1,57 @@
-// payouts.js — VIEW layer. The Info tab, in four sub-tabs:
+// payouts.ts — VIEW layer. The Info tab, in four sub-tabs:
 //   1) Paytable: what the machine you're running pays, with every bonus applied
 //      (and what its scatters do).
 //   2) Paylines: its paylines as little grids (lines you haven't unlocked are faded).
-//   3) Features: how its bonus features work, with the REAL odds from game.js
+//   3) Features: how its bonus features work, with the REAL odds from game.ts
 //      (wild, free spins, jackpot pots, the gamble, Hot Streak, bets).
 //   4) Recent wins: the last few wins, free spins, pots and gambles, newest first.
 //      View only: it's not saved, and it starts empty every session.
-// Godot: InfoPanel.tscn (a ItemList for the log, a GridContainer per line).
 
 import { symbolImg, MACHINE_SPRITES, SYMBOL_SPRITES } from './art.ts';
 import { formatCoins, iconHTML, setHTML, createSubTabs } from './dom.ts';
+import { effectAs } from '../logic/game.ts';
+import type { Game } from '../logic/game.ts';
+import type { PaidWin } from '../logic/types.ts';
+import type { Settings } from '../platform/save.ts';
+
+// One row of the Recent wins log.
+interface LogEntry {
+  machineId: string;
+  kind: 'spin' | 'free' | 'pot' | 'gamble';
+  payout: number;
+  wins?: PaidWin[];
+  tier?: string;
+  bet?: number;
+  text?: string;
+  at: number; // performance.now() when it happened
+}
 
 const LOG_SIZE = 10;
-const TIER_NAMES = { nice: 'Nice', big: 'Big win', jackpot: 'Jackpot' };
+const TIER_NAMES: Record<string, string> = { nice: 'Nice', big: 'Big win', jackpot: 'Jackpot' };
 
 // "1 in 76 spins" (or "every spin" for anything that likely).
-function oneIn(chance) {
+function oneIn(chance: number): string {
   if (!(chance > 0)) return 'never';
   const n = 1 / chance;
   return n < 1.5 ? 'almost every spin' : `about 1 in ${n < 100 ? Math.round(n) : formatCoins(Math.round(n / 10) * 10)} spins`;
 }
 
-export function createPayoutsView(game, { settings, onSettingsChange } = {}) {
-  const $ = (id) => document.getElementById(id);
+export function createPayoutsView(game: Game, { settings, onSettingsChange }: { settings: Settings; onSettingsChange: () => void }) {
+  // The element with this id (every id used here is in index.html).
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
     log: $('win-log'), table: $('paytable'), lines: $('paylines-legend'), linesNote: $('paylines-note'),
     note: $('paytable-note'), features: $('features'),
   };
   const subtabs = createSubTabs($('info-subtabs'), $('tab-info'), { key: 'info', settings, onSettingsChange });
-  const log = []; // { machineId, kind, wins?, payout, tier?, text?, at (performance.now()) }
+  const log: LogEntry[] = []; // { machineId, kind, wins?, payout, tier?, text?, at (performance.now()) }
   let logDirty = true;
   let lastLogDraw = 0;
   let tableKey = '';
   let featuresKey = '';
-  let unseenWins = false;
+  let unseenWins: boolean | string | undefined = false;
 
-  function addLog(entry) {
+  function addLog(entry: Omit<LogEntry, 'at'>): void {
     log.unshift({ ...entry, at: performance.now() });
     log.length = Math.min(log.length, LOG_SIZE);
     logDirty = true;
@@ -58,12 +74,12 @@ export function createPayoutsView(game, { settings, onSettingsChange } = {}) {
   });
 
   // "12s ago", "3 min ago"
-  function ago(ms) {
+  function ago(ms: number): string {
     const s = Math.floor(ms / 1000);
     return s < 60 ? `${s}s ago` : `${Math.floor(s / 60)} min ago`;
   }
 
-  function drawLog(now) {
+  function drawLog(now: number): void {
     if (log.length === 0) {
       el.log.innerHTML = '<div class="note">No wins yet this visit. Give the lever a pull!</div>';
       return;
@@ -76,13 +92,13 @@ export function createPayoutsView(game, { settings, onSettingsChange } = {}) {
       let chip = '';
       if (entry.kind === 'spin') {
         // Each winning line as "symbol ×count" (the icon shows which symbol).
-        middle = entry.wins.map((w) => `<span class="log-line">${iconHTML(SYMBOL_SPRITES[w.symbolId], 24)}×${w.count}</span>`).join('');
-        if (entry.bet > 1) middle += `<span class="log-bet">bet ×${entry.bet}</span>`;
-        if (TIER_NAMES[entry.tier]) chip = `<span class="tier-chip tier-${entry.tier}">${TIER_NAMES[entry.tier]}</span>`;
+        middle = entry.wins!.map((w) => `<span class="log-line">${iconHTML(SYMBOL_SPRITES[w.symbolId!], 24)}×${w.count}</span>`).join('');
+        if ((entry.bet ?? 1) > 1) middle += `<span class="log-bet">bet ×${entry.bet}</span>`;
+        if (TIER_NAMES[entry.tier!]) chip = `<span class="tier-chip tier-${entry.tier}">${TIER_NAMES[entry.tier!]}</span>`;
       } else {
-        const icon = { free: 'ballIcon', pot: 'pouchPolish', gamble: 'cardBack' }[entry.kind];
+        const icon = ({ free: 'ballIcon', pot: 'pouchPolish', gamble: 'cardBack' } as Record<string, string>)[entry.kind];
         middle = `<span class="log-line">${iconHTML(icon, 16)} ${entry.text}</span>`;
-        chip = `<span class="tier-chip tier-${entry.kind}">${{ free: 'Free spins', pot: 'Pot', gamble: 'Gamble' }[entry.kind]}</span>`;
+        chip = `<span class="tier-chip tier-${entry.kind}">${({ free: 'Free spins', pot: 'Pot', gamble: 'Gamble' } as Record<string, string>)[entry.kind]}</span>`;
       }
       const sign = entry.payout < 0 ? '−' : '+';
       row.innerHTML = `<span class="log-machine" title="${md ? md.name : ''}">${iconHTML(MACHINE_SPRITES[entry.machineId], 24)}</span>
@@ -204,18 +220,18 @@ export function createPayoutsView(game, { settings, onSettingsChange } = {}) {
   function buildFeatures() {
     const md = game.getMachineData();
     const odds = game.getFeatureOdds();
-    const card = (icon, title, body) => `<div class="feature-card"><div class="feature-icon">${iconHTML(icon, 32)}</div><div><div class="tile-name">${title}</div><div class="tile-desc">${body}</div></div></div>`;
-    const cards = [];
+    const card = (icon: string, title: string, body: string) => `<div class="feature-card"><div class="feature-icon">${iconHTML(icon, 32)}</div><div><div class="tile-name">${title}</div><div class="tile-desc">${body}</div></div></div>`;
+    const cards: string[] = [];
     const steps = game.getBetSteps();
     // Luck (M7): what the number means, in plain words and this machine's numbers.
     const luck = odds.luck;
     const blank = md.symbols.find((s) => s.blank);
     cards.push(card('clover', `Luck ${luck.total}`,
       `Luck = Hamster Luck ${luck.hamster} (the Four-Leaf Clover, every machine) + Machine Luck ${luck.machine} (this machine only). Every symbol except the ${blank ? blank.name : 'blank'} lands ×${(1 + luck.total / 100).toFixed(2)} as often as with no Luck, so you hit more often: a paid spin wins on a line ${Math.round(odds.hitRate * 100)}% of the time here, and wins are worth more on average too.`));
-    const info = game.getMachineInfo(md.id);
+    const info = game.getMachineInfo(md.id)!;
     if (info.symbols.lockable > 0) {
       const unlock = game.getAvailableUpgrades().find((u) => u.effect.type === 'unlockSymbol');
-      const names = unlock ? unlock.effect.symbols.map((id) => md.symbols.find((s) => s.id === id).name).join(', then the ') : '';
+      const names = unlock ? effectAs(unlock, 'unlockSymbol').symbols.map((id) => md.symbols.find((s) => s.id === id)!.name).join(', then the ') : '';
       cards.push(card('seedPacket', `Symbols ${info.symbols.unlocked}/${info.symbols.lockable} unlocked`,
         `${md.name} starts with fewer symbols. ${unlock ? `${unlock.name} adds the ${names}.` : ''} Each new symbol pays much more, but it takes up room on the reels, so wins come a little less often: more Luck makes up for it. (Unlocks reset when your hamster retires.)`));
     }
@@ -234,7 +250,7 @@ export function createPayoutsView(game, { settings, onSettingsChange } = {}) {
     if (odds.jackpot) {
       const pots = game.getJackpotPots();
       const list = odds.jackpot.pots.map((p) => {
-        const pot = pots.find((x) => x.id === p.id);
+        const pot = pots.find((x) => x.id === p.id)!;
         return `<b>${pot.name}</b> ${formatCoins(pot.value)} (${oneIn(p.chance)})`;
       }).join(' · ');
       cards.push(card('pouchPolish', 'Jackpot pots',
@@ -255,7 +271,7 @@ export function createPayoutsView(game, { settings, onSettingsChange } = {}) {
     setHTML(el.features, cards.join(''));
   }
 
-  function render(now) {
+  function render(now: number): void {
     // Rebuild the table only when something it shows changed.
     const weights = game.getSymbols().map((s) => s.weight).join(',');
     const key = `${game.getMachineData().id}|${game.getReelCount()}|${game.getLineCount()}|${game.getPayoutMultiplier()}|${game.getFullLineMultiplier()}|${weights}|${game.getBet()}`;

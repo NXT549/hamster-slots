@@ -1,4 +1,4 @@
-// reels.js — VIEW layer. Draws the reels as vertical strips that scroll and land,
+// reels.ts — VIEW layer. Draws the reels as vertical strips that scroll and land,
 // like a real slot machine, plus the payline markers and the winning lines.
 //
 // How it works: when a spin starts, each reel gets a long "strip" of symbols:
@@ -16,9 +16,29 @@
 // Anticipation: when the reels that have stopped already show all but one of the
 // scatters a feature needs, the reels still spinning shimmer and land a beat later
 // (still inside the same spin time, so the game's timing never changes).
-// (Godot: a Reel scene per reel, and a Line2D per winning payline.)
 
 import { symbolImg } from './art.ts';
+import type { Game } from '../logic/game.ts';
+import type { Grid, Cell } from '../logic/types.ts';
+
+// One reel on screen: its column, its scrolling strip of symbols, and where the
+// strip slides from and to. setStrip() fills in ids, from and to.
+interface Reel {
+  col: HTMLElement;
+  strip: HTMLElement;
+  ids: string[];
+  from: number;
+  to: number;
+  stop: number; // the spin progress (0–1) at which it lands
+  landed?: boolean;
+  tease?: boolean;
+}
+
+// A winning line as the reels need it: which payline, and how many cells.
+interface LineHit {
+  line: number;
+  count: number;
+}
 
 export const CELL = 72; // height in px of one symbol cell (keep in sync with --cell in style.css)
 const VISIBLE = 3; // rows you can see in the window
@@ -30,7 +50,7 @@ const LINE_COLOURS = 10; // style.css has --line-1 … --line-10; line 11 reuses
 // spin, the last one at 90%, so the last reel lands just before the payout. With
 // a 3-second spin that's a clunk every ~0.45 s on a 5-reel machine. Quick reels
 // (a Menu setting) land earlier and closer together, and only drop a few symbols.
-function stopPoint(index, count, quick) {
+function stopPoint(index: number, count: number, quick: boolean): number {
   const [first, last] = quick ? [0.35, 0.6] : [0.3, 0.9];
   return count === 1 ? last : first + ((last - first) * index) / (count - 1);
 }
@@ -38,30 +58,34 @@ function stopPoint(index, count, quick) {
 // How many filler symbols a reel scrolls past before it stops: enough to look like
 // a fast blur for the whole time it spins (about 10 a second, plus a few), capped
 // so a strip never gets huge.
-const fillersFor = (stopSeconds) => Math.min(40, Math.round(6 + stopSeconds * 10));
+const fillersFor = (stopSeconds: number) => Math.min(40, Math.round(6 + stopSeconds * 10));
 
-const easeOutQuad = (t) => 1 - (1 - t) * (1 - t);
+const easeOutQuad = (t: number) => 1 - (1 - t) * (1 - t);
 
 // Strip offset for a spin progress t (0 → 1): a fast slide that decelerates,
 // overshoots slightly, then settles. That settle is the little "clunk" of landing.
-function stripOffset(from, to, t, overshoot) {
+function stripOffset(from: number, to: number, t: number, overshoot: number): number {
   if (t >= 1) return to;
   const split = 0.85;
   if (t < split) return from + (to + overshoot - from) * easeOutQuad(t / split);
   return to + overshoot * (1 - easeOutQuad((t - split) / (1 - split)));
 }
 
-export const lineClass = (index) => `line-${index % LINE_COLOURS}`;
+export const lineClass = (index: number) => `line-${index % LINE_COLOURS}`;
 
 // onLand(i) is called once when reel i comes to rest during a spin (for sounds).
 // onTease() is called once when the anticipation starts. quick() says whether the
 // "quick reels" setting is on.
-export function createReels(container, game, { onLand = () => {}, onTease = () => {}, quick = () => false } = {}) {
-  let reels = []; // { col, strip, ids, from, to, landed, stop, tease }
-  let tags = []; // payline number tags: { line, el: [left, right] }
-  let svg = null; // the layer the winning lines are drawn on
+export function createReels(
+  container: HTMLElement,
+  game: Game,
+  { onLand = () => {}, onTease = () => {}, quick = () => false }: { onLand?: (i: number) => void; onTease?: () => void; quick?: () => boolean } = {},
+) {
+  let reels: Reel[] = []; // { col, strip, ids, from, to, landed, stop, tease }
+  let tags: { line: number; el: HTMLElement[] }[] = []; // payline number tags: { line, el: [left, right] }
+  let svg: SVGSVGElement | null = null; // the layer the winning lines are drawn on
   let spinQuick = false; // quick reels, decided when the spin started
-  let teaseFrom = null; // anticipation: the reel after which the others tease (null = none)
+  let teaseFrom: number | null = null; // anticipation: the reel after which the others tease (null = none)
   let teased = false; // onTease() already called for this spin
   let buildKey = '';
 
@@ -81,7 +105,7 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
 
   // The 3 visible symbols of reel i for a result grid: a one-row machine puts its
   // symbol in the middle and random decoration above and below.
-  function visibleColumn(grid, i) {
+  function visibleColumn(grid: Grid | null, i: number): string[] {
     const column = grid && grid[i];
     if (realRows() >= VISIBLE && column) return column.slice(0, VISIBLE);
     // No spin yet: a random symbol the machine can really land (never a locked one).
@@ -90,12 +114,12 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
   }
 
   // Which symbols get a soft glow of their own (behind them, never on top).
-  function symbolKind(id) {
+  function symbolKind(id: string): string {
     const s = md().symbols.find((x) => x.id === id);
     return s ? (s.wild ? 'sym-wild' : s.scatter ? 'sym-scatter' : '') : '';
   }
 
-  function setStrip(reel, ids, from, to) {
+  function setStrip(reel: Reel, ids: string[], from: number, to: number): void {
     reel.strip.replaceChildren(
       ...ids.map((id) => {
         const cell = document.createElement('div');
@@ -125,7 +149,8 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
       strip.className = 'strip';
       col.appendChild(strip);
       container.appendChild(col);
-      const reel = { col, strip, stop: stopPoint(i, count, false) };
+      // (setStrip, just below, fills in the real ids, from and to.)
+      const reel: Reel = { col, strip, ids: [], from: 0, to: 0, stop: stopPoint(i, count, false) };
       // At rest the strip is shifted up by one cell, so cells 1–3 are visible.
       setStrip(reel, [randomSymbol(), ...visibleColumn(machine.result, i), randomSymbol()], -CELL, -CELL);
       reels.push(reel);
@@ -146,7 +171,7 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
     if (!all || all.length < 2 || all.length > MAX_TAG_LINES) return;
     const last = reels.length - 1;
     for (const side of ['left', 'right']) {
-      const rowOf = (line) => (side === 'left' ? line[0] : line[last]);
+      const rowOf = (line: number[]) => (side === 'left' ? line[0] : line[last]);
       all.forEach((line, index) => {
         // Lines that start (or end) on the same row share it: spread their tags out.
         const sharing = all.map((_, j) => j).filter((j) => rowOf(all[j]) === rowOf(line));
@@ -166,12 +191,12 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
 
   // Anticipation: which reel (if any) already shows all but one of the scatters
   // a feature needs, with reels still to come. The reels after it tease.
-  function findTease(grid) {
+  function findTease(grid: Grid): number | null {
     const m = md();
-    const needs = [];
+    const needs: { symbol: string; min: number }[] = [];
     if (m.freeSpins) needs.push({ symbol: m.freeSpins.symbol, min: Math.min(...Object.keys(m.freeSpins.awards).map(Number)) });
     if (m.jackpot) needs.push({ symbol: m.jackpot.symbol, min: m.jackpot.min });
-    let best = null;
+    let best: number | null = null;
     for (const { symbol, min } of needs) {
       let seen = 0;
       for (let i = 0; i < grid.length - 1; i++) {
@@ -186,7 +211,7 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
   }
 
   // Called on the game's "spinStarted" event with the (already decided) result.
-  function startSpin(grid) {
+  function startSpin(grid: Grid): void {
     if (key() !== buildKey || reels.length !== grid.length) build();
     spinQuick = quick();
     teaseFrom = spinQuick ? null : findTease(grid);
@@ -207,21 +232,21 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
       const after = reels.length - 1 - teaseFrom;
       const start = reels[teaseFrom].stop;
       reels.forEach((reel, i) => {
-        if (i <= teaseFrom) return;
+        if (i <= teaseFrom!) return;
         reel.tease = true;
-        reel.stop = start + ((0.97 - start) * (i - teaseFrom)) / after;
+        reel.stop = start + ((0.97 - start) * (i - teaseFrom!)) / after;
       });
     }
     clearWin();
   }
 
   // Which row of the window a machine row is drawn in (a one-row machine uses the middle).
-  const windowRow = (row) => (realRows() >= VISIBLE ? row : 1);
-  const cellAt = (reel, row) => reels[reel] && reels[reel].strip.children[1 + windowRow(row)];
+  const windowRow = (row: number) => (realRows() >= VISIBLE ? row : 1);
+  const cellAt = (reel: number, row: number) => reels[reel] && reels[reel].strip.children[1 + windowRow(row)];
 
   // Light up the winning cells, and draw each winning line across the reels.
   // wins: [{ line, count }] from the spinResolved event.
-  function showWin(wins) {
+  function showWin(wins: LineHit[]): void {
     clearWin();
     const lines = game.getPaylines();
     for (const w of wins) {
@@ -238,21 +263,21 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
   }
 
   // Scatters that started a feature glow gold, wherever they are.
-  function showFeature(cells) {
+  function showFeature(cells: Cell[]): void {
     for (const [reel, row] of cells) {
       const cell = cellAt(reel, row);
       if (cell) cell.classList.add('feature');
     }
   }
 
-  function drawLine(line, index, badge) {
+  function drawLine(line: number[], index: number, badge: boolean): void {
     const pts = reels.map((reel, i) => [reel.col.offsetLeft + reel.col.offsetWidth / 2, windowRow(line[i]) * CELL + CELL / 2]);
     const points = pts.map(([x, y]) => `${x},${y}`).join(' ');
     for (const cls of ['under', 'over']) {
       const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
       poly.setAttribute('points', points);
       poly.setAttribute('class', `${cls} ${lineClass(index)}`);
-      svg.appendChild(poly);
+      svg!.appendChild(poly);
     }
     // Many-line machines have no side tags, so the drawn line gets its number.
     if (badge) {
@@ -266,7 +291,7 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
   }
 
   function clearWin() {
-    for (const reel of reels) for (const cell of reel.strip.children) cell.className = `cell ${cell.dataset.kind || ''}`;
+    for (const reel of reels) for (const cell of reel.strip.children as HTMLCollectionOf<HTMLElement>) cell.className = `cell ${cell.dataset.kind || ''}`;
     for (const t of tags) for (const el of t.el) el.classList.remove('won');
     for (const b of container.querySelectorAll('.line-tag.badge')) b.remove();
     if (svg) svg.replaceChildren();
@@ -278,14 +303,14 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
   }
 
   // The cells one winning line covers ({ line, count } from spinResolved), for the win show.
-  function cellsFor(win) {
+  function cellsFor(win: LineHit): Element[] {
     const line = game.getPaylines()[win.line];
     if (!line) return [];
-    return Array.from({ length: Math.min(win.count, reels.length) }, (_, i) => cellAt(i, line[i])).filter(Boolean);
+    return Array.from({ length: Math.min(win.count, reels.length) }, (_, i) => cellAt(i, line[i])).filter(Boolean) as Element[];
   }
 
   // The on-screen box of one reel (for the dust puff when it lands).
-  const reelElement = (i) => (reels[i] ? reels[i].col : null);
+  const reelElement = (i: number) => (reels[i] ? reels[i].col : null);
 
   // Called every frame.
   function render() {
@@ -317,3 +342,6 @@ export function createReels(container, game, { onLand = () => {}, onTease = () =
   build();
   return { build, startSpin, showWin, showFeature, clearWin, render, litCells, cellsFor, reelElement };
 }
+
+// What createReels gives back (the win show and ui.ts use it).
+export type Reels = ReturnType<typeof createReels>;
