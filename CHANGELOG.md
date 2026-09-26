@@ -43,3 +43,7 @@ The first numbered version: everything built so far.
 - **Autosave** every 10 seconds and whenever you leave the page.
 - **Cute extras:** the hamster-cage look, speech-bubble hints from your hamster, sound effects with a volume control, pixel sparkles and confetti, win banners, a Stats screen, and an Info tab with the paytable, the paylines, the real odds of every feature, and your recent wins.
 - **Settings:** less motion, quick reels, short or full numbers.
+
+[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/NXT549/hamster-slots/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/NXT549/hamster-slots/releases/tag/v0.1.0
