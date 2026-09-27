@@ -2,13 +2,15 @@
 
 Everything that changes in **Hamster Slots**, written for players.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the game uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html): a patch (0.1.1) fixes things, a minor version (0.2.0) adds features or content, and 1.0.0 will be the full public release.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the game uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html): a patch (0.1.1) fixes things, a minor version (0.2.0) adds features or content, and 1.0.0 is the full public release.
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
 ## [Unreleased]
 
-This is going to be **1.0**, the full release: everything so far, plus the Big Cage, polished with a lot of new animations and effects.
+## [1.0.0] - 2026-09-27
+
+**The full release!** Everything so far, plus the Big Cage, polished with a lot of new animations and effects.
 
 ### Added
 
@@ -70,6 +72,7 @@ The first numbered version: everything built so far.
 - **Cute extras:** the hamster-cage look, speech-bubble hints from your hamster, sound effects with a volume control, pixel sparkles and confetti, win banners, a Stats screen, and an Info tab with the paytable, the paylines, the real odds of every feature, and your recent wins.
 - **Settings:** less motion, quick reels, short or full numbers.
 
-[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/NXT549/hamster-slots/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/NXT549/hamster-slots/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/NXT549/hamster-slots/releases/tag/v0.1.0
