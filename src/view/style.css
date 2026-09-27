@@ -1270,6 +1270,10 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .skin-preview { height: 48px; display: flex; align-items: center; justify-content: center; }
 .skin-name { font-family: var(--font-display); font-weight: 500; font-size: 13px; text-align: center; line-height: 1.1; }
 .skin-state { font-size: 11px; color: var(--ink-soft); }
+/* M10: what a skin does, and everything worn added up */
+.skin-buff { font-size: 11px; font-weight: 800; color: var(--luck-dark); text-align: center; line-height: 1.2; }
+.skin-tile.locked .skin-buff { opacity: 0.6; }
+.wardrobe-total { margin: 0 0 10px; padding: 8px 10px; background: var(--paper-2); clip-path: var(--notch); font-size: 13px; line-height: 1.45; }
 .skin-tile.wearing { --frame: var(--frame-paper-ready); }
 .skin-tile.wearing .skin-state { color: var(--buy-dark); }
 .skin-tile.locked { cursor: default; }

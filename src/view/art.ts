@@ -1598,6 +1598,79 @@ export const SPRITES: Record<string, string[]> = {
   frameCard, framePaper, frameTab, frameButton, bubbleTail,
 };
 
+// ── Hats (M10): worn on the hamster's head ──
+// Each hat is a small picture plus where its top-left pixel goes on the 24×24
+// hamster (both run frames have the same head: the ear on the left, the top of
+// the head at x 15–19, row 7). Hats only use colours fur skins never change
+// (no t T a A c C p P Z), so a hat looks the same on every fur.
+export const HATS: Record<string, { rows: string[]; x: number; y: number }> = {
+  hatParty: { x: 14, y: 1, rows: [ // a party cone: blue with gold stripes and a pompom
+    '...h...',
+    '..WyW..',
+    '..WbW..',
+    '.WyyyW.',
+    '.WbbBW.',
+    'WbbbbBW',
+    'WyyyyYW',
+  ] },
+  hatBeanie: { x: 14, y: 3, rows: [ // a mint knitted beanie with a bobble and a ribbed rim
+    '...f...',
+    '..EmE..',
+    '.EmmmE.',
+    'EmfmmME',
+    'EmmmmME',
+    'EMEMEME',
+  ] },
+  hatFlowers: { x: 14, y: 6, rows: [ // a ring of little flowers
+    '.e.h.z.',
+    'rGyGuGr',
+  ] },
+  hatTop: { x: 14, y: 1, rows: [ // a charcoal top hat with a red band
+    '.DDDDD.',
+    '.DlddD.',
+    '.DlddD.',
+    '.DldsD.',
+    '.DrrRD.',
+    'DdddddD',
+    'DDDDDDD',
+  ] },
+  hatCowboy: { x: 13, y: 3, rows: [ // a tan cowboy hat, its brim curling up
+    '...UUU...',
+    '..UnxnU..',
+    '..UnnnU..',
+    'U.UNNNU.U',
+    'UnnnnnnnU',
+    '.UUUUUUU.',
+  ] },
+  hatCrown: { x: 14, y: 3, rows: [ // a gold crown with a ruby and a sapphire
+    'V.V.V.V',
+    'VhVyVyV',
+    'VyyyyYV',
+    'VrYuYrV',
+    'VVVVVVV',
+  ] },
+};
+
+// A hamster frame with a hat on: the hat's pixels drawn over the hamster's.
+function withHat(base: string[], hat: { rows: string[]; x: number; y: number }): string[] {
+  return base.map((row, y) => [...row].map((ch, x) => {
+    const r = hat.rows[y - hat.y];
+    const top = r && x >= hat.x ? r[x - hat.x] : undefined;
+    return top && top !== '.' ? top : ch;
+  }).join(''));
+}
+// Registered as sprites ("hamster.hatParty", "hamster2.hatParty" …), so every
+// place that draws the hamster can draw it with its hat, fur colours and all.
+for (const [id, hat] of Object.entries(HATS)) {
+  SPRITES[`hamster.${id}`] = withHat(hamster, hat);
+  SPRITES[`hamster2.${id}`] = withHat(hamster2, hat);
+}
+
+// The sprite name for a hamster frame wearing a hat (null or an unknown hat = none).
+export function hamsterSprite(frame: 'hamster' | 'hamster2', hat: string | null): string {
+  return hat && HATS[hat] ? `${frame}.${hat}` : frame;
+}
+
 // Which sprite to draw for each card suit id (from game.ts SUITS).
 export const SUIT_SPRITES: Record<string, string> = { hearts: 'suitHearts', diamonds: 'suitDiamonds', clubs: 'suitClubs', spades: 'suitSpades' };
 

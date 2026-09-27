@@ -1,7 +1,7 @@
 # Hamster Slots — Design
 
 > Working title. A cute pixel-art idle/clicker game. A tiny hamster runs on a wheel, and the wheel powers a slot machine.
-> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates (M9, three more machines, is on a branch: §24). The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
+> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates (M9, three more machines, and M10, Wardrobe buffs, are on a branch: §24, §25). The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
 > All currency is fake in-game coins. There is no real money and nothing to buy with real money.
 
 Every number in this file comes from `data.json`. If you change one there, change it here too, and log it in `PORTING_NOTES.md` → Balance log.
@@ -404,7 +404,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | 7 | Real pokies *(done; §21; + Pays Both Ways after the first feedback, §3)* | The user's "slow down spin speed… early game to feel like a slog", "make it more like slot machines… make them go one by one", luck you can see, symbols to unlock, and a new double-or-nothing. So: **slower spins and auto-spin** with reels that stop one at a time; a **win show** that lights each winning line **one by one** while a **WIN meter** counts up; a **blank symbol** (Wood Shaving); **unlockable symbols** (the user's "new seeds": machines start with fewer symbols); **Hamster Luck + Machine Luck** with a visible Luck number; the **pokies card gamble** (red/black ×2, suit ×4); a full **rebalance to the "real slog"** with `tools/sim.mjs` (§10); save v7; particles for all of it. Built with one change to the plan: each machine's unlocks are ONE upgrade that opens its symbols in a fixed order (PORTING_NOTES D96). |
 | 8 | The Big Cage (rebirth rework) *(done; §22; released in 1.0.0)* | The user's "use the rebirth system more… a reason to both rebirth and hold heirloom seeds" and "when you rebirth it takes you to a fully in-depth page of just the upgrades". So: retiring opens a **full-screen Big Cage page** between lives, and it's the **only place to plant** (the Family tab keeps the retire card and a read-only tree). **Held seeds give +X% income each** (planting spends them, so plant-or-hold is a real choice); a "Retire now: +N seeds → +X%" preview. A **bigger tree**: start with High Roller steps, keep symbol unlocks / Machine Luck / a machine, free-spin luck, bigger pot seeds. **Machine rebirths ("Rebuild")**: a fully upgraded machine can be rebuilt for a permanent **Machine Star** (+payouts and +Machine Luck on that machine, a gold trim), kept through retirement. Numbers from the simulator. Save v8. It should also fix M7's known issue: lives from generation ~9 get short again (§10). |
 | **9** | **More machines** *(built on the branch, with the seed jar; waiting for the user's playtest; §24)* | The user's "more slot machines". The user picked (2026-09-27) three late-game machines, each with a new pokie mechanic and exact EV: the **Hamster Maze** (**243 ways**: wins on any row, reel to reel), the **Acorn Vault** (**hold & spin**: 6+ Golden Acorns lock in place with 3 respins; fill it for the Grand) and **The Big Cheese** (a **multiplier wheel** on every full line). Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers; save v10. (The early machine between Old Clunky and the Snack Stacker wasn't picked.) Plus the **seed jar** (the user's pick for the short late lives): held seeds pay up to +100%, Family Fortune makes the jar bigger (§13). |
-| 10 | Wardrobe buffs | The user's "hats & skins which both give unique changes and improvements" (was M7): **every skin gives a buff while worn** (fur → payouts, wheel → speed, machine → spin cost, room → offline/delivery; rarer = stronger), **hats** as a 5th capsule category (a layered sprite on the hamster), some pieces with **unique changes**, not just a % (e.g. one more card in the gamble history, a free spin more), the Wardrobe as a loadout. The user chose "what you wear gives the buff" and "hats come from capsules"; this reverses D39 (tokens were cosmetic only). |
+| **10** | **Wardrobe buffs** *(built on the branch, waiting for the user's playtest; §25)* | The user's "hats & skins which both give unique changes and improvements" (was M7): **every skin gives a buff while worn** (fur → payouts, wheel → faster spins, machine → cheaper spins, room → offline earnings; rarer = stronger, the user's "gentle" sizes), **6 hats** as a 5th capsule category (drawn on the hamster; +Luck), **a twist on every Epic**, the Wardrobe as a loadout (one per slot, the total shown). The user chose "what you wear gives the buff" and "hats come from capsules" (reversing D39: tokens were cosmetic only), then (2026-09-27) gentle buffs, hats for Luck, Epic twists, one per slot. |
 | 11 | Hamster Casino | The user's "minigames or side games… roulette, blackjack etc in a hamster casino". A casino room (a new tab) with side games: **roulette** (the hamster in a ball on the wheel), **blackjack**, and hamster ones (a derby race, a seed drop). Played with **Casino Chips**, which never count as coins earned (they can't farm seeds, like rule 4). A **Prize Counter** for hats, timed boosts and luck charms. Honest odds on screen. Each game is its own headless logic module (rule 1), not more code in game.ts. |
 | 12 | Your own casino (late game) | The user's "late game you can eventually start your own casino". The family opens **its own casino**: put machines you own on the floor, hamster guests play them, and you earn the **house edge** while idle; decor, staff, more rooms, a new late-game currency/layer. Unlocked far into the game (e.g. every machine owned and several generations). Planned in detail when we get there. |
 | 13 | Delivery depth | Only if playtests say deliveries are fun: routes (short/safe vs long/lucrative), helper hamsters. (The scooter, backpack and auto-delivery are now Family Tree traits.) |
@@ -505,6 +505,7 @@ retire gives = total seeds − seeds the family already received
 payout multiplier = (1 + coin upgrade bonuses) × (1 + family bonuses)
   coin upgrade bonuses = Chubby Cheeks 0.25 × level
   family bonuses       = min(0.015 × seeds HELD, 1 + 0.25 × Family Fortune level) + Family Pride 0.25   (M8; the jar since M9)
+  × (1 + the fur you wear: 0.05 / 0.1 / 0.2)                                                           (M10, its own group)
 ```
 
 Bonuses **add up inside a group** and the two groups **multiply**. Example: Cheeks Lv 2 (1.5) with Family Pride and 3 seeds held (1 + 0.25 + 0.045 = 1.295) gives ×1.94. On a machine with **Machine Stars** (M8) the payout is also × (1 + 0.1 × stars). A spin win also gets ×1.5 on a full line with Jackpot Dance, then × the bet (§18), then × Hot Streak or the free-spin multiplier (§19).
@@ -583,15 +584,15 @@ The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **
 
 > **The user's direction:** skins come from *a separate gacha system*, paid with *"hamster tokens" earned separately*, "in whatever way you come up with". The proposal was shown to the user, who said "this is really good, continue", so it was built with the proposed defaults.
 
-**Hamster Tokens** are a third currency. They only buy capsules (cosmetic skins), never power, and can never be bought with real money. They're **kept when you retire** (only Reset wipes them).
+**Hamster Tokens** are a third currency. They only buy capsules (skins), and can never be bought with real money. Since M10 **a skin you wear gives a small buff** (§25; the user's pick, which reverses D39's "cosmetic only"). They're **kept when you retire** (only Reset wipes them).
 
 ### Earning tokens
 
 | Source | Tokens | Notes |
 |---|---:|---|
-| **Hamster Diary stickers** (table below) | 1–5 each, 119 in total (38 stickers) | One-time goals. They're checked after every spin (when it starts and when it lands), delivery, purchase, retirement and capsule, and on load, so an older save gets the stickers it already earned. |
+| **Hamster Diary stickers** (table below) | 1–5 each, 122 in total (39 stickers) | One-time goals. They're checked after every spin (when it starts and when it lands), delivery, purchase, retirement and capsule, and on load, so an older save gets the stickers it already earned. |
 | **Golden jackpot**: a Golden Seed on every reel of a payline, 3+ reels | 1 per golden line | Old Clunky (once the Golden Seed is unlocked, M7): 1 in 1,331 spins with no Luck, 1 in 760 with max Luck. A 2-reel golden pair doesn't count. On the Snack Stacker each payline counts on its own. Since M6, Hamster Wilds may fill in (golden, wild, golden counts); a line of wilds alone doesn't. |
-| **Every 5th delivery** ("a customer tipped me") | 1 | Counts lifetime deliveries. A counter, not luck. |
+| **Every 5th delivery** ("a customer tipped me") | 1 | Counts lifetime deliveries. A counter, not luck. Every 3rd with the Sunflower Field room on (M10). |
 | **Retiring** | 3 | Plus the "The Big Cage" sticker the first time |
 
 ### The Hamster Diary
@@ -636,8 +637,9 @@ The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **
 | Nut Hoarder *(M9)* | Fill the Acorn Vault in hold & spin (the Grand) | 5 |
 | The Big Cheese *(M9)* | Land a ×10 wedge on the cheese wheel | 4 |
 | Whole Arcade *(M9)* | Own all seven machines at once | 5 |
+| Hat Trick *(M10)* | Find 3 hats in capsules | 3 |
 
-Goal types (data.json `goal.type`): `stat` (a lifetime stat ≥ target), `upgradeLevel` (the best level on any machine), `generation`, `treeNodes`, `skinsOwned`, `machinesOwned` (M6: how many machines you own right now). A new sticker of an existing type needs only data.json. The two M5 stickers use the new stats `machinesBought` and `mostLinesWon`; the M6 stickers use `bestStreak`, `biggestBet`, `bestGambleRun`, `wildWins`, `freeSpinTriggers`, `jackpotsWon` and `grandJackpots`; the M7 stickers `symbolsUnlocked`, `suitWins` and `bestLuck` (the most Luck any machine has had, noted just before the diary is checked); the M8 stickers `mostSeedsHeld`, `rebuilds` and `bestStars`; the M9 stickers `bestWays`, `holdGrands` and `bestWheel` (the biggest wedge, Aged Cheese included).
+Goal types (data.json `goal.type`): `stat` (a lifetime stat ≥ target), `upgradeLevel` (the best level on any machine), `generation`, `treeNodes`, `skinsOwned`, `machinesOwned` (M6: how many machines you own right now), `categoryOwned` (M10: skins found in one category, e.g. hats). A new sticker of an existing type needs only data.json. The two M5 stickers use the new stats `machinesBought` and `mostLinesWon`; the M6 stickers use `bestStreak`, `biggestBet`, `bestGambleRun`, `wildWins`, `freeSpinTriggers`, `jackpotsWon` and `grandJackpots`; the M7 stickers `symbolsUnlocked`, `suitWins` and `bestLuck` (the most Luck any machine has had, noted just before the diary is checked); the M8 stickers `mostSeedsHeld`, `rebuilds` and `bestStars`; the M9 stickers `bestWays`, `holdGrands` and `bestWheel` (the biggest wedge, Aged Cheese included).
 
 The first five goals (First Spin, Beginner's Luck, Look No Paws!, Warming Up, Three's Company) pay exactly **10 tokens, the first pull** (a test checks this). So the **Capsules tab appears after ~3–6 minutes** of a first game in M6; with M7's slog it waits for Wheel Training and the Third Reel, so ~12–47 minutes into a first life (the simulator's range for an idle player).
 
@@ -649,19 +651,21 @@ The first five goals (First Spin, Beginner's Luck, Look No Paws!, Warming Up, Th
 - **Duplicates** refund tokens: Common +2, Rare +4, Epic +8.
 - Pulls use the game's seeded RNG (like spins), so the same seed gives the same capsules.
 
-### Skins (22)
+### Skins (29)
 
 | Category | Starter | Common | Rare | Epic |
 |---|---|---|---|---|
 | **Fur** (hamster palette) | Classic | Cinnamon, Snowball, Cocoa | Lavender, Mint Chip | Golden Glow |
+| **Hat** (M10, on the hamster's head) | No Hat | Party Hat, Beanie, Flower Crown | Top Hat, Cowboy Hat | Crown |
 | **Wheel** | Classic Wheel | Mint Wheel, Berry Wheel | Oak Wheel | Gold Wheel |
 | **Machine** | Mint Clunky | Peach Clunky, Sky Clunky | Grape Clunky | Midnight Clunky |
 | **Room** (wall + floor) | Cozy Cream | Strawberry Milk, Mint Garden | Starry Night | Sunflower Field |
 
-18 skins are in the capsule pool: 9 common, 5 rare, 4 epic. Collecting all of them takes **~110 pulls on average** (median 98; 1 in 10 players needs 177+; measured over 2,000 seeds), because the last Epics are the hard part. With refunds that's roughly 800–900 tokens.
+24 skins are in the capsule pool: 12 common, 7 rare, 5 epic (18 before the hats). Collecting all of them takes **~151 pulls on average** (median 136; 1 in 10 players needs 237+; measured over 2,000 seeds; ~110 before the hats), because the last Epics are the hard part. With refunds that's roughly 1,000–1,150 tokens. What each skin does when worn is in §25.
 
 - data.json lists each skin's id, name, category and rarity. **What a skin looks like lives in `src/view/skins.ts`**, because data.json never holds colours. Fur skins recolour the hamster sprite's palette letters. Wheel, machine and room skins override theme tokens (`--wheel-*`, `--machine`, `--marquee`, `--wall-*`, `--floor*`), set **on the stage element only**.
-- The **Wardrobe** shows every skin (unfound ones greyed out, with their names and rarities), grouped by category. Tap an owned skin to wear it. The choice is saved.
+- The **Wardrobe** shows every skin (unfound ones greyed out, with their names, rarities and buffs), grouped by category, under a line that adds up **what you're wearing** (M10). Tap an owned skin to wear it: one per slot. The choice is saved.
+- Hats (M10) are drawn on the hamster sprite itself, wherever the hamster appears (the wheel, the tube, the Family tab, the Big Cage, the logo), and use only colours fur skins never change, so every hat fits every fur.
 
 ### The Capsules tab
 
@@ -675,7 +679,7 @@ The first five goals (First Spin, Beginner's Luck, Look No Paws!, Warming Up, Th
 - Does the first pull (~3–6 min) come at a nice moment, or is a second new tab this early too much?
 - Do the diary goals feel like a helpful guide or like homework?
 - Is 10 tokens a pull and ~1 token per few minutes (later) a fun pace? Do duplicates feel OK with the refund?
-- Which skins do people actually wear? Are the rooms readable (e.g. Starry Night is dark)?
+- Which skins do people actually wear? Are the rooms readable (e.g. Starry Night is dark)? (Since M10 the buffs decide some of that: §25.)
 
 ---
 
@@ -1351,3 +1355,57 @@ The Hamster Maze arrives around generation 12–13, the Big Cheese around 16–1
 - Do the machines feel different enough from the Pouch Palace, not just bigger?
 - Does the seed jar make sense (the bar on the Big Cage page, "plant them")? Does Family Fortune feel worth planting once the jar is full?
 - The late lives: are generations 12–15 (2–9 minutes) too quick, and do the later lives feel better with the new machines?
+
+---
+
+## 25. Wardrobe buffs (milestone 10)
+
+> **Status: built on the branch `claude/serene-mayer-lgbgdp`, not merged into `main`**, with M9, waiting for the user's playtest (PORTING_NOTES D129). The user's picks (2026-09-27): gentle buffs, six hats that add Luck, a twist on every Epic, one skin per slot.
+
+*"Hats & skins which both give unique changes and improvements."* (the user's M6 feedback)
+
+**Every skin you wear gives a buff.** The slot decides what it does, the rarity how much; starter skins do nothing. Wear one skin in each of the five slots (Capsules → Wardrobe; the top line adds up what you're wearing).
+
+| Slot | Buff | Common | Rare | Epic |
+|---|---|---:|---:|---:|
+| **Fur** | payouts (its own multiplier group, §13) | +5% | +10% | +20% |
+| **Hat** (new) | Hamster Luck, every machine | +3 | +6 | +12 |
+| **Wheel** | spins (and auto-spin) faster | 5% | 10% | 15% |
+| **Machine** | spins cheaper, every machine | 5% | 10% | 15% |
+| **Room** | offline earnings | +5% | +10% | +20% |
+
+**Every Epic has a twist** (shown with a ✦):
+
+| Epic | Twist |
+|---|---|
+| Golden Glow (fur) | golden jackpots give 2 tokens instead of 1 |
+| Crown (hat) | the card gamble shows 2 more past cards (7) |
+| Gold Wheel | Hot Streak climbs one step higher (once you own Hot Streak) |
+| Midnight Clunky (machine) | +2 free spins every time they trigger |
+| Sunflower Field (room) | a Hamster Token every 3rd delivery instead of every 5th |
+
+- **How it works:** a worn skin counts like an upgrade at level 1 (`effects` on each skin in data.json), so everything that reads an effect picks it up: the EV stays exact, Luck works like any Luck, a faster spin also speeds auto-spin (never below the spin + the rest), and the Info tab's odds include it. Fur is its own payout group, so its +5% is worth the same however many Chubby Cheeks you own.
+- **Hats:** 6 in capsules (Party Hat, Beanie, Flower Crown · Top Hat, Cowboy Hat · Crown) plus "No Hat"; the capsule pool grows from 18 to 24 skins (§14). A new diary sticker, **Hat Trick** (find 3 hats, 3 tokens).
+- **Saves don't change:** an older save simply wears no hat. Taking a skin off (wearing the slot's starter) takes its buff away.
+- **The rules still hold with the best of everything worn** (a test wears all five Epics): deliveries stay below auto-spin at Wheel Training 1, every Luck level still raises the hit rate and the EV, free spins still always end (Midnight Clunky's +2 included).
+
+### Balance (from the simulator; PORTING_NOTES → Playtest notes, 2026-09-27 (M10))
+
+The simulated players now open a capsule whenever they have 10 tokens and wear their rarest skin in every slot. They find ~5 skins by generation 4, ~9 by generation 9 and 10–12 (of 24) by generation 18, so most buffs are Commons and Rares.
+
+| Generation | Without the wardrobe (idle) | With it (idle) | Without (active) | With (active) |
+|---|---:|---:|---:|---:|
+| 1 | 49–62 | 50–61 | 28–32 | 31–33 |
+| 2–6 | 32–61 | 32–57 | 22–36 | 18–35 |
+| 7–11 | 6–31 | 3–23 | 4–19 | 4–14 |
+| 12–15 | 2–6 | 3–8 | 3–9 | 1–5 |
+| 16–18 | 3–40 | 2–14 | 4–29 | 3–11 |
+| Whole tree | 5.7–6.3 h | 4.7–5.8 h | 3.5–4.0 h | 3.4–3.6 h |
+
+So the gentle buffs make lives ~10–30% shorter from the middle game on, and the tree comes about an hour sooner (idle). Generations 16–18 swing with when the Big Cheese arrives (it came later with the wardrobe on in these runs).
+
+### Questions the playtest must answer
+
+- Do the buffs make capsules exciting, or do they feel like a must-have? Is "gentle" noticeable?
+- Do the hats read well on the hamster at every size? Which ones do people wear?
+- Are the Epic twists fun and understandable? Is the Wardrobe's summary line clear?

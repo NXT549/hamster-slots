@@ -16,7 +16,7 @@ Spin the reels, win coins, buy upgrades, and teach your hamster to run the wheel
 - **Upgrades** for your hamster and for every machine: payouts, auto-spin, Luck, new symbols, Pays Both Ways and more.
 - **Retirement and the Big Cage**: every seed you hold pays a bonus, or plant it in the Family Tree for a trait the family keeps forever.
 - **Machine Stars**: max a machine's upgrades and rebuild it for a star it keeps for good.
-- **The Capsule Machine**: Hamster Tokens from your Hamster Diary buy skins for the hamster, the wheel, the machine and the room.
+- **The Capsule Machine**: Hamster Tokens from your Hamster Diary buy skins for the hamster, its hat, the wheel, the machine and the room, and everything you wear gives a small buff.
 - It saves by itself, keeps earning a little while you're away, and has a save backup code (Menu → Save backup).
 
 What changed in each version: [CHANGELOG.md](CHANGELOG.md).

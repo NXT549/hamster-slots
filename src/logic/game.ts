@@ -87,7 +87,7 @@ interface OwnedEffect<T extends EffectType> {
   effect: EffectOf<T>;
   level: number;
   fromTree: boolean;
-  scope: 'global' | 'machine' | 'tree';
+  scope: 'global' | 'machine' | 'tree' | 'wardrobe';
 }
 
 // Is this effect of the given type? (It also tells TypeScript which fields the
@@ -228,7 +228,30 @@ export function createGame(initialData: GameData, rng: Rng) {
     for (const def of treeNodes()) {
       if (isEffect(def.effect, type)) out.push({ effect: def.effect, level: levelFor(def.id, state.tree[def.id] || 0), fromTree: true, scope: 'tree' });
     }
+    // M10: what the hamster wears (one skin per category) works like an upgrade at
+    // level 1, so every rule that reads an effect type picks it up by itself.
+    for (const effect of wornEffects()) {
+      if (isEffect(effect, type)) out.push({ effect, level: 1, fromTree: false, scope: 'wardrobe' });
+    }
     return out;
+  }
+
+  // Every effect of every skin being worn (starters have none).
+  function wornEffects(): Effect[] {
+    const out: Effect[] = [];
+    for (const cat of data.skinCategories || []) {
+      const id = getEquippedSkin(cat.id);
+      const def = id ? getSkinDef(id) : null;
+      if (def && def.effects) out.push(...def.effects);
+    }
+    return out;
+  }
+
+  // The sum of perLevel × level over one effect type (for the simple M10 twists).
+  function sumOf(type: 'offlineBonus' | 'jackpotTokens' | 'streakCap' | 'gambleHistory', overrides?: Overrides): number {
+    let sum = 0;
+    for (const { effect, level } of effectsOfType(type, overrides)) sum += effect.perLevel * level;
+    return sum;
   }
 
   // Product of multiplier ^ level over one effect type (1 if nothing is owned).
@@ -238,20 +261,23 @@ export function createGame(initialData: GameData, rng: Rng) {
     return m;
   }
 
-  // Payout bonuses ADD UP within a group and MULTIPLY between the two groups:
-  //   (1 + coin upgrade bonuses) × (1 + family bonuses)
+  // Payout bonuses ADD UP within a group and MULTIPLY between the groups:
+  //   (1 + coin upgrade bonuses) × (1 + family bonuses) × (1 + what you wear)
   // Family bonuses = family tree nodes + the heirloom bonus (see below).
   // e.g. Chubby Cheeks Lv 2 (+50%) with Family Pride (+25%) → 1.5 × 1.25 = ×1.875.
-  // Multiplying is what makes the family feel strong in every new life.
+  // Multiplying is what makes the family feel strong in every new life, and keeps
+  // a fur skin's +5% worth having however many Chubby Cheeks levels you own (M10).
   // (A Money: the heirloom bonus grows with the seeds, and seeds can grow huge.)
   function getPayoutMultiplier(overrides?: Overrides): Money {
     let upgrades = 1;
+    let wardrobe = 1;
     let family = money(1).add(getHeirloomBonus(overrides));
-    for (const { effect, level, fromTree } of effectsOfType('payoutMultiplier', overrides)) {
+    for (const { effect, level, fromTree, scope } of effectsOfType('payoutMultiplier', overrides)) {
       if (fromTree) family = family.add(effect.perLevel * level);
+      else if (scope === 'wardrobe') wardrobe += effect.perLevel * level;
       else upgrades += effect.perLevel * level;
     }
-    return family.mul(upgrades);
+    return family.mul(upgrades).mul(wardrobe);
   }
 
   // Heirloom bonus (M8): every seed you HOLD adds a little to payouts. Planting a
@@ -510,7 +536,8 @@ export function createGame(initialData: GameData, rng: Rng) {
   function getStreakCap(overrides?: Overrides): number {
     let cap = 0;
     for (const { effect, level } of effectsOfType('winStreak', overrides)) if (level > 0) cap = Math.max(cap, effect.maxStacks);
-    return cap;
+    // M10: the Gold Wheel lets a streak climb higher (only once you own Hot Streak).
+    return cap > 0 ? cap + sumOf('streakCap', overrides) : 0;
   }
 
   // The multiplier the NEXT winning paid spin on this machine gets.
@@ -672,6 +699,12 @@ export function createGame(initialData: GameData, rng: Rng) {
     // M9
     extraRespins: (def, o) => getHoldRespins(o),
     wheelBonus: (def, o) => getWheelAverage(o),
+    // M10: only worn skins have these (never sold or planted), but every effect type needs a preview
+    offlineBonus: () => getOfflineMultiplier(),
+    jackpotTokens: () => getJackpotTokens(),
+    streakCap: (def, o) => getStreakCap(o),
+    deliveryTokens: () => getDeliveryTokenEvery(),
+    gambleHistory: () => getCardHistoryLength(),
   };
 
   // The affected stat now, and after `levels` more levels (next = null when maxed).
@@ -960,7 +993,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       for (const w of paid) {
         if (!w.fullLine || w.symbolId !== t.jackpotSymbol) continue;
         state.stats.goldenJackpots++;
-        earnTokens(t.perJackpot, 'jackpot');
+        earnTokens(getJackpotTokens(), 'jackpot'); // M10: Golden Glow gives more
       }
     }
 
@@ -1260,7 +1293,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       g.won = roundMoney(g.won.sub(stake));
       state.stats.gambleLosses++;
     }
-    cardHistory = [{ suit: card.id, color: card.color }, ...cardHistory].slice(0, Math.max(1, data.gamble.history || 5));
+    cardHistory = [{ suit: card.id, color: card.color }, ...cardHistory].slice(0, getCardHistoryLength());
     events.emit('gambleResolved', {
       machineId: g.machineId, win, pick, card: { suit: card.id, color: card.color }, multiplier, stake, round: g.rounds, next: g.stake,
     });
@@ -1308,7 +1341,41 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // The last gamble cards, newest first: [{ suit, color }].
   function getCardHistory(): Card[] {
-    return cardHistory.map((c) => ({ ...c }));
+    return cardHistory.slice(0, getCardHistoryLength()).map((c) => ({ ...c }));
+  }
+
+  // How many past cards the gamble shows (M10: the Crown shows more).
+  function getCardHistoryLength(): number {
+    return Math.max(1, (data.gamble.history || 5) + sumOf('gambleHistory'));
+  }
+
+  // A Hamster Token every Nth delivery (M10: the Sunflower Field room tips more often). 0 = never.
+  function getDeliveryTokenEvery(): number {
+    const t = data.tokens;
+    let every = t && t.deliveryEvery > 0 ? t.deliveryEvery : 0;
+    for (const { effect } of effectsOfType('deliveryTokens')) if (effect.every > 0) every = every > 0 ? Math.min(every, effect.every) : effect.every;
+    return every;
+  }
+
+  // Tokens a golden jackpot gives (M10: Golden Glow gives more).
+  function getJackpotTokens(): number {
+    return (data.tokens ? data.tokens.perJackpot : 0) + sumOf('jackpotTokens');
+  }
+
+  // What the hamster is wearing that does something, slot by slot (M10), for the Wardrobe.
+  function getWardrobe(): { category: string; skinId: string; effects: Effect[] }[] {
+    const out = [];
+    for (const cat of data.skinCategories || []) {
+      const id = getEquippedSkin(cat.id);
+      const def = id ? getSkinDef(id) : null;
+      if (def && def.effects && def.effects.length) out.push({ category: cat.id, skinId: def.id, effects: def.effects.map((e) => ({ ...e })) });
+    }
+    return out;
+  }
+
+  // Offline earnings × this (M10: room skins).
+  function getOfflineMultiplier(): number {
+    return 1 + sumOf('offlineBonus');
   }
 
   // Food delivery: always allowed (even at 0 coins) unless one is already running.
@@ -1335,8 +1402,8 @@ export function createGame(initialData: GameData, rng: Rng) {
     events.emit('deliveryFinished', { reward });
 
     // Every Nth delivery brings back a tip: a Hamster Token. (A counter, not luck.)
-    const t = data.tokens;
-    if (t && t.deliveryEvery > 0 && state.stats.deliveries % t.deliveryEvery === 0) earnTokens(t.perDelivery, 'delivery');
+    const every = getDeliveryTokenEvery();
+    if (every > 0 && state.stats.deliveries % every === 0) earnTokens(data.tokens.perDelivery, 'delivery');
     checkDiary();
   }
 
@@ -1619,6 +1686,13 @@ export function createGame(initialData: GameData, rng: Rng) {
     return true;
   }
 
+  // Debug only: own every skin (to try the Wardrobe's buffs and looks).
+  function ownAllSkins(): boolean {
+    for (const s of data.skins || []) if (s.rarity !== 'starter') state.skins.owned[s.id] = true;
+    checkDiary();
+    return true;
+  }
+
   // Leave the Big Cage: the new pup's life starts (time runs again).
   function leaveBigCage(): boolean {
     if (!state.bigCage) return false;
@@ -1677,9 +1751,10 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // ─────────────── Hamster Tokens + the Hamster Diary ───────────────
-  // Tokens are a third currency. They only buy capsules (cosmetic skins), never
-  // power. They're earned from diary stickers, golden jackpots, every Nth
-  // delivery and retiring, and they're kept when the hamster retires.
+  // Tokens are a third currency. They only buy capsules (skins; since M10 a worn
+  // skin gives a small buff, the user's pick). They're earned from diary stickers,
+  // golden jackpots, every Nth delivery and retiring, and they're kept when the
+  // hamster retires. They can never be bought with real money.
 
   function changeTokens(amount: Money, source: TokenSource): void {
     state.tokens = state.tokens.add(amount);
@@ -1705,6 +1780,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       case 'generation': return state.generation;
       case 'treeNodes': return treeNodes().filter((n) => getTreeLevel(n.id) > 0).length;
       case 'skinsOwned': return Object.keys(state.skins.owned).length;
+      case 'categoryOwned': return Object.keys(state.skins.owned).filter((id) => (getSkinDef(id) || { category: '' }).category === goal.category).length;
       case 'machinesOwned': return state.machines.length;
       default: return 0;
     }
@@ -1819,6 +1895,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     if (!def || !isSkinOwned(id)) return false;
     state.skins.equipped[def.category] = id;
     events.emit('skinEquipped', { id, category: def.category });
+    checkDiary(); // M10: a hat adds Luck (the most Luck ever is a diary goal)
     return true;
   }
 
@@ -1835,7 +1912,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     if (!o || !(seconds >= o.minSeconds) || state.bigCage) return { seconds: 0, coins: money(0) };
     const counted = Math.min(seconds, o.maxSeconds);
     const perSecond = getEconomy().expectedAutoProfitPerSecond.max(0);
-    return { seconds: counted, coins: roundMoney(perSecond.mul(counted).mul(o.efficiency)) };
+    return { seconds: counted, coins: roundMoney(perSecond.mul(counted).mul(o.efficiency * getOfflineMultiplier())) };
   }
 
   function applyOfflineEarnings(seconds: number): boolean {
@@ -2011,7 +2088,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     // actions
     update, spin, startDelivery, buyUpgrade, buyMachine, switchMachine, retire, leaveBigCage, buyTreeNode, rebuild, pullCapsule, equipSkin,
     setBet, gamble, collectGamble,
-    applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, triggerHold, openBigCage, setData,
+    applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, triggerHold, openBigCage, ownAllSkins, setData,
 
     // queries: coins, upgrades
     getUpgradeDef, getAvailableUpgrades, getUpgradeLevel, getUpgradeCost, getUpgradeBulk, getUpgradeNeeds, isMaxed, canAfford, canBuyUpgrade,
@@ -2038,6 +2115,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
     // queries: tokens, diary, capsules, skins
     getDiaryProgress, getSkinDef, isSkinOwned, getEquippedSkin, getPullCost, canPull, getPityRemaining, getCapsuleOdds,
+    getWardrobe, getOfflineMultiplier, getJackpotTokens, getDeliveryTokenEvery, getCardHistoryLength,
 
     // saving
     toSaveData, loadSaveData,

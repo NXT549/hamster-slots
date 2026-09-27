@@ -8,11 +8,11 @@
 // (Capsules), payouts.ts (Info). Skin colours live in skins.ts, the pixel frames
 // for the cardboard/paper look are made in theme.ts, and the particles in fx.ts.
 
-import { applySprite, spriteImg, treeIcon, MACHINE_SPRITES, SUIT_SPRITES } from './art.ts';
+import { applySprite, spriteImg, treeIcon, hamsterSprite, MACHINE_SPRITES, SUIT_SPRITES } from './art.ts';
 import { createReels } from './reels.ts';
 import { createWinShow } from './winshow.ts';
 import { formatCoins, formatWhole, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle, popText } from './dom.ts';
-import { furColors, applyStageSkins } from './skins.ts';
+import { furColors, applyStageSkins, hatOf } from './skins.ts';
 import { createCapsulesView } from './capsules.ts';
 import { createBackupView } from './backup.ts';
 import { createShopView, describeEffect } from './shop.ts';
@@ -210,12 +210,14 @@ export function createUI(
   let capsulesNew = false;
 
   // Fill every <img data-sprite="…"> in the HTML with its pixel art. Hamster
-  // sprites get the equipped fur colours; call again after a fur change.
+  // sprites get the equipped fur colours and hat (M10); call again after a change.
   function paintStaticSprites() {
     const fur = furColors(game);
+    const hat = hatOf(game);
     for (const img of document.querySelectorAll<HTMLImageElement>('img[data-sprite]')) {
       const name = img.dataset.sprite!;
-      applySprite(img, name, Number(img.dataset.size || 48), name.startsWith('hamster') ? fur : null);
+      const isHamster = name === 'hamster' || name === 'hamster2';
+      applySprite(img, isHamster ? hamsterSprite(name, hat) : name, Number(img.dataset.size || 48), isHamster ? fur : null);
     }
   }
   // Skins: fur on the sprites, and wheel/machine/room colours on the stage.
@@ -1424,7 +1426,7 @@ export function createUI(
     // Hamster: two-frame run cycle (real time, purely visual).
     const frame = speed > 0 || delivering ? (Math.floor(now / 110) % 2 ? 'hamster2' : 'hamster') : 'hamster';
     const fur = furColors(game);
-    applySprite(el.hamster, frame, 48, fur);
+    applySprite(el.hamster, hamsterSprite(frame, hatOf(game)), 48, fur);
     el.hamster.classList.toggle('away', delivering);
     // Resting (the wheel still): the hamster breathes; left alone long enough, it dozes off (Zzz).
     const resting = speed === 0 && !delivering;

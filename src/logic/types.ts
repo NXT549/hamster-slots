@@ -122,6 +122,13 @@ export type Effect =
   // M9 (More machines): machine upgrades for the new features
   | { type: 'extraRespins'; perLevel: number } // hold & spin: more respins (to start with, and after every new coin)
   | { type: 'wheelBonus'; perLevel: number } // the cheese wheel: + this on every wedge
+  // M10 (Wardrobe buffs): what a worn skin can do (skins also use payoutMultiplier,
+  // spinSpeed, spinCostMultiplier, luck and extraFreeSpins)
+  | { type: 'offlineBonus'; perLevel: number } // offline earnings × (1 + this)
+  | { type: 'jackpotTokens'; perLevel: number } // this many more Hamster Tokens for a golden jackpot
+  | { type: 'streakCap'; perLevel: number } // Hot Streak can climb this many steps higher
+  | { type: 'deliveryTokens'; every: number } // a Hamster Token every Nth delivery (instead of the usual)
+  | { type: 'gambleHistory'; perLevel: number } // the card gamble shows this many more past cards
   | { type: 'shiftWeight'; from: string; to: string; amount: number }
   | { type: 'fullLineMultiplier'; multiplier: number }
   | { type: 'startingLevel'; upgrade: string; levels: number }
@@ -173,6 +180,7 @@ export interface Rarity extends Named {
 export interface SkinDef extends Named {
   category: string;
   rarity: string; // "starter" or a capsule rarity id
+  effects?: Effect[]; // M10: what wearing it does (level 1 while worn; none for starters)
 }
 
 // A Hamster Diary goal. "stat" goals name a lifetime stat (see Stats below).
@@ -182,6 +190,7 @@ export type Goal =
   | { type: 'generation'; target: number }
   | { type: 'treeNodes'; target: number }
   | { type: 'skinsOwned'; target: number }
+  | { type: 'categoryOwned'; category: string; target: number } // M10: skins found in one category (e.g. hats)
   | { type: 'machinesOwned'; target: number };
 
 export interface Sticker {

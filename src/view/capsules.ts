@@ -10,7 +10,7 @@ import { skinPreview } from './skins.ts';
 import type { Sound } from './sound.ts';
 import type { Fx } from './fx.ts';
 import type { Game } from '../logic/game.ts';
-import type { GameEvents } from '../logic/types.ts';
+import type { GameEvents, Effect, SkinDef } from '../logic/types.ts';
 import type { Settings } from '../platform/save.ts';
 
 // The capsule wobbles this long before it opens. View only: the game already
@@ -25,7 +25,7 @@ export function createCapsulesView(
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
     tokens: $('cap-tokens'), pullBtn: $<HTMLButtonElement>('pull-btn'), odds: $('cap-odds'), pity: $('cap-pity'),
-    machine: $('cap-machine'), reveal: $('cap-reveal'), wardrobe: $('wardrobe'), diary: $('diary'),
+    machine: $('cap-machine'), reveal: $('cap-reveal'), wardrobe: $('wardrobe'), wardrobeTotal: $('wardrobe-total'), diary: $('diary'),
   };
   const subtabs = createSubTabs($('capsules-subtabs'), $('tab-capsules'), { key: 'capsules', settings, onSettingsChange });
   let stickersSeen = Object.keys(game.state.diary).length; // for the Diary dot
@@ -35,6 +35,32 @@ export function createCapsulesView(
 
   const rarityName = (id: string) => (id === 'starter' ? 'Starter' : (game.data.capsules.rarities.find((r) => r.id === id) || { name: id }).name);
   const categoryName = (id: string) => (game.data.skinCategories.find((c) => c.id === id) || { name: id }).name;
+
+  // ─────────────────────── what a skin does (M10) ───────────────────────
+  // One effect of a worn skin, in words. The first effect of a skin is its slot's
+  // buff; an Epic's second one is its twist.
+  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  function describeWear(e: Effect): string {
+    switch (e.type) {
+      case 'payoutMultiplier': return `+${pct(e.perLevel)} payouts`;
+      case 'spinSpeed': return `spins ${pct(1 - e.multiplier)} faster`;
+      case 'spinCostMultiplier': return `spins ${pct(1 - e.perLevel)} cheaper`;
+      case 'offlineBonus': return `+${pct(e.perLevel)} offline earnings`;
+      case 'luck': return `+${e.perLevel} Luck`;
+      case 'jackpotTokens': return `golden jackpots give ${game.data.tokens.perJackpot + e.perLevel} tokens`;
+      case 'streakCap': return `Hot Streak climbs ${e.perLevel} step${e.perLevel === 1 ? '' : 's'} higher`;
+      case 'extraFreeSpins': return `+${e.perLevel} free spins a trigger`;
+      case 'deliveryTokens': return `a token every ${ordinal(e.every)} delivery`;
+      case 'gambleHistory': return `the card gamble shows ${e.perLevel} more past cards`;
+      default: return '';
+    }
+  }
+  // "+5% payouts", or for an Epic "+20% payouts · ✦ golden jackpots give 2 tokens".
+  function wearText(def: SkinDef): string {
+    const effects = def.effects || [];
+    if (!effects.length) return 'no buff';
+    return effects.map((e, i) => (i === 0 ? describeWear(e) : `✦ ${describeWear(e)}`)).join(' · ');
+  }
 
   // ─────────────────────── building ───────────────────────
 
@@ -68,12 +94,13 @@ export function createCapsulesView(
         const tile = document.createElement('button');
         tile.className = 'skin-tile';
         tile.innerHTML = `<span class="skin-preview"></span><span class="skin-name"></span>
-          <span class="rarity-chip rarity-${def.rarity}">${rarityName(def.rarity)}</span><span class="skin-state"></span>`;
+          <span class="rarity-chip rarity-${def.rarity}">${rarityName(def.rarity)}</span><span class="skin-buff"></span><span class="skin-state"></span>`;
         tile.querySelector('.skin-preview')!.appendChild(skinPreview(def, 48));
         tile.querySelector('.skin-name')!.textContent = def.name;
+        tile.querySelector('.skin-buff')!.textContent = wearText(def);
         tile.addEventListener('click', (e) => {
           (e.currentTarget as HTMLElement).blur();
-          if (game.equipSkin(def.id)) say(def.category === 'fur' ? 'Ooh, new fur! How do I look?' : `${def.name}! Looking cozy.`);
+          if (game.equipSkin(def.id)) say(wearLine(def));
         });
         grid.appendChild(tile);
         skinTiles.set(def.id, tile);
@@ -99,6 +126,44 @@ export function createCapsulesView(
       el.diary.appendChild(row);
       diaryRows.set(sticker.id, { row, fill: row.querySelector<HTMLElement>('.diary-fill')!, count: row.querySelector<HTMLElement>('.diary-count')! });
     }
+  }
+
+  // What the hamster says when it puts a skin on.
+  function wearLine(def: SkinDef): string {
+    const buff = def.effects && def.effects.length ? ` ${describeWear(def.effects[0]).replace(/^./, (c) => c.toUpperCase())}!` : '';
+    if (def.category === 'fur') return `Ooh, new fur! How do I look?${buff}`;
+    if (def.category === 'hat') return def.rarity === 'starter' ? 'Hat off!' : `A ${def.name}! How do I look?${buff}`;
+    return `${def.name}! Looking cozy.${buff}`;
+  }
+
+  // Everything being worn, added up: "+15% payouts · spins 5% faster · +6 Luck …" (M10).
+  function renderWardrobeTotal(): void {
+    let payouts = 0;
+    let speed = 1;
+    let cost = 1;
+    let offline = 0;
+    let luck = 0;
+    const twists: string[] = [];
+    for (const w of game.getWardrobe()) {
+      w.effects.forEach((e, i) => {
+        if (e.type === 'payoutMultiplier') payouts += e.perLevel;
+        else if (e.type === 'spinSpeed') speed *= e.multiplier;
+        else if (e.type === 'spinCostMultiplier') cost *= e.perLevel;
+        else if (e.type === 'offlineBonus') offline += e.perLevel;
+        else if (e.type === 'luck') luck += e.perLevel;
+        if (i > 0) twists.push(describeWear(e));
+      });
+    }
+    const parts = [];
+    if (payouts) parts.push(`+${pct(payouts)} payouts`);
+    if (speed < 1) parts.push(`spins ${pct(1 - speed)} faster`);
+    if (cost < 1) parts.push(`spins ${pct(1 - cost)} cheaper`);
+    if (offline) parts.push(`+${pct(offline)} offline earnings`);
+    if (luck) parts.push(`+${luck} Luck`);
+    const html = parts.length
+      ? `<b>What you're wearing:</b> ${parts.join(' · ')}${twists.length ? `<br>${twists.map((t) => `✦ ${t}`).join(' · ')}` : ''}`
+      : '<b>What you\'re wearing:</b> starter skins, no buffs yet. Pull capsules to find some!';
+    setHTML(el.wardrobeTotal, html);
   }
 
   // "1st", "2nd", "3rd", "5th", "12th" …
@@ -143,7 +208,7 @@ export function createCapsulesView(
     const button = (e.target as Element).closest<HTMLElement>('.wear-btn');
     if (!button) return;
     button.blur();
-    if (game.equipSkin(button.dataset.skin!)) say('Ooh, how do I look?');
+    if (game.equipSkin(button.dataset.skin!)) say(wearLine(game.getSkinDef(button.dataset.skin!)!));
   });
 
   // ─────────────────────── drawing ───────────────────────
@@ -165,6 +230,8 @@ export function createCapsulesView(
         say(`${def.name} again! Here are ${formatWhole(e.refund)} tokens back.`);
       } else if (e.rarity === game.data.capsules.pityRarity) {
         say(`WOW, a${/^[aeiou]/i.test(name) ? 'n' : ''} ${name} capsule: ${def.name}!`, 4000);
+      } else if (def.category === 'hat') {
+        say(`A new hat: the ${def.name}!`);
       } else {
         say(`A new ${categoryName(def.category).toLowerCase()} skin: ${def.name}!`);
       }
@@ -184,6 +251,7 @@ export function createCapsulesView(
           <span class="reveal-preview"><span class="reveal-rays rarity-${e.rarity}"></span></span>
           <div class="reveal-text"><div class="tile-name">${def.name}</div>
             <div><span class="rarity-chip rarity-${e.rarity}">${rarityName(e.rarity)}</span> <span class="note">${categoryName(def.category)}</span></div>
+            <div class="skin-buff">${wearText(def)}</div>
             ${badge}</div>
           ${button}
         </div>`;
@@ -220,6 +288,7 @@ export function createCapsulesView(
       tile.disabled = !owned;
       setText(tile.querySelector('.skin-state')!, wearing ? 'Wearing' : owned ? 'Tap to wear' : 'Not found yet');
     }
+    renderWardrobeTotal();
 
     for (const [id, r] of diaryRows) {
       const p = game.getDiaryProgress(id)!;

@@ -24,6 +24,7 @@ const HELP = `node tools/sim.mjs [options]
   --retire R             retire once pending seeds >= max(3, R x seeds earned)  (default 0.5)
   --first-minutes N      play the first life for exactly N minutes (no early retire)
   --bankroll N           a bet is only used if you hold N spins' worth of coins (default 40)
+  --no-capsules          never open capsules (to measure the game without the M10 wardrobe buffs)
   --plant S              at the Big Cage, plant a trait if it costs at most S x the
                          seeds held (or 1 seed); hold the rest for their bonus   (default 0.25)
   --data FILE            another data.json to try                               (default data.json)
@@ -32,7 +33,7 @@ const HELP = `node tools/sim.mjs [options]
 // ───────────────────────── Options ─────────────────────────
 
 function parseArgs(argv) {
-  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false };
+  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -47,6 +48,7 @@ function parseArgs(argv) {
     else if (a === '--plant') opts.plant = Number(next());
     else if (a === '--data') opts.data = next();
     else if (a === '--verbose') opts.verbose = true;
+    else if (a === '--no-capsules') opts.capsules = false;
     else { console.log(`Unknown option ${a}\n\n${HELP}`); process.exit(1); }
   }
   if (!['idle', 'active'].includes(opts.player)) { console.log('--player must be idle or active'); process.exit(1); }
@@ -172,6 +174,20 @@ function plantTree(g) {
   }
 }
 
+// M10: the Wardrobe. The bot opens a capsule whenever it has the tokens, and
+// wears the rarest skin it owns in every slot (rarer = a stronger buff).
+function dressUp(g) {
+  if (!opts.capsules || !data.capsules) return;
+  while (g.canPull()) g.pullCapsule();
+  const rank = ['starter', ...data.capsules.rarities.map((r) => r.id)];
+  for (const cat of data.skinCategories || []) {
+    const best = data.skins
+      .filter((s) => s.category === cat.id && g.isSkinOwned(s.id))
+      .sort((a, b) => rank.indexOf(b.rarity) - rank.indexOf(a.rarity))[0];
+    if (best && g.getEquippedSkin(cat.id) !== best.id) g.equipSkin(best.id);
+  }
+}
+
 // Just before retiring, coins are "use it or lose it" (the new pup starts over),
 // so the bot spends them finishing machines, cheapest machine first, and rebuilds
 // each finished one for a Machine Star (again and again while the coins last).
@@ -260,7 +276,7 @@ function playSeed(seed) {
       const ok = top.kind === 'machine' ? g.buyMachine(top.id) : g.buyUpgrade(top.id);
       if (ok) { ranking = null; nextMachineCheck = 0; }
     }
-    if (t >= nextMachineCheck) { chooseMachine(g); chooseBet(g); nextMachineCheck = t + 10; }
+    if (t >= nextMachineCheck) { chooseMachine(g); chooseBet(g); dressUp(g); nextMachineCheck = t + 10; }
 
     // When the Family tab (first seed pending) and the Capsules tab (10 tokens) would appear.
     if (num(g.getPendingSeeds()) >= 1 && num(g.state.seedsEarned) === 0) mark('seed1');
@@ -293,6 +309,7 @@ function playSeed(seed) {
       life.held = num(g.state.seeds); // seeds held into the next life
       life.bonus = num(g.getHeirloomBonus());
       life.totalStars = Object.values(g.state.stars).reduce((a, b) => a + b, 0);
+      life.skins = Object.keys(g.state.skins.owned).length; // M10: skins found so far
       g.leaveBigCage();
       if (treeDoneAt === null && data.familyTree.nodes.every((n) => n.maxLevel === null || g.isTreeMaxed(n.id))) treeDoneAt = t / 3600;
       startLife();
@@ -375,6 +392,7 @@ for (let i = 0; i < maxLives; i++) {
   parts.push(`Luck/hit ${luckAt}`);
   if (lives.some((l) => l.held || l.totalStars)) {
     parts.push(`held after ${range(lives.map((l) => l.held)).replace(/\.0/g, '')} (+${Math.round(median(lives.map((l) => l.bonus)) * 100)}%) · stars ${range(lives.map((l) => l.totalStars)).replace(/\.0/g, '')}`);
+    if (opts.capsules && lives.some((l) => l.skins)) parts.push(`skins found ${range(lives.map((l) => l.skins)).replace(/\.0/g, '')}`);
   }
   if (lives.some((l) => l.freeSpins || l.pots || l.holds)) {
     parts.push(`free-spin triggers ${median(lives.map((l) => l.freeSpins / (l.length / 60)))?.toFixed(1)}/h · pots ${median(lives.map((l) => l.pots / (l.length / 60)))?.toFixed(1)}/h`

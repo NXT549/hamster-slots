@@ -3,6 +3,7 @@
 // data.json lists the skins (id, name, category, rarity): that's game content,
 // the same on every platform. The colours live here, because data.json never holds art.
 //   Fur skins                → new colours for the hamster's palette letters (art.ts)
+//   Hats (M10)               → a hat drawn on the hamster's head (art.ts HATS)
 //   Wheel / machine / room   → new values for CSS theme tokens (style.css :root)
 //
 // A "room" skin colours the cage: the wall behind the bars (--wall-*), the wire
@@ -14,7 +15,7 @@
 // only recolour the cage. A Wardrobe swatch sets its own tokens on itself, and
 // anything it doesn't set falls back to the :root defaults, i.e. the classic look.
 
-import { spriteImg } from './art.ts';
+import { spriteImg, hamsterSprite } from './art.ts';
 import { mix } from './dom.ts';
 import type { Colors } from './art.ts';
 import type { Game } from '../logic/game.ts';
@@ -24,6 +25,7 @@ import type { SkinDef } from '../logic/types.ts';
 export interface SkinArt {
   colors?: Colors;
   tokens?: Record<string, string>;
+  hat?: string; // M10: a hat in art.ts HATS
 }
 
 export const SKIN_ART: Record<string, SkinArt> = {
@@ -35,6 +37,14 @@ export const SKIN_ART: Record<string, SkinArt> = {
   furLavender: { colors: { t: '#cdb6ea', T: '#a78fd0', c: '#f5edfc' } },
   furMint: { colors: { t: '#a9dfca', T: '#78c1a6', c: '#f1fbf6', p: '#8a5a3c' } }, // chocolate-chip ears and toes
   furGolden: { colors: { t: '#ffd35c', T: '#e3a72f', c: '#fff6c2' } },
+
+  hatNone: {},
+  hatParty: { hat: 'hatParty' },
+  hatBeanie: { hat: 'hatBeanie' },
+  hatFlowers: { hat: 'hatFlowers' },
+  hatTop: { hat: 'hatTop' },
+  hatCowboy: { hat: 'hatCowboy' },
+  hatCrown: { hat: 'hatCrown' },
 
   wheelClassic: {},
   wheelMint: { tokens: { '--wheel-bg': '#effaf5', '--wheel-ring': '#c3ead9', '--wheel-spoke': '#8fcfb5', '--wheel-hub': '#7fcbb8' } },
@@ -95,11 +105,17 @@ export function furColors(game: Game): Colors | null {
   return furPalette(game.getEquippedSkin('fur'));
 }
 
+// The hat the hamster is wearing (a name in art.ts HATS), or null.
+export function hatOf(game: Game): string | null {
+  const id = game.getEquippedSkin('hat');
+  return (id && SKIN_ART[id] && SKIN_ART[id].hat) || null;
+}
+
 // Put the equipped wheel / machine / room tokens on the stage element.
 export function applyStageSkins(game: Game, stage: HTMLElement): void {
   for (const name of SKIN_TOKENS) stage.style.removeProperty(name);
   for (const cat of game.data.skinCategories || []) {
-    if (cat.id === 'fur') continue; // fur is a sprite palette, drawn by ui.ts
+    if (cat.id === 'fur' || cat.id === 'hat') continue; // drawn on the hamster sprite by ui.ts
     const id = game.getEquippedSkin(cat.id);
     const art: SkinArt = (id && SKIN_ART[id]) || {};
     for (const [name, value] of Object.entries(art.tokens || {})) stage.style.setProperty(name, value);
@@ -110,6 +126,7 @@ export function applyStageSkins(game: Game, stage: HTMLElement): void {
 export function skinPreview(def: SkinDef, size = 48): HTMLElement {
   const art: SkinArt = SKIN_ART[def.id] || {};
   if (def.category === 'fur') return spriteImg('hamster', size, def.name[0], furPalette(def.id));
+  if (def.category === 'hat') return spriteImg(hamsterSprite('hamster', art.hat || null), size, def.name[0]);
   const swatch = document.createElement('div');
   swatch.className = `swatch swatch-${def.category}`;
   for (const [name, value] of Object.entries(art.tokens || {})) swatch.style.setProperty(name, value);

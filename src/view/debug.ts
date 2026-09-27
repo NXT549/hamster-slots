@@ -28,7 +28,7 @@ export function createDebugPanel(
       <button id="dbg-cage">Open the Big Cage</button>
     </div>
     <div class="row"><span class="row-label">Capsules</span>
-      <button data-tokens="10">+10 tokens</button><button data-tokens="100">+100 tokens</button>
+      <button data-tokens="10">+10 tokens</button><button data-tokens="100">+100 tokens</button><button id="dbg-skins">Every skin</button>
     </div>
     <div class="row"><span class="row-label">Bonus features (on the machine you're running)</span>
       <button id="dbg-free">+5 free spins</button>
@@ -80,6 +80,7 @@ export function createDebugPanel(
       if (!game.triggerJackpot(b.dataset.pot!)) setStatus('No jackpot wheel here (try the Pouch Palace), or the machine is busy.');
     });
   });
+  panel.querySelector('#dbg-skins')!.addEventListener('click', () => game.ownAllSkins());
   panel.querySelector('#dbg-hold')!.addEventListener('click', () => {
     if (!game.triggerHold(6)) setStatus('No hold & spin here (try the Acorn Vault), or the machine is busy.');
   });

@@ -257,7 +257,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     const luck = odds.luck;
     const blank = md.symbols.find((s) => s.blank);
     cards.push(card('clover', `Luck ${luck.total}`,
-      `Luck = Hamster Luck ${luck.hamster} (the Four-Leaf Clover, every machine) + Machine Luck ${luck.machine} (this machine only). Every symbol except the ${blank ? blank.name : 'blank'} lands ×${(1 + luck.total / 100).toFixed(2)} as often as with no Luck, so you hit more often: a paid spin wins on a line ${Math.round(odds.hitRate * 100)}% of the time here, and wins are worth more on average too.`));
+      `Luck = Hamster Luck ${luck.hamster} (the Four-Leaf Clover, family traits and your hat: every machine) + Machine Luck ${luck.machine} (this machine only). Every symbol except the ${blank ? blank.name : 'blank'} lands ×${(1 + luck.total / 100).toFixed(2)} as often as with no Luck, so you hit more often: a paid spin wins on a line ${Math.round(odds.hitRate * 100)}% of the time here, and wins are worth more on average too.`));
     const info = game.getMachineInfo(md.id)!;
     if (info.symbols.lockable > 0) {
       const unlock = game.getAvailableUpgrades().find((u) => u.effect.type === 'unlockSymbol');

@@ -544,6 +544,15 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **The Maze's pays ×1.5** (with the jar, before M9 ships): at the first pays a fresh Maze earned 0.62× a finished Palace, the lowest rung but one, and the simulated players skipped it (the idle one never bought it). At ×1.5 it's 0.95× (like the Palace over the Bonanza) and they buy it around generation 12–13; the later lives grow to 22–40 min (idle) as they work through it. The rest of the ladder was checked the same way and left alone: every rung is 0.47–0.95× the finished rung before (coins per second at ×1, every upgrade, no Hamster Luck); the Vault is now 0.51×, like the Stacker's 0.47×.
 - **The golden run** was re-recorded for it (approved: the user's pick): the family session (it plants Family Fortune) and the moreMachines session (the Maze) changed; the others play exactly as before.
 
+**D129 — M10, Wardrobe buffs: how it's built** (the user's picks, 2026-09-27, after "keep going": gentle buffs, 6 hats for Luck, a twist on every Epic, one skin per slot; earlier: "what you wear gives the buff", "hats come from capsules").
+- **Worn skins are effects.** Each skin in data.json lists its `effects` (like an upgrade's `effect`), and `effectsOfType` adds the worn skins' effects at level 1 (scope `wardrobe`). So every rule that reads an effect type picks them up with no special cases: Luck (a hat is Hamster Luck), spin time and auto-spin (`spinSpeed`), spin cost, free spins (`extraFreeSpins`), and every preview, EV and odds on screen stay exact. New effect types only for what didn't exist: `offlineBonus`, `jackpotTokens`, `streakCap`, `deliveryTokens`, `gambleHistory`. *Rejected: a separate "wardrobe bonus" system* (every rule would have needed to ask it, and some would have been missed).
+- **Fur is its own payout group** (× (1 + fur)), not added to the coin upgrades: Chubby Cheeks reaches hundreds of %, which would drown a +5%. *Rejected: adding to the family group* (the seed jar caps that group's heirloom part, and it would have mixed two systems).
+- **Numbers per skin, checked by a test:** every skin of a slot gives the slot's buff, the same for one rarity, stronger for rarer ones, one twist per Epic and none otherwise (`tests/logic/wardrobe.test.js`). The sizes are the user's "gentle": +5/10/20% payouts and offline, 5/10/15% faster or cheaper spins, +3/6/12 Luck.
+- **Hats are drawn into the hamster sprite** (art.ts `HATS`, registered as `hamster.hatParty` …), so every place that draws the hamster (the wheel, the tube, the Family tab, the Big Cage, the logo) wears the hat with no extra element to keep in step with its animations. They only use colours fur skins never recolour. *Rejected: a hat element layered over the hamster* (the hop, the breathing and the scale would each have needed to move it too).
+- **No save change:** the save already stores what's owned and worn per category, and a missing category means its starter. An older save wears no hat. Putting a skin on now checks the diary (a hat's Luck is the "most Luck" stat).
+- **Tokens stay earn-only** (no real money, ever). The capsule pool grows from 18 to 24 skins, so a full collection takes ~151 pulls instead of ~110.
+- **The simulator's bot** opens a capsule whenever it can and wears its rarest skin in every slot; `--no-capsules` plays without (for before/after).
+
 ---
 
 ## Balance log
@@ -626,6 +635,11 @@ Every `data.json` change: date · value · old → new · why.
 | 2026-09-27 | `retirement.seedJar` (new) | — → **1** (+100%, 67 seeds) | The seed jar (D128): the heirloom bonus stops at the jar. Late lives: ~1 min → 2–9 min at gens 12–15, 22–40 min by gen 18 (idle). |
 | 2026-09-27 | Family Fortune | +0.5% per held seed per level (`heldSeedBonus`) → **the jar +25% per level** (`seedJar`); cost unchanged (3 × 1.5ⁿ) | The endless seed sink once the jar is full (D128). Tried +50% a level: the same lives. |
 | 2026-09-27 | Hamster Maze pays | ×1.5 (seed 60K/120K/240K → 90K/180K/360K … golden 8M/80M/1.2B → 12M/120M/1.8B) | Fresh RTP 1,219% → 1,828%; a fresh Maze earns 0.95× a finished Palace (was 0.62×), so the simulated players buy it (D128). |
+| 2026-09-27 | `schemaVersion` | 10 → 11 | M10: `effects` on skins, the `hat` category, the effect types `offlineBonus`, `jackpotTokens`, `streakCap`, `deliveryTokens`, `gambleHistory`, the goal type `categoryOwned`. |
+| 2026-09-27 | Skin buffs (new, M10) | — → fur +5% / +10% / +20% payouts · wheel spins ×0.95 / ×0.9 / ×0.85 · machine spin cost ×0.95 / ×0.9 / ×0.85 · room offline +5% / +10% / +20% · hat +3 / +6 / +12 Luck (Common / Rare / Epic) | The user's "gentle" (D129). Simulator: lives ~10–30% shorter from the middle game on, whole tree ~1 h sooner (idle). |
+| 2026-09-27 | Epic twists (new, M10) | — → Golden Glow +1 token a golden jackpot · Crown +2 gamble cards · Gold Wheel +1 Hot Streak step · Midnight Clunky +2 free spins · Sunflower Field a token every 3rd delivery | One per Epic (D129). |
+| 2026-09-27 | Hats (new capsule skins) | — → Party Hat, Beanie, Flower Crown (common) · Top Hat, Cowboy Hat (rare) · Crown (epic) + No Hat (starter) | Capsule pool 18 → 24; a full collection ~110 → ~151 pulls (2,000 seeds). |
+| 2026-09-27 | Diary | 38 stickers / 119 tokens → 39 / 122 | + Hat Trick (find 3 hats, 3). |
 | 2026-09-27 | Diary | 34 stickers / 102 tokens → 38 / 119 · Full Cage "own every machine" → "own four machines" (its target was always 4) | + A-maze-ing (50 ways at once, 3), Nut Hoarder (the Grand, 5), The Big Cheese (a ×10 wedge, 4), Whole Arcade (own all seven, 5). |
 
 ---
@@ -637,6 +651,17 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-09-27 · M10 · Wardrobe buffs (automated, not a real playtest)**
+- `node tools/sim.mjs --lives 18 --seeds 3`, idle and active, with the wardrobe (the bot opens capsules and wears its rarest skins) and with `--no-capsules`; life lengths in minutes:
+  - **Idle, without:** 49–62 · 38–48 · 40–50 · 50–56 · 44–61 · 32–39 · 23–31 · 14–18 · 14–19 · 7–14 · 6–9 · 5–6 · 4–6 · 5–6 · 2–6 · 3–24 · 12–25 · 22–40; whole tree 5.7–6.3 h.
+  - **Idle, with:** 50–61 · 32–47 · 38–42 · 36–57 · 46–55 · 32–48 · 9–23 · 11–15 · 6–13 · 5–9 · 3–9 · 4–8 · 3–6 · 4–5 · 3–7 · 2–7 · 3–6 · 6–14; whole tree 4.7–5.8 h. Skins found: 2–3 after gen 1, 5 by gen 4, 9 by gen 9, 10–12 by gen 18.
+  - **Active, without:** 28–32 · 27–33 · 28–32 · 27–36 · 27–35 · 22–26 · 11–19 · 10–16 · 7–9 · 6–10 · 4–7 · 3 · 3–5 · 3–5 · 4–9 · 7–29 · 5–11 · 7–17; whole tree 3.5–4.0 h.
+  - **Active, with:** 31–33 · 23–25 · 21–29 · 25–33 · 19–35 · 18–27 · 14 · 11–12 · 9–13 · 6–7 · 4–7 · 3–5 · 2–3 · 1–4 · 2–4 · 4–5 · 4–5 · 3–11; whole tree 3.4–3.6 h.
+  - Gens 16–18 swing with when the Big Cheese arrives (gen 16 without the wardrobe, gen 18 with it in these runs).
+- **The collection:** 24 skins in capsules; ~151 pulls on average to own them all (median 136, 1 in 10 needs 237+; 2,000 seeds), ~1,000–1,150 tokens after refunds.
+- **Chromium** (1280 and 390 px, no console errors): the hamster in the Crown on the wheel and in the logo (lavender fur), the Gold Wheel, Grape Clunky, Sunflower Field; "Luck 12" on the machine; the Wardrobe's line ("What you're wearing: +10% payouts · spins 15% faster · spins 10% cheaper · +20% offline earnings · +12 Luck", then the ✦ twists); every tile's buff; a capsule reveal with its buff ("+5% offline earnings").
+- **Tests:** 1,774 pass (59 in the new `tests/logic/wardrobe.test.js`); the golden run re-recorded (the family session opens capsules and wears skins; the others are unchanged). Found while testing: putting a hat on didn't note its Luck in the "most Luck" stat until the next diary check (a save made then changed on load); putting a skin on now checks the diary.
 
 **2026-09-27 · M9 · the seed jar and the Maze ×1.5 (automated, not a real playtest)**
 - The user picked the seed jar (D128). `node tools/sim.mjs --lives 18 --seeds 3`, idle and active (the bot now plants Family Fortune when a bigger jar raises the family's bonus), life lengths in minutes:

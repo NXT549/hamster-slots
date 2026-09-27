@@ -19,6 +19,12 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 - Four new diary stickers: A-maze-ing, Nut Hoarder, The Big Cheese and Whole Arcade.
 - New stats: the most ways won at once, hold & spin bonuses and Grands, and the best cheese wedge.
 
+- **Wardrobe buffs.** Every skin you wear now does something: fur → bigger payouts, wheel → faster spins, machine → cheaper spins, room → more coins while you're away. Rarer skins give more (Common +5%, Rare +10%, Epic +20%, or 5/10/15% for spins).
+- **Hats!** A new capsule category: the Party Hat, Beanie, Flower Crown, Top Hat, Cowboy Hat and the Crown, worn on your hamster's head wherever it goes. Each one adds Luck on every machine (+3, +6 or +12).
+- **Every Epic has a twist:** Golden Glow gives 2 tokens for a golden jackpot, the Crown shows 2 more cards in the gamble, the Gold Wheel lets Hot Streak climb higher, Midnight Clunky gives 2 more free spins, and Sunflower Field tips a token every 3rd delivery.
+- The Wardrobe shows what every skin does and adds up everything you're wearing at the top.
+- A new diary sticker: Hat Trick (find 3 hats).
+
 ### Changed
 
 - **The seed jar.** Heirloom Seeds you hold still give +1.5% payouts each, but only until the jar is full: up to +100% (67 seeds). **Family Fortune** now makes the jar bigger (+25% a level) instead of making every seed pay a little more. The Big Cage shows how full your jar is; once it's full, plant the extra seeds. Late in the game, when a family has thousands of seeds, lives no longer shrink to a minute.

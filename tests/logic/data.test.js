@@ -139,7 +139,7 @@ describe('data.json sanity: tokens, capsules, skins, diary', () => {
   check('skin ids are unique', new Set(skinIds).size === skinIds.length);
   const stickerIds = data.diary.map((d) => d.id);
   check('diary ids are unique', new Set(stickerIds).size === stickerIds.length);
-  const goalTypes = ['stat', 'upgradeLevel', 'generation', 'treeNodes', 'skinsOwned', 'machinesOwned'];
+  const goalTypes = ['stat', 'upgradeLevel', 'generation', 'treeNodes', 'skinsOwned', 'machinesOwned', 'categoryOwned'];
   check('"machinesOwned" goals are reachable', data.diary.filter((d) => d.goal.type === 'machinesOwned').every((d) => d.goal.target <= data.machines.length));
   check('every diary goal has a known type', data.diary.every((d) => goalTypes.includes(d.goal.type)));
   const statKeys = Object.keys(newGame().state.stats);
