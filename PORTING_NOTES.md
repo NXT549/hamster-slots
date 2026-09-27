@@ -13,8 +13,8 @@ One codebase: TypeScript + Vite (D107). The build makes a static site (`dist/`: 
 
 | # | Platform | How it ships | Needs | Status |
 |---|---|---|---|---|
-| 1 | **Web: GitHub Pages** | A GitHub Actions workflow runs the tests and the build on every push to `main`, then publishes `dist/` to Pages. Friends play from a link. | The TS + Vite migration (done, 0.2.0), a GitHub repo, a build that works from the repo's sub-path (done: `base: './'`) | **Live** since 2026-09-26: https://nxt549.github.io/hamster-slots/ (Step 4, D118); **1.0.0** since 2026-09-27 (D123) |
-| 2 | **itch.io** | `dist/` uploaded as a zip, as an HTML5 game played in the browser on itch | Relative paths in the build (done); export/import saves (done, 0.2.0); the store-rule check (DESIGN §11); an itch.io account (the user's) | Later, after 1.0 |
+| 1 | **Web: GitHub Pages** | A GitHub Actions workflow runs the tests and the build on every push to `main`, then publishes `dist/` to Pages. Friends play from a link. | The TS + Vite migration (done, 0.2.0), a GitHub repo, a build that works from the repo's sub-path (done: `base: './'`) | **Live** since 2026-09-26: https://nxt549.github.io/hamster-slots/ (Step 4, D118); **1.0.0** and **1.1.0** since 2026-09-27 (D123, D130) |
+| 2 | **itch.io** | `dist/` uploaded as a zip, as an HTML5 game played in the browser on itch | Relative paths in the build (done); export/import saves (done, 0.2.0); the store-rule check (DESIGN §11); an itch.io account (the user's) Not started (1.0 is out, so it can go next whenever the user wants) |
 | 3 | **Steam** | `dist/` inside a desktop wrapper: **Electron or Tauri** (not decided yet) | A desktop platform layer (file saves, Steam Cloud, maybe achievements), a store page, content ratings | Later |
 | 4 | **Mobile** (maybe) | `dist/` inside **Capacitor** (iOS and Android apps) | A mobile platform layer (native storage, app pause/resume), touch-friendly controls, store review | Maybe, later |
 

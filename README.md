@@ -14,7 +14,7 @@ Spin the reels, win coins, buy upgrades, and teach your hamster to run the wheel
 
 - **Seven slot machines**: Old Clunky, the Snack Stacker, the Burrow Bonanza, the Pouch Palace, and for the late game the Hamster Maze (243 ways), the Acorn Vault (hold & spin) and the Big Cheese (a multiplier wheel). Paylines, bets, wilds, free spins, a jackpot wheel with four pots, and a card gamble.
 - **Upgrades** for your hamster and for every machine: payouts, auto-spin, Luck, new symbols, Pays Both Ways and more.
-- **Retirement and the Big Cage**: every seed you hold pays a bonus, or plant it in the Family Tree for a trait the family keeps forever.
+- **Retirement and the Big Cage**: every seed you hold pays a bonus (up to the seed jar), or plant it in the Family Tree for a trait the family keeps forever.
 - **Machine Stars**: max a machine's upgrades and rebuild it for a star it keeps for good.
 - **The Capsule Machine**: Hamster Tokens from your Hamster Diary buy skins for the hamster, its hat, the wheel, the machine and the room, and everything you wear gives a small buff.
 - It saves by itself, keeps earning a little while you're away, and has a save backup code (Menu → Save backup).
