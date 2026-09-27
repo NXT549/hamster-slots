@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased] · 1.3.1 "Nuts & Bolts"
+## [Unreleased]
+
+## [1.3.1] - 2026-09-27 · Nuts & Bolts
 
 **A big upgrades update: 20 new upgrades (some you unlock by retiring, some with diary stickers), four new Family Tree traits, a helper hamster that buys upgrades for you, and wins that can pay double.**
 
@@ -163,7 +165,8 @@ The first numbered version: everything built so far.
 - **Cute extras:** the hamster-cage look, speech-bubble hints from your hamster, sound effects with a volume control, pixel sparkles and confetti, win banners, a Stats screen, and an Info tab with the paytable, the paylines, the real odds of every feature, and your recent wins.
 - **Settings:** less motion, quick reels, short or full numbers.
 
-[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/NXT549/hamster-slots/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/NXT549/hamster-slots/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/NXT549/hamster-slots/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/NXT549/hamster-slots/compare/v1.0.0...v1.1.0
