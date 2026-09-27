@@ -1,45 +1,49 @@
 // bigcage.ts — VIEW layer. The Big Cage (M8), redesigned in M15: the page between
 // lives, and the only place to plant Heirloom Seeds. It's a scene of its own: a
-// meadow where the family's huge tree grows (bigtree.ts paints it), with every
-// Family Tree trait sitting on its branches. Tap a trait to read about it and plant it.
+// meadow where the family's tree grows (bigtree.ts paints it), with the Family Tree's
+// traits on it. Tap a trait to read about it and plant it.
 //
-// Retiring plays the new rebirth animation: the hamster walks in with an Heirloom
-// Seed, digs, plants it, and a huge tree shoots up; its branches grow out and the
-// traits pop onto them. Then the numbers and the Start button slide in. A tap skips
-// it, and Motion "Less" shows the grown tree straight away.
+// The tree grows with the family (the user's picks): a trait only shows once the one
+// it needs is planted, and every trait you plant makes the tree grow, the trunk up to
+// the next level and a branch out to the traits it unlocked, which sprout as the branch
+// reaches them. A family that has planted nothing has a sapling with one trait.
+//
+// Retiring plays the rebirth animation: the hamster walks in with an Heirloom Seed,
+// digs, plants it, and the family's tree shoots up to the size the family has grown
+// it to. Then the numbers and the Start button slide in. A tap skips it, and Motion
+// "Less" shows the grown tree straight away (and grows it at once when you plant).
 //
 // Like the rest of the view, it only calls game actions (buyTreeNode, leaveBigCage)
 // and reads state. ui.ts creates it and calls render() every frame.
 
 import { spriteImg, treeIcon, applySprite, hamsterSprite } from './art.ts';
 import { furColors, hatOf } from './skins.ts';
-import { treeLayout, drawTree, grownTree, TREE_TOKENS } from './bigtree.ts';
+import { treeLayout, treeShape, trunkTop, leafClumps, drawTree, TREE_TOKENS } from './bigtree.ts';
 import { describeEffect } from './shop.ts';
 import { formatWhole, setText, setHTML, replayClass, iconHTML, popText } from './dom.ts';
 import { IRIS_MS } from './celebrate.ts';
 import { divide } from '../logic/money.ts';
-import type { Layout, Grow, TreeColors } from './bigtree.ts';
+import type { Layout, Shape, TreeColors, Clump } from './bigtree.ts';
 import type { Fx } from './fx.ts';
 import type { Sound } from './sound.ts';
 import type { Game } from '../logic/game.ts';
 import type { GameEvents } from '../logic/types.ts';
 import type { Money } from '../logic/money.ts';
 
-// The rebirth animation's timeline, in ms from when the Big Cage opens.
+// The rebirth animation's timeline, in ms from when the Big Cage opens. After the
+// seed goes in, the tree grows at its own pace (grow() below) and the numbers slide
+// in once it has finished (or at `latest`).
 const T = {
   walkEnd: 1000, // the hamster walks in from the left…
   seed: 1000, // …holds up the Heirloom Seed…
   digStart: 1250, digEnd: 1850, // …digs…
   dropStart: 1650, dropEnd: 1950, // …and the seed drops into the hole.
-  sprout: 1950,
-  trunkStart: 2100, trunkEnd: 3000, // the trunk shoots up
+  sprout: 1950, // the tree starts to grow
   hopBack: 2150, // the hamster jumps back out of the way
-  branchStart: 2600, branchStep: 140, branchFor: 520, // the branches grow out, bottom first
-  clumpDelay: 420, clumpFor: 380, // leaves pop out near a branch's tip
-  crown: [2850, 2980, 3110], // the crown's leaves
-  ui: 4300, // the numbers, the trait card and Start slide in
-  end: 4700,
+  latest: 7000, // the numbers slide in by now, even if the tree is still growing
+  outro: 400, // …and the animation ends this long after they do
 };
+const POP_MS = 380; // a bunch of leaves popping out
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const easeOut = (v: number) => 1 - Math.pow(1 - clamp01(v), 3);
@@ -49,6 +53,12 @@ const backOut = (v: number) => {
   const c = 1.9;
   return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2);
 };
+// Moves a value towards its target: quickly while it's far, never slower than `min` a second.
+function approach(value: number, target: number, dt: number, min: number, rate: number): number {
+  const d = target - value;
+  const step = Math.max(min, Math.abs(d) * rate) * dt;
+  return Math.abs(d) <= step ? target : value + Math.sign(d) * step;
+}
 
 interface Options {
   fx: Fx;
@@ -71,33 +81,42 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   const seedLabel = (text: string) => `${iconHTML('heirloom')}${text}`;
 
   let nodeEls = new Map<string, HTMLButtonElement>();
-  let labelEls: HTMLElement[] = [];
   let selected: string | null = null;
   let layout: Layout | null = null;
   let layoutKey = '';
   let colors = {} as TreeColors;
   let drawnKey = ''; // what the canvas shows now (it's only repainted when that changes)
-  let born = new Set<string>(); // traits that have popped onto the tree (during the animation)
+  // The tree as it's drawn: it eases towards treeShape() (see grow()).
+  const drawn = { trunk: 0, girth: 0, reach: [] as number[] };
+  let born = new Map<string, number>(); // bunches of leaves: when each popped out
+  let sprouted = new Set<string>(); // traits the tree has grown out to
+  let snap = true; // the next frame shows the tree grown, with no animation
+  let lastFrame = 0;
   let lastRetired: GameEvents['retired'] | null = null;
   let playIntro = false; // the next opening plays the rebirth animation
-  let intro: { start: number; fired: Set<string>; skipped: boolean } | null = null;
+  let intro: { start: number; fired: Set<string>; skipped: boolean; uiAt: number | null } | null = null;
   let openAt = 0; // the page waits for the iris to close on the old life first
   let heldRoll: { from: Money; at: number } | null = null; // the seeds held count up after a retirement
   let speech: { text: string; until: number } | null = null;
   let hamsterX = 0; // where the scene's hamster stands (screen pixels in the scene)
 
+  // The traits that show: planted ones, and the ones whose needs are all planted.
+  function shownTraits(): Set<string> {
+    const ft = game.data.familyTree;
+    return new Set(ft ? ft.nodes.filter((n) => game.getTreeLevel(n.id) > 0 || game.isTreeNodeUnlocked(n.id)).map((n) => n.id) : []);
+  }
+
   // ─────────────────────── building ───────────────────────
 
-  // One button per trait (placed over the tree by place()), and a sign per branch.
+  // One button per trait (placed over the tree by place()).
   function build(): void {
     el.nodes.replaceChildren();
     nodeEls = new Map();
-    labelEls = [];
     const ft = game.data.familyTree;
     if (!ft) return;
     for (const def of ft.nodes) {
       const btn = document.createElement('button');
-      btn.className = 'bt-node';
+      btn.className = 'bt-node unborn';
       btn.innerHTML = '<span class="bt-icon"></span><span class="node-cost"></span><span class="bt-name"></span>';
       btn.querySelector('.bt-icon')!.appendChild(spriteImg(treeIcon(def), 32, def.name[0]));
       btn.querySelector('.bt-name')!.textContent = def.name;
@@ -109,14 +128,9 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       el.nodes.appendChild(btn);
       nodeEls.set(def.id, btn);
     }
-    for (const branch of ft.branches.slice(1)) {
-      const sign = document.createElement('span');
-      sign.className = 'bt-sign';
-      sign.textContent = branch.name;
-      el.nodes.appendChild(sign);
-      labelEls.push(sign);
-    }
     if (!selected || !nodeEls.has(selected)) selected = ft.nodes[0] ? ft.nodes[0].id : null;
+    sprouted = new Set();
+    snap = true;
     layoutKey = ''; // place them again
   }
 
@@ -160,53 +174,67 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       btn.style.left = `${spot.x - bw / 2}px`;
       btn.style.top = `${spot.y - up}px`;
     }
-    layout.branches.forEach((b, i) => {
-      const sign = labelEls[i];
-      if (!sign) return;
-      sign.style.left = `${b.label.x}px`;
-      sign.style.top = `${b.label.y - b.r0 - 6}px`;
-    });
-    hamsterX = layout.base.x - layout.trunkR0 * 1.6 - 34;
+    hamsterX = layout.base.x - layout.trunkR0 * 1.6 - 40;
+    drawn.reach = layout.limbs.map((_, i) => drawn.reach[i] || 0);
     drawnKey = '';
   }
 
-  // ─────────────────────── the rebirth animation ───────────────────────
+  // ─────────────────────── growing ───────────────────────
 
-  // The order the branches grow in: bottom row first, left then right.
-  function growOrder(i: number): number {
-    const per = Math.ceil((layout ? layout.branches.length : 0) / 2);
-    return i < per ? i * 2 : (i - per) * 2 + 1;
-  }
-
-  // How grown everything is t ms into the animation (null: no animation, all grown).
-  function growAt(t: number | null, blossoms: number): Grow {
-    if (!layout) return { trunk: 0, branches: [], clumps: [], mound: 0, blossoms: 0 };
-    if (t === null) return grownTree(layout, blossoms);
-    const trunk = t < T.sprout ? 0 : t < T.trunkStart ? 0.06 * easeOut((t - T.sprout) / (T.trunkStart - T.sprout))
-      : 0.06 + 0.94 * easeOut((t - T.trunkStart) / (T.trunkEnd - T.trunkStart));
-    const branchStart = (i: number) => T.branchStart + growOrder(i) * T.branchStep;
-    const branches = layout.branches.map((_, i) => easeOut((t - branchStart(i)) / T.branchFor));
-    let crown = 0;
-    const clumps = layout.clumps.map((c) => {
-      const start = c.branch >= 0 ? branchStart(c.branch) + T.clumpDelay : T.crown[Math.min(crown++, T.crown.length - 1)];
-      return t < start ? 0 : backOut((t - start) / T.clumpFor);
-    });
-    const mound = t < T.digStart ? 0 : t < T.trunkStart ? clamp01((t - T.digStart) / (T.digEnd - T.digStart)) : clamp01(1 - (t - T.trunkStart) / 500);
-    return { trunk, branches, clumps, mound, blossoms: t >= T.ui ? blossoms : 0 };
-  }
-
-  // Has this trait grown onto the tree yet?
-  function isBorn(id: string, g: Grow): boolean {
-    if (!layout) return false;
-    const spot = layout.nodes.find((n) => n.id === id);
-    if (!spot) return false;
-    if (spot.branch < 0) {
-      if (spot.t === 0) return g.trunk > 0.25; // at the foot of the trunk
-      const crown = layout.clumps.findIndex((c) => c.branch < 0);
-      return (g.clumps[crown] || 0) > 0.9; // at the top of the crown
+  // One frame of growing: the trunk grows up first, a limb only once the trunk has
+  // reached it, leaves pop out where the wood has got to, and a trait sprouts when its
+  // branch (or the trunk) reaches it. `snap`: straight to the grown tree, no animation.
+  function grow(shape: Shape, shown: Set<string>, now: number, dt: number, allowed: boolean): Clump[] {
+    const L = layout!;
+    const instant = snap || lessMotion();
+    if (instant) {
+      drawn.trunk = shape.trunk;
+      drawn.girth = shape.girth;
+      drawn.reach = shape.reach.slice();
+    } else if (allowed) {
+      drawn.trunk = approach(drawn.trunk, shape.trunk, dt, 0.3, 2.6);
+      drawn.girth = approach(drawn.girth, shape.girth, dt, 0.25, 2.6);
+      const top = trunkTop(L, drawn.trunk);
+      L.limbs.forEach((l, i) => {
+        if (top <= l.p0.y - L.height * 0.02) drawn.reach[i] = approach(drawn.reach[i] || 0, shape.reach[i], dt, 0.45, 3.5);
+      });
     }
-    return (g.branches[spot.branch] || 0) >= spot.t;
+    const clumps = leafClumps(L, shown, drawn, shape);
+    for (const c of clumps) {
+      if (born.has(c.key)) continue;
+      const reached = c.limb < 0 ? drawn.trunk >= c.need && drawn.trunk > 0 : (drawn.reach[c.limb] || 0) >= c.need;
+      if (!reached) continue;
+      born.set(c.key, instant ? -Infinity : now);
+      if (!instant && !(intro && intro.skipped)) {
+        const p = scenePoint(c.x, c.y);
+        fx.burst(p.x, p.y, { count: 8, palette: [colors['--leaf'], colors['--leaf-light'], colors['--leaf-dark']], speed: 150, gravity: 240, size: 3, twinkle: false });
+      }
+    }
+    // A trait appears when the tree has grown out to it (the trunk up to it, or its limb out to it).
+    for (const spot of L.nodes) {
+      if (!shown.has(spot.id) || sprouted.has(spot.id)) continue;
+      const reached = spot.limb < 0 ? drawn.trunk > 0 && trunkTop(L, drawn.trunk) <= spot.y + 4 : (drawn.reach[spot.limb] || 0) >= spot.t - 0.001;
+      if (!reached) continue;
+      sprouted.add(spot.id);
+      const btn = nodeEls.get(spot.id);
+      if (btn && !instant) {
+        replayClass(btn, 'sprout');
+        fx.burstAt(btn, { count: 10, palette: [colors['--leaf-light'], '#ffffff', colors['--blossom']], speed: 120, gravity: 200, size: 3 });
+        sound.play('tick');
+      }
+    }
+    snap = false;
+    return clumps;
   }
+
+  // Has the tree finished growing (so the canvas can stop repainting)?
+  function settled(shape: Shape, clumps: Clump[], now: number): boolean {
+    const near = (a: number, b: number) => Math.abs(a - b) < 1e-3;
+    return near(drawn.trunk, shape.trunk) && near(drawn.girth, shape.girth) && shape.reach.every((r, i) => near(drawn.reach[i] || 0, r))
+      && clumps.every((c) => born.has(c.key) && now - born.get(c.key)! > POP_MS);
+  }
+
+  // ─────────────────────── the rebirth animation ───────────────────────
 
   // Things that happen once, at a moment of the animation (a sound, some particles).
   function cue(name: string, at: number, t: number, fn: () => void, always = false): void {
@@ -227,7 +255,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   }
 
   // The part of the animation that isn't the tree: the hamster, the seed, the cues.
-  function playScene(t: number, now: number): void {
+  function playScene(t: number, now: number, shape: Shape, done: boolean): void {
     if (!layout || !intro) return;
     const L = layout;
     const plantX = L.base.x - 30;
@@ -251,10 +279,8 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     el.seed.classList.toggle('hidden', !seedUp);
     if (seedUp) {
       const k = clamp01((t - T.dropStart) / (T.dropEnd - T.dropStart));
-      const sx = plantX + (L.base.x - plantX) * k;
-      const sy = L.ground - 84 + (80 * k * k); // falls faster and faster
-      el.seed.style.left = `${sx - 12}px`;
-      el.seed.style.top = `${sy - 12}px`;
+      el.seed.style.left = `${plantX + (L.base.x - plantX) * k - 12}px`;
+      el.seed.style.top = `${L.ground - 84 + 80 * k * k - 12}px`; // falls faster and faster
     }
     cue('hello', T.seed, t, () => {
       replayClass(el.hamster, 'hop');
@@ -274,37 +300,31 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       const p = scenePoint(L.base.x, L.ground - 4);
       fx.burst(p.x, p.y, { count: 18, palette: fx.colors.gold, speed: 120 });
     });
-    cue('grow', T.trunkStart, t, () => {
+    cue('grow', T.hopBack, t, () => {
       sound.play('sprout');
-      sound.play('anticipation');
-      replayClass(el.scene, 'rumble');
-      say('Whoa! Look at it grow!', 2200);
+      if (shape.tier > 0) {
+        sound.play('anticipation');
+        replayClass(el.scene, 'rumble');
+        say('Whoa! Look at our family\'s tree grow!', 2600);
+      } else say('A little sapling! It grows with every trait we plant.', 3000);
     });
-    cue('leaves', T.crown[0], t, () => {
-      const p = scenePoint(L.top.x, L.top.y);
-      fx.burst(p.x, p.y, { count: 40, palette: [colors['--leaf'], colors['--leaf-light'], colors['--leaf-dark']], speed: 260, gravity: 260, size: 4, twinkle: false });
-    });
-    L.branches.forEach((b, i) => {
-      cue(`branch${i}`, T.branchStart + growOrder(i) * T.branchStep + T.clumpDelay, t, () => {
-        const p = scenePoint(b.p2.x, b.p2.y);
-        fx.burst(p.x, p.y, { count: 14, palette: [colors['--leaf'], colors['--leaf-light'], colors['--blossom']], speed: 180, gravity: 240, size: 3, twinkle: false });
-        sound.play('tick');
-      });
-    });
-    // The numbers, the card and Start slide in; Heirloom Seeds rain down.
-    cue('ui', T.ui, t, () => {
+    // The numbers, the card and Start slide in once the tree has grown; seeds rain down.
+    if (intro.uiAt === null && ((done && t > T.hopBack + 600) || t >= T.latest || intro.skipped)) intro.uiAt = t;
+    cue('ui', intro.uiAt ?? Infinity, t, () => {
       el.dialog.classList.add('ui-in');
       if (heldRoll) heldRoll.at = performance.now();
       fx.rain('heirloom', el.scene, lastRetired ? Math.min(40, 12 + lastRetired.seedsGained.toNumber()) : 10, { scale: 2, floor: false });
-      say(game.data.familyTree.nodes.some((n) => game.canBuyTreeNode(n.id))
-        ? 'Tap a trait to plant it. Every pup after me is born with it!' : 'Start the new life when you\'re ready!', 4500);
+      say(shape.tier === 0 ? 'Plant Family Pride and watch the tree grow!'
+        : game.data.familyTree.nodes.some((n) => game.canBuyTreeNode(n.id)) ? 'Tap a trait to plant it. Every pup after me is born with it!'
+          : 'Start the new life when you\'re ready!', 4500);
     }, true);
   }
 
   function skip(): void {
     if (!intro) return;
     intro.skipped = true;
-    intro.start = performance.now() - T.end;
+    intro.start = Math.min(intro.start, performance.now() - T.hopBack - 460); // past the digging and the jump
+    snap = true;
   }
   el.scene.addEventListener('click', (e) => {
     if (intro && !(e.target as Element).closest('.bt-node')) skip();
@@ -321,17 +341,22 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     readColors();
     layoutKey = '';
     place();
-    born = new Set();
     const animate = playIntro && !lessMotion();
     playIntro = false;
-    intro = animate ? { start: now, fired: new Set(), skipped: false } : null;
+    // The animation grows the tree from the seed; otherwise it's simply there.
+    born = new Map();
+    sprouted = new Set();
+    for (const btn of nodeEls.values()) btn.classList.add('unborn');
+    drawn.trunk = 0;
+    drawn.girth = 0;
+    drawn.reach = drawn.reach.map(() => 0);
+    snap = !animate;
+    intro = animate ? { start: now, fired: new Set(), skipped: false, uiAt: null } : null;
     el.dialog.classList.toggle('playing', animate);
     el.dialog.classList.toggle('ui-in', !animate);
+    el.seed.classList.add('hidden');
     if (!animate) {
-      el.hamster.style.left = `${hamsterX - 24}px`;
-      el.hamster.style.top = `${(layout ? layout.ground : 0) - 46}px`;
       applySprite(el.hamster, hamsterSprite('hamster', hatOf(game)), 48, furColors(game));
-      el.seed.classList.add('hidden');
       if (heldRoll) heldRoll.at = now + 350;
       if (lastRetired) setTimeout(() => fx.rain('heirloom', el.scene, Math.min(40, 12 + lastRetired!.seedsGained.toNumber()), { scale: 2, floor: false }), 300);
     }
@@ -359,6 +384,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   });
   game.on('bigCageLeft', () => { lastRetired = null; });
   game.on('dataReloaded', build);
+  game.on('stateLoaded', () => { snap = true; });
 
   game.on('treeNodeBought', (e) => {
     sound.play('sprout');
@@ -376,8 +402,14 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       popText(button || node, game.isTreeMaxed(e.id) && level > 1 ? 'MAX!' : level > 1 ? `LV ${level}!` : 'Planted!', 'seed');
       popText(el.held, `−${formatWhole(e.cost)}`, 'seed');
     }
+    // The tree grows (render() eases it to its new shape); a new level makes it rumble.
+    if (layout && e.level === 1) {
+      const before = treeShape(layout, new Set([...shownTraits()].filter((id) => id !== e.id && game.getTreeNodeDef(id)!.requires.every((r) => r !== e.id))));
+      if (treeShape(layout, shownTraits()).tier > before.tier && !lessMotion()) replayClass(el.scene, 'rumble');
+    }
+    const unlocked = e.level === 1 && game.data.familyTree.nodes.some((n) => n.requires.includes(e.id));
     const line = treeLine(game.getTreeNodeDef(e.id)!.effect.type);
-    if (line) say(line);
+    say(unlocked ? `${line ? `${line} ` : ''}The tree is growing!` : line || '');
   });
 
   // Plant: the detail card is redrawn often, so it listens on the card itself.
@@ -398,28 +430,18 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
 
   // ─────────────────────── drawing ───────────────────────
 
-  function renderNodes(g: Grow): void {
+  function renderNodes(shown: Set<string>): void {
     for (const [id, btn] of nodeEls) {
       const level = game.getTreeLevel(id);
       const maxed = game.isTreeMaxed(id);
       btn.classList.toggle('owned', level > 0);
-      btn.classList.toggle('locked', !game.isTreeNodeUnlocked(id));
       btn.classList.toggle('ready', game.canBuyTreeNode(id));
       btn.classList.toggle('selected', id === selected);
-      // During the animation a trait appears when its branch has grown out to it.
-      const here = !intro || isBorn(id, g);
-      if (here && !born.has(id)) {
-        born.add(id);
-        if (intro && !intro.skipped) {
-          replayClass(btn, 'sprout');
-          fx.burstAt(btn, { count: 8, palette: [colors['--leaf-light'], '#ffffff'], speed: 110, gravity: 200, size: 3 });
-        }
-      }
-      btn.classList.toggle('unborn', !here);
+      // Only traits that show, and only once the tree has grown out to them.
+      btn.classList.toggle('unborn', !shown.has(id) || !sprouted.has(id));
       const cost = seedLabel(formatWhole(game.getTreeCost(id)));
       setHTML(btn.querySelector<HTMLElement>('.node-cost')!, maxed ? (level > 1 ? `Lv ${level}` : 'Owned') : level > 0 ? `Lv ${level} · ${cost}` : cost);
     }
-    for (const sign of labelEls) sign.classList.toggle('unborn', !!intro && g.trunk < 1);
   }
 
   function renderDetail(): void {
@@ -435,7 +457,6 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     const affordable = game.canBuyTreeNode(def.id);
     const branch = game.data.familyTree.branches.find((b) => b.id === def.branch);
     const maxText = def.maxLevel ? `Lv ${level}/${def.maxLevel}` : `Lv ${level}`;
-    const needs = unlocked ? '' : `<div class="note">Needs ${def.requires.map((r) => game.getTreeNodeDef(r)!.name).join(' + ')} first.</div>`;
     // What planting does to the heirloom bonus: the seeds it spends stop paying,
     // unless the jar stays full (M9); Family Fortune also makes the jar bigger.
     const held = game.state.seeds;
@@ -443,9 +464,12 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     const afterBonus = game.getHeirloomBonusFor(held.sub(cost).max(0), def.effect.type === 'seedJar' ? { [def.id]: level + 1 } : undefined);
     const change = afterBonus.eq(nowBonus) ? `heirloom bonus stays ${bonusText(nowBonus)} (the seed jar is still full)` : `heirloom bonus ${bonusText(nowBonus)} → ${bonusText(afterBonus)}`;
     const trade = unlocked && !maxed && held.gte(cost) ? `<div class="note">Planting spends ${formatWhole(cost)} of your ${formatWhole(held)} seeds: ${change}.</div>` : '';
+    // What planting it makes grow: the traits that need it.
+    const opens = level === 0 ? game.data.familyTree.nodes.filter((n) => n.requires.includes(def.id)) : [];
+    const grows = opens.length ? `<div class="note">Planting it grows the tree: ${opens.map((n) => n.name).join(', ')} ${opens.length === 1 ? 'appears' : 'appear'}.</div>` : '';
     const fill = maxed || affordable || !unlocked ? 0 : Math.min(100, divide(held, cost).toNumber() * 100);
     const buttonClass = maxed ? 'maxed' : affordable ? '' : 'poor';
-    const buttonText = maxed ? 'Owned' : !unlocked ? 'Locked' : seedLabel(`Plant · ${formatWhole(cost)}`);
+    const buttonText = maxed ? 'Owned' : seedLabel(`Plant · ${formatWhole(cost)}`);
     setHTML(el.detail, `
       <div class="tile-top">
         <div class="tile-icon">${iconHTML(treeIcon(def) || 'heirloom', 32)}</div>
@@ -453,7 +477,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       </div>
       <div class="tile-desc">${def.description}</div>
       <div class="tile-effect">${describeEffect(game, def, game.previewTreeNode(def.id))}</div>
-      ${needs}${trade}
+      ${trade}${grows}
       <button class="buy-btn ${buttonClass}"><span class="buy-fill" style="width:${fill.toFixed(1)}%"></span><span class="buy-label">${buttonText}</span></button>`);
   }
 
@@ -461,7 +485,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     const s = game.state;
     const name = game.getPupName();
     setText(el.sub, !lastRetired ? `${name} (generation ${s.generation}) is waiting to start.`
-      : intro && now - intro.start < T.ui ? `${lastRetired.oldName} is planting the family's Heirloom Seed…`
+      : intro && intro.uiAt === null ? `${lastRetired.oldName} is planting the family's Heirloom Seed…`
         : `${lastRetired.oldName} retired and planted the family's seed: +${formatWhole(lastRetired.seedsGained)} Heirloom Seeds. ${name} (generation ${s.generation}) is next.`);
     // The seeds held count up from what the family had before this retirement.
     let held = s.seeds;
@@ -484,7 +508,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       : `${formatWhole(s.seeds)} of ${formatWhole(jarSeeds)} seeds · up to +${Math.round(jar * 100)}%`);
     const stars = Object.values(s.stars).reduce((a, b) => a + b, 0);
     setHTML(el.stars, stars > 0 ? `${iconHTML('star', 16)}${stars}` : 'none yet');
-    setText(el.explain, `Every seed you hold gives +${Math.round(per * 1000) / 10}% payouts, until the seed jar is full (Family Fortune makes it bigger). Planting a seed gives that up, but the trait is the family's forever. `
+    setText(el.explain, `Every seed you hold gives +${Math.round(per * 1000) / 10}% payouts, until the seed jar is full (Family Fortune makes it bigger). Planting a seed gives that up, but the trait is the family's forever, and the tree grows. `
       + 'Coins, upgrades and machines start over; the seeds, the tree and Machine Stars stay. Time stands still until you start the new life.');
     setText(el.start, `Start ${name}'s life`);
   }
@@ -493,32 +517,44 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     const s = game.state;
     if (s.bigCage && !el.dialog.open && now >= openAt) open(now);
     else if (!s.bigCage && el.dialog.open) close();
+    const dt = Math.min(0.1, Math.max(0, (now - lastFrame) / 1000));
+    lastFrame = now;
     if (!s.bigCage || !el.dialog.open) return;
     place();
+    if (!layout) return;
     const t = intro ? now - intro.start : null;
-    const blossoms = Object.values(s.tree).reduce((a, b) => a + b, 0);
-    const g = growAt(t, blossoms);
+    const shown = shownTraits();
+    if (selected && !shown.has(selected)) selected = [...shown][0] || null; // the card never shows a hidden trait
+    const shape = treeShape(layout, shown);
+    const clumps = grow(shape, shown, now, dt, t === null || t >= T.sprout);
+    const done = settled(shape, clumps, now);
     // Repaint the canvas only when something on it changed (every frame while it grows).
-    const key = t !== null && t < T.end ? `t${Math.floor(t / 16)}` : `grown|${blossoms}`;
-    if (layout && key !== drawnKey) {
+    const blossoms = Object.values(s.tree).reduce((a, b) => a + b, 0);
+    const key = done ? `done|${blossoms}|${layoutKey}|${shown.size}` : `f${Math.floor(now / 16)}`;
+    if (key !== drawnKey) {
       drawnKey = key;
-      drawTree(ctx, layout, g, colors);
+      const mound = t === null ? 0 : t < T.digStart ? 0 : t < T.hopBack ? clamp01((t - T.digStart) / (T.digEnd - T.digStart)) : clamp01(1 - (t - T.hopBack) / 500);
+      drawTree(ctx, layout, {
+        trunk: drawn.trunk, girth: drawn.girth, reach: drawn.reach, mound, blossoms: done ? blossoms : 0,
+        clumps: clumps.map((c) => ({ ...c, scale: born.has(c.key) ? backOut((now - born.get(c.key)!) / POP_MS) : 0 })),
+      }, colors);
     }
     if (intro && t !== null) {
-      playScene(t, now);
-      if (t >= T.end) {
+      playScene(t, now, shape, done);
+      if (intro.uiAt !== null && t >= intro.uiAt + T.outro) {
         intro = null;
         el.dialog.classList.remove('playing');
         el.dialog.classList.add('ui-in');
       }
-    } else if (layout) {
+    }
+    if (!intro) {
       // Standing by the tree: it breathes.
       el.hamster.style.left = `${hamsterX - 24}px`;
       el.hamster.style.top = `${layout.ground - 46}px`;
     }
     el.hamster.classList.toggle('idle', !intro);
-    el.skip.classList.toggle('hidden', !intro);
-    renderNodes(g);
+    el.skip.classList.toggle('hidden', !intro || intro.uiAt !== null);
+    renderNodes(shown);
     renderDetail();
     renderNumbers(now);
     // The scene's speech bubble, over the hamster.

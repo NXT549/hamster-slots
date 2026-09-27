@@ -1237,8 +1237,6 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .bt-node.ready .bt-icon { --frame: var(--frame-paper-ready); }
 .bt-node.owned .bt-icon { --frame: var(--frame-paper-heirloom); }
 .bt-node.selected .bt-icon { --frame: var(--frame-paper-selected); }
-/* A trait you can't plant yet: its icon is faded, but the box stays solid (the tree never shows through) */
-.bt-node.locked .bt-icon img { filter: grayscale(1); opacity: 0.5; }
 .bt-node.owned .bt-icon { box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent); }
 .bt-node .node-cost {
   display: flex; align-items: center; gap: 3px; font-family: var(--font-num); font-weight: 900; color: var(--ink-soft);
@@ -1254,19 +1252,13 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   background: color-mix(in srgb, var(--paper) 88%, transparent); clip-path: var(--notch);
 }
 .bt-node:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
-.bt-node.unborn, .bt-sign.unborn { visibility: hidden; }
+.bt-node.unborn { visibility: hidden; } /* not planted or unlocked yet, or the tree hasn't grown out to it */
 .bt-node.sprout { transform-origin: 50% 100%; animation: sprout 0.55s cubic-bezier(0.3, 1.6, 0.5, 1); }
 @keyframes sprout { 0% { transform: scale(0.6, 0.3); } 50% { transform: scale(0.94, 1.14); } 75% { transform: scale(1.05, 0.96); } }
-/* A branch's sign: a little wooden plank on the branch, near the trunk */
-.bt-sign {
-  position: absolute; z-index: 2; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap;
-  padding: 0 6px 1px; background: var(--bark-light); color: var(--paper); border: 2px solid var(--bark-ink); clip-path: var(--notch);
-  font-family: var(--font-display); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-}
 /* A smaller scene (a phone): just the icons and costs (tap one for its name) */
 .bc-scene.compact .bt-icon { --fw: 6px; width: 100%; height: 42px; }
 .bc-scene.compact .bt-icon img { width: 28px; height: 28px; }
-.bc-scene.compact .bt-name, .bc-scene.compact .bt-sign { display: none; }
+.bc-scene.compact .bt-name { display: none; }
 .bc-scene.compact .bt-node .node-cost { font-size: 10.5px; padding: 0 3px 1px; }
 
 /* The numbers: seeds held, the heirloom bonus, Machine Stars and the seed jar */

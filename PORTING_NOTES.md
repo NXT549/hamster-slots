@@ -573,6 +573,13 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **The Family tab lost the tree** (the user's "tree only apears when you rebirth"); it lists the planted traits instead, so the family's traits can still be read between retirements. The old code that moved one tree between two homes (the Family tab and the Big Cage) is gone.
 - **The see-through traits** (the 1.1.0 playtest note, D131): the new traits' boxes stay solid when you can't plant them (only the icon fades), so the tree never shows through.
 
+**D133 — M15: the tree grows with the family** (the user's first look, 2026-09-27: "looks good tree looks a little clunky and goofy tho i only want new rebirth upgrades to appear after you buy the previous one also make the main trunk of the tree grown and reveal new upgrades as you buy the upgrades").
+- **Only traits you can plant show** (planted, or every trait they need is planted: `game.isTreeNodeUnlocked`). It's the game's own rule, so the view just hides the rest; no logic change.
+- **Levels instead of rows:** every branch's first trait on the first level, its second on the second, its third at the top, in a column of its own, so a trait sits right above the one it needs. That's what lets the trunk grow as you plant: after Family Pride all six first traits appear at once, on one level, and the trunk only has to reach the higher levels when their traits appear. The old layout (a branch per row, its traits outward) would have needed the whole trunk as soon as Family Pride was planted. *Rejected:* keeping the rows and growing only the branches (the trunk wouldn't grow, as the user asked); moving the traits as the tree grows (a trait you're about to tap would jump).
+- **Growing:** `treeShape()` says how big the tree is for the traits that show (the trunk's height by the highest level, its girth, each limb's reach to just past its last trait); bigcage.ts eases the drawn tree towards it every frame (the trunk first, a limb once the trunk has reached it), leaves pop where the wood has got to, and a trait sprouts when its branch reaches it. The same code grows the tree in the rebirth animation (from nothing) and after a plant (from its last size). Tested: planting the whole tree trait by trait, the shape never shrinks and always reaches every trait that shows.
+- **Less clunky (the art):** the bare stick branches with a leaf ball on the end read as goofy; now there's a canopy: a bunch of leaves behind every trait (sized to the traits' boxes on a phone), bunches along the limbs and a leafy tip, a crown that grows with the tree, each bunch several puffs, in two layers (dark behind the wood, lit in front). The trunk is thinner, tapers, sways a little and thickens with every level; limbs taper and have a knot at each trait; a shadow on the grass. The branch signs are gone (the columns and the card say which branch).
+
+
 
 ---
 
@@ -672,6 +679,10 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-09-27 · M15 · the growing tree (D133; automated checks, not a real playtest)**
+- Filmed at 1280×800 and 390×844: a new family's sapling (only Family Pride shows); planting it (the trunk shoots up to the first level, both limbs grow out, the 7 new traits sprout); Lucky Whiskers, Speedy Scooter and Big Backpack (the second and third levels' limbs grow out to just their traits); the whole tree planted (18 traits, a full canopy in bloom); retiring again (the full tree grows back from the seed in the animation). No console errors. Motion "Less" and a reload: the tree is there at once, the hidden traits hidden.
+- Tests: 1,885 pass (111 in `tests/bigtree.test.js`: the layout at 14 sizes, a trait right above the one it needs, the tree only ever growing and always reaching what shows).
 
 **2026-09-27 · M15 · the visual redesign (automated checks, not a real playtest)**
 - **No page scrolling:** the page's scroll height equals the window's at 1280×800, 1366×768, 1920×1080, 768×1024 and 390×844, and nothing overflows sideways, on the Upgrades (all three sub-tabs, the detail card open), Family, Capsules (machine, Wardrobe) and Info (paytable, features) tabs, with 1, 2 and 4 machines. At 1280×800 the tray is 435 px wide beside an 811 px cage, and the 5 hamster upgrades and Old Clunky's 5 fit with no scrolling; at 390×844 the cage is 370–416 px tall and the tray gets the rest (the rig zoomed to 0.61–0.71).

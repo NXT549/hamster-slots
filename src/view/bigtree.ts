@@ -1,36 +1,44 @@
-// bigtree.ts — VIEW layer. The family's huge tree in the Big Cage (M15).
+// bigtree.ts — VIEW layer. The family's tree in the Big Cage (M15).
 //
-// Retiring plants an Heirloom Seed, a huge tree shoots up, and the Family Tree's
-// traits sit on its branches. Two parts:
-//   1) treeLayout(): where the trunk, the branches, the leaves and every trait go,
-//      for a scene of any size. Pure maths (no DOM), so tests/bigtree.test.js can
-//      check that the traits never overlap, from a phone up to a big screen.
-//   2) drawTree(): paints the scene as real pixel art on a small canvas (each canvas
-//      pixel is `px` screen pixels, like a sprite drawn at 2× or 3×): the sky, the
-//      hills, the ground, and the tree at any moment of its growing (grow values
-//      from 0 to 1), with shading from the top-left and an outline around each part.
+// Retiring plants an Heirloom Seed and the family's tree grows in a meadow, with the
+// Family Tree's traits on it. The tree grows with the family: it starts as a sapling
+// holding the first trait, and every trait you plant makes it grow, the trunk up to
+// the next level and a branch out to the traits that trait unlocks (the user's pick:
+// a trait only appears once the one it needs is planted). Three parts:
+//   1) treeLayout(): where the trunk, the branches and every trait go in the grown
+//      tree, for a scene of any size. Pure maths (no DOM), so tests/bigtree.test.js can
+//      check that the traits never overlap, from a phone up to a big screen. A trait
+//      never moves as the tree grows: the tree grows out to it.
+//   2) treeShape() and leafClumps(): how big the tree is for the traits the family can
+//      see (how tall the trunk, how far each branch), and where its leaves go.
+//   3) drawTree(): paints the meadow and the tree as real pixel art on a small canvas
+//      (each canvas pixel is `px` screen pixels, like a sprite drawn at 2× or 3×), at any
+//      size it has grown to, shaded from the top-left with an outline around each part.
 //
-// The trunk carries the first branch in data.json ("Roots"): its first trait sits at
-// the foot of the trunk (every other trait needs it), the others at the top of the
-// crown. The other branches grow out of the trunk, half to the left, half to the right,
-// from the bottom up. Colours are theme tokens (style.css :root, TREE_TOKENS below).
+// The levels: the first trait of the Roots (data.json's first branch, Family Pride)
+// sits at the foot of the trunk and every other trait needs it; each other branch's
+// first trait sits on the lowest level, its second one level up, its third at the
+// top, always in the same column (so a trait is right above the one it needs). Half
+// the branches are columns on the left, half on the right; the Roots' other traits
+// sit on the trunk. Colours are theme tokens (style.css :root, TREE_TOKENS below).
 
 export interface Point { x: number; y: number }
 // One branch of the Family Tree, from data.json: its id and its traits in order.
 export interface BranchIn { id: string; nodes: string[] }
-// A trait's spot: its centre in screen pixels, and how far along its branch it sits
-// (0–1: the branch reaches it when it has grown that far).
-export interface NodeSpot extends Point { id: string; branch: number; t: number }
-export interface BranchGeom {
-  id: string; side: -1 | 1; p0: Point; p1: Point; p2: Point; r0: number; r1: number; label: Point;
-}
-export interface Clump extends Point { r: number; branch: number } // branch -1 = the crown
+// A trait's spot: its centre in screen pixels, its level, and where it grows from:
+// a limb (limb ≥ 0, `t` along it, 0 = the trunk) or the trunk (limb -1).
+export interface NodeSpot extends Point { id: string; branch: number; tier: number; limb: number; t: number }
+// A limb: one level's branch on one side, a curve from the trunk out to its tip.
+export interface Limb { tier: number; side: -1 | 1; p0: Point; p1: Point; p2: Point }
 export interface Layout {
   width: number; height: number; px: number; // the scene in screen pixels, and screen pixels per canvas pixel
   ground: number; // the ground line (screen pixels from the top)
-  base: Point; top: Point; trunkR0: number; trunkR1: number;
-  branches: BranchGeom[];
-  clumps: Clump[];
+  base: Point; // the foot of the trunk
+  tiers: number[]; // the height (y) of each level: 0 = the foot's trait, then the branches' levels
+  fullTop: number; // the top of the trunk when the tree is fully grown
+  trunkR0: number; // the trunk's radius at the foot, fully grown
+  leaf: number; // the size of a bunch of leaves
+  limbs: Limb[];
   nodes: NodeSpot[];
   node: { w: number; h: number; up: number }; // a trait's box, for the overlap checks
 }
@@ -49,12 +57,16 @@ export function bezier(p0: Point, p1: Point, p2: Point, t: number): Point {
   const u = 1 - t;
   return { x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x, y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y };
 }
-
-// Where a branch's traits sit along it (0 = the trunk, 1 = its tip).
-function spotsAlong(n: number): number[] {
-  if (n <= 1) return [0.8];
-  if (n === 2) return [0.55, 0.95];
-  return Array.from({ length: n }, (_, i) => 0.36 + (i * (0.95 - 0.36)) / (n - 1));
+// How far along a limb (t) it reaches a given x (x grows steadily along it, so halve the range).
+function tAtX(l: Limb, x: number): number {
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) / 2;
+    if ((bezier(l.p0, l.p1, l.p2, mid).x - x) * l.side < 0) lo = mid;
+    else hi = mid;
+  }
+  return (lo + hi) / 2;
 }
 
 export function treeLayout(width: number, height: number, trunk: string[], branches: BranchIn[]): Layout {
@@ -63,56 +75,127 @@ export function treeLayout(width: number, height: number, trunk: string[], branc
   const cx = Math.round(width / 2);
   const ground = Math.round(height * 0.9);
   const base = { x: cx, y: ground };
-  const top = { x: cx, y: Math.round(height * 0.14) };
-  const trunkR0 = Math.max(12, Math.min(34, width * 0.035));
-  const trunkR1 = trunkR0 * 0.45;
-  // Branches: the first half on the left, the rest on the right, each side from the bottom up.
+  const levels = Math.max(1, ...branches.map((b) => b.nodes.length)); // the branches' levels (3)
+  const yLow = height * 0.62;
+  const yHigh = height * 0.24;
+  const tiers = [ground - height * 0.1];
+  for (let k = 0; k < levels; k++) tiers.push(levels > 1 ? yLow - (k * (yLow - yHigh)) / (levels - 1) : (yLow + yHigh) / 2);
   const perSide = Math.ceil(branches.length / 2);
-  const yLow = 0.68;
-  const yHigh = 0.27;
-  const reach = Math.min(width * 0.44, height * 0.62);
-  const rise = height * 0.1;
-  const geoms: BranchGeom[] = [];
+  // The columns: the inner one a little way out from the trunk, the outer one near the edge.
+  const spread = Math.min(width * 0.41, height * 0.62);
+  const cols = Array.from({ length: perSide }, (_, j) => spread * (perSide > 1 ? 0.37 + (j * 0.63) / (perSide - 1) : 0.7));
+  const tip = Math.min(width * 0.05, width * 0.48 - spread); // a limb reaches a little past its last column
+  const limbs: Limb[] = [];
+  const limbOf = new Map<string, number>();
+  for (let tier = 1; tier <= levels; tier++) {
+    for (const side of [-1, 1] as const) {
+      const y = tiers[tier];
+      limbOf.set(`${tier}|${side}`, limbs.length);
+      limbs.push({
+        tier, side,
+        p0: { x: cx, y: y + height * 0.025 },
+        p1: { x: cx + side * spread * 0.45, y: y + height * 0.005 },
+        p2: { x: cx + side * (spread + tip), y: y - height * 0.06 },
+      });
+    }
+  }
   const nodes: NodeSpot[] = [];
-  const clumpR = Math.max(18, Math.min(70, Math.min(width, height) * 0.075));
-  const clumps: Clump[] = [];
+  // The Roots: the first trait at the foot of the trunk, the others on the trunk, a level each.
+  trunk.forEach((id, k) => {
+    const tier = Math.min(k, tiers.length - 1);
+    nodes.push({ id, branch: -1, tier, limb: -1, t: 0, x: cx, y: Math.round(tiers[tier]) });
+  });
   branches.forEach((b, i) => {
     const side: -1 | 1 = i < perSide ? -1 : 1;
-    const row = i < perSide ? i : i - perSide;
-    const y = height * (perSide > 1 ? yLow - (row * (yLow - yHigh)) / (perSide - 1) : (yLow + yHigh) / 2);
-    const p0 = { x: cx, y };
-    const p1 = { x: cx + side * reach * 0.45, y: y - rise * 0.15 };
-    const p2 = { x: cx + side * reach, y: y - rise };
-    const r0 = trunkR0 * 0.55;
-    geoms.push({ id: b.id, side, p0, p1, p2, r0, r1: r0 * 0.45, label: bezier(p0, p1, p2, 0.2) });
-    spotsAlong(b.nodes.length).forEach((t, k) => {
-      const p = bezier(p0, p1, p2, t);
-      nodes.push({ id: b.nodes[k], branch: i, t, x: Math.round(p.x), y: Math.round(p.y) });
+    const col = cols[i < perSide ? i : i - perSide];
+    b.nodes.forEach((id, d) => {
+      const limb = limbOf.get(`${d + 1}|${side}`)!;
+      const l = limbs[limb];
+      const t = tAtX(l, cx + side * col);
+      const p = bezier(l.p0, l.p1, l.p2, t);
+      nodes.push({ id, branch: i, tier: d + 1, limb, t, x: Math.round(p.x), y: Math.round(p.y) });
     });
-    // Leaves: a big clump at the tip, a smaller one along the top of the branch.
-    clumps.push({ ...bezier(p0, p1, p2, 1), r: clumpR, branch: i });
-    const mid = bezier(p0, p1, p2, 0.62);
-    clumps.push({ x: mid.x, y: mid.y - clumpR * 0.45, r: clumpR * 0.62, branch: i });
   });
-  // The crown around the top of the trunk.
-  clumps.push({ x: top.x, y: top.y + clumpR * 0.2, r: clumpR * 1.35, branch: -1 });
-  clumps.push({ x: top.x - clumpR * 1.2, y: top.y + clumpR * 0.75, r: clumpR, branch: -1 });
-  clumps.push({ x: top.x + clumpR * 1.2, y: top.y + clumpR * 0.75, r: clumpR, branch: -1 });
-  // The trunk's traits: the first at its foot, the rest side by side at the top.
-  trunk.forEach((id, k) => {
-    if (k === 0) nodes.push({ id, branch: -1, t: 0, x: cx, y: Math.round(ground - height * 0.1) });
-    else {
-      const others = trunk.length - 1;
-      const x = cx + (k - 1 - (others - 1) / 2) * (node.w + 8);
-      nodes.push({ id, branch: -1, t: 1, x: Math.round(x), y: top.y });
+  return {
+    width, height, px, ground, base, tiers, fullTop: tiers[tiers.length - 1] - height * 0.1,
+    trunkR0: Math.max(9, Math.min(26, width * 0.026)), leaf: Math.max(16, Math.min(56, Math.min(width, height) * 0.065)),
+    limbs, nodes, node,
+  };
+}
+
+// ─────────────────────── growing ───────────────────────
+
+// How big the tree is when the family can see these traits (the planted ones and the
+// ones they unlock). trunk: how tall, as a share of the grown trunk (a sapling if only
+// the first trait shows); girth: how thick (0–1); reach: how far each limb has grown out
+// (0 = not yet, 1 = to its tip): just past the last trait on it that shows.
+export interface Shape { trunk: number; girth: number; reach: number[]; tier: number }
+export function treeShape(layout: Layout, shown: Set<string>): Shape {
+  const visible = layout.nodes.filter((n) => shown.has(n.id));
+  const tier = Math.max(0, ...visible.map((n) => n.tier));
+  const top = tier === 0 ? layout.tiers[0] - layout.height * 0.13 : layout.tiers[tier] - layout.height * 0.1;
+  const trunk = Math.min(1, (layout.ground - top) / (layout.ground - layout.fullTop));
+  const reach = layout.limbs.map((_, i) => {
+    const on = visible.filter((n) => n.limb === i);
+    return on.length ? Math.min(1, Math.max(...on.map((n) => n.t)) + 0.08) : 0;
+  });
+  return { trunk, girth: 0.4 + (0.6 * tier) / Math.max(1, layout.tiers.length - 1), reach, tier };
+}
+
+// Where the trunk's top is when it has grown to `trunk` (a share of the grown trunk).
+export function trunkTop(layout: Layout, trunk: number): number {
+  return layout.ground - (layout.ground - layout.fullTop) * trunk;
+}
+
+// A bunch of leaves: where, how big, and what has to grow first for it to sprout
+// (the trunk to a height, or its limb out to a point). The key names it (for its pop).
+export interface Clump extends Point { key: string; r: number; limb: number; need: number }
+// The leaves for these traits, on a tree grown to `drawn` (the crown rides on the
+// trunk's top and a limb's leafy tip on its end, so they move as the tree grows).
+export function leafClumps(layout: Layout, shown: Set<string>, drawn: { trunk: number; reach: number[] }, shape: Shape): Clump[] {
+  const out: Clump[] = [];
+  const R = layout.leaf;
+  // On a phone the traits are big for the tree, so the leaves go by their size too.
+  const rTrait = Math.max(R * 1.25, layout.node.w * 0.85);
+  const rMid = Math.max(R * 0.85, layout.node.w * 0.6);
+  const rCrown = Math.max(R * 1.5, layout.node.w * 1.1);
+  // A big bunch behind each trait that shows on a limb, so the traits sit in the
+  // leaves like fruit; side by side, the bunches grow together into the canopy.
+  const onLimb = new Map<number, number[]>();
+  for (const n of layout.nodes) {
+    if (n.limb < 0 || !shown.has(n.id)) continue;
+    out.push({ key: `t:${n.id}`, x: n.x, y: n.y - layout.node.up * 0.35, r: rTrait, limb: n.limb, need: n.t });
+    onLimb.set(n.limb, [...(onLimb.get(n.limb) || []), n.t]);
+  }
+  layout.limbs.forEach((l, i) => {
+    // Smaller bunches along the limb, between the trunk and its traits…
+    const ts = [0.12, ...(onLimb.get(i) || []).sort((a, b) => a - b)];
+    for (let k = 1; k < ts.length; k++) {
+      const t = (ts[k - 1] + ts[k]) / 2;
+      const p = bezier(l.p0, l.p1, l.p2, t);
+      out.push({ key: `m:${i}:${k}`, x: p.x, y: p.y - rMid * 0.5, r: rMid, limb: i, need: t });
     }
+    // …and a leafy tip on its end, which rides out as the limb grows.
+    const reach = drawn.reach[i] || 0;
+    if (reach <= 0.04) return;
+    const p = bezier(l.p0, l.p1, l.p2, reach);
+    out.push({ key: `tip:${i}`, x: p.x + l.side * rMid * 0.3, y: p.y - rMid * 0.35, r: rMid * 0.95, limb: i, need: 0.04 });
   });
-  return { width, height, px, ground, base, top, trunkR0, trunkR1, branches: geoms, clumps, nodes, node };
+  // The crown on top of the trunk: small on a sapling, big and wide on a grown tree.
+  const top = trunkTop(layout, drawn.trunk);
+  const big = 0.55 + 0.45 * (shape.tier / Math.max(1, layout.tiers.length - 1));
+  const rc = rCrown * big;
+  out.push({ key: 'crown:0', x: layout.base.x, y: top, r: rc, limb: -1, need: 0.05 });
+  if (shape.tier >= 1) {
+    out.push({ key: 'crown:1', x: layout.base.x - rc * 0.9, y: top + rc * 0.37, r: rc * 0.73, limb: -1, need: 0.1 });
+    out.push({ key: 'crown:2', x: layout.base.x + rc * 0.9, y: top + rc * 0.37, r: rc * 0.73, limb: -1, need: 0.1 });
+  }
+  return out;
 }
 
 // ─────────────────────── painting ───────────────────────
 
-// Every colour drawTree uses: theme tokens in style.css :root (tests/art.test.js checks them).
+// Every colour drawTree uses: theme tokens in style.css :root (tests/bigtree.test.js checks them).
 export const TREE_TOKENS = [
   '--sky-top', '--sky-bottom', '--sun', '--cloud', '--cloud-shade', '--hill-far', '--hill-near',
   '--grass', '--grass-dark', '--grass-light', '--soil', '--soil-dark',
@@ -121,16 +204,14 @@ export const TREE_TOKENS = [
 ] as const;
 export type TreeColors = Record<(typeof TREE_TOKENS)[number], string>;
 
-// How far each part has grown (0–1). Everything at 1 = the grown tree.
-export interface Grow {
-  trunk: number;
-  branches: number[]; // one per branch
-  clumps: number[]; // one per clump (a little over 1 while one pops out)
-  mound: number; // the little mound of soil where the seed went in
-  blossoms: number; // how many blossoms (one for every trait level the family has)
-}
-export function grownTree(layout: Layout, blossoms: number): Grow {
-  return { trunk: 1, branches: layout.branches.map(() => 1), clumps: layout.clumps.map(() => 1), mound: 0, blossoms };
+// The tree as it's drawn right now (bigcage.ts eases these towards treeShape()).
+export interface Drawn {
+  trunk: number; // how tall (a share of the grown trunk)
+  girth: number; // how thick (0–1)
+  reach: number[]; // how far out each limb has grown (0–1)
+  clumps: (Clump & { scale: number })[]; // the leaves, each scaled 0–1 (a little over while it pops)
+  mound: number; // the little mound of soil where the seed went in (0–1)
+  blossoms: number; // how many blossoms (one for every trait level the family has planted)
 }
 
 // "#rrggbb" → one pixel for a Uint32Array over ImageData (its bytes are R, G, B, A).
@@ -267,7 +348,7 @@ function paintBackdrop(out: Uint32Array, w: number, h: number, groundY: number, 
 // Paint the whole scene into ctx (a canvas `layout.width / px` pixels wide).
 // The backdrop is cached per size (paint it once, copy it each frame).
 let cache: { key: string; data: Uint32Array } | null = null;
-export function drawTree(ctx: CanvasRenderingContext2D, layout: Layout, grow: Grow, colors: TreeColors): void {
+export function drawTree(ctx: CanvasRenderingContext2D, layout: Layout, drawn: Drawn, colors: TreeColors): void {
   const { px } = layout;
   const w = Math.max(1, Math.floor(layout.width / px));
   const h = Math.max(1, Math.floor(layout.height / px));
@@ -282,58 +363,80 @@ export function drawTree(ctx: CanvasRenderingContext2D, layout: Layout, grow: Gr
   const out = new Uint32Array(image.data.buffer);
   out.set(cache.data);
   const wood = new Uint8Array(w * h);
-  const leaves = new Uint8Array(w * h);
+  const leaves = new Uint8Array(w * h); // the lit leaves in front
+  const back = new Uint8Array(w * h); // the darker leaves behind the branches (depth)
   const s = (v: number) => v / px; // screen pixels → canvas pixels
-
-  // The trunk: stacked discs from the foot up, tapering, with a flared foot and roots.
   const foot = { x: s(layout.base.x), y: s(layout.base.y) + 1 };
-  const full = s(layout.base.y - layout.top.y);
-  const tall = full * grow.trunk;
-  const girth = 0.35 + 0.65 * Math.min(1, grow.trunk * 1.25); // a sprout is thin
-  if (grow.trunk > 0) {
-    for (let d = 0; d <= tall; d += 0.5) {
-      const f = d / full;
-      const flare = f < 0.06 ? 1 + ((0.06 - f) / 0.06) * 0.45 : 1; // a gently flared foot
-      const r = (s(layout.trunkR0) + (s(layout.trunkR1) - s(layout.trunkR0)) * f) * girth * flare;
-      stamp(wood, w, h, foot.x + Math.sin(f * 5) * s(layout.trunkR0) * 0.12, foot.y - d, r);
+  const girth = 0.35 + 0.65 * drawn.girth; // a sapling is thin, a grown tree stout
+  const R0 = s(layout.trunkR0) * girth;
+  const tall = s(layout.base.y - trunkTop(layout, drawn.trunk));
+  // How thick the trunk is at a height (it tapers to its top, and flares a little at the foot).
+  const trunkR = (d: number) => {
+    const f = tall > 0 ? d / tall : 0;
+    const flare = f < 0.07 ? 1 + ((0.07 - f) / 0.07) * 0.5 : 1;
+    return Math.max(0.8, R0 * (1 - 0.55 * f) * flare);
+  };
+  // The trunk sways a little (a gentle S), so it doesn't look like a post.
+  const sway = (d: number) => Math.sin((d / Math.max(1, s(layout.base.y - layout.fullTop))) * Math.PI * 1.3) * R0 * 0.35;
+
+  // A shadow under the tree, on the grass.
+  if (drawn.trunk > 0.1) {
+    const sw = Math.max(R0 * 3, s(layout.leaf) * (1 + 2.5 * drawn.girth));
+    const shade = pixel(colors['--grass-dark']);
+    for (let y = groundY; y < groundY + 3 && y < h; y++) {
+      for (let x = Math.floor(foot.x - sw); x <= foot.x + sw; x++) {
+        if (x < 0 || x >= w) continue;
+        if (Math.abs(x - foot.x) / sw + (y - groundY) * 0.25 < 1 && (x + y) % 2 === 0) out[y * w + x] = shade;
+      }
     }
-    // Roots reaching out along the ground on both sides.
-    if (grow.trunk > 0.3) {
+  }
+
+  if (drawn.trunk > 0) {
+    // The trunk: stacked discs from the foot up.
+    for (let d = 0; d <= tall; d += 0.5) stamp(wood, w, h, foot.x + sway(d), foot.y - d, trunkR(d));
+    // Roots along the ground on both sides (once it's more than a sprout).
+    if (drawn.girth > 0.2) {
       for (const side of [-1, 1]) {
-        for (let k = 0; k <= 1; k += 0.04) {
-          const r = s(layout.trunkR0) * 0.3 * (1 - k) * girth;
-          stamp(wood, w, h, foot.x + side * s(layout.trunkR0) * (0.8 + k * 1.6), foot.y - 1 + k * 3, Math.max(0.6, r));
+        for (let k = 0; k <= 1; k += 0.05) {
+          stamp(wood, w, h, foot.x + side * R0 * (0.7 + k * 1.5), foot.y - 1 + k * 2.5, Math.max(0.6, R0 * 0.32 * (1 - k)));
         }
       }
     }
-    // Bark: little grooves running up the trunk (the shade colour), never at the edges.
+    // Bark: little grooves running up the trunk (the shade colour), never at its edges.
     for (let y = Math.max(0, Math.floor(foot.y - tall)); y < Math.min(h, foot.y); y++) {
-      for (let x = Math.floor(foot.x - s(layout.trunkR0) * 1.8); x < foot.x + s(layout.trunkR0) * 1.8; x++) {
+      for (let x = Math.floor(foot.x - R0 * 2); x < foot.x + R0 * 2; x++) {
         if (x < 1 || x >= w - 1) continue;
         const i = y * w + x;
         if (wood[i] === BASE && wood[i - 1] && wood[i + 1] && (x * 5 + Math.floor(y / 4) * 3) % 9 === 0) wood[i] = SHADE;
       }
     }
   }
-  // The branches, each grown as far as grow.branches says.
-  layout.branches.forEach((b, i) => {
-    const g = grow.branches[i] || 0;
+  // The limbs, each grown as far out as drawn.reach says: thick at the trunk, thin at
+  // the tip, with a little knot where each trait sits.
+  layout.limbs.forEach((l, i) => {
+    const g = drawn.reach[i] || 0;
     if (g <= 0) return;
-    const p0 = { x: s(b.p0.x), y: s(b.p0.y) };
-    const p1 = { x: s(b.p1.x), y: s(b.p1.y) };
-    const p2 = { x: s(b.p2.x), y: s(b.p2.y) };
+    const p0 = { x: s(l.p0.x) + sway(s(layout.base.y - l.p0.y)), y: s(l.p0.y) };
+    const p1 = { x: s(l.p1.x), y: s(l.p1.y) };
+    const p2 = { x: s(l.p2.x), y: s(l.p2.y) };
+    const r0 = Math.max(1, trunkR(s(layout.base.y - l.p0.y)) * 0.62);
     const steps = Math.ceil(Math.hypot(p2.x - p0.x, p2.y - p0.y) * 2);
     for (let k = 0; k <= steps * g; k++) {
       const t = k / steps;
       const p = bezier(p0, p1, p2, t);
-      stamp(wood, w, h, p.x, p.y, (s(b.r0) + (s(b.r1) - s(b.r0)) * t) * (0.5 + 0.5 * g));
+      stamp(wood, w, h, p.x, p.y, Math.max(0.7, r0 * (1 - 0.7 * t)));
+    }
+    for (const n of layout.nodes) {
+      if (n.limb !== i || n.t > g) continue;
+      const p = bezier(p0, p1, p2, n.t);
+      stamp(wood, w, h, p.x, p.y, Math.max(1.2, r0 * (1 - 0.7 * n.t) + 0.8));
     }
   });
   // The trunk goes into the ground: no wood below the grass (except the roots lying on it).
   for (let y = Math.max(0, groundY + 2); y < h; y++) wood.fill(0, y * w, (y + 1) * w);
   // The mound of soil where the seed went in (before the tree grows over it).
-  if (grow.mound > 0) {
-    const mr = s(layout.trunkR0) * 1.3 * grow.mound;
+  if (drawn.mound > 0) {
+    const mr = s(layout.trunkR0) * 1.3 * drawn.mound;
     for (let y = Math.floor(foot.y - mr * 0.6); y <= foot.y; y++) {
       for (let x = Math.floor(foot.x - mr); x <= foot.x + mr; x++) {
         if (x < 0 || y < 0 || x >= w || y >= h) continue;
@@ -343,19 +446,21 @@ export function drawTree(ctx: CanvasRenderingContext2D, layout: Layout, grow: Gr
       }
     }
   }
-  // Leaves: clumps of foliage, each popping out with its own grow value.
-  layout.clumps.forEach((c, i) => {
-    const g = grow.clumps[i] || 0;
-    if (g <= 0) return;
-    const r = s(c.r) * g;
-    const x = s(c.x);
+  // Leaves: every bunch is a few overlapping puffs, more of them on top, each shaded on
+  // its own (so the bunch reads as layers of leaves, not one ball).
+  drawn.clumps.forEach((c, i) => {
+    if (c.scale <= 0) return;
+    const r = s(c.r) * c.scale;
+    const x = s(c.x) + (c.limb < 0 ? sway(tall) : 0);
     const y = s(c.y);
-    stamp(leaves, w, h, x, y, r, 0.12);
-    // A few smaller puffs around the edge make it a bush, not a ball.
-    for (let k = 0; k < 5; k++) {
-      const a = (k / 5) * Math.PI * 2 + hash(i * 5 + k) * 0.8;
-      stamp(leaves, w, h, x + Math.cos(a) * r * 0.75, y + Math.sin(a) * r * 0.6, r * (0.42 + hash(i + k * 3) * 0.12), 0.1);
+    // The back layer: a little bigger and lower, in the dark green, behind the branches.
+    stamp(back, w, h, x + r * 0.12, y + r * 0.22, r * 0.98, 0.14);
+    const puffs = 6;
+    for (let k = 0; k < puffs; k++) {
+      const a = Math.PI * (1.05 + (k / (puffs - 1)) * 0.9) + (hash(i * 7 + k) - 0.5) * 0.4; // around the top half
+      stamp(leaves, w, h, x + Math.cos(a) * r * 0.62, y + Math.sin(a) * r * 0.42 + r * 0.12, r * (0.42 + hash(i + k * 5) * 0.12), 0.08);
     }
+    stamp(leaves, w, h, x, y + r * 0.08, r * 0.62, 0.1); // the middle, drawn last, in front
   });
   // Leaf texture: a sprinkle of light and dark leaves (a fixed pattern, so it never flickers).
   for (let i = 0; i < leaves.length; i++) {
@@ -364,18 +469,18 @@ export function drawTree(ctx: CanvasRenderingContext2D, layout: Layout, grow: Gr
     const y = (i / w) | 0;
     const n = (x * 7 + y * 13) % 17;
     if (leaves[i] === BASE && n === 0) leaves[i] = LIGHT;
-    else if (leaves[i] === BASE && n === 5) leaves[i] = SHADE;
+    else if (leaves[i] === BASE && (n === 5 || n === 11)) leaves[i] = SHADE;
   }
   // Blossoms: one for every trait level the family has planted (the tree blooms as you plant).
-  if (grow.blossoms > 0 && layout.clumps.length) {
+  const grown = drawn.clumps.filter((c) => c.scale >= 1);
+  if (drawn.blossoms > 0 && grown.length) {
     let placed = 0;
-    for (let k = 0; placed < grow.blossoms && k < grow.blossoms * 6; k++) {
-      const c = layout.clumps[k % layout.clumps.length];
-      if ((grow.clumps[k % layout.clumps.length] || 0) < 1) continue;
+    for (let k = 0; placed < drawn.blossoms && k < drawn.blossoms * 8; k++) {
+      const c = grown[k % grown.length];
       const a = hash(k * 3.1) * Math.PI * 2;
-      const d = s(c.r) * (0.25 + hash(k * 1.7) * 0.6);
-      const bx = Math.round(s(c.x) + Math.cos(a) * d);
-      const by = Math.round(s(c.y) + Math.sin(a) * d * 0.8);
+      const d = s(c.r) * (0.2 + hash(k * 1.7) * 0.5);
+      const bx = Math.round(s(c.x) + (c.limb < 0 ? sway(tall) : 0) + Math.cos(a) * d);
+      const by = Math.round(s(c.y) + Math.sin(a) * d * 0.7);
       if (bx < 1 || by < 1 || bx >= w - 1 || by >= h - 1 || !leaves[by * w + bx]) continue;
       leaves[by * w + bx] = BLOSSOM; // a little flower: a yellow middle and four pink petals
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (leaves[(by + dy) * w + bx + dx]) leaves[(by + dy) * w + bx + dx] = PETAL;
@@ -383,7 +488,8 @@ export function drawTree(ctx: CanvasRenderingContext2D, layout: Layout, grow: Gr
     }
   }
 
-  // Put it together: leaves over wood, each with its own outline, over the backdrop.
+  // Put it together: the lit leaves, then the wood, then the dark leaves behind it,
+  // each with its own outline, over the backdrop.
   const woodCol = [0, pixel(colors['--bark']), pixel(colors['--bark-light']), pixel(colors['--bark-dark'])];
   const leafCol = [0, pixel(colors['--leaf']), pixel(colors['--leaf-light']), pixel(colors['--leaf-dark']), pixel(colors['--sun']), pixel(colors['--blossom'])];
   const woodInk = pixel(colors['--bark-ink']);
@@ -397,6 +503,8 @@ export function drawTree(ctx: CanvasRenderingContext2D, layout: Layout, grow: Gr
       else if (near(leaves, x, y)) out[i] = leafInk;
       else if (wood[i]) out[i] = woodCol[wood[i]];
       else if (near(wood, x, y)) out[i] = woodInk;
+      else if (back[i]) out[i] = back[i] === LIGHT ? leafCol[3] : (x + y) % 2 && back[i] === SHADE ? leafInk : leafCol[3];
+      else if (near(back, x, y)) out[i] = leafInk;
     }
   }
   ctx.putImageData(image, 0, 0);

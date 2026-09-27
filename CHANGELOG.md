@@ -16,12 +16,13 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 - **Smaller upgrade tiles**, like the Family Tree's traits: an icon, the name, the level, what the next level does, and the price. Tap a tile to read all about it in a card at the bottom (you can buy from there too); the buy button still buys in one tap.
 - On a phone, ×1 / ×10 / Max is one button: tap it to switch. (Tapping the one that's already on switches to the next one on a computer too.)
 - The machine cards are tighter, and on a phone Deliver, Spin and the bet share one row. The delivery tube shows while the hamster is out.
-- **The Big Cage is a place of its own:** a sunny meadow where the family's **huge tree** grows, with every Family Tree trait sitting on its branches (the traits you can't plant yet are greyed, and the tree never shows through them any more). Tap a trait to read about it and plant it. The numbers, the seed jar and Start sit beside it (on a phone, above and below).
+- **The Big Cage is a place of its own:** a sunny meadow where the **family's tree** grows, with the Family Tree's traits sitting in its leaves. Tap a trait to read about it and plant it. The numbers, the seed jar and Start sit beside it (on a phone, above and below).
+- **The tree grows with your family.** A new family has a little sapling with just Family Pride on it. A trait only appears once the trait it needs is planted, and **every trait you plant makes the tree grow**: the trunk shoots up to the next level, a branch grows out, the leaves fill in, and the traits you just unlocked sprout onto it. Each trait sits right above the one it needs. Plant the whole tree and it's a big, leafy tree in bloom.
 - **The Family Tree only grows in the Big Cage**, when you retire. The Family tab keeps the retire card and lists the traits your family has planted.
 
 ### Added
 
-- **A new rebirth animation.** Retire and your hamster walks into the meadow with an Heirloom Seed, digs, and plants it. A huge tree shoots up, its branches grow out one by one, the leaves pop out, and the traits sprout onto the branches. Then the seeds rain down and the numbers slide in. Tap to skip it; with Motion "Less" the tree is simply there. The more traits your family plants, the more the tree blossoms.
+- **A new rebirth animation.** Retire and your hamster walks into the meadow with an Heirloom Seed, digs, and plants it. The family's tree shoots up to the size your family has grown it to, its branches grow out, the leaves pop out, and the traits sprout onto the branches. Then the seeds rain down and the numbers slide in. Tap to skip it; with Motion "Less" the tree is simply there. The more traits your family plants, the more the tree blossoms.
 - Little flowers in the grass, clouds and a sun over the hills, and the hamster chatting in the Big Cage as you plant.
 
 ## [1.1.0] - 2026-09-27
