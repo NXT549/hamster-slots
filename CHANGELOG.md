@@ -8,6 +8,8 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-27
+
 **The Hamster Casino opens: roulette, blackjack, a hamster derby and Seed Drop.**
 
 ### Added
@@ -139,7 +141,8 @@ The first numbered version: everything built so far.
 - **Cute extras:** the hamster-cage look, speech-bubble hints from your hamster, sound effects with a volume control, pixel sparkles and confetti, win banners, a Stats screen, and an Info tab with the paytable, the paylines, the real odds of every feature, and your recent wins.
 - **Settings:** less motion, quick reels, short or full numbers.
 
-[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/NXT549/hamster-slots/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/NXT549/hamster-slots/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/NXT549/hamster-slots/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/NXT549/hamster-slots/compare/v0.2.0...v1.0.0

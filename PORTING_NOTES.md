@@ -13,7 +13,7 @@ One codebase: TypeScript + Vite (D107). The build makes a static site (`dist/`: 
 
 | # | Platform | How it ships | Needs | Status |
 |---|---|---|---|---|
-| 1 | **Web: GitHub Pages** | A GitHub Actions workflow runs the tests and the build on every push to `main`, then publishes `dist/` to Pages. Friends play from a link. | The TS + Vite migration (done, 0.2.0), a GitHub repo, a build that works from the repo's sub-path (done: `base: './'`) | **Live** since 2026-09-26: https://nxt549.github.io/hamster-slots/ (Step 4, D118); **1.0.0**, **1.1.0** and **1.2.0** since 2026-09-27 (D123, D130, D134) |
+| 1 | **Web: GitHub Pages** | A GitHub Actions workflow runs the tests and the build on every push to `main`, then publishes `dist/` to Pages. Friends play from a link. | The TS + Vite migration (done, 0.2.0), a GitHub repo, a build that works from the repo's sub-path (done: `base: './'`) | **Live** since 2026-09-26: https://nxt549.github.io/hamster-slots/ (Step 4, D118); **1.0.0**, **1.1.0**, **1.2.0** and **1.3.0** since 2026-09-27 (D123, D130, D134, D137) |
 | 2 | **itch.io** | `dist/` uploaded as a zip, as an HTML5 game played in the browser on itch | Relative paths in the build (done); export/import saves (done, 0.2.0); the store-rule check (DESIGN §11); an itch.io account (the user's) Not started (1.0 is out, so it can go next whenever the user wants) |
 | 3 | **Steam** | `dist/` inside a desktop wrapper: **Electron or Tauri** (not decided yet) | A desktop platform layer (file saves, Steam Cloud, maybe achievements), a store page, content ratings | Later |
 | 4 | **Mobile** (maybe) | `dist/` inside **Capacitor** (iOS and Android apps) | A mobile platform layer (native storage, app pause/resume), touch-friendly controls, store review | Maybe, later |
@@ -600,6 +600,12 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **The skins** are ordinary skins with `casino: true` (never in the capsule pool; not counted by the diary's "from capsules" stickers). **Save v11** adds the family's casino and nine stats; its migration only bumps the version (sanitizeState fills the rest in), with new fixtures migrated from v10's (D122).
 - **`casino.enabled: false`** in data.json leaves the whole casino out (no tab, no chips): a store build can drop it if a store's simulated-gambling rules need that (DESIGN §11).
 - `package.json` says **1.3.0-rc.1** until the user OKs it (then 1.3.0: new features).
+
+**D137 — 1.3.0: the Hamster Casino released** (the user, 2026-09-27: "Publish 1.3", after asking whether it had been published).
+- 1.3.0 = M11 (DESIGN §27, D135–D136): the Casino tab with four tables, chips (earned and bought), the Prize Counter, and the phone layout that gives the casino the screen. **Save v11:** every older save migrates when it loads (no chips, no boosts, the casino stats at 0; a family that retired before can play at once and is told the casino is open), so nobody's progress changes; data schema 12.
+- Released without a playtest of the casino first (the user's call): the automated checks are in Playtest notes (M11), and fixes go out as 1.3.x. Not checked before the release: Firefox and Safari, a real phone's touch on the roulette board, how the tables feel and sound.
+- The release commit moved the CHANGELOG's `[Unreleased]` to `[1.3.0]`, set 1.3.0 in package.json and package-lock (from 1.3.0-rc.1) and marked it released in the docs; `main` (already in the branch: 1.2.0 was released from it) was fast-forwarded to it, and the deploy workflow puts it on the Pages link.
+- The tag `v1.3.0` is made on `main` locally; tag pushes are refused (HTTP 403), so the user publishes the GitHub Release `v1.3.0` on the "Release 1.3.0" commit.
 
 
 
