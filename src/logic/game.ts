@@ -24,11 +24,14 @@ import { rollGrid, evaluateGrid, evaluateWays, rowCount, allPaylines, symbolRule
 import type { SpinValue } from './machine.ts';
 import type { Rng } from './rng.ts';
 import { money, roundMoney, divide, power, moneyFrom, isMoney } from './money.ts';
+import { createCasino, newCasinoState } from './casino.ts';
+import { handValue } from './blackjack.ts';
+import type { BjCard } from './blackjack.ts';
 import type { Money, MoneyLike } from './money.ts';
 import type {
   GameData, GameState, GameEvents, MachineDef, MachineState, SymbolDef, UpgradeDef, TreeNodeDef, Priced, Effect, EffectType,
   EffectOf, Levels, Overrides, Stats, SaveData, Goal, Grid, SpinSource, Suit, CardColor, Card, GambleEndReason, TokenSource, PotDef,
-  Cell, HoldState,
+  Cell, HoldState, BlackjackHand,
 } from './types.ts';
 
 // v2 added retirement: generation, Heirloom Seeds, the family tree, per-run
@@ -45,8 +48,10 @@ import type {
 // and the stats rebuilds, bestStars and mostSeedsHeld.
 // v10 (M9, More machines) added hold & spin in progress (machine.hold) and the
 // stats bestWays, holdBonuses, holdGrands and bestWheel.
+// v11 (M11, the Hamster Casino) added the casino (chips, boosts, a blackjack hand)
+// and the casino stats.
 // See migrateSave() below.
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -87,7 +92,7 @@ interface OwnedEffect<T extends EffectType> {
   effect: EffectOf<T>;
   level: number;
   fromTree: boolean;
-  scope: 'global' | 'machine' | 'tree' | 'wardrobe';
+  scope: 'global' | 'machine' | 'tree' | 'wardrobe' | 'boost';
 }
 
 // Is this effect of the given type? (It also tells TypeScript which fields the
@@ -118,6 +123,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   // manual spin that starts the moment this spin lands (see tick()). Not saved:
   // it's an input buffer, not progress.
   let queuedManual = false;
+  // true while working out the game WITHOUT the casino's boosts: offline earnings
+  // (boosts only count while you play) and a chip's price (so a boost can't raise it).
+  let boostsOff = false;
   // The last few gamble cards, newest first (shown along the top of the gamble
   // panel, like a real pokie). Just for show: never saved.
   let cardHistory: Card[] = [];
@@ -233,6 +241,12 @@ export function createGame(initialData: GameData, rng: Rng) {
     for (const effect of wornEffects()) {
       if (isEffect(effect, type)) out.push({ effect, level: 1, fromTree: false, scope: 'wardrobe' });
     }
+    // M11: the casino's boosts and charms, the same way, while they last.
+    if (!boostsOff) {
+      for (const effect of casino.boostEffects()) {
+        if (isEffect(effect, type)) out.push({ effect, level: 1, fromTree: false, scope: 'boost' });
+      }
+    }
     return out;
   }
 
@@ -262,7 +276,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // Payout bonuses ADD UP within a group and MULTIPLY between the groups:
-  //   (1 + coin upgrade bonuses) × (1 + family bonuses) × (1 + what you wear)
+  //   (1 + coin upgrade bonuses) × (1 + family bonuses) × (1 + what you wear) × (1 + casino boosts)
   // Family bonuses = family tree nodes + the heirloom bonus (see below).
   // e.g. Chubby Cheeks Lv 2 (+50%) with Family Pride (+25%) → 1.5 × 1.25 = ×1.875.
   // Multiplying is what makes the family feel strong in every new life, and keeps
@@ -271,13 +285,15 @@ export function createGame(initialData: GameData, rng: Rng) {
   function getPayoutMultiplier(overrides?: Overrides): Money {
     let upgrades = 1;
     let wardrobe = 1;
+    let boost = 1;
     let family = money(1).add(getHeirloomBonus(overrides));
     for (const { effect, level, fromTree, scope } of effectsOfType('payoutMultiplier', overrides)) {
       if (fromTree) family = family.add(effect.perLevel * level);
       else if (scope === 'wardrobe') wardrobe += effect.perLevel * level;
+      else if (scope === 'boost') boost += effect.perLevel * level;
       else upgrades += effect.perLevel * level;
     }
-    return family.mul(upgrades).mul(wardrobe);
+    return family.mul(upgrades).mul(wardrobe).mul(boost);
   }
 
   // Heirloom bonus (M8): every seed you HOLD adds a little to payouts. Planting a
@@ -895,6 +911,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     // Roll with the luck-adjusted weights (Lucky Whiskers, Carrot Patch, Hamster Wild).
     const md = { ...getMachineData(machine), symbols: getSymbols() };
     machine.result = rollGrid(md, getReelCount(), rng);
+    if (!free) casino.onPaidSpin(); // M11: a chip every few paid spins; a Luck charm uses up a spin
     machine.spinning = true;
     machine.spinTimer = getSpinDuration();
     machine.spinBet = bet;
@@ -1651,6 +1668,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     if (!canRetire()) return false;
     const gained = getPendingSeeds();
     if (state.gamble) endGamble('retire');
+    casino.beforeRetire(); // M11: the family remembers this life's earnings (a chip's price never falls)
     const oldName = getPupName();
     const runEarned = state.run.coinsEarned;
     state.seedsEarned = state.seedsEarned.add(gained);
@@ -1672,6 +1690,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     events.emit('retired', { generation: state.generation, seedsGained: gained, oldName, newName: getPupName(), runEarned });
     events.emit('coinsChanged', { coins: state.coins, amount: money(0) });
     if (data.tokens) earnTokens(data.tokens.perRetirement, 'retire');
+    casino.onRetire(); // M11: chips for the family (the first retirement opens the casino)
     checkDiary();
     return true;
   }
@@ -1779,11 +1798,16 @@ export function createGame(initialData: GameData, rng: Rng) {
       case 'upgradeLevel': return getBestUpgradeLevel(goal.upgrade);
       case 'generation': return state.generation;
       case 'treeNodes': return treeNodes().filter((n) => getTreeLevel(n.id) > 0).length;
-      case 'skinsOwned': return Object.keys(state.skins.owned).length;
-      case 'categoryOwned': return Object.keys(state.skins.owned).filter((id) => (getSkinDef(id) || { category: '' }).category === goal.category).length;
+      // Skins from capsules (the casino's own skins don't count: the stickers say "from capsules").
+      case 'skinsOwned': return capsuleSkinsOwned().length;
+      case 'categoryOwned': return capsuleSkinsOwned().filter((id) => getSkinDef(id)!.category === goal.category).length;
       case 'machinesOwned': return state.machines.length;
       default: return 0;
     }
+  }
+
+  function capsuleSkinsOwned(): string[] {
+    return Object.keys(state.skins.owned).filter((id) => { const d = getSkinDef(id); return !!d && !d.casino; });
   }
 
   function getDiaryProgress(id: string) {
@@ -1872,7 +1896,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
     const forced = state.capsules.sincePity >= c.pityPulls - 1;
     const rarity = forced ? c.pityRarity : rng.pickWeighted(c.rarities).id;
-    const pool = data.skins.filter((s) => s.rarity === rarity);
+    const pool = data.skins.filter((s) => s.rarity === rarity && !s.casino); // casino skins are only at the Prize Counter
     const skin = pool[Math.floor(rng.next() * pool.length)];
     state.capsules.sincePity = rarity === c.pityRarity ? 0 : state.capsules.sincePity + 1;
     state.stats.capsulesOpened++;
@@ -1899,6 +1923,46 @@ export function createGame(initialData: GameData, rng: Rng) {
     return true;
   }
 
+  // ─────────────────────── The Hamster Casino (M11) ───────────────────────
+  // Its chips, games and prizes live in casino.ts; the game gives it what it needs.
+
+  // Work something out as if no boost or charm were running.
+  function withoutBoosts<T>(fn: () => T): T {
+    const was = boostsOff;
+    boostsOff = true;
+    try {
+      return fn();
+    } finally {
+      boostsOff = was;
+    }
+  }
+
+  // What the hamster earns per second on its best machine at its biggest bet (auto-spin,
+  // or a spin at a time before Wheel Training), without boosts: a chip's price follows it.
+  function getIncomePerSecond(): Money {
+    return withoutBoosts(() => {
+      const maxBet = getBetSteps()[getMaxBetIndex()];
+      let best = money(0);
+      for (const m of state.machines) {
+        const e = getEconomy(m);
+        const perSpin = divide(e.profitPerSpin, e.bet).mul(maxBet);
+        best = best.max(divide(perSpin, (e.autoInterval ?? e.spinDuration) + e.extraSecondsPerSpin));
+      }
+      return best;
+    });
+  }
+
+  const casino = createCasino({
+    state: () => state,
+    data: () => data,
+    rng,
+    emit: (name, payload) => events.emit(name, payload),
+    incomePerSecond: getIncomePerSecond,
+    changeCoins,
+    earnTokens,
+    checkDiary,
+  });
+
   // ─────────────────────── Offline earnings ───────────────────────
   // While the game is closed, the hamster keeps running the wheel, but at a
   // reduced rate (offline.efficiency) and for at most offline.maxSeconds.
@@ -1911,7 +1975,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     // Nothing runs while you're in the Big Cage between lives.
     if (!o || !(seconds >= o.minSeconds) || state.bigCage) return { seconds: 0, coins: money(0) };
     const counted = Math.min(seconds, o.maxSeconds);
-    const perSecond = getEconomy().expectedAutoProfitPerSecond.max(0);
+    const perSecond = withoutBoosts(() => getEconomy().expectedAutoProfitPerSecond.max(0)); // boosts only count while you play
     return { seconds: counted, coins: roundMoney(perSecond.mul(counted).mul(o.efficiency * getOfflineMultiplier())) };
   }
 
@@ -1943,6 +2007,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     if (state.bigCage) return; // time stands still between lives
     state.stats.playTime += dt;
     state.run.playTime += dt;
+    casino.tick(dt); // M11: timed boosts count down while you play
 
     // 1) Delivery timer
     if (state.delivery.active) {
@@ -2056,10 +2121,11 @@ export function createGame(initialData: GameData, rng: Rng) {
   // so changes to data.json apply straight away to existing saves. Every Money
   // becomes text on the way (a Decimal writes itself as "1234.56" or "1.5e400").
   // An open gamble isn't saved: dropping it is the same as collecting (its coins
-  // are already in the pile).
+  // are already in the pile). Nor is a finished blackjack hand (it's paid; M11).
   function toSaveData(): SaveData {
     const copy = JSON.parse(JSON.stringify(state));
     delete copy.gamble;
+    if (copy.casino.hand && copy.casino.hand.outcome !== null) copy.casino.hand = null; // a finished hand was only on show
     return { saveVersion: SAVE_VERSION, ...copy };
   }
 
@@ -2116,6 +2182,15 @@ export function createGame(initialData: GameData, rng: Rng) {
     // queries: tokens, diary, capsules, skins
     getDiaryProgress, getSkinDef, isSkinOwned, getEquippedSkin, getPullCost, canPull, getPityRemaining, getCapsuleOdds,
     getWardrobe, getOfflineMultiplier, getJackpotTokens, getDeliveryTokenEvery, getCardHistoryLength,
+
+    // the Hamster Casino (M11): actions, then queries (casino.ts)
+    buyChips: casino.buyChips, playRoulette: casino.playRoulette, dealBlackjack: casino.dealBlackjack, hitBlackjack: casino.hitBlackjack,
+    standBlackjack: casino.standBlackjack, doubleBlackjack: casino.doubleBlackjack, runDerby: casino.runDerby, dropSeed: casino.dropSeed,
+    buyPrize: casino.buyPrize, addChips: casino.addChips,
+    isCasinoOpen: casino.isOpen, isCasinoUnlocked: casino.isUnlocked, getChipPrice: casino.getChipPrice, getIncomePerSecond,
+    getCasinoBetSteps: casino.getBetSteps, canBetChips: casino.canStake, canDouble: casino.canDouble, getBlackjackHint: casino.getBlackjackHint,
+    getPrize: casino.getPrize, canBuyPrize: casino.canBuyPrize, getPrizeBlock: casino.getPrizeBlock, getBoosts: casino.getBoosts,
+    getCasinoOdds: casino.getCasinoOdds,
 
     // saving
     toSaveData, loadSaveData,
@@ -2184,6 +2259,12 @@ function newStats(): Stats {
     bestWays: 0, // the most ways one symbol has won in a spin
     holdBonuses: 0, holdGrands: 0, // hold & spin bonuses played, and grids filled
     bestWheel: 0, // the biggest cheese-wheel multiplier landed
+    // v11 (M11): the Hamster Casino
+    casinoGames: 0, // roulette spins, blackjack hands, races and seed drops played
+    chipsBought: money(0), chipsEarned: money(0), // chips bought with coins; chips earned by spinning and retiring
+    biggestCasinoWin: money(0), // the most chips one game paid back
+    rouletteNumbers: 0, blackjacks: 0, derbyLongshots: 0, seedDropEdges: 0, // straight-up numbers, blackjacks, long-shot wins, edge bins
+    prizesBought: 0,
   };
 }
 
@@ -2212,6 +2293,7 @@ export function newState(data: GameData): GameState {
     diary: {}, // diary stickers earned, e.g. { firstSpin: true }
     skins: { owned: {}, equipped: {} }, // owned: { furCinnamon: true }; equipped: { fur: "furCinnamon" }
     capsules: { sincePity: 0 }, // pulls since the last pity-rarity (Epic) capsule
+    casino: newCasinoState(), // M11: chips, boosts under way, a blackjack hand
 
     stats: newStats(),
   };
@@ -2319,6 +2401,13 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
     save.saveVersion = 10;
   }
 
+  // v10 → v11: M11, the Hamster Casino. An older family has no chips, no boosts
+  // and no hand on the table yet, and the casino stats start at 0 (sanitizeState
+  // fills all of that in), so only the version changes here.
+  if (save.saveVersion === 10) {
+    save.saveVersion = 11;
+  }
+
   if (save.saveVersion !== SAVE_VERSION) return null;
   return save;
 }
@@ -2372,6 +2461,21 @@ function cleanHold(h: Untrusted, md: MachineDef, validBet: (x: Untrusted) => num
   return {
     start: [...h.start], values: [...values], steps: h.steps.map((st: number[]) => [...st]), respins, bet: validBet(h.bet),
     timer: clamp(num(h.timer, 0), 0, duration), duration,
+  };
+}
+
+// A blackjack hand still being played (M11), checked: real cards, a bet, the
+// player not bust. A finished hand isn't kept (it was only on show), nor a broken one.
+function cleanHand(h: Untrusted): BlackjackHand | null {
+  if (!h || typeof h !== 'object' || h.outcome !== null) return null;
+  const card = (c: Untrusted) => c && Number.isInteger(c.rank) && c.rank >= 1 && c.rank <= 13 && SUITS.some((x) => x.id === c.suit);
+  if (!Array.isArray(h.player) || h.player.length < 2 || !h.player.every(card)) return null;
+  if (!Array.isArray(h.dealer) || h.dealer.length !== 2 || !h.dealer.every(card)) return null;
+  const bet = moneyFrom(h.bet, 0);
+  if (!bet.gt(0) || handValue(h.player).total > 21) return null;
+  return {
+    bet, player: h.player.map((c: BjCard) => ({ rank: c.rank, suit: c.suit })), dealer: h.dealer.map((c: BjCard) => ({ rank: c.rank, suit: c.suit })),
+    doubled: h.doubled === true, outcome: null, returned: money(0),
   };
 }
 
@@ -2477,6 +2581,20 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   }
   const maxSincePity = data.capsules ? data.capsules.pityPulls - 1 : 0;
   s.capsules.sincePity = clamp(Math.floor(num(raw.capsules && raw.capsules.sincePity, 0)), 0, maxSincePity);
+
+  // The casino (M11): chips, boosts that still exist (capped at their max), and a hand still being played.
+  const rc = raw.casino && typeof raw.casino === 'object' ? raw.casino : {};
+  const cd = data.casino;
+  s.casino.chips = moneyFrom(rc.chips, 0).floor().max(0);
+  s.casino.bestIncome = moneyFrom(rc.bestIncome, 0).max(0);
+  s.casino.spinsToChip = cd ? clamp(Math.floor(num(rc.spinsToChip, 0)), 0, cd.chipsPerSpins.spins - 1) : 0;
+  for (const p of (cd && cd.prizes) || []) {
+    const left = num(rc.boosts && rc.boosts[p.id], 0);
+    if (!(left > 0)) continue;
+    if (p.kind === 'boost') s.casino.boosts[p.id] = Math.min(left, p.maxSeconds);
+    else if (p.kind === 'charm') s.casino.boosts[p.id] = Math.min(Math.ceil(left), p.maxSpins);
+  }
+  s.casino.hand = cd ? cleanHand(rc.hand) : null;
 
   if (raw.stats && typeof raw.stats === 'object') {
     // The amounts of money are read as Money; counts, seconds and bests as plain numbers.

@@ -27,6 +27,7 @@ const EVENTS = [
   'bigCageLeft', 'machineRebuilt', 'holdStarted', 'holdEnded',
   'deliveryStarted', 'deliveryFinished', 'tokensChanged', 'stickerEarned', 'capsuleOpened',
   'skinEquipped', 'offlineEarned', 'dataReloaded', 'stateLoaded',
+  'chipsChanged', 'rouletteSpun', 'blackjackChanged', 'blackjackEnded', 'derbyRun', 'seedDropped', 'prizeBought', 'boostEnded', // M11
 ];
 
 const STEP = 0.25; // seconds of game time per step; the player acts once a second
@@ -36,7 +37,8 @@ const PICKS = ['collect', 'red', 'hearts', 'black', 'collect', 'spades', 'red', 
 // The money in a save (see MONEY_STATS in the game's types): since save v8 (big
 // numbers, migration step 3.7) it's written as text ("1234.56"); the recording
 // was made with v7, where it was a plain number.
-export const MONEY_STATS = ['coinsWon', 'coinsSpent', 'deliveryCoins', 'coinsEarned', 'tokensEarned', 'biggestWin', 'offlineCoins', 'freeSpinCoins'];
+export const MONEY_STATS = ['coinsWon', 'coinsSpent', 'deliveryCoins', 'coinsEarned', 'tokensEarned', 'biggestWin', 'offlineCoins', 'freeSpinCoins',
+  'chipsBought', 'chipsEarned', 'biggestCasinoWin']; // (M11's, in v11 saves)
 export function moneyFields(save) {
   const fields = [[save, 'coins'], [save, 'seeds'], [save, 'seedsEarned'], [save, 'tokens']];
   if (save.run) fields.push([save.run, 'coinsEarned']);
@@ -44,6 +46,10 @@ export function moneyFields(save) {
   for (const m of save.machines || []) {
     for (const pot of Object.keys(m.pots || {})) fields.push([m.pots, pot]);
     if (m.freeSpins) fields.push([m.freeSpins, 'won']);
+  }
+  if (save.casino) { // M11 (v11 saves)
+    fields.push([save.casino, 'chips'], [save.casino, 'bestIncome']);
+    if (save.casino.hand) fields.push([save.casino.hand, 'bet'], [save.casino.hand, 'returned']);
   }
   return fields.filter(([obj, key]) => key in obj);
 }
@@ -306,7 +312,66 @@ function moreMachines() {
   return s.checkpoints;
 }
 
-export const SESSIONS = { firstLife, allMachines, family, moreMachines };
+// M11: the Hamster Casino. It opens with the second hamster: chips from retiring,
+// from spinning and bought with coins; every game (Roulette with several bets,
+// Blackjack played by its hint, a race on every hamster, seed drops); the prizes
+// (boosts running out in play, a charm used up by spins, a token, a skin), time
+// away with a boost on, and a blackjack hand saved and loaded halfway.
+function casino() {
+  const s = newSession(55);
+  const g = () => s.g;
+  g().addCoins(50000, true);
+  g().retire();
+  plantAll(g());
+  g().leaveBigCage();
+  play(s, 5 * 60, { buyEvery: 5 });
+  checkpoint(s, 'the casino opened');
+
+  g().addCoins(1e6);
+  g().buyChips(1000);
+  const bets = [
+    [{ kind: 'red', pick: 0, amount: 20 }, { kind: 'number', pick: 17, amount: 10 }],
+    [{ kind: 'dozen', pick: 1, amount: 50 }, { kind: 'column', pick: 2, amount: 10 }, { kind: 'odd', pick: 0, amount: 10 }],
+    [{ kind: 'number', pick: 0, amount: 10 }, { kind: 'high', pick: 0, amount: 100 }],
+  ];
+  for (let i = 0; i < 12; i++) g().playRoulette(bets[i % bets.length]);
+  for (let i = 0; i < 15; i++) {
+    g().dealBlackjack(20);
+    for (let hint = g().getBlackjackHint(); hint; hint = g().getBlackjackHint()) {
+      if (hint === 'double') g().doubleBlackjack();
+      else if (hint === 'hit') g().hitBlackjack();
+      else g().standBlackjack();
+    }
+  }
+  for (const racer of data.casino.derby.racers) for (let i = 0; i < 3; i++) g().runDerby(racer.id, 10);
+  for (let i = 0; i < 20; i++) g().dropSeed(i % 2 ? 10 : 50);
+  checkpoint(s, 'played every table');
+
+  g().addChips(20000);
+  for (const id of ['goldenHour', 'turboWheel', 'luckyCharm', 'luckyCharm', 'tokenBag', 'visor']) g().buyPrize(id);
+  g().equipSkin('hatVisor');
+  checkpoint(s, 'bought prizes');
+  play(s, 100, { buyEvery: 5 });
+  checkpoint(s, 'boosts running');
+  g().applyOfflineEarnings(1800);
+  play(s, 60, { clicks: false });
+  checkpoint(s, 'time away, then boosts ran out');
+
+  // A hand saved halfway (before the dealer plays), loaded into a new game, then finished.
+  g().dealBlackjack(50);
+  const save = g().toSaveData();
+  const next = newGame(55);
+  next.rng.setState(g().rng.getState());
+  next.loadSaveData(save);
+  attach(s, next);
+  checkpoint(s, 'a hand saved halfway');
+  g().standBlackjack();
+  play(s, 30);
+  checkpoint(s, 'the hand played out');
+  return s.checkpoints;
+}
+
+export const SESSIONS = { firstLife, allMachines, family, moreMachines, casino };
 
 // Which checkpoints are also kept as real save files (tests/fixtures/), for
 // save-migration tests: [session, checkpoint label, name]. The files are called

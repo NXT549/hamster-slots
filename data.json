@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 11,
+  "schemaVersion": 12,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -1035,6 +1035,7 @@
     { "id": "furCocoa", "name": "Cocoa", "category": "fur", "rarity": "common", "effects": [{ "type": "payoutMultiplier", "perLevel": 0.05 }] },
     { "id": "furLavender", "name": "Lavender", "category": "fur", "rarity": "rare", "effects": [{ "type": "payoutMultiplier", "perLevel": 0.1 }] },
     { "id": "furMint", "name": "Mint Chip", "category": "fur", "rarity": "rare", "effects": [{ "type": "payoutMultiplier", "perLevel": 0.1 }] },
+    { "id": "furTuxedo", "name": "Tuxedo", "category": "fur", "rarity": "rare", "casino": true, "effects": [{ "type": "payoutMultiplier", "perLevel": 0.1 }] },
     { "id": "furGolden", "name": "Golden Glow", "category": "fur", "rarity": "epic", "effects": [{ "type": "payoutMultiplier", "perLevel": 0.2 }, { "type": "jackpotTokens", "perLevel": 1 }] },
 
     { "id": "hatNone", "name": "No Hat", "category": "hat", "rarity": "starter" },
@@ -1043,6 +1044,7 @@
     { "id": "hatFlowers", "name": "Flower Crown", "category": "hat", "rarity": "common", "effects": [{ "type": "luck", "perLevel": 3 }] },
     { "id": "hatTop", "name": "Top Hat", "category": "hat", "rarity": "rare", "effects": [{ "type": "luck", "perLevel": 6 }] },
     { "id": "hatCowboy", "name": "Cowboy Hat", "category": "hat", "rarity": "rare", "effects": [{ "type": "luck", "perLevel": 6 }] },
+    { "id": "hatVisor", "name": "Dealer's Visor", "category": "hat", "rarity": "rare", "casino": true, "effects": [{ "type": "luck", "perLevel": 6 }] },
     { "id": "hatCrown", "name": "Crown", "category": "hat", "rarity": "epic", "effects": [{ "type": "luck", "perLevel": 12 }, { "type": "gambleHistory", "perLevel": 2 }] },
 
     { "id": "wheelClassic", "name": "Classic Wheel", "category": "wheel", "rarity": "starter" },
@@ -1061,6 +1063,7 @@
     { "id": "roomStrawberry", "name": "Strawberry Milk", "category": "room", "rarity": "common", "effects": [{ "type": "offlineBonus", "perLevel": 0.05 }] },
     { "id": "roomMint", "name": "Mint Garden", "category": "room", "rarity": "common", "effects": [{ "type": "offlineBonus", "perLevel": 0.05 }] },
     { "id": "roomStarry", "name": "Starry Night", "category": "room", "rarity": "rare", "effects": [{ "type": "offlineBonus", "perLevel": 0.1 }] },
+    { "id": "roomCasino", "name": "Casino Night", "category": "room", "rarity": "rare", "casino": true, "effects": [{ "type": "offlineBonus", "perLevel": 0.1 }] },
     { "id": "roomSunflower", "name": "Sunflower Field", "category": "room", "rarity": "epic", "effects": [{ "type": "offlineBonus", "perLevel": 0.2 }, { "type": "deliveryTokens", "every": 3 }] }
   ],
   "diary": [
@@ -1102,6 +1105,44 @@
     { "id": "amazing", "name": "A-maze-ing", "description": "Win on 50 ways at once with one symbol in the Hamster Maze.", "goal": { "type": "stat", "stat": "bestWays", "target": 50 }, "tokens": 3 },
     { "id": "nutHoarder", "name": "Nut Hoarder", "description": "Fill every cell of the Acorn Vault in hold & spin (the Grand).", "goal": { "type": "stat", "stat": "holdGrands", "target": 1 }, "tokens": 5 },
     { "id": "bigCheese", "name": "The Big Cheese", "description": "Land a ×10 wedge on the cheese wheel.", "goal": { "type": "stat", "stat": "bestWheel", "target": 10 }, "tokens": 4 },
-    { "id": "wholeArcade", "name": "Whole Arcade", "description": "Own all seven machines at once.", "goal": { "type": "machinesOwned", "target": 7 }, "tokens": 5 }
-  ]
+    { "id": "wholeArcade", "name": "Whole Arcade", "description": "Own all seven machines at once.", "goal": { "type": "machinesOwned", "target": 7 }, "tokens": 5 },
+    { "id": "luckyNumber", "name": "Lucky Number", "description": "Win on a single number at Hamster Roulette.", "goal": { "type": "stat", "stat": "rouletteNumbers", "target": 1 }, "tokens": 3 },
+    { "id": "blackjack", "name": "Blackjack!", "description": "Get a blackjack at the hamster dealer's table.", "goal": { "type": "stat", "stat": "blackjacks", "target": 1 }, "tokens": 2 },
+    { "id": "photoFinish", "name": "Photo Finish", "description": "Win the Hamster Derby on Wobbles, the long shot.", "goal": { "type": "stat", "stat": "derbyLongshots", "target": 1 }, "tokens": 3 },
+    { "id": "edgeBin", "name": "Edge of the Board", "description": "Drop a seed into an edge bin at Seed Drop.", "goal": { "type": "stat", "stat": "seedDropEdges", "target": 1 }, "tokens": 3 },
+    { "id": "prizeWinner", "name": "Prize Winner", "description": "Buy something at the casino's Prize Counter.", "goal": { "type": "stat", "stat": "prizesBought", "target": 1 }, "tokens": 2 }
+  ],
+  "casino": {
+    "enabled": true,
+    "unlockGeneration": 2,
+    "chipName": "Casino Chips",
+    "chipPriceSeconds": 0.5,
+    "chipMinPrice": 1,
+    "buyAmounts": [100, 1000, 10000],
+    "chipsPerSpins": { "spins": 2, "chips": 1 },
+    "chipsPerRetirement": 250,
+    "betSteps": [10, 20, 50, 100, 200, 500, 1000],
+    "roulette": { "pays": { "even": 2, "dozen": 3, "number": 36 } },
+    "blackjack": { "blackjackPays": 1.5 },
+    "derby": {
+      "longshot": "wobbles",
+      "racers": [
+        { "id": "nutmeg", "name": "Nutmeg", "weight": 34, "pays": 2.8 },
+        { "id": "biscuit", "name": "Biscuit", "weight": 26, "pays": 3.7 },
+        { "id": "pepper", "name": "Pepper", "weight": 20, "pays": 4.8 },
+        { "id": "tofu", "name": "Tofu", "weight": 13, "pays": 7.3 },
+        { "id": "wobbles", "name": "Wobbles", "weight": 7, "pays": 13.6 }
+      ]
+    },
+    "seedDrop": { "multipliers": [12, 3, 1.2, 0.7, 0.4, 0.7, 1.2, 3, 12] },
+    "prizes": [
+      { "id": "goldenHour", "name": "Golden Hour", "description": "Every machine pays +50% for a while.", "cost": 250, "kind": "boost", "seconds": 90, "maxSeconds": 600, "effect": { "type": "payoutMultiplier", "perLevel": 0.5 } },
+      { "id": "turboWheel", "name": "Turbo Wheel", "description": "The hamster runs faster: spins take 20% less time for a while.", "cost": 200, "kind": "boost", "seconds": 120, "maxSeconds": 600, "effect": { "type": "spinSpeed", "multiplier": 0.8 } },
+      { "id": "luckyCharm", "name": "Lucky Charm", "description": "+15 Luck on every machine for your next paid spins.", "cost": 200, "kind": "charm", "spins": 100, "maxSpins": 500, "effect": { "type": "luck", "perLevel": 15 } },
+      { "id": "tokenBag", "name": "Token Bag", "description": "A Hamster Token for the Capsule Machine.", "cost": 400, "kind": "tokens", "tokens": 1 },
+      { "id": "visor", "name": "Dealer's Visor", "description": "A green dealer's visor for the hamster. Only at the casino.", "cost": 2500, "kind": "skin", "skin": "hatVisor" },
+      { "id": "tuxedo", "name": "Tuxedo", "description": "A smart black-and-white coat. Only at the casino.", "cost": 3500, "kind": "skin", "skin": "furTuxedo" },
+      { "id": "casinoNight", "name": "Casino Night", "description": "The cage in red velvet and gold. Only at the casino.", "cost": 3500, "kind": "skin", "skin": "roomCasino" }
+    ]
+  }
 }

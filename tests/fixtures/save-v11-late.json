@@ -1,0 +1,292 @@
+{
+ "saveVersion": 11,
+ "coins": "1175011121.42",
+ "upgrades": {
+  "cheeks": 91,
+  "wheel": 4,
+  "clover": 5,
+  "highRoller": 4,
+  "hotStreak": 5
+ },
+ "machines": [
+  {
+   "typeId": "clunky",
+   "upgrades": {
+    "lever": 8,
+    "newSeeds": 2,
+    "horseshoe": 5,
+    "thirdReel": 1
+   },
+   "bet": 4,
+   "spinning": true,
+   "spinTimer": 1.766666666666671,
+   "spinBet": 10,
+   "spinFree": false,
+   "spinSource": "manual",
+   "result": [
+    [
+     "seed"
+    ],
+    [
+     "carrot"
+    ],
+    [
+     "carrot"
+    ]
+   ],
+   "streak": 0,
+   "freeSpins": null,
+   "pots": {},
+   "bonus": null,
+   "hold": null
+  },
+  {
+   "typeId": "stacker",
+   "upgrades": {
+    "gears": 8,
+    "paylines": 2,
+    "fourthReel": 1,
+    "hamsterWild": 3,
+    "snackRestock": 2,
+    "sprinkles": 5
+   },
+   "bet": 4,
+   "spinning": false,
+   "spinTimer": 0,
+   "spinBet": 1,
+   "spinFree": false,
+   "spinSource": "manual",
+   "result": [
+    [
+     "carrot",
+     "strawberry",
+     "carrot"
+    ],
+    [
+     "carrot",
+     "wild",
+     "carrot"
+    ],
+    [
+     "carrot",
+     "blueberry",
+     "blueberry"
+    ],
+    [
+     "seed",
+     "seed",
+     "seed"
+    ]
+   ],
+   "streak": 2,
+   "freeSpins": null,
+   "pots": {},
+   "bonus": null,
+   "hold": null
+  },
+  {
+   "typeId": "bonanza",
+   "upgrades": {
+    "tunnelGrease": 8,
+    "moreTunnels": 5,
+    "bouncyBall": 5,
+    "deeperDigging": 2,
+    "acorn": 5
+   },
+   "bet": 4,
+   "spinning": false,
+   "spinTimer": 0,
+   "spinBet": 1,
+   "spinFree": false,
+   "spinSource": "manual",
+   "result": [
+    [
+     "blank",
+     "ball",
+     "apple"
+    ],
+    [
+     "blank",
+     "blank",
+     "carrot"
+    ],
+    [
+     "seed",
+     "carrot",
+     "carrot"
+    ],
+    [
+     "corn",
+     "blank",
+     "golden"
+    ],
+    [
+     "seed",
+     "corn",
+     "blank"
+    ]
+   ],
+   "streak": 0,
+   "freeSpins": null,
+   "pots": {},
+   "bonus": null,
+   "hold": null
+  },
+  {
+   "typeId": "palace",
+   "upgrades": {
+    "velvetGears": 8,
+    "extraPouches": 4,
+    "pouchPolish": 3,
+    "royalPantry": 2,
+    "charm": 2
+   },
+   "bet": 4,
+   "spinning": false,
+   "spinTimer": 0,
+   "spinBet": 1,
+   "spinFree": false,
+   "spinSource": "manual",
+   "result": [
+    [
+     "apple",
+     "blank",
+     "blank"
+    ],
+    [
+     "golden",
+     "apple",
+     "apple"
+    ],
+    [
+     "seed",
+     "golden",
+     "blank"
+    ],
+    [
+     "seed",
+     "blueberry",
+     "seed"
+    ],
+    [
+     "golden",
+     "pouch",
+     "blank"
+    ]
+   ],
+   "streak": 1,
+   "freeSpins": null,
+   "pots": {
+    "mini": "30615",
+    "minor": "75870",
+    "major": "301020",
+    "grand": "3000750"
+   },
+   "bonus": null,
+   "hold": null
+  }
+ ],
+ "activeMachine": 0,
+ "delivery": {
+  "active": false,
+  "timer": 0,
+  "duration": 0
+ },
+ "autoTimer": 3.8,
+ "run": {
+  "coinsEarned": "1220052309.98",
+  "playTime": 881.3166666661938
+ },
+ "generation": 1,
+ "seeds": "0",
+ "seedsEarned": "0",
+ "tree": {},
+ "stars": {},
+ "bigCage": false,
+ "tokens": "51",
+ "diary": {
+  "firstSpin": true,
+  "firstWin": true,
+  "wheelTraining": true,
+  "spins100": true,
+  "thirdReel": true,
+  "newSeed": true,
+  "secondMachine": true,
+  "threeLines": true,
+  "onFire": true,
+  "highRoller": true,
+  "cardShark": true,
+  "wildThing": true,
+  "freeRide": true,
+  "potLuck": true,
+  "wheelMax": true,
+  "luck50": true,
+  "millionaire": true,
+  "fullCage": true,
+  "grandHamster": true
+ },
+ "skins": {
+  "owned": {},
+  "equipped": {}
+ },
+ "capsules": {
+  "sincePity": 0
+ },
+ "casino": {
+  "chips": "0",
+  "bestIncome": "0",
+  "spinsToChip": 0,
+  "boosts": {},
+  "hand": null
+ },
+ "stats": {
+  "spins": 250,
+  "manualSpins": 163,
+  "autoSpins": 82,
+  "wins": 128,
+  "coinsWon": "406222078.29",
+  "coinsSpent": "140027.3",
+  "deliveries": 0,
+  "deliveryCoins": "0",
+  "coinsEarned": "1220052309.98",
+  "upgradesBought": 190,
+  "playTime": 881.3166666661938,
+  "goldenJackpots": 0,
+  "capsulesOpened": 0,
+  "tokensEarned": "51",
+  "biggestWin": "714210000",
+  "offlineCoins": "2705981.69",
+  "machinesBought": 3,
+  "mostLinesWon": 6,
+  "biggestBet": 10,
+  "freeSpins": 5,
+  "freeSpinTriggers": 1,
+  "freeSpinCoins": "5868625",
+  "wildWins": 32,
+  "bestStreak": 9,
+  "jackpotsWon": 4,
+  "grandJackpots": 1,
+  "gambleWins": 19,
+  "gambleLosses": 42,
+  "bestGambleRun": 1,
+  "symbolsUnlocked": 8,
+  "bestLuck": 100,
+  "suitWins": 7,
+  "rebuilds": 0,
+  "bestStars": 0,
+  "mostSeedsHeld": 0,
+  "bestWays": 0,
+  "holdBonuses": 0,
+  "holdGrands": 0,
+  "bestWheel": 0,
+  "casinoGames": 0,
+  "chipsBought": "0",
+  "chipsEarned": "0",
+  "biggestCasinoWin": "0",
+  "rouletteNumbers": 0,
+  "blackjacks": 0,
+  "derbyLongshots": 0,
+  "seedDropEdges": 0,
+  "prizesBought": 0
+ }
+}

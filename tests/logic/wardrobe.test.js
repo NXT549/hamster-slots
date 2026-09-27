@@ -44,7 +44,7 @@ describe('the wardrobe data: a buff per slot, stronger with rarity, a twist per 
   check('the gentle sizes the user picked: +5/10/20% payouts, +3/6/12 Luck',
     [['furCinnamon', 0.05], ['furLavender', 0.1], ['furGolden', 0.2], ['hatParty', 3], ['hatTop', 6], ['hatCrown', 12]].every(([id, v]) => skin(id).effects[0].perLevel === v));
   check('six hats in capsules: 3 common, 2 rare, 1 epic', deepEqual(
-    rarities.map((r) => data.skins.filter((s) => s.category === 'hat' && s.rarity === r).length), [3, 2, 1]));
+    rarities.map((r) => data.skins.filter((s) => s.category === 'hat' && s.rarity === r && !s.casino).length), [3, 2, 1]));
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -183,8 +183,9 @@ describe('wardrobe: saves, the diary and capsules', () => {
   const got = new Set();
   c.on('capsuleOpened', (e) => got.add(e.skinId));
   for (let i = 0; i < 3000; i++) c.pullCapsule();
-  const pool = data.skins.filter((s) => s.rarity !== 'starter');
+  const pool = data.skins.filter((s) => s.rarity !== 'starter' && !s.casino); // M11: the casino's skins are only at its Prize Counter
   check(`hats come from capsules: ${pool.length} skins in the pool, all found in 3,000 pulls`,
     pool.length === 24 && pool.every((s) => got.has(s.id)));
+  check('no casino skin ever comes out of a capsule', data.skins.filter((s) => s.casino).every((s) => !got.has(s.id)));
   check('a spin with a hat on plays like any spin', (() => { const h = wearing('hatCrown'); h.spin(); land(h); return h.state.stats.spins === 1; })());
 });

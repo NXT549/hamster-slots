@@ -1642,6 +1642,13 @@ export const HATS: Record<string, { rows: string[]; x: number; y: number }> = {
     'UnnnnnnnU',
     '.UUUUUUU.',
   ] },
+  hatVisor: { x: 14, y: 6, rows: [ // M11: the casino dealer's green visor, its brim over the eyes
+    '.HHHHH...',
+    'HiiGGGH..',
+    'HGGGGGgH.',
+    '.HHgggGiH',
+    '....HHHHH',
+  ] },
   hatCrown: { x: 14, y: 3, rows: [ // a gold crown with a ruby and a sapphire
     'V.V.V.V',
     'VhVyVyV',

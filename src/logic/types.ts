@@ -10,6 +10,9 @@
 // (coins, Heirloom Seeds, Hamster Tokens) is a Money: a big number (money.ts).
 
 import type { Money } from './money.ts';
+import type { BjCard, BjOutcome } from './blackjack.ts';
+import type { RouletteKind, RoulettePays } from './roulette.ts';
+import type { RacerDef } from './derby.ts';
 
 // ───────────────────────── data.json (GameData) ─────────────────────────
 
@@ -181,6 +184,35 @@ export interface SkinDef extends Named {
   category: string;
   rarity: string; // "starter" or a capsule rarity id
   effects?: Effect[]; // M10: what wearing it does (level 1 while worn; none for starters)
+  casino?: boolean; // M11: only at the casino's Prize Counter (never in a capsule)
+}
+
+// ── M11: the Hamster Casino ──
+// A prize at the Prize Counter. A boost lasts `seconds` of play, a charm `spins`
+// paid spins; buying one again adds more, up to its max. Their effects work like a
+// worn skin's (level 1 while they last).
+export type PrizeDef = Named & { description: string; cost: number } & (
+  | { kind: 'boost'; seconds: number; maxSeconds: number; effect: Effect }
+  | { kind: 'charm'; spins: number; maxSpins: number; effect: Effect }
+  | { kind: 'tokens'; tokens: number }
+  | { kind: 'skin'; skin: string }
+);
+
+export interface CasinoDef {
+  enabled: boolean; // false = no casino at all (e.g. a store build that leaves it out)
+  unlockGeneration: number; // the casino opens for this generation (after the first retirement)
+  chipName: string;
+  chipPriceSeconds: number; // a chip costs this many seconds of the family's best earnings (best machine, biggest bet, no boosts)
+  chipMinPrice: number; // but never less than this many coins
+  buyAmounts: number[]; // how many chips the buy buttons buy
+  chipsPerSpins: { spins: number; chips: number }; // earned while you play: this many chips every so many paid spins
+  chipsPerRetirement: number; // and when a hamster retires
+  betSteps: number[]; // the chip bets (a bet is always a multiple of the first)
+  roulette: { pays: RoulettePays };
+  blackjack: { blackjackPays: number };
+  derby: { racers: RacerDef[]; longshot: string };
+  seedDrop: { multipliers: number[] };
+  prizes: PrizeDef[];
 }
 
 // A Hamster Diary goal. "stat" goals name a lifetime stat (see Stats below).
@@ -237,6 +269,7 @@ export interface GameData {
   skinCategories: Named[];
   skins: SkinDef[];
   diary: Sticker[];
+  casino?: CasinoDef; // M11
 }
 
 // ───────────────────────── Spins ─────────────────────────
@@ -325,6 +358,25 @@ export interface MachineState {
   hold: HoldState | null; // M9: hold & spin while it plays
 }
 
+// M11: a hand of blackjack (a finished one stays to show until the next deal).
+export interface BlackjackHand {
+  bet: Money; // chips on the table (× 2 after a double down)
+  player: BjCard[];
+  dealer: BjCard[]; // the second card is face down until the hand ends
+  doubled: boolean;
+  outcome: BjOutcome | null; // null while it's being played
+  returned: Money; // chips paid back when it ended
+}
+
+// M11: the family's casino (kept when retiring, like the tokens).
+export interface CasinoState {
+  chips: Money;
+  bestIncome: Money; // the most the family has earned per second (noted when retiring and buying chips): chips never get cheaper
+  spinsToChip: number; // paid spins since the last chip earned
+  boosts: Record<string, number>; // prize id → seconds (a boost) or paid spins (a charm) left
+  hand: BlackjackHand | null;
+}
+
 export interface GambleState {
   machineId: string;
   stake: Money;
@@ -376,6 +428,16 @@ export interface Stats {
   holdBonuses: number; // M9: hold & spin bonuses played
   holdGrands: number; // M9: hold & spin grids filled (the Grand)
   bestWheel: number; // M9: the biggest cheese-wheel multiplier landed
+  // M11: the casino
+  casinoGames: number; // games played (a roulette spin, a blackjack hand, a race, a drop)
+  chipsBought: Money;
+  chipsEarned: Money; // earned by playing the machines and retiring (not bought, not won)
+  biggestCasinoWin: Money; // the most chips one game paid back
+  rouletteNumbers: number; // straight-up numbers hit
+  blackjacks: number;
+  derbyLongshots: number; // races won on the long shot
+  seedDropEdges: number; // seeds landed in an edge bin (the biggest)
+  prizesBought: number;
 }
 
 export interface GameState {
@@ -400,6 +462,7 @@ export interface GameState {
   diary: Record<string, boolean>;
   skins: { owned: Record<string, boolean>; equipped: Record<string, string> };
   capsules: { sincePity: number };
+  casino: CasinoState; // M11
   stats: Stats;
 }
 
@@ -430,7 +493,10 @@ export interface Card {
 // Every event game.ts emits, and what it carries (AGENTS.md → Events).
 // game.on('spinResolved', (e) => …) knows that e.payout is a Money, and so on.
 
-export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug';
+export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug' | 'casino';
+export type ChipSource = 'buy' | 'spins' | 'retire' | 'bet' | 'win' | 'prize' | 'refund' | 'debug';
+// One roulette bet (M11): a kind, which one (dozen / column / number), and the chips on it.
+export interface RouletteBet { kind: RouletteKind; pick: number; amount: Money }
 export type GambleEndReason = 'collect' | 'lose' | 'max' | 'spin' | 'expired' | 'switch' | 'retire';
 
 export interface GameEvents {
@@ -468,6 +534,15 @@ export interface GameEvents {
   capsuleOpened: { skinId: string; rarity: string; duplicate: boolean; refund: Money; pity: boolean };
   skinEquipped: { id: string; category: string };
   offlineEarned: { awaySeconds: number; seconds: number; coins: Money };
+  // M11: the casino
+  chipsChanged: { chips: Money; amount: Money; source: ChipSource };
+  rouletteSpun: { pocket: number; bets: (RouletteBet & { returned: Money })[]; staked: Money; returned: Money };
+  blackjackChanged: { hand: BlackjackHand };
+  blackjackEnded: { outcome: BjOutcome; bet: Money; returned: Money };
+  derbyRun: { racer: string; winner: string; bet: Money; returned: Money };
+  seedDropped: { path: number[]; bin: number; multiplier: number; bet: Money; returned: Money };
+  prizeBought: { id: string; cost: Money };
+  boostEnded: { id: string };
   dataReloaded: Record<string, never>;
   stateLoaded: Record<string, never>;
 }

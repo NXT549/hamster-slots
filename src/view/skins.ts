@@ -37,6 +37,7 @@ export const SKIN_ART: Record<string, SkinArt> = {
   furLavender: { colors: { t: '#cdb6ea', T: '#a78fd0', c: '#f5edfc' } },
   furMint: { colors: { t: '#a9dfca', T: '#78c1a6', c: '#f1fbf6', p: '#8a5a3c' } }, // chocolate-chip ears and toes
   furGolden: { colors: { t: '#ffd35c', T: '#e3a72f', c: '#fff6c2' } },
+  furTuxedo: { colors: { t: '#6b6673', T: '#4f4a57', c: '#fdfcfa' } }, // M11 (the casino): a slate coat, a white shirt front
 
   hatNone: {},
   hatParty: { hat: 'hatParty' },
@@ -45,6 +46,7 @@ export const SKIN_ART: Record<string, SkinArt> = {
   hatTop: { hat: 'hatTop' },
   hatCowboy: { hat: 'hatCowboy' },
   hatCrown: { hat: 'hatCrown' },
+  hatVisor: { hat: 'hatVisor' }, // M11 (the casino)
 
   wheelClassic: {},
   wheelMint: { tokens: { '--wheel-bg': '#effaf5', '--wheel-ring': '#c3ead9', '--wheel-spoke': '#8fcfb5', '--wheel-hub': '#7fcbb8' } },
@@ -79,6 +81,14 @@ export const SKIN_ART: Record<string, SkinArt> = {
     },
   },
   roomSunflower: { tokens: { '--wall-top': '#fffbe3', '--wall-bottom': '#ffe79a', '--floor': '#a3d17f', '--floor-dark': '#78ad56' } },
+  // M11 (the casino): red velvet walls with gold stripes, gold wire, green card-table felt.
+  roomCasino: {
+    tokens: {
+      '--wall-top': '#8a2a3a', '--wall-bottom': '#5f1a28', '--wall-stripe': 'rgba(255, 211, 92, 0.09)',
+      '--wire': '#ffd35c', '--wire-dark': '#7a4f12',
+      '--floor': '#3f8f5f', '--floor-dark': '#2a6a44', '--floor-ink': '#fbeedd',
+    },
+  },
 };
 
 // Every CSS token any skin sets, so switching skins can clear the old ones first.

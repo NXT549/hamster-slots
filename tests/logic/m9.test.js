@@ -314,7 +314,7 @@ describe('M9 in the game: the machines, stickers and save v10', () => {
   g.addCoins('1e18');
   for (const m of data.machines.slice(1)) g.buyMachine(m.id);
   check('Whole Arcade: own all seven machines at once', g.state.diary.wholeArcade === true && g.state.diary.fullCage === true);
-  check(`the save version is 10 (${SAVE_VERSION})`, SAVE_VERSION === 10);
+  check(`M9 made the save version 10 (now ${SAVE_VERSION})`, SAVE_VERSION >= 10);
   const v9 = JSON.parse(JSON.stringify(g.toSaveData()));
   v9.saveVersion = 9;
   for (const m of v9.machines) delete m.hold;

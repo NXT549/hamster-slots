@@ -119,7 +119,7 @@ describe('Capsule Machine + skins', () => {
   check('duplicates refund their rarity\'s tokens', dupes > 0 && refundsOk);
   const refunds = num(o.state.tokens) - (tokensBefore - total * c.pullCost);
   check('tokens spent = pulls x cost - refunds', refunds > 0 && o.state.stats.capsulesOpened === total);
-  check('20,000 pulls collect every skin', data.skins.every((s) => o.isSkinOwned(s.id)));
+  check('20,000 pulls collect every skin (but the casino\'s own, M11)', data.skins.every((s) => o.isSkinOwned(s.id) === !s.casino));
   check('"Fashion Hamster" sticker for 8 skins', o.state.diary.fashion === true);
 
   // Pity counter: forced at exactly pityPulls - 1 misses.
