@@ -26,10 +26,10 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
   - **M10 "Wardrobe buffs"** (§25, D129): every worn skin gives a gentle buff, 6 hats (+Luck), a twist on every Epic, one skin per slot.
 - **Now:** waiting for the playtest feedback of the user's friend on 1.1.0 (it went out before the user played it, D130); the questions are in DESIGN §21–§25. Feedback goes in PORTING_NOTES → Playtest notes; fixes go out as 1.1.x.
 - **Still open:** the late lives dip to 2–9 min around generations 12–15 before the new machines stretch them again (DESIGN §10); the wardrobe makes mid-game lives ~10–30% shorter (§25).
-- **M15 "Visual redesign" (being built on `claude/nice-hopper-r35bkf`, not on `main` yet):** the user's "i want an entire visual redesign" (DESIGN §26, D131). Their picks (2026-09-27): still pixel art, a cleaner UI that fits big and small screens, upgrades as small tiles like the tree's, the tree only in the Big Cage, a new rebirth animation (the hamster plants a seed, a huge tree shoots up, the traits branch off it), built now, before M11. View only.
+- **M15 "Visual redesign" is built on `claude/nice-hopper-r35bkf` and waiting for the user's playtest** (not on `main` yet; `package.json` says `1.2.0-rc.1`). The user's "i want an entire visual redesign" and their picks (DESIGN §26, D131–D132): still pixel art; **the whole game fits the window** (the tray beside the cage on wide screens, under it on phones; only the tray's tab scrolls); **small upgrade tiles** like the tree's, with a detail card on a tap; **the Family Tree only in the Big Cage**; the Big Cage as **a meadow with the family's huge pixel-art tree** (painted in code, `src/view/bigtree.ts`), the traits on its branches; and **a new rebirth animation** (the hamster plants an Heirloom Seed, the tree shoots up, the traits branch off; `src/view/bigcage.ts`). View only: no rules, balance or save changes; the golden run is untouched. Merging into `main` (and releasing 1.2.0) waits for the user's OK.
 - **Next on the roadmap:** M11 Hamster Casino → M12 Your own casino (DESIGN §11). M11 is a new system: plan it with the user first, and don't build it until they ask.
 - **The code today:** everything in `src/` (logic, view, platform, boot) is **TypeScript** (strict). The tests and tools are JavaScript (typing them needs `@types/node`, a new dependency: ask first). Vite runs and builds it (`npm run dev`, `npm run build`, which type-checks first). Work since 0.2.0 was built on the branch `claude/serene-mayer-lgbgdp` and merged into `main` at each release.
-- **Tests now:** `npm test` (Vitest) runs 1,774 tests in about 30 s: the logic checks (1,064: M7's 687 + 6 for save v8 + 56 for Pays Both Ways + 63 for M8 + 193 for M9 and the seed jar + 59 for M10), 529 art checks, the golden run (40), the save fixtures (29), the platform layer (27), money (57), save codes (25) and the release files (3).
+- **Tests now:** `npm test` (Vitest) runs 1,867 tests in about 30 s: the logic checks (1,064: M7's 687 + 6 for save v8 + 56 for Pays Both Ways + 63 for M8 + 193 for M9 and the seed jar + 59 for M10), 529 art checks, the Big Cage's tree (93, M15), the golden run (40), the save fixtures (29), the platform layer (27), money (57), save codes (25) and the release files (3).
 - **Last verified:** each release's checks are in PORTING_NOTES → Playtest notes: 0.2.0 (2026-09-26: the golden run unchanged since 0.1.0, to the cent), Pays Both Ways, M8, 1.0.0-rc.1, M9, the seed jar and M10 (2026-09-27: all tests and the build, the simulator before/after, Chromium at 1280 and 390 px). 1.1.0 was checked on the live site after the deploy (it serves the new build and says 1.1.0).
 - **Not yet verified:** how the M7, 1.0 and M9 sounds *sound* (tick, card, luck, unlock, softer auto clunks; the slam, the count-up, star, sprout, whoosh; M9's acorn and respin); the label on a natural jackpot-wheel trigger; a natural hold & spin Grand and a natural ×10 cheese wedge in the browser (only in the tests and from the console); the Epic twists in a real session (tested in the logic); the look in Firefox and Safari (for 1.0: the rays' `mask`, the line trace, the reel blur).
 
@@ -103,6 +103,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
   - `tests/fixtures.test.js`: real saves (`tests/fixtures/save-v<version>-<name>.json`, one set per save version, kept for good). The current version's must load and save back unchanged; each older one must migrate to exactly the current file of the same name (v7 → v8: every amount becomes the same amount as text; v9 → v10: the saves gain the four M9 stats and `hold: null` on every machine). A new save version gets its set with `node tools/golden.mjs --fixtures` (it never touches the recording or overwrites a file); since v9 a new version's file is the previous version's file of the same name, loaded and saved again, so "migrates to exactly" holds even when the sessions now play differently (D122).
   - `tests/money.test.js`: big numbers (`src/logic/money.ts`): the same answers as plain numbers for everyday amounts (the cent-exact promise), big numbers past 1.8e308, reading money from a save, and how `formatCoins` writes it.
   - `tests/savecode.test.js`: save codes: made, checked (every problem a pasted code can have), loaded (stored straight away, no offline pay), old v7 codes through the migrations, UTF-8.
+  - `tests/bigtree.test.js`: the Big Cage's tree (M15, `src/view/bigtree.ts`): at every scene size from a 320 px phone to a 1560 px screen, every trait is inside the scene, sits on its branch and never overlaps another; every colour the tree painter reads is a `:root` token.
   - `tests/release.test.js`: the files a release needs: the icons exist at their sizes, the manifest and index.html point at them, the link card's picture is there, and package.json's version is a real version (and matches package-lock.json).
   - `tests/platform.test.js`: the platform layer. Saving and loading, broken saves, full or blocked storage, settings, Reset keeping the settings, autosave and the pay for time away, all on the pretend platform (`src/platform/memory.ts`); and the web version on a fake browser.
 - **The tests and tools are JavaScript** (`.test.js`, `.mjs`): typing them would need `@types/node`, a new dependency (ask first).
@@ -124,7 +125,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 ## Code style
 
 - **Rule 7: comment for a learner.** The user is learning. Add short comments that explain *why*, at key points. Don't comment every line.
-- **Rule 9: prototype art.** Pixel sprites in `src/view/art.ts` follow the style guide at the top of that file (24/16/12 px, colour ramps, matching outlines, whole-number scales; 12×12 UI frames are 9-slice and must keep their edges uniform). The palette's letters are all used: new colours go on free digits/punctuation (the purple ramp uses `8 9 0 +`); M7's sprites (Wood Shaving, clover, horseshoe, seed packet, card back, four suits) reuse existing ramps. The cage itself (bars, base, tubes, machines, the WIN meter, the gamble card) is CSS. Particles (`src/view/fx.ts`) are whole-pixel squares in token colours, or sprites from art.ts drawn at a whole-number scale (1.0: coins, stars, seeds, hearts), and must stay off with Motion "Less". Every new animation needs its `.less-motion` rule in style.css. Spend effort on feel and clarity, not detail.
+- **Rule 9: prototype art.** Pixel sprites in `src/view/art.ts` follow the style guide at the top of that file (24/16/12 px, colour ramps, matching outlines, whole-number scales; 12×12 UI frames are 9-slice and must keep their edges uniform). The palette's letters are all used: new colours go on free digits/punctuation (the purple ramp uses `8 9 0 +`); M7's sprites (Wood Shaving, clover, horseshoe, seed packet, card back, four suits) reuse existing ramps. The cage itself (bars, base, tubes, machines, the WIN meter, the gamble card) is CSS. Particles (`src/view/fx.ts`) are whole-pixel squares in token colours, or sprites from art.ts drawn at a whole-number scale (1.0: coins, stars, seeds, hearts), and must stay off with Motion "Less". Every new animation needs its `.less-motion` rule in style.css. Spend effort on feel and clarity, not detail. The Big Cage's tree (M15) is too big for a sprite, so `src/view/bigtree.ts` paints it on a small canvas at a whole-number scale with the same rules (ramps, top-left light, an outline per part, token colours).
 
 ## How to run
 
@@ -144,7 +145,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
   - **M6 features:** debug panel → **+5 free spins** (Burrow Bonanza) and **Wheel: Mini/Minor/Major/Grand** (Pouch Palace, when it isn't spinning). In the console: `hamster.game.addCoins(1e9)` (or text for big numbers: `addCoins('1e400')`; money in the state is a Money, so `hamster.game.state.coins.toString()` shows it), `hamster.game.buyUpgrade('highRoller', 4)`, `hamster.game.setBet(4)`, `hamster.game.buyMachine('bonanza')`.
   - **The card gamble:** debug panel → **Offer a gamble (100)** (or `hamster.game.triggerGamble(100)`). Set `hamster.clock.timeScale = 0` **first** to freeze its 5 s countdown while you look (a real offer after a manual win runs out before a console command can freeze it).
   - **Unlocks and Luck:** `hamster.game.buyUpgrade('newSeeds', 2)`, `buyUpgrade('clover', Infinity)`, `buyUpgrade('horseshoe', Infinity)`.
-  - **The Big Cage (M8):** retire (debug **Earn +100K**, then Family → Retire twice), or debug **Open the Big Cage** to plant without retiring; **Start [pup]'s life** closes it. In the console: `hamster.game.openBigCage()`, `hamster.game.leaveBigCage()`.
+  - **The Big Cage (M8):** retire (debug **Earn +100K**, then Family → Retire twice), or debug **Open the Big Cage** to plant without retiring; **Start [pup]'s life** closes it. In the console: `hamster.game.openBigCage()`, `hamster.game.leaveBigCage()`. **The rebirth animation (M15)** plays only after a real retirement (about 5 s; a tap on the meadow skips it); a reload or Open the Big Cage shows the grown tree. The tree lays itself out again when the window changes size: try the phone and desktop sizes.
   - **Machine Stars:** `hamster.game.addCoins(1e7)`, then Upgrades → the machine's tab → Max on every tile (or `for (const u of hamster.game.getAvailableUpgrades().filter((x) => x.scope === 'machine')) hamster.game.buyUpgrade(u.id, Infinity)`), and the Rebuild card appears (two taps).
   - **Celebrations (1.0):** in the console, `hamster.ui.celebrate.start({ kind: 'jackpot', titles: ['BIG WIN!', 'HUGE WIN!', 'JACKPOT!'], amount: hamster.game.state.coins })` (kinds: `big`, `jackpot`, `grand`, `pot`, `free`, `star`; `icon: 'star'` and `sub: '…'` are optional). A real one: debug **Wheel: Grand** on the Pouch Palace, or retire / rebuild as below.
   - **M9's machines:** `hamster.game.addCoins('1e16')`, then `for (const id of ['stacker', 'bonanza', 'palace', 'maze', 'vault', 'cheese']) hamster.game.buyMachine(id)`. **Hold & spin:** on the Acorn Vault after one spin, debug **Hold & spin** (or `hamster.game.triggerHold(7)`; `triggerHold(14)` leaves one empty cell: a 27% chance of the Grand). **The cheese wheel** needs a line of five: on the Big Cheese, buy Lucky Rind and Bigger Board and speed time up (debug panel) until one lands.
@@ -178,7 +179,9 @@ hamster_slots/
 │                         bonus, the seed jar) + familyTree (7 branches since M8), stars (Machine Stars), tokens, capsules, skins (+ what each does
 │                         when worn, M10: `effects`; 5 categories with hats), diary
 ├── index.html         ← page skeleton (HUD, cage stage + bet box + card gamble panel + pots + WIN meter + hold & spin
-│                         board + clover badge, tray tabs and sub-tabs, menu + settings + version line, save backup, the Big Cage page,
+│                         board + clover badge, tray tabs and sub-tabs + the upgrade detail card, the Family tab's retire card and planted
+│                         traits, menu + settings + version line, save backup, the Big Cage page (M15: the meadow scene: its canvas, the
+│                         traits layer, the hamster, the seed, a speech bubble; the numbers, the trait card, Start),
 │                         the particle canvas) + icons, manifest and link-card tags + file:// and no-JavaScript warnings
 ├── public/            ← copied into the build as it is: icons/ (the hamster, made by tools/icons.mjs), manifest.webmanifest
 │                         (add to home screen), social.png (the link card's picture)
@@ -205,6 +208,7 @@ hamster_slots/
 │   ├── fixtures/      ← real save files, one set per save version (v7, v8, v9, v10): the old-format saves migrations are tested on
 │   ├── savecode.test.js ← save codes (Menu → Save backup): make, check, load, old codes
 │   ├── money.test.js  ← big numbers: exact for everyday amounts, past 1.8e308, from a save, on screen
+│   ├── bigtree.test.js ← the Big Cage's tree (M15): every trait inside the scene, on its branch, never overlapping, at 14 sizes
 │   ├── release.test.js ← the release files: icons at their sizes, the manifest, index.html's links, the version
 │   └── platform.test.js ← the platform layer on a pretend platform (full/blocked storage, hide/show/close) + web.ts
 ├── tools/
@@ -250,7 +254,9 @@ hamster_slots/
     │   ├── savecode.ts ← the save as a one-line code ("HS1:" + base64 JSON): make, check (5 problems), load + store
     │   └── autosave.ts ← saves on a timer and when the player goes away or closes the game; pays for a hidden tab's time
     └── view/          ← VIEW: draws the game and turns clicks and keys into game actions
-        ├── style.css  ← the "hamster cage" look; THEME TOKENS in :root (colours, fonts, sizes)
+        ├── style.css  ← the "hamster cage" look; THEME TOKENS in :root (colours, fonts, sizes; M15: the meadow and the tree's);
+        │                the layout (M15: the page is the window's height, the tray beside the cage or under it; the tray and the
+        │                cage are CSS size containers, so their contents lay out by their own width)
         ├── art.ts     ← pixel sprites as text grids + palette (+ per-draw palette overrides for fur); hats (M10:
         │                HATS, drawn into the hamster frames as "hamster.hatParty" …, hamsterSprite());
         │                symbol/machine/upgrade/tree node/capsule → sprite maps; UI frames + bedding tile; spriteCanvas
@@ -263,7 +269,7 @@ hamster_slots/
         ├── sound.ts   ← synthesized sound effects (Web Audio; M9: acorn, respin), volume + mute
         ├── fx.ts      ← pixel particles on one canvas over the page: sparkles, confetti, fountains, dust, embers,
         │                motes, twinkles, rings (shockwaves), and sprite particles (spinning coins, stars, seeds,
-        │                hearts: coinFountain, rain, spriteBurst) (capped at 400; none with Motion "Less"). ui.ts moves
+        │                hearts: coinFountain, rain, spriteBurst) (capped at 400; none with Motion "Less"). bigcage.ts moves
         │                the canvas into the Big Cage dialog while it's open (a dialog sits above the page)
         ├── celebrate.ts ← the big moments (1.0): the celebration over the cage (dim, rays, a title that slams in and
         │                climbs BIG WIN! → HUGE WIN! → JACKPOT!, the count-up, coins; taps go through, D124) and the
@@ -274,18 +280,25 @@ hamster_slots/
         ├── winshow.ts ← the win show: everything lit + the WIN meter counting up, then one line at a time with
         │                a label ("… · 6 ways", "… · cheese wheel ×5"), then the scatters; loops; a tap skips (view only, D92)
         ├── shop.ts    ← the Upgrades tab (sub-tabs Hamster / [machine] / Machines): machine cards with feature
-        │                chips and Machine Stars, ×1/×10/Max, upgrade tiles, "ready in" hints, the Rebuild card and
-        │                buttons (two taps); describeEffect (also used by the family tree)
+        │                chips and Machine Stars, ×1/×10/Max (tap the active one for the next), small upgrade tiles (M15) + the
+        │                detail card a tap opens ("ready in" hints there), the Rebuild card and buttons (two taps); describeEffect
+        │                (also used by the family tree)
+        ├── bigtree.ts ← the Big Cage's huge tree (M15): treeLayout() (where the trunk, branches, leaves and traits go, for any
+        │                scene size; pure maths, tested) and drawTree() (paints the meadow and the tree, at any moment of its
+        │                growing, as pixel art on a small canvas; its colours are theme tokens, TREE_TOKENS)
+        ├── bigcage.ts ← the Big Cage page (M8; a meadow scene since M15): the traits on the tree (tap → the card → Plant), the
+        │                numbers and the seed jar, Start, the hamster's speech bubble, and the rebirth animation (a timeline: the
+        │                hamster walks in, digs, plants the seed, the tree grows, the traits sprout; a tap skips it)
         ├── payouts.ts ← the Info tab (sub-tabs): paytable (scatter, blank and locked rows), payline diagrams,
         │                Features (Luck, unlocks and the real odds of every feature: ways, hold & spin, the cheese
         │                wheel too), recent wins (hold & spin, ways, wedges)
         ├── ui.ts      ← HUD (coins + seeds, tab title), cage stage (wheel + prize wheel, tube, machine per type,
         │                tags, bubble, bet box, pots, clover + streak badges, card gamble panel, delivery tube,
-        │                fit-to-width, stars on the marquee + gold trim), tray tabs, Family tab (retire + read-only
-        │                tree), the Big Cage page (the tree moves into it while it's open; the seed jar's bar), menu + settings, skins on the
+        │                fitRig (to the cage's width and height, M15), stars on the marquee + gold trim), tray tabs, Family tab
+        │                (retire + the planted traits; the tree is only in the Big Cage, bigcage.ts), menu + settings, skins on the
         │                stage, capsule prop, win celebrations (WIN_FX → celebrate.ts + particles), reel clunks, dust and
         │                thumps, the little touches (hearts, the breathing and dozing hamster, Spin's glow, the night
-        │                cage in free spins, the page opening), retire → iris → Big Cage (seed rain, count-up) → new
+        │                cage in free spins, the page opening), retire → iris → Big Cage (bigcage.ts) → new
         │                life, the hold & spin board (renderHold) and the cheese wheel on the prize wheel (M9; the
         │                celebration waits until it lands), icon-only machine tags past 4 machines, sounds,
         │                welcome-back + stats dialogs

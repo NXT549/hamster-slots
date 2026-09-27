@@ -116,6 +116,28 @@ export function describeEffect(game: Game, def: Def, { now, next }: Preview): st
   return `${label} ${fmt(now)}${tail}`;
 }
 
+// M15: the short "now → next" on a compact upgrade tile. Most effects are short
+// already; Luck, unlocks and Pays Both Ways keep just their headline here, and the
+// detail card (tap the tile) shows their whole line.
+function shortEffect(game: Game, def: UpgradeDef, preview: Preview): string {
+  const { now, next } = preview;
+  switch (def.effect.type) {
+    case 'luck':
+      return next === null ? `Luck ${now.luck} <span class="note">(max)</span>` : `Luck ${arrow(now.luck, next.luck)}`;
+    case 'unlockSymbol': {
+      if (next === null) return 'Every symbol unlocked';
+      const md = game.getMachineData();
+      const names = effectAs(def, 'unlockSymbol').symbols.slice(now.open, next.open)
+        .map((id) => (md.symbols.find((s) => s.id === id) || { name: id }).name).join(' + ');
+      return `New: <b>${names}</b>`;
+    }
+    case 'bothWays':
+      return next === null ? 'Pays both ways' : `Hit rate ${arrow(pct(now.hitRate), pct(next.hitRate))}`;
+    default:
+      return describeEffect(game, def, preview);
+  }
+}
+
 // Little chips on a machine card for the bonus features it has (and its Luck and
 // how many of its symbols are unlocked).
 export function featureChips(info: MachineInfo): string {
@@ -147,7 +169,6 @@ interface Tile {
   effect: HTMLElement;
   fill: HTMLElement;
   label: HTMLElement;
-  wait: HTMLElement;
 }
 interface Card {
   id: string;
@@ -167,8 +188,35 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
     machines: $('machine-list'), hamster: $('upgrade-list-hamster'), machine: $('upgrade-list-machine'),
-    amount: $('buy-amount'), machineNote: $('machine-upgrades-note'),
+    amount: $('buy-amount'), machineNote: $('machine-upgrades-note'), detail: $('upgrade-detail'),
   };
+  // M15: the tiles are small, like the Family Tree's traits. Tap one (not its buy
+  // button) and a detail card at the bottom of the tab tells you all about it.
+  let selected: string | null = null;
+  el.detail.innerHTML = `
+    <div class="tile-top">
+      <div class="tile-icon"></div>
+      <div><div class="tile-name"></div><div class="tile-tag"></div></div>
+      <button class="ud-close" aria-label="Close">×</button>
+    </div>
+    <div class="tile-desc"></div>
+    <div class="tile-effect"></div>
+    <div class="ud-foot">
+      <span class="wait-hint"></span>
+      <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>
+    </div>`;
+  const detail = {
+    icon: el.detail.querySelector<HTMLElement>('.tile-icon')!, name: el.detail.querySelector<HTMLElement>('.tile-name')!,
+    tag: el.detail.querySelector<HTMLElement>('.tile-tag')!, desc: el.detail.querySelector<HTMLElement>('.tile-desc')!,
+    effect: el.detail.querySelector<HTMLElement>('.tile-effect')!, wait: el.detail.querySelector<HTMLElement>('.wait-hint')!,
+    button: el.detail.querySelector<HTMLButtonElement>('.buy-btn')!, fill: el.detail.querySelector<HTMLElement>('.buy-fill')!,
+    label: el.detail.querySelector<HTMLElement>('.buy-label')!, shown: '',
+  };
+  el.detail.querySelector('.ud-close')!.addEventListener('click', () => { selected = null; });
+  detail.button.addEventListener('click', (e) => {
+    (e.currentTarget as HTMLElement).blur();
+    if (selected) game.buyUpgrade(selected, want());
+  });
   const subtabs = createSubTabs($('upgrades-subtabs'), $('tab-upgrades'), { key: 'upgrades', settings, onSettingsChange });
   const rebuildEl = { card: $('rebuild-card'), text: $('rebuild-text'), button: $<HTMLButtonElement>('rebuild-btn') };
   let rebuildArmed: { id: string; until: number } | null = null; // the first tap on a Rebuild button
@@ -211,7 +259,10 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       b.textContent = label;
       b.addEventListener('click', (e) => {
         (e.currentTarget as HTMLElement).blur();
-        settings.buyAmount = value;
+        // Tapping the one that's already on moves to the next (×1 → ×10 → Max → ×1):
+        // a narrow tray shows only that one button (style.css).
+        const i = AMOUNTS.findIndex(([v]) => v === value);
+        settings.buyAmount = settings.buyAmount === value ? AMOUNTS[(i + 1) % AMOUNTS.length][0] : value;
         onSettingsChange();
       });
       return b;
@@ -255,24 +306,26 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
     });
   }
 
+  // A compact tile: icon, name, level and the short "now → next" (a button: tap it
+  // for the detail card), level pips, and the buy button (one tap still buys).
   function makeTile(def: UpgradeDef): Tile {
     const tile = document.createElement('div');
     tile.className = 'tile';
     tile.innerHTML = `
-      <div class="tile-top">
-        <div class="tile-icon"></div>
-        <div><div class="tile-name"></div><div class="tile-tag"><span class="tile-scope"></span> · <span class="tile-level"></span></div></div>
-      </div>
-      <div class="tile-desc"></div>
-      <div class="tile-effect"></div>
+      <button class="tile-info">
+        <span class="tile-icon"></span>
+        <span class="tile-text"><span class="tile-name"></span><span class="tile-level"></span><span class="tile-effect"></span></span>
+      </button>
       <div class="pips"></div>
-      <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>
-      <span class="wait-hint"></span>`;
+      <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>`;
     tile.querySelector('.tile-icon')!.appendChild(spriteImg(upgradeIcon(def), 32, def.name[0]));
     tile.querySelector('.tile-name')!.textContent = def.name;
-    // Machine upgrades name their machine, so it's clear they stay with it.
-    tile.querySelector('.tile-scope')!.textContent = def.scope === 'machine' ? game.getMachineData().name : 'Hamster';
-    tile.querySelector('.tile-desc')!.textContent = def.description;
+    const info = tile.querySelector<HTMLButtonElement>('.tile-info')!;
+    info.setAttribute('aria-label', `About ${def.name}`);
+    info.addEventListener('click', (e) => {
+      (e.currentTarget as HTMLElement).blur();
+      selected = selected === def.id ? null : def.id; // tap it again to close the card
+    });
 
     // Level pips only make sense for upgrades with a small max level.
     const pipsEl = tile.querySelector('.pips')!;
@@ -299,7 +352,6 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       effect: tile.querySelector<HTMLElement>('.tile-effect')!,
       fill: tile.querySelector<HTMLElement>('.buy-fill')!,
       label: tile.querySelector<HTMLElement>('.buy-label')!,
-      wait: tile.querySelector<HTMLElement>('.wait-hint')!,
     };
   }
 
@@ -316,7 +368,8 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
     });
     const md = game.getMachineData();
     subtabs.setLabel('machine', md.name);
-    setText(el.machineNote, `${md.name}'s own upgrades. They stay with this machine when you switch.`);
+    setText(el.machineNote, `${md.name}'s own upgrades: they stay with it when you switch. Tap one to read about it.`);
+    if (selected && !tiles.some((t) => t.id === selected)) selected = null; // another machine's upgrade
   }
 
   function build() {
@@ -398,16 +451,38 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       const bulk = game.getUpgradeBulk(t.id, want());
       // An upgrade that needs another one first (Old Clunky's Both Ways needs the Third Reel).
       const needs = game.getUpgradeNeeds(t.id);
-      setText(t.level, maxed ? 'MAX' : `Lv ${level}`);
-      setHTML(t.effect, needs.length > 0 ? `<span class="note">Needs the ${needs.join(' and the ')} first</span>` : describeEffect(game, t.def, game.previewUpgrade(t.id, bulk.count)));
+      const preview = needs.length > 0 ? null : game.previewUpgrade(t.id, bulk.count);
+      setText(t.level, maxed ? 'MAX' : t.def.maxLevel ? `Lv ${level}/${t.def.maxLevel}` : `Lv ${level}`);
+      setHTML(t.effect, preview ? shortEffect(game, t.def, preview) : `<span class="note">Needs ${needs.join(' + ')}</span>`);
       t.pips.forEach((pip, i) => pip.classList.toggle('on', i < level));
       const times = bulk.count > 1 ? `×${bulk.count} · ` : '';
-      setHTML(t.label, maxed ? 'Maxed out' : needs.length > 0 ? `Needs ${needs.join(' + ')}` : coinLabel(`${times}${formatCoins(bulk.cost)}`));
-      paintBuy(t.button, t.fill, { maxed, affordable: bulk.affordable, progress: needs.length > 0 ? 0 : divide(s.coins, bulk.cost).toNumber() });
+      const label = maxed ? 'Maxed out' : needs.length > 0 ? 'Locked' : coinLabel(`${times}${formatCoins(bulk.cost)}`);
+      setHTML(t.label, label);
+      const paint = { maxed, affordable: bulk.affordable, progress: needs.length > 0 ? 0 : divide(s.coins, bulk.cost).toNumber() };
+      paintBuy(t.button, t.fill, paint);
       t.tile.classList.toggle('ready', bulk.affordable);
-      setText(t.wait, maxed || bulk.affordable || needs.length > 0 ? '' : waitText(bulk.cost, rate));
+      t.tile.classList.toggle('selected', t.id === selected);
       if (bulk.affordable) ready[t.def.scope === 'machine' ? 'machine' : 'hamster'] = true;
+      // The detail card, for the tile you tapped (only while its sub-tab is open).
+      if (t.id === selected) {
+        if (detail.shown !== t.id) {
+          detail.shown = t.id;
+          detail.icon.replaceChildren(spriteImg(upgradeIcon(t.def), 32, t.def.name[0]));
+          setText(detail.name, t.def.name);
+          setText(detail.desc, t.def.description);
+        }
+        const scope = t.def.scope === 'machine' ? game.getMachineData().name : 'Hamster · every machine';
+        setText(detail.tag, `${scope} · ${maxed ? 'MAX' : t.def.maxLevel ? `Lv ${level} of ${t.def.maxLevel}` : `Lv ${level}`}`);
+        setHTML(detail.effect, preview ? describeEffect(game, t.def, preview) : `<span class="note">Needs the ${needs.join(' and the ')} first</span>`);
+        setHTML(detail.label, label);
+        paintBuy(detail.button, detail.fill, paint);
+        setText(detail.wait, maxed || bulk.affordable || needs.length > 0 ? '' : waitText(bulk.cost, rate));
+      }
     }
+    const open = subtabs.current;
+    const pick = tiles.find((t) => t.id === selected);
+    const showDetail = !!pick && (pick.def.scope === 'machine' ? open === 'machine' : open === 'hamster');
+    el.detail.classList.toggle('hidden', !showDetail);
     // The machine's own sub-tab: a Rebuild card once every upgrade on it is maxed.
     const here = game.getMachineInfo(game.getMachineData().id)!;
     const st = game.data.stars;

@@ -176,7 +176,7 @@
           <div class="seg buy-amount" id="buy-amount" role="group" aria-label="How many levels to buy"></div>
         </div>
         <div class="subpanel" data-sub="hamster">
-          <p class="note subpanel-note">Your hamster's own upgrades: they work on every machine.</p>
+          <p class="note subpanel-note">Your hamster's own upgrades: they work on every machine. Tap one to read about it.</p>
           <div class="upgrade-grid" id="upgrade-list-hamster"></div>
         </div>
         <div class="subpanel" data-sub="machine">
@@ -192,6 +192,8 @@
           <p class="note subpanel-note">Buy a new machine, or switch between the ones you own. Each machine keeps its own upgrades and bet.</p>
           <div class="machine-list" id="machine-list"></div>
         </div>
+        <!-- M15: the upgrade you tapped, all about it (shop.ts). It sticks to the bottom of the tab. -->
+        <div class="upgrade-detail hidden" id="upgrade-detail"></div>
       </div>
 
       <!-- Family: retire for Heirloom Seeds, then plant them in the family tree -->
@@ -218,15 +220,15 @@
           </div>
         </div>
 
-        <div class="section-head">
-          <h3>Family Tree</h3>
-          <span class="note">Traits every future pup is born with. You plant them in the Big Cage, when you retire.</span>
+        <!-- M15: the tree itself only grows in the Big Cage (when you retire); here, just what the family has -->
+        <div class="family-sum">
+          <div class="section-head section-first">
+            <h3>Family Tree</h3>
+            <span class="note" id="family-count"></span>
+          </div>
+          <div class="family-traits" id="family-traits"></div>
+          <p class="note">Traits every future pup is born with. Retire and the family's tree grows in the Big Cage, where you plant them.</p>
         </div>
-        <!-- The tree moves into the Big Cage page while it's open (ui.ts), and back here after. -->
-        <div id="tree-home"><div class="tree-box" id="tree-box">
-          <div class="tree" id="tree"></div>
-          <div class="tree-detail" id="tree-detail"></div>
-        </div></div>
       </div>
 
       <!-- Capsules: spend Hamster Tokens on skins, wear them, and see how to earn tokens -->
@@ -336,25 +338,39 @@
     <form method="dialog"><button class="btn btn-primary">Close</button></form>
   </dialog>
 
-  <!-- ── The Big Cage (M8): the page between lives. Retiring opens it, and it's the
-       only place to plant Heirloom Seeds. The new life starts when you leave. ── -->
-  <dialog class="dialog big-cage" id="big-cage">
-    <div class="bc-head">
-      <img id="bc-img" data-sprite="hamster" data-size="48" alt="">
-      <div>
+  <!-- ── The Big Cage (M8, a scene of its own since M15): the page between lives.
+       Retiring opens it, and it's the only place to plant Heirloom Seeds: the family's
+       huge tree grows in a meadow (bigtree.ts paints it), with every trait on its
+       branches (bigcage.ts). The new life starts when you leave. ── -->
+  <dialog class="big-cage" id="big-cage">
+    <div class="bc-scene" id="bc-scene">
+      <div class="bc-world" id="bc-world">
+        <canvas class="bc-canvas" id="bc-canvas" aria-hidden="true"></canvas>
+        <img class="bc-hamster" id="bc-hamster" data-sprite="hamster" data-size="48" alt="">
+        <img class="bc-seed hidden" id="bc-seed" data-sprite="heirloom" data-size="24" alt="">
+        <div class="bc-nodes" id="bc-nodes"></div>
+        <div class="bc-bubble hidden" id="bc-bubble"></div>
+      </div>
+      <button class="btn btn-soft bc-skip hidden" id="bc-skip">Tap to skip</button>
+    </div>
+    <div class="bc-top">
+      <div class="bc-head">
         <h2>The Big Cage</h2>
         <p class="note" id="bc-sub"></p>
       </div>
+      <div class="bc-summary">
+        <div class="bc-stat"><span class="bc-label">Seeds held</span><span class="seed-amount" id="bc-held"></span></div>
+        <div class="bc-stat"><span class="bc-label">Heirloom bonus</span><span class="bc-value" id="bc-bonus"></span></div>
+        <div class="bc-stat"><span class="bc-label">Machine Stars</span><span class="bc-value" id="bc-stars"></span></div>
+        <div class="bc-stat bc-jar" id="bc-jar"><span class="bc-label">Seed jar</span><span class="bc-jar-bar"><span class="bc-jar-fill" id="bc-jar-fill"></span></span><span class="bc-jar-text" id="bc-jar-text"></span></div>
+      </div>
     </div>
-    <div class="bc-summary">
-      <div class="bc-stat"><span class="bc-label">Seeds held</span><span class="seed-amount" id="bc-held"></span></div>
-      <div class="bc-stat"><span class="bc-label">Heirloom bonus</span><span class="bc-value" id="bc-bonus"></span></div>
-      <div class="bc-stat"><span class="bc-label">Machine Stars</span><span class="bc-value" id="bc-stars"></span></div>
-      <div class="bc-stat bc-jar" id="bc-jar"><span class="bc-label">Seed jar</span><span class="bc-jar-bar"><span class="bc-jar-fill" id="bc-jar-fill"></span></span><span class="bc-jar-text" id="bc-jar-text"></span></div>
+    <!-- The trait you tapped: what it does, and Plant -->
+    <div class="tree-detail" id="tree-detail"></div>
+    <div class="bc-foot">
+      <p class="note bc-explain" id="bc-explain"></p>
+      <button class="btn btn-gold" id="bc-start">Start the new life</button>
     </div>
-    <p class="note bc-explain" id="bc-explain"></p>
-    <div id="bc-tree-home"></div>
-    <div class="bc-foot"><button class="btn btn-gold" id="bc-start">Start the new life</button></div>
   </dialog>
 
   <!-- ── Welcome back: coins earned while the game was closed ── -->

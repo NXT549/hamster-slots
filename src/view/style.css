@@ -39,6 +39,7 @@
   --paper: #fffaf1;
   --paper-2: #f6ead6;
   --paper-edge: #cfae86;
+  --tray: #e3b27a;            /* the inside of the cardboard tray (frameCard's middle, palette n) */
   --surface: #fffaf1;         /* (older name for paper) */
   --surface-2: #f6ead6;
   --line: #e7d5bb;
@@ -81,6 +82,16 @@
   /* hamster wheel (wheel skins override these) */
   --wheel-rim: #4a3428;     --wheel-bg: #fffdf9;       --wheel-ring: #eddccb;
   --wheel-spoke: #cbb8a5;   --wheel-hub: #ffd35c;      --wheel-stand: #cbb8a5;
+  /* The Big Cage (M15): the meadow and the family's huge tree (bigtree.ts paints them
+     as pixel art; tests/art.test.js checks every colour it reads is here) */
+  --sky-top: #bfe3f2;       --sky-bottom: #fdf0d8;     --sun: #ffe38a;
+  --cloud: #fffdf8;         --cloud-shade: #dcebf3;
+  --hill-far: #c7e5b7;      --hill-near: #a3d692;
+  --grass: #6cc26a;         --grass-dark: #3f8f45;     --grass-light: #a8e290;
+  --soil: #b9844c;          --soil-dark: #74502e;
+  --bark: #a8764a;          --bark-light: #c9955c;     --bark-dark: #7a5230;     --bark-ink: #4a3428;
+  --leaf: #5db85f;          --leaf-light: #9fdc86;     --leaf-dark: #3a8a42;     --leaf-ink: #2c6634;
+  --blossom: #ffb3c1;
   /* shape + type */
   --radius: 22px;
   --radius-sm: 12px;
@@ -102,6 +113,7 @@
 
 * { box-sizing: border-box; }
 
+html, body { height: 100%; }
 body {
   margin: 0;
   color: var(--ink);
@@ -114,7 +126,30 @@ body {
     var(--page);
 }
 
-.app { max-width: 940px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+/* ── The layout (M15): the whole game fits the window ──
+   No page scrolling while you play: the HUD on top, then the cage and the tray,
+   side by side on wide screens and stacked on phones. Only the tray's panels
+   scroll, inside themselves. (A really small window can still scroll the page:
+   min-height, so nothing gets squashed to nothing.) */
+.app {
+  height: 100vh; height: 100dvh; min-height: 540px;
+  max-width: 1680px; margin: 0 auto; padding: 10px 12px 12px;
+  display: grid; gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas: "hud" "stage" "tray";
+}
+.hud { grid-area: hud; }
+.stage { grid-area: stage; }
+.tray { grid-area: tray; }
+/* Wide screens (and phones on their side): the tray is a panel beside the cage. */
+@media (min-width: 960px), (min-width: 700px) and (orientation: landscape) {
+  .app {
+    grid-template-columns: minmax(0, 1fr) clamp(340px, 34vw, 500px);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "hud hud" "stage tray";
+  }
+}
 .hidden { display: none !important; }
 .note { font-size: 13px; color: var(--ink-soft); font-weight: 600; }
 .sprite { image-rendering: pixelated; display: block; }
@@ -134,8 +169,8 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
    Every framed element sets its own --frame and --fw here, because custom
    properties are inherited: without this, a paper tile inside the cardboard tray
    would pick up the tray's cardboard frame. Later rules pick other frames. */
-.tray, .tile, .machine-card, .dialog, .capsule-card, .retire-card, .tree-detail, .node, .skin-tile,
-.diary-row, .reveal-card, .tag, .bubble, .machine-tag, .line-card, .dialog-card, .gamble,
+.tray, .tile, .machine-card, .dialog, .capsule-card, .retire-card, .tree-detail, .bt-icon, .skin-tile,
+.diary-row, .reveal-card, .tag, .bubble, .bc-bubble, .machine-tag, .line-card, .dialog-card, .gamble,
 .btn, .buy-btn, .seg-btn, .icon-btn, .tab, .subtab {
   --frame: var(--frame-paper);
   --fw: 8px;
@@ -187,8 +222,13 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   position: relative; overflow: hidden;
   border-radius: 30px 30px 18px 18px;
   box-shadow: var(--lift), 0 0 0 3px var(--wire-dark);
+  /* A column: the wall takes the room that's left (wide screens), and the machine
+     rig stands at its bottom. ui.ts fitRig() zooms the rig to fit. */
+  display: flex; flex-direction: column; min-height: 0;
+  container: stage / inline-size; /* the props only show when the cage is wide enough */
 }
 .wall {
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end;
   position: relative; z-index: 2; padding: 26px 20px 0;
   background:
     /* the top rail of the cage */
@@ -205,13 +245,13 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   background: radial-gradient(closest-side, rgba(74, 52, 40, 0.22), transparent);
 }
 .bedding {
-  position: relative; z-index: 1; height: 26px; margin-top: -2px;
+  flex: none; position: relative; z-index: 1; height: 26px; margin-top: -2px;
   background: var(--tile-bedding) 0 0 / 48px 48px repeat, var(--bedding);
   image-rendering: pixelated;
   box-shadow: inset 0 -3px 0 rgba(74, 52, 40, 0.12);
 }
 .floor {
-  position: relative; z-index: 1; padding: 16px 20px 14px; color: var(--floor-ink);
+  flex: none; position: relative; z-index: 1; padding: 14px 20px 12px; color: var(--floor-ink);
   /* the front of the plastic base: a light rim, then the plastic with a soft shine */
   background:
     linear-gradient(color-mix(in srgb, var(--floor) 55%, white) 0 4px, var(--floor-dark) 4px 7px, transparent 7px),
@@ -276,7 +316,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .prop { position: absolute; z-index: 1; pointer-events: none; }
 .prop-bottle { right: 118px; top: 22px; }
 .prop-bowl { left: 22px; bottom: -14px; z-index: 3; }
-@media (max-width: 899px) { .prop { display: none; } }
+@container stage (max-width: 899px) { .prop { display: none; } }
 
 /* Paper tags on the bars: switch machines */
 .machine-tags { position: absolute; left: 18px; top: 16px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; max-width: 60%; }
@@ -886,6 +926,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   --frame: var(--frame-btn-card); --fw: 8px;
   font-family: var(--font-num); font-weight: 900; font-size: 13px; color: var(--ink); padding: 0 4px 1px; cursor: pointer; min-width: 44px;
 }
+.buy-amount .seg-btn { --fw: 6px; min-width: 38px; font-size: 12px; padding: 0 3px 1px; }
 .seg-btn.active { --frame: var(--frame-btn-buy); }
 .seg-btn:active { transform: translateY(1px); }
 
@@ -903,19 +944,26 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .road-label { position: absolute; right: 14px; top: 9px; font-size: 12px; color: var(--floor-ink); opacity: 0.85; }
 
 /* ── Tray: a cardboard box of tabs ──────────────────── */
-.tray { --frame: var(--frame-card); --fw: 12px; padding: 2px 6px 8px; box-shadow: var(--lift); position: relative; }
-.tray::before, .tray::after { /* strips of tape holding the box shut */
-  content: ""; position: absolute; top: -16px; width: 64px; height: 18px;
-  background: rgba(255, 236, 170, 0.75); box-shadow: inset 0 0 0 2px rgba(214, 180, 90, 0.4);
-  clip-path: polygon(0 2px, 4px 0, 100% 3px, calc(100% - 3px) 100%, 3px calc(100% - 2px));
+/* M15: a panel of its own height (beside the cage, or under it on a phone). The tabs
+   stay put and the open tab scrolls inside the box, never the page. It's a size
+   container: its contents lay themselves out by the TRAY's width (@container tray),
+   because a wide screen can still have a narrow tray. */
+.tray {
+  --frame: var(--frame-card); --fw: 12px; padding: 2px 4px 4px; box-shadow: var(--lift); position: relative;
+  display: flex; flex-direction: column; min-height: 0;
+  container: tray / inline-size;
 }
-.tray::before { left: 40px; transform: rotate(-4deg); }
-.tray::after { right: 40px; transform: rotate(3deg); }
-.tabs { display: flex; gap: 4px; margin-bottom: 12px; padding-bottom: 0; border-bottom: 3px solid var(--kraft-dark); }
+.tabs { flex: none; display: flex; gap: 4px; margin-bottom: 8px; padding: 0 2px; border-bottom: 3px solid var(--kraft-dark); }
+.tab-panel {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+  padding: 0 4px 6px; scrollbar-width: thin; scrollbar-color: var(--kraft-edge) transparent;
+}
+.tab-panel::-webkit-scrollbar { width: 8px; }
+.tab-panel::-webkit-scrollbar-thumb { background: var(--kraft-dark); border: 2px solid var(--tray); }
 .tab {
   --frame: var(--frame-tab-card); border-width: 8px 8px 0; border-image-width: 8px 8px 0;
   font-family: var(--font-display); font-weight: 500; font-size: 17px; color: var(--kraft-edge);
-  padding: 0 8px 4px; cursor: pointer; position: relative; margin-bottom: -3px;
+  padding: 0 8px 4px; cursor: pointer; position: relative; margin-bottom: -3px; white-space: nowrap;
 }
 .tab.active { --frame: var(--frame-tab); color: var(--ink); }
 .tab.alert::after { /* "something new here" dot */
@@ -923,8 +971,13 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   background: var(--primary); box-shadow: 0 0 0 2px var(--paper); clip-path: var(--notch);
 }
 
-/* Sub-tabs: a row of small paper labels inside a tab (dom.ts createSubTabs) */
-.subtab-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 2px 10px; }
+/* Sub-tabs: a row of small paper labels inside a tab (dom.ts createSubTabs).
+   It stays at the top of the tab while the rest scrolls under it. */
+.subtab-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 4; margin: 0 -4px 8px; padding: 2px 6px 6px; background: var(--tray);
+  box-shadow: 0 4px 6px -5px rgba(74, 52, 40, 0.5);
+}
 .subtabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .subtab {
   --frame: var(--frame-btn-card); --fw: 8px; position: relative;
@@ -945,8 +998,10 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .buy-amount { margin-left: auto; }
 
 /* Machine cards */
-.machine-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
-.machine-card { display: grid; grid-template-columns: 52px 1fr; gap: 6px 12px; align-items: center; padding: 2px 4px; }
+.machine-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+.machine-card { display: grid; grid-template-columns: 52px 1fr; gap: 4px 10px; align-items: center; padding: 0 2px 2px; }
+.machine-card .tile-desc { font-size: 12px; line-height: 1.3; }
+.machine-card .buy-btn { min-height: 34px; font-size: 15px; }
 .machine-card.active { --frame: var(--frame-paper-gold); }
 .machine-card.bought { animation: bought 0.4s ease-out; }
 .mc-icon { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; }
@@ -977,28 +1032,58 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
    grey Golden Seed would read as a Sunflower Seed, see rule 11), with how to unlock them */
 .paytable tr.locked-symbol td { opacity: 0.55; }
 
-/* Upgrade tiles: paper cards */
-.upgrade-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-.tile { display: flex; flex-direction: column; gap: 7px; padding: 2px 4px 4px; }
+/* Upgrade tiles (M15): small paper cards, like the Family Tree's traits. The top is a
+   button (tap it for the detail card); the buy button buys, as always. */
+.upgrade-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(164px, 1fr)); gap: 8px; }
+.tile { display: flex; flex-direction: column; gap: 5px; padding: 0 2px 2px; min-width: 0; }
 .tile.ready { --frame: var(--frame-paper-ready); }
+.tile.selected { --frame: var(--frame-paper-selected); }
 .tile.bought { animation: bought 0.35s ease-out; }
 @keyframes bought { 40% { transform: scale(1.03); } }
+.tile-info {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: start;
+  padding: 0; border: none; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+}
+.tile-info:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+.tile-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .tile-top { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; }
 .tile-icon {
   width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
   background: var(--paper-2); clip-path: var(--notch);
 }
+.tile-info .tile-icon { width: 40px; height: 40px; }
 .tile-name { font-family: var(--font-display); font-weight: 500; font-size: 16px; line-height: 1.1; }
+.tile-info .tile-name { font-size: 14px; }
 .tile-tag { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; }
-.tile-level { color: var(--ink); white-space: nowrap; }
+.tile-level { font-size: 10.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
 .tile-desc { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; line-height: 1.35; }
 .tile-effect { font-size: 13.5px; }
+.tile-info .tile-effect { font-size: 12px; line-height: 1.3; margin-top: 2px; }
 .tile-effect .next { color: var(--buy-dark); }
 .pips { display: flex; gap: 3px; }
-.pip { flex: 1; height: 6px; background: var(--line); clip-path: var(--notch); }
+.pip { flex: 1; height: 5px; background: var(--line); clip-path: var(--notch); }
 .pip.on { background: var(--buy-dark); }
+.tile .buy-btn { min-height: 34px; font-size: 15px; }
 .wait-hint { font-size: 11.5px; color: var(--ink-soft); text-align: center; min-height: 1em; }
 .wait-hint:empty { display: none; }
+/* The detail card: sticks to the bottom of the Upgrades tab while the tiles scroll */
+.upgrade-detail {
+  --frame: var(--frame-paper-selected); --fw: 8px;
+  position: sticky; bottom: 0; z-index: 4; margin-top: 10px; padding: 0 4px 2px;
+  display: flex; flex-direction: column; gap: 5px;
+  border-style: solid; border-color: transparent; border-width: var(--fw);
+  border-image: var(--frame) 4 fill / var(--fw) stretch; image-rendering: pixelated;
+  box-shadow: 0 -8px 12px -8px rgba(74, 52, 40, 0.55);
+  animation: rise-in 0.2s ease-out;
+}
+.upgrade-detail .tile-top { grid-template-columns: 44px 1fr auto; }
+.ud-close {
+  align-self: start; width: 28px; height: 28px; padding: 0; border: none; background: var(--paper-2); cursor: pointer;
+  font-family: var(--font-num); font-weight: 900; font-size: 18px; line-height: 1; color: var(--ink-soft); clip-path: var(--notch);
+}
+.ud-foot { display: flex; align-items: center; gap: 10px; }
+.ud-foot .buy-btn { flex: 1; margin: 0; }
+.ud-foot .wait-hint { flex: none; max-width: 45%; text-align: left; }
 
 .buy-btn {
   --frame: var(--frame-btn-buy);
@@ -1087,76 +1172,111 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .retire-action { display: flex; flex-direction: column; gap: 8px; }
 .retire-action .note { margin: 0; line-height: 1.4; }
 
-/* Tree layout: a 3-column grid for the top row and for the branches, so the lines
-   line up. Column centres sit at (100% - 2 gaps) / 6 from each edge. */
-.tree { --gap: 10px; --line-w: 3px; --tree-line: var(--kraft-dark); }
-.tree-trunk, .tree-branches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
-.tree-slot { position: relative; display: flex; justify-content: center; }
-.tree-slot.side-right::before, .tree-slot.side-left::before { /* line to the root beside it */
-  content: ""; position: absolute; top: 50%; width: calc(100% + var(--gap)); height: var(--line-w);
-  background: var(--tree-line); z-index: 0;
-}
-.tree-slot.side-right::before { right: 50%; }
-.tree-slot.side-left::before { left: 50%; }
-.tree-fork { /* ┌──┴──┐ from the root down to the three branches */
-  position: relative; height: 16px; margin: 12px calc((100% - 2 * var(--gap)) / 6) 0;
-  border: var(--line-w) solid var(--tree-line); border-bottom: none;
-}
-.tree-fork::before {
-  content: ""; position: absolute; left: 50%; top: -15px; width: var(--line-w); height: 12px; margin-left: calc(var(--line-w) / -2);
-  background: var(--tree-line);
-}
-.tree-col { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.tree-col::before { /* the branch's line, behind its nodes */
-  content: ""; position: absolute; top: 0; bottom: 24px; left: 50%; width: var(--line-w); margin-left: calc(var(--line-w) / -2);
-  background: var(--tree-line); z-index: 0;
-}
-.tree-branch-name {
-  position: relative; z-index: 1; background: var(--kraft); padding: 2px 8px;
-  font-size: 11px; color: var(--kraft-edge); text-transform: uppercase; letter-spacing: 0.5px;
+/* The Family tab's list of planted traits (M15: the tree itself only grows in the Big Cage) */
+.family-sum { margin-top: 14px; }
+.family-traits { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 2px 8px; }
+.family-traits:empty { display: none; }
+.trait-chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 4px;
+  background: var(--heirloom-soft); clip-path: var(--notch); font-size: 12px; font-weight: 800;
 }
 
-.node {
-  position: relative; z-index: 1; width: 100%; max-width: 150px;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 0 2px 2px; cursor: pointer; color: var(--ink); font: inherit;
+/* ── The Big Cage (M8; a scene of its own since M15): the page between lives ──
+   The whole window: a meadow where the family's huge tree grows (bigtree.ts paints it
+   on a canvas), the traits on its branches (bigcage.ts places them), and beside it (a
+   phone: above and below) the numbers, the trait you tapped, and Start. */
+.big-cage {
+  width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: none;
+  background: var(--paper); color: var(--ink); overflow: hidden;
 }
-.node-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--paper-2); clip-path: var(--notch); }
-.node-name { font-family: var(--font-display); font-weight: 500; font-size: 13px; line-height: 1.1; text-align: center; }
-.node-cost { display: flex; align-items: center; gap: 3px; font-family: var(--font-num); font-weight: 900; font-size: 13px; color: var(--ink-soft); }
-.node-cost img { width: 16px; height: 16px; }
-.node.ready { --frame: var(--frame-paper-ready); }
-.node.ready .node-cost { color: var(--buy-dark); }
-.node.owned { --frame: var(--frame-paper-heirloom); }
-.node.owned .node-cost { color: var(--heirloom-dark); }
-.node.locked { opacity: 0.55; }
-.node.locked .node-icon img { filter: grayscale(1); }
-.node.selected { --frame: var(--frame-paper-selected); }
-/* 1.0: a planted trait springs up out of the ground */
-.node.sprout { transform-origin: 50% 100%; animation: sprout 0.55s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.big-cage[open] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "top" "scene" "detail" "foot";
+}
+@media (min-width: 960px), (min-width: 700px) and (orientation: landscape) {
+  .big-cage[open] {
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 380px);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "scene top" "scene detail" "scene foot";
+  }
+  .big-cage .bc-scene { box-shadow: 4px 0 0 var(--paper-edge); }
+}
+.big-cage::backdrop { background: var(--outline-ink); }
+.bc-scene {
+  grid-area: scene; position: relative; overflow: hidden; min-height: 0;
+  background: linear-gradient(var(--sky-top), var(--sky-bottom) 80%, var(--soil) 90%);
+}
+.bc-scene.rumble { animation: stage-shake 0.5s; }
+.bc-world { position: absolute; top: 0; }
+.bc-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+.bc-nodes { position: absolute; inset: 0; z-index: 3; }
+.bc-hamster { position: absolute; z-index: 2; transform-origin: 50% 100%; }
+.bc-hamster.idle { animation: breathe 2.6s ease-in-out infinite; }
+.bc-hamster.hop { animation: hop 0.45s ease-out 2; }
+.bc-hamster.digging { animation: dig 0.24s ease-in-out infinite; }
+@keyframes dig { 50% { transform: translateY(3px) scale(1.08, 0.9) rotate(-8deg); } }
+.bc-seed { position: absolute; z-index: 4; filter: drop-shadow(0 0 5px var(--gold)); }
+.bc-bubble {
+  position: absolute; z-index: 6; width: 210px; transform: translate(-30px, -100%); margin-top: -18px;
+  padding: 2px 6px; font-size: 13px; line-height: 1.35; pointer-events: none;
+}
+.bc-bubble::after { /* the tail, pointing down at the hamster */
+  content: ""; position: absolute; left: 22px; bottom: -30px; width: 24px; height: 24px;
+  background: var(--bubble-tail) 0 0 / 24px 24px no-repeat; image-rendering: pixelated;
+}
+.bc-skip { position: absolute; right: 10px; bottom: 10px; z-index: 7; font-size: 13px; padding: 0 6px 2px; }
+
+/* The traits on the tree: a paper box with the icon, the cost under it, the name on big screens */
+.bt-node {
+  position: absolute; width: var(--nw); display: flex; flex-direction: column; align-items: center;
+  padding: 0; border: none; background: none; font: inherit; color: var(--ink); cursor: pointer;
+}
+.bt-icon { --fw: 8px; width: 60px; height: 58px; display: flex; align-items: center; justify-content: center; }
+.bt-node.ready .bt-icon { --frame: var(--frame-paper-ready); }
+.bt-node.owned .bt-icon { --frame: var(--frame-paper-heirloom); }
+.bt-node.selected .bt-icon { --frame: var(--frame-paper-selected); }
+/* A trait you can't plant yet: its icon is faded, but the box stays solid (the tree never shows through) */
+.bt-node.locked .bt-icon img { filter: grayscale(1); opacity: 0.5; }
+.bt-node.owned .bt-icon { box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent); }
+.bt-node .node-cost {
+  display: flex; align-items: center; gap: 3px; font-family: var(--font-num); font-weight: 900; color: var(--ink-soft);
+  margin-top: -5px; padding: 0 6px 1px; background: var(--paper); clip-path: var(--notch); box-shadow: inset 0 -2px 0 var(--paper-2);
+  font-size: 12px; white-space: nowrap; position: relative;
+}
+.bt-node.ready .node-cost { color: var(--buy-dark); }
+.bt-node.owned .node-cost { color: var(--heirloom-dark); }
+.bt-node .node-cost img { width: 12px; height: 12px; }
+.bt-name {
+  margin-top: 2px; max-width: 100%; padding: 0 5px 1px; text-align: center; line-height: 1.1;
+  font-family: var(--font-display); font-weight: 500; font-size: 12px;
+  background: color-mix(in srgb, var(--paper) 88%, transparent); clip-path: var(--notch);
+}
+.bt-node:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+.bt-node.unborn, .bt-sign.unborn { visibility: hidden; }
+.bt-node.sprout { transform-origin: 50% 100%; animation: sprout 0.55s cubic-bezier(0.3, 1.6, 0.5, 1); }
 @keyframes sprout { 0% { transform: scale(0.6, 0.3); } 50% { transform: scale(0.94, 1.14); } 75% { transform: scale(1.05, 0.96); } }
-.node:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
-
-.tree-fork.more { margin-top: 22px; } /* the second row of branches (M8) */
-.tree-fork.more::before { top: -21px; height: 18px; }
-.tree-detail { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding: 2px 4px 4px; }
-.tree-detail:empty { display: none; }
-.big-cage .tree-detail { scroll-margin-bottom: 80px; } /* not hidden under the Start button */
-.tree-detail .buy-btn { align-self: flex-start; min-width: 180px; }
-
-/* ── The Big Cage (M8): the page between lives, where you plant ── */
-.dialog.big-cage { /* (.dialog.big-cage: more specific than .dialog's own size) */
-  --frame: var(--frame-paper-heirloom);
-  width: min(820px, 96vw); max-height: 94vh; overflow: auto; padding-bottom: 0;
+/* A branch's sign: a little wooden plank on the branch, near the trunk */
+.bt-sign {
+  position: absolute; z-index: 2; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap;
+  padding: 0 6px 1px; background: var(--bark-light); color: var(--paper); border: 2px solid var(--bark-ink); clip-path: var(--notch);
+  font-family: var(--font-display); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
 }
-.big-cage::backdrop { background: rgba(58, 40, 30, 0.72); }
-.bc-head { display: flex; align-items: center; gap: 12px; }
-.bc-head h2 { margin: 0; }
+/* A smaller scene (a phone): just the icons and costs (tap one for its name) */
+.bc-scene.compact .bt-icon { --fw: 6px; width: 100%; height: 42px; }
+.bc-scene.compact .bt-icon img { width: 28px; height: 28px; }
+.bc-scene.compact .bt-name, .bc-scene.compact .bt-sign { display: none; }
+.bc-scene.compact .bt-node .node-cost { font-size: 10.5px; padding: 0 3px 1px; }
+
+/* The numbers: seeds held, the heirloom bonus, Machine Stars and the seed jar */
+.bc-top { grid-area: top; padding: 10px 12px 6px; background: var(--paper); z-index: 1; }
+.bc-head h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 22px; }
 .bc-head .note { margin: 2px 0 0; line-height: 1.4; }
-.bc-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 8px; }
-.bc-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; background: var(--paper-2); clip-path: var(--notch); text-align: center; }
-.bc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-soft); }
-.bc-value, .bc-stat .seed-amount { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; font-size: 17px; }
+.bc-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0 0; }
+.bc-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 4px; background: var(--paper-2); clip-path: var(--notch); text-align: center; }
+.bc-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-soft); }
+.bc-value, .bc-stat .seed-amount { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; font-size: 16px; }
 .bc-value { color: var(--luck-dark); }
 /* The seed jar (M9): a full-width row under the three numbers, with a fill bar */
 .bc-jar { grid-column: 1 / -1; }
@@ -1165,13 +1285,61 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .bc-jar.full .bc-jar-fill { background: var(--gold); }
 .bc-jar-text { font-size: 12px; color: var(--ink-soft); }
 .bc-stat img { width: 16px; height: 16px; }
-.bc-explain { margin: 4px 2px 12px; line-height: 1.45; }
-#bc-tree-home .tree-box { margin-bottom: 4px; }
-.bc-foot { /* the Start button stays in sight while you scroll the tree */
-  position: sticky; bottom: 0; z-index: 3; margin: 0 -10px; padding: 0 10px 8px;
-  background: var(--paper); box-shadow: 0 -6px 8px -6px rgba(74, 52, 40, 0.25);
+/* The trait you tapped */
+.big-cage .tree-detail {
+  grid-area: detail; --frame: var(--frame-paper-selected); margin: 4px 10px 0; padding: 0 4px 4px;
+  display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow: auto;
 }
-.bc-foot .btn { margin-top: 8px; }
+.tree-detail:empty { display: none; }
+.tree-detail .buy-btn { min-height: 40px; margin-top: 4px; }
+@media (min-width: 960px), (min-width: 700px) and (orientation: landscape) {
+  .big-cage .tree-detail { align-self: start; max-height: 100%; } /* only as tall as it needs */
+}
+.bc-foot { grid-area: foot; display: flex; flex-direction: column; gap: 8px; padding: 8px 12px 12px; background: var(--paper); }
+.bc-explain { margin: 0; line-height: 1.45; }
+.bc-foot .btn { width: 100%; font-size: 18px; }
+/* A phone: the card has a fixed height (so the tree doesn't jump when you tap
+   another trait), and the long explanation stays out of the way. */
+@media not ((min-width: 960px) or ((min-width: 700px) and (orientation: landscape))) {
+  .big-cage .tree-detail {
+    height: 150px; flex: none; margin-top: 6px;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: start; gap: 4px 8px;
+  }
+  .big-cage .tree-detail > * { grid-column: 1 / -1; }
+  .big-cage .tree-detail .tile-top { grid-column: 1; grid-template-columns: 36px 1fr; gap: 8px; }
+  .big-cage .tree-detail .tile-icon { width: 36px; height: 36px; }
+  .big-cage .tree-detail .buy-btn { grid-column: 2; grid-row: 1; min-height: 38px; align-self: center; font-size: 14px; padding: 0 8px 2px; }
+  .big-cage .tree-detail .tile-desc { font-size: 12px; }
+  .big-cage .tree-detail .tile-effect { font-size: 13px; }
+  .bc-explain { display: none; }
+  .bc-top { padding: 8px 10px 4px; box-shadow: 0 3px 0 var(--paper-edge); }
+  .bc-head h2 { font-size: 18px; }
+  .bc-head .note { font-size: 12px; }
+  .bc-summary { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr); gap: 4px; margin-top: 6px; }
+  .bc-jar { grid-column: auto; }
+  .bc-jar-text { display: none; }
+  .bc-stat { padding: 3px 2px; }
+  .bc-label { font-size: 9.5px; letter-spacing: 0; }
+  .bc-value, .bc-stat .seed-amount { font-size: 14px; }
+  .bc-foot { padding: 6px 10px 10px; }
+}
+/* A short screen (a phone on its side, a small phone): no long explanation or subtitle,
+   so the tree, the card and Start all fit. */
+@media (max-height: 600px) {
+  .bc-explain, .bc-head .note { display: none; }
+  .bc-top { padding-top: 6px; }
+  .bc-jar-text { display: none; }
+}
+@media (max-height: 700px) and (max-width: 699px) {
+  .bc-head .note { display: none; }
+  .big-cage .tree-detail { height: 128px; }
+}
+/* The rebirth animation: the numbers, the card and Start slide in once the tree has grown */
+.big-cage .tree-detail, .big-cage .bc-foot { transition: opacity 0.45s ease-out, transform 0.45s ease-out; }
+.big-cage.playing:not(.ui-in) .bc-summary, .big-cage.playing:not(.ui-in) .tree-detail, .big-cage.playing:not(.ui-in) .bc-foot {
+  opacity: 0; transform: translateY(14px); pointer-events: none;
+}
+.big-cage .bc-summary { transition: opacity 0.45s ease-out, transform 0.45s ease-out; }
 
 /* Machine Stars (M8): stars on the marquee, a gold trim, stars + Rebuild on the cards */
 .marquee-stars { display: inline-flex; gap: 1px; }
@@ -1179,16 +1347,6 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .marquee-stars img { width: 16px; height: 16px; }
 .marquee-stars.new img:last-child { animation: star-land 0.7s cubic-bezier(0.3, 1.6, 0.5, 1); } /* a new star pops on (1.0) */
 @keyframes star-land { 0% { transform: scale(3) rotate(-90deg); opacity: 0; } 60% { transform: scale(0.8) rotate(10deg); opacity: 1; } }
-/* The Big Cage page arrives in parts (1.0): the header, then each number, then the tree */
-.big-cage[open] .bc-head { animation: drop-in 0.4s ease-out 0.1s backwards; }
-.big-cage[open] .bc-stat { animation: pop-in 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) backwards; }
-.big-cage[open] .bc-stat:nth-child(1) { animation-delay: 0.25s; }
-.big-cage[open] .bc-stat:nth-child(2) { animation-delay: 0.35s; }
-.big-cage[open] .bc-stat:nth-child(3) { animation-delay: 0.45s; }
-.big-cage[open] .bc-stat:nth-child(4) { animation-delay: 0.55s; }
-.big-cage[open] .bc-explain { animation: fade-in 0.5s ease-out 0.5s backwards; }
-.big-cage[open] #bc-tree-home { animation: rise-in 0.5s ease-out 0.6s backwards; }
-.big-cage[open] .bc-foot { animation: rise-in 0.4s ease-out 0.8s backwards; }
 .machine.starred { outline: 4px solid var(--gold); outline-offset: 3px; }
 .mc-stars { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-top: 2px; }
 .mc-stars:empty { display: none; }
@@ -1214,7 +1372,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .stage-gacha:hover { transform: translateY(-3px); }
 .stage-gacha.ready { animation: gacha-bob 1.6s ease-in-out infinite; }
 @keyframes gacha-bob { 50% { transform: translateY(-4px); } }
-@media (max-width: 899px) { .stage-gacha { display: none !important; } }
+@container stage (max-width: 899px) { .stage-gacha { display: none !important; } }
 
 .capsule-card { display: grid; grid-template-columns: auto 1fr; gap: 12px 18px; align-items: center; padding: 4px 6px; }
 .cap-machine.shake { animation: wobble 0.3s ease-in-out 3; }
@@ -1404,48 +1562,68 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .less-motion .hamster.idle, .less-motion .buy-btn::after, .less-motion .btn-spin.attract, .less-motion .dialog[open],
 .less-motion .tab-panel, .less-motion .subpanel, .less-motion .intro * { animation: none !important; }
 .less-motion .pop-text { animation: banner-fade 0.9s forwards; }
-.less-motion .node.sprout, .less-motion .marquee-stars.new img, .less-motion .big-cage[open] *, .less-motion .reveal-rays { animation: none !important; }
+.less-motion .bt-node.sprout, .less-motion .marquee-stars.new img, .less-motion .big-cage[open] *, .less-motion .reveal-rays,
+.less-motion .bc-scene.rumble, .less-motion .upgrade-detail { animation: none !important; }
+.less-motion .big-cage .bc-summary, .less-motion .big-cage .tree-detail, .less-motion .big-cage .bc-foot { transition: none; }
 .less-motion .win-banner { animation-name: banner-fade; }
 .less-motion .celebration, .less-motion .cel-rays, .less-motion .cel-flash, .less-motion .cel-title.slam,
 .less-motion .cel-title span, .less-motion .cel-icon .sprite { animation: none; }
 .less-motion .celebration.out { animation: cel-out 0.2s forwards; }
 @keyframes banner-fade { 0% { opacity: 0; } 10%, 80% { opacity: 1; } 100% { opacity: 0; } }
 
-/* ── Small screens: shrink the machine rig to fit ────── */
+/* ── Small screens ────────────────────────────────────
+   The page (a phone): a tighter HUD and cage. The machine rig is zoomed out to fit
+   by ui.ts fitRig(), so it needs no rules here. */
 @media (max-width: 640px) {
-  .app { padding: 12px 10px; }
-  .hud { grid-template-columns: auto 1fr auto; }
+  .app { padding: 8px 8px 10px; gap: 8px; }
+  .hud { grid-template-columns: auto 1fr auto; gap: 8px; }
   .brand span { display: none; } /* keep just the hamster icon */
   .coin-count { font-size: 22px; }
+  .coin-tag { min-height: 42px; }
+  .icon-btn { width: 42px; height: 42px; }
   .tag { padding: 0 8px 0 12px; gap: 6px; }
   /* The rig is zoomed out to fit (ui.ts sets --rig-zoom). Divide by it so the
      bubble text stays readable at its real on-screen size. */
   .bubble { font-size: calc(11.5px / var(--rig-zoom, 1)); line-height: 1.25; }
-  .wall { padding: 26px 8px 0; }
-  .machine-tags { left: 10px; max-width: 90%; }
+  .wall { padding: 22px 8px 0; }
+  .machine-tags { left: 10px; top: 12px; max-width: 90%; }
   .machine-tag span { display: none; } /* just the machine icons */
   .machine-tags.many { gap: 4px; max-width: calc(100% - 20px); } /* seven icons still fit in one row */
   .machine-tags.many .machine-tag { padding: 0 2px; }
-  /* A tighter paytable, so most machines' tables fit a phone without scrolling */
+  .gamble-buttons .btn { font-size: 13px; }
+}
+
+/* A narrow cage (a phone, or a small window): Deliver, Spin and the bet share one row. */
+@container stage (max-width: 560px) {
+  .controls { gap: 6px; }
+  .btn-deliver { min-width: 0; flex: 1 1 0; font-size: 15px; padding: 0 4px 2px; }
+  .btn-deliver .btn-meta { font-size: 11px; }
+  .btn-spin { --fw: 10px; min-width: 0; flex: 1.4 1 0; font-size: 22px; padding: 0 6px 2px; }
+  .bet-box { flex: none; gap: 3px; }
+  .bet-btn { width: 30px; font-size: 18px; }
+  .bet-value { min-width: 48px; padding: 1px 3px; }
+  .bet-amount { font-size: 18px; }
+  .bet-hint { font-size: 9px; }
+  .floor { padding: 10px 8px 8px; }
+  /* The delivery tube only shows while the hamster is out (Deliver says the trip's pay and time). */
+  .road { display: none; height: 28px; margin-top: 8px; }
+  .road.active { display: block; }
+  .road-hamster { top: 0; }
+  .road-label { top: 5px; right: 10px; font-size: 11px; }
+  .bedding { height: 18px; background-size: 36px 36px; }
+}
+
+/* A narrow tray (a phone, or the panel beside the cage): everything inside it
+   lays out in one column, with smaller tabs so four of them fit. */
+@container tray (max-width: 560px) {
+  .tab { font-size: 15px; padding: 0 5px 3px; }
+  .tabs { gap: 2px; }
+  .subtab { font-size: 13px; padding: 0 4px 2px; }
+  /* A tighter paytable, so most machines' tables fit without scrolling */
   .paytable th { padding: 0 5px; font-size: 11px; letter-spacing: 0; }
   .paytable td { padding: 5px; font-size: 15px; }
   .paytable .sym-cell { gap: 6px; font-size: 13px; }
-  .btn-spin { min-width: 150px; font-size: 24px; }
-  .btn-deliver { min-width: 110px; }
-  /* The bet box gets its own row under Deliver and Spin */
-  .controls { flex-wrap: wrap; gap: 8px 10px; }
-  .bet-box { order: 3; width: 100%; justify-content: center; }
-  .subtab { font-size: 13px; padding: 0 4px 2px; }
-  .gamble-buttons .btn { font-size: 13px; }
-  .floor { padding: 14px 10px 12px; }
-  .road-label { font-size: 11px; right: 10px; }
   .retire-card { grid-template-columns: 1fr; }
-  .tree { --gap: 6px; }
-  .node-name { font-size: 12px; }
-  .tree-detail .buy-btn { align-self: stretch; }
-  /* Four tabs have to fit on a phone */
-  .tabs { gap: 2px; overflow-x: auto; scrollbar-width: none; }
-  .tab { font-size: 14px; padding: 0 4px 3px; white-space: nowrap; }
   .machine-list { grid-template-columns: 1fr; }
   .capsule-card { grid-template-columns: 1fr; justify-items: center; text-align: center; }
   .cap-info { align-items: center; }
@@ -1453,4 +1631,13 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   .diary-row { grid-template-columns: 22px 1fr auto; }
   .diary-progress { grid-column: 2 / 4; grid-row: 2; }
   .log-ago { display: none; }
+}
+/* A phone's tray: ×1 / ×10 / Max is one button that cycles (shop.ts), so it fits beside the sub-tabs. */
+@container tray (max-width: 390px) {
+  .buy-amount .seg-btn:not(.active) { display: none; }
+  .subpanel-note { font-size: 12px; margin-bottom: 6px; }
+  .upgrade-grid { gap: 6px; }
+}
+@container tray (max-width: 380px) {
+  .tab { font-size: 13px; padding: 0 3px 3px; }
 }
