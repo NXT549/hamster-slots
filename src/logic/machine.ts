@@ -648,6 +648,7 @@ export interface SpinOptions {
   potSeedMultiplier?: number; // jackpot pots start bigger (Golden Pouches, M8)
   extraRespins?: number; // hold & spin starts (and resets) with this many more respins (M9)
   wheelBonus?: number; // added to every wedge of the cheese wheel (M9)
+  doubleChance?: number; // a winning paid spin pays double with this chance (Lucky Pennies, 1.3.1)
 }
 
 // What a paid spin is worth, and where that comes from.
@@ -676,11 +677,13 @@ export interface SpinValue {
 // M9: the cheese wheel multiplies full lines: + (what full lines pay) × (the
 // average multiplier − 1), part of the lines' EV (Hot Streak multiplies it too).
 // Hold & spin adds its average bonus (holdSpinStats), on paid spins.
+// 1.3.1: Lucky Pennies doubles a winning paid spin's lines with chance d. The coin
+// toss doesn't depend on the reels, so on average the lines pay × (1 + d).
 export function spinExpectation(machineData: MachineDef, reelCount: number, opts: SpinOptions = {}): SpinValue {
   const {
     lines = 1, fullLineMultiplier = 1, streakPerStack = 0, streakCap = 0,
     extraFreeSpins = 0, jackpotGrowth = 1, spinDuration = machineData.spinDuration, bothWays = false, potSeedMultiplier = 1,
-    extraRespins = 0, wheelBonus = 0,
+    extraRespins = 0, wheelBonus = 0, doubleChance = 0,
   } = opts;
   const lines0 = expectedValue(machineData, reelCount, fullLineMultiplier, lines, bothWays);
   const hitRate = lines0.hitRate;
@@ -704,7 +707,7 @@ export function spinExpectation(machineData: MachineDef, reelCount: number, opts
     + (hs ? hold.q * (hold.respins * hs.respinSeconds + 2 * hs.pause) : 0);
 
   return {
-    ev: lineEv * streakFactor + freeEv + jp.ev + hold.ev,
+    ev: lineEv * streakFactor * (1 + doubleChance) + freeEv + jp.ev + hold.ev,
     lineEv, hitRate, streakFactor,
     freeSpins: { chance: fs.q, perTrigger: fs.perTrigger, perTriggerWithRetriggers: fs.total, perSpin: freeSpinsPerSpin, ev: freeEv },
     jackpot: { chance: jp.q, ev: jp.ev, pots: jp.pots },

@@ -1604,6 +1604,179 @@ const cheeseIcon = [
   '................',
 ];
 
+// ── 1.3.1 (Nuts & Bolts): icons for the new upgrades and traits (16×16) ──
+// Lucky Pennies: two copper pennies and a sparkle (the carrot ramp is copper enough).
+const pennies = [
+  '................',
+  '...h....JJJJJ...',
+  '..hwh..JjjjooJ..',
+  '...h..JjjOOOooJ.',
+  '......JjOojooOJ.',
+  '......JjOjooOOJ.',
+  '...JJJJJOoooOOJ.',
+  '..JjjjooJOOOOOJ.',
+  '.JjjOOOooJOOOJ..',
+  '.JjOojooOJJJJ...',
+  '.JjOjooOOJ......',
+  '.JoOoooOOJ......',
+  '.JooOOOOOJ......',
+  '..JooOOOJ.......',
+  '...JJJJJ........',
+  '................',
+];
+// The Penny Jar and the Tip Jar: a glass jar with a tan lid, pennies at the bottom.
+const jar = [
+  '................',
+  '.....UUUUUU.....',
+  '....UxxxnnNU....',
+  '....UnnnnNNU....',
+  '...WWWWWWWWWW...',
+  '..WvwvvvvvvvbW..',
+  '..WvwvvvvvvvbW..',
+  '..WvwvvvvvvvbW..',
+  '..WvvvvvvvvvbW..',
+  '..WvvvJJJJvvbW..',
+  '..WvvJjooOJvbW..',
+  '..WJJJJOOJJJJW..',
+  '..WJjooJJjooOW..',
+  '..WJOOOJJOOOJW..',
+  '...WWWWWWWWWW...',
+  '................',
+];
+// Night Shift: a gold crescent moon and a star.
+const moon = [
+  '................',
+  '.....VVVV.......',
+  '...VVhhhV...h...',
+  '..VhhhVV...hwh..',
+  '..VhhV......h...',
+  '.VhhV...........',
+  '.VhyV...........',
+  '.VhyV........h..',
+  '.VhyyV..........',
+  '.VyyyV.......VV.',
+  '..VyyyVV...VVYV.',
+  '..VyyyyyVVVYYYV.',
+  '...VyyyyyYYYYV..',
+  '....VVYYYYYVV...',
+  '......VVVVV.....',
+  '................',
+];
+// The Cosy Nest: a twiggy nest with a pink blanket, and a sleepy "z".
+const nest = [
+  '................',
+  '..........WWWW..',
+  '............W...',
+  '...........W....',
+  '..........WWWW..',
+  '....ZZZZZZZZ....',
+  '...ZpFFpppppZ...',
+  '..ZpFppppppPPZ..',
+  '.UUZZZZZZZZZZUU.',
+  'UxnxnnxnnxnnNnNU',
+  'UnNnnNnnNnnNnNNU',
+  '.UnnxnnNnnNnNNU.',
+  '..UNnnNnnNNNNU..',
+  '...UUNNNNNNUU...',
+  '.....UUUUUU.....',
+  '................',
+];
+// Running Shoes: a red running shoe with white laces and sole.
+const shoe = [
+  '................',
+  '................',
+  '................',
+  '....XXXX........',
+  '...XeeerX.......',
+  '...XerrrX.......',
+  '...XrwrrXX......',
+  '...XrrwrrrXX....',
+  '..XerwrwrrrrXX..',
+  '..XerrrrrrrrrRX.',
+  '..XrrrrrrrrrRRX.',
+  '.KKKKKKKKKKKKKKK',
+  '.KwwwwwwwwwwwqqK',
+  '..KKKKKKKKKKKKK.',
+  '................',
+  '................',
+];
+// The Coupon Book: a paper coupon with a dotted tear line and a gold coin.
+const coupon = [
+  '................',
+  '................',
+  '................',
+  '..KKKKKKKKKKKK..',
+  '.KwwwwwKwwwwwqK.',
+  '.KwrrwwwwwVVwqK.',
+  'KwwrwwwKwVhyVqqK',
+  'KwwwrwwwwVyYVqqK',
+  'KwwrwrwKwVyYVqqK',
+  '.KwwwrwwwwVVwqK.',
+  '.KwqqqqKqqqqqqK.',
+  '..KKKKKKKKKKKK..',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+// The Sticker Album: a blue book with a gold star sticker on its cover.
+const album = [
+  '................',
+  '...WWWWWWWWWW...',
+  '..WSvvvvvvvvbW..',
+  '..WSvbbbbbbbbW..',
+  '..WSvbbbVbbbbW..',
+  '..WSvbbVhVbbbW..',
+  '..WSvVVhyVVVbW..',
+  '..WSbVhyyyYVbW..',
+  '..WSbbVyYYVbBW..',
+  '..WSbbVYVYVbBW..',
+  '..WSbbVVbVVBBW..',
+  '..WSbbbbbbBBBW..',
+  '..WSWWWWWWWWWW..',
+  '..WSqqqqqqqqqK..',
+  '...WKKKKKKKKKK..',
+  '................',
+];
+// Helping Paws: a pink paw print (the helper's).
+const paw = [
+  '................',
+  '................',
+  '....ZZ....ZZ....',
+  '...ZFpZ..ZFpZ...',
+  '...ZppZ..ZppZ...',
+  '.ZZ.ZZ....ZZ.ZZ.',
+  'ZFpZ........ZFpZ',
+  'ZppZ..ZZZZ..ZppZ',
+  '.ZZ..ZFFppZ..ZZ.',
+  '....ZFppppPZ....',
+  '...ZFppppppPZ...',
+  '...ZppppppPPZ...',
+  '...ZpppppPPPZ...',
+  '....ZPPPPPPZ....',
+  '.....ZZZZZZ.....',
+  '................',
+];
+// Deep Roots: a sapling above the ground, its roots spreading out below.
+const roots = [
+  '.....HHHHH......',
+  '....HiiGGGH.....',
+  '...HiiGGGGgH....',
+  '..HiGGGGGgggH...',
+  '..HGGGGGggggH...',
+  '...HgggggggH....',
+  '....HHUnUHH.....',
+  '......UnU.......',
+  '......UnNU......',
+  'GGGGGGUnNUGGGGGG',
+  'NNNNNUnNNUNNNNNN',
+  'NNNNUNUnNUNUNNNN',
+  'NNNUNNUNNNUNUNNN',
+  'NNUNNUNNNNNUNUNN',
+  'NNNNNNNNNNNNNNNN',
+  '................',
+];
+
 export const SPRITES: Record<string, string[]> = {
   seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple, hamster, hamster2, coin, chip, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
   cheeks, wheel, oilcan, gear, reel, paylinesIcon, heart, star, bolt, scooter, backpack, parcel, pouch, goldenIcon, carrotIcon,
@@ -1611,6 +1784,7 @@ export const SPRITES: Record<string, string[]> = {
   highRollerIcon, flame, wildIcon, ballIcon, pouchPolish,
   shaving, clover, horseshoe, seedPacket, cardBack, suitHearts, suitDiamonds, suitClubs, suitSpades, bothWaysIcon, snackIcon,
   goldAcorn, cheese, machineMaze, machineVault, machineCheese, acornIcon, cheeseIcon,
+  pennies, jar, moon, nest, shoe, coupon, album, paw, roots, // 1.3.1
   frameCard, framePaper, frameTab, frameButton, bubbleTail,
 };
 
@@ -1720,12 +1894,18 @@ const UPGRADE_ICONS_BY_ID: Record<string, string> = {
   cheeks: 'cheeks', wheel: 'wheel', lever: 'oilcan', thirdReel: 'reel', gears: 'gear', paylines: 'paylinesIcon', fourthReel: 'reel',
   tunnelGrease: 'oilcan', velvetGears: 'gear',
   clover: 'clover', // Hamster Luck is the clover; every Machine Luck upgrade is a horseshoe (by type, below)
+  // 1.3.1
+  couponBook: 'coupon', moneyBags: 'pouch', lineDance: 'paylinesIcon', goldenTouch: 'goldenIcon', deepPockets: 'pouchPolish',
 };
 const UPGRADE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'cheeks', autoSpin: 'wheel', spinCostMultiplier: 'oilcan', extraReel: 'reel', extraPayline: 'paylinesIcon',
   betSteps: 'highRollerIcon', winStreak: 'flame', symbolWeight: 'wildIcon', extraFreeSpins: 'ballIcon', jackpotGrowth: 'pouchPolish',
   luck: 'horseshoe', unlockSymbol: 'seedPacket', bothWays: 'bothWaysIcon',
   extraRespins: 'acornIcon', wheelBonus: 'cheeseIcon', // M9
+  // 1.3.1
+  doubleWin: 'pennies', offlineBonus: 'moon', offlineTime: 'nest', spinSpeed: 'shoe', stickerPayout: 'album', starPayout: 'star',
+  streakCap: 'flame', fullLineMultiplier: 'star', jackpotTokens: 'goldenIcon', deliveryTokens: 'jar', gambleHistory: 'cardBack',
+  potSeedBonus: 'pouchPolish', generationPayout: 'roots', autoBuy: 'paw',
 };
 export function upgradeIcon(def: { id: string; effect: { type: string } }): string | null {
   return UPGRADE_ICONS_BY_ID[def.id] || UPGRADE_ICONS_BY_TYPE[def.effect.type] || null;
@@ -1737,6 +1917,8 @@ const TREE_ICONS_BY_ID: Record<string, string> = {
   warmUpLaps: 'wheel', heirloomReel: 'reel',
   // M8
   bigSpender: 'highRollerIcon', luckyHeirlooms: 'horseshoe', seedVault: 'seedPacket',
+  // 1.3.1
+  cloverHeirloom: 'clover', pennyJar: 'jar',
 };
 const TREE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'heart', shiftWeight: 'goldenIcon', fullLineMultiplier: 'star', startingLevel: 'wheel',
@@ -1744,6 +1926,8 @@ const TREE_ICONS_BY_TYPE: Record<string, string> = {
   // M8
   seedJar: 'pouch', luck: 'clover', startingMachineLevel: 'seedPacket', startingMachine: 'snackIcon',
   symbolWeight: 'ballIcon', potSeedBonus: 'pouchPolish',
+  // 1.3.1
+  autoBuy: 'paw', generationPayout: 'roots', doubleWin: 'pennies',
 };
 export function treeIcon(def: { id: string; effect: { type: string } }): string | null {
   return TREE_ICONS_BY_ID[def.id] || TREE_ICONS_BY_TYPE[def.effect.type] || null;

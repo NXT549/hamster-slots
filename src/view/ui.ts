@@ -57,7 +57,8 @@ const UPGRADE_LINES: Record<string, (level: number, game: Game, def: UpgradeDef)
   extraReel: (level, game) => `Another reel! ${game.getReelCount()} in a row pays big!`,
   extraPayline: (level, game) => `A new payline! That's ${game.getLineCount()} ways to win.`,
   betSteps: (level, game) => `Bigger coins! I can bet up to ×${game.getBetSteps()[game.getMaxBetIndex()]} now. Tap + next to Spin.`,
-  winStreak: () => 'Hot Streak! Win in a row and every win pays more.',
+  winStreak: (level, game, def) => (def.id === 'hotStreak' ? 'Hot Streak! Win in a row and every win pays more.'
+    : `Hot sauce! Wins in a row can pay up to ×${game.getMaxStreakMultiplier().toFixed(2)} now.`),
   symbolWeight: () => 'My face is on the reels now! Wilds stand in for any snack.',
   extraFreeSpins: () => 'Bouncier balls: more free spins every time!',
   jackpotGrowth: () => 'Shiny pouches! The jackpot pots grow faster.',
@@ -70,6 +71,19 @@ const UPGRADE_LINES: Record<string, (level: number, game: Game, def: UpgradeDef)
     const s = game.getMachineData().symbols.find((x) => x.id === id);
     return `A new symbol on the reels: the ${s ? s.name : id}! Bigger prizes, but wins come a little less often. Luck helps!`;
   },
+  // 1.3.1
+  doubleWin: (level, game) => `Lucky pennies! ${Math.round(game.getDoubleChance() * 100)}% of my wins pay double now.`,
+  offlineBonus: () => "Night shift! I'll earn more while you're away.",
+  offlineTime: (level, game) => `A cosy nest! I'll keep running for up to ${formatDuration(game.getOfflineCap())} while you're away.`,
+  spinSpeed: () => 'New running shoes! Every spin is a little quicker.',
+  stickerPayout: (level, game) => `My sticker album! ${game.countStickers()} stickers, and every one makes my wins bigger.`,
+  starPayout: (level, game) => `Polished! Every Machine Star adds +${Math.round(game.getStarPayout() * 100)}% now.`,
+  streakCap: (level, game) => `Blazing! Wins in a row can pay up to ×${game.getMaxStreakMultiplier().toFixed(2)} now.`,
+  fullLineMultiplier: (level, game) => `Line dance! Full lines pay ×${game.getFullLineMultiplier().toFixed(2)}.`,
+  jackpotTokens: (level, game) => `Golden touch! A golden jackpot gives ${game.getJackpotTokens()} Hamster Tokens now.`,
+  deliveryTokens: () => 'A tip jar! Customers tip a Hamster Token every 3rd delivery now.',
+  gambleHistory: () => 'Card counter: I can see more of the cards that came before. Every card is still a fresh draw!',
+  potSeedBonus: () => 'Deep pockets! The jackpot pots start bigger.',
 };
 const TREE_LINES: Record<string, (level: number) => string> = {
   payoutMultiplier: () => 'Family pride! Every win pays more.',
@@ -87,6 +101,10 @@ const TREE_LINES: Record<string, (level: number) => string> = {
   startingMachine: () => 'We keep the Snack Stacker! Every pup starts with it.',
   symbolWeight: () => 'The ball pit is full: more Hamster Balls on the Bonanza!',
   potSeedBonus: () => 'Golden pouches: the jackpot pots start bigger!',
+  // 1.3.1
+  autoBuy: () => 'A little helper! It buys cheap upgrades for us. (Switch it on or off in Upgrades.)',
+  generationPayout: () => 'Deep roots! The older our family grows, the more we win.',
+  doubleWin: () => 'The family penny jar: some wins pay double!',
 };
 
 // The Menu's segmented settings: [setting key, [value, label] …].
@@ -418,6 +436,12 @@ export function createUI(
     }
     // Hot Streak: a rising chime for every win in a row (once it's worth something).
     if (!e.free && e.streak >= 2 && game.getStreakMultiplier() > 1) sound.play('streak', e.streak);
+    // Lucky Pennies (1.3.1): this win paid double.
+    if (e.doubled && here) {
+      sound.play('luck');
+      popText(el.machine, '×2 DOUBLE!', 'gold');
+      fx.sparkleOver(el.machine, { count: 16, palette: fx.colors.gold });
+    }
   });
 
   // The cheese wheel (M9): the hamster wheel turns into a wheel of cheese wedges
@@ -578,6 +602,14 @@ export function createUI(
 
   game.on('upgradeBought', (e) => {
     const def = game.getUpgradeDef(e.id)!;
+    // The Hamster Helper (1.3.1) buys a level every second or so: just a little
+    // sparkle on the tile, no sound or speech each time.
+    if (e.helper) {
+      const t = shop.elementFor(e.id);
+      fx.sparkleOver(t, { count: 4 });
+      if (!lessMotion() && t) popText(t.querySelector('.buy-btn'), `LV ${e.level}`, 'helper');
+      return;
+    }
     sound.play(def.effect.type === 'unlockSymbol' ? 'unlock' : def.effect.type === 'luck' ? 'luck' : 'buy');
     const line = UPGRADE_LINES[def.effect.type];
     if (line) say(line(e.level, game, def), def.effect.type === 'unlockSymbol' ? 5000 : 2600);
@@ -638,9 +670,12 @@ export function createUI(
         fx.confetti(60, el.stage);
       }, IRIS_MS * 0.6);
     } else iris.clear();
+    const news = newUpgrades.length ? ` And there's a new upgrade for our family: ${newUpgrades.join(' and ')}!` : '';
     say(lastRetired
-      ? `Hi, I'm ${e.name}! ${lastRetired.oldName} left me ${formatWhole(game.state.seeds)} Heirloom Seeds to hold. Let's go!`
-      : `Hi, I'm ${e.name}! Let's go!`, 6000);
+      ? `Hi, I'm ${e.name}! ${lastRetired.oldName} left me ${formatWhole(game.state.seeds)} Heirloom Seeds to hold.${news || ' Let\'s go!'}`
+      : `Hi, I'm ${e.name}!${news || ' Let\'s go!'}`, news ? 7000 : 6000);
+    if (news) sound.play('unlock');
+    newUpgrades = [];
     lastRetired = null;
   });
 
@@ -663,9 +698,9 @@ export function createUI(
     }
     celebrate.start({
       kind: 'star', icon: 'star', titles: [`STAR ${e.stars}!`],
-      sub: `${md.name}: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck per star`,
+      sub: `${md.name}: +${Math.round(game.getStarPayout() * 100)}% payouts and +${st.luckPerStar} Luck per star`,
     });
-    say(`${md.name} is good as new, with star ${e.stars}! Every star: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck on it, for good.`, 6000);
+    say(`${md.name} is good as new, with star ${e.stars}! Every star: +${Math.round(game.getStarPayout() * 100)}% payouts and +${st.luckPerStar} Luck on it, for good.`, 6000);
   });
 
   // Tokens: the hamster mentions them only once the Capsules tab is showing,
@@ -678,10 +713,21 @@ export function createUI(
   });
   game.on('tokensChanged', (e) => {
     if (!capsulesShown) return;
-    if (e.source === 'jackpot') say('Golden jackpot! +1 Hamster Token.', 3000);
+    if (e.source === 'jackpot') say(`Golden jackpot! +${formatWhole(e.amount)} Hamster Token${e.amount.eq(1) ? '' : 's'}.`, 3000);
     if (e.source === 'delivery') say('Back! A customer tipped me a Hamster Token.', 3000);
   });
   game.on('skinEquipped', applySkins);
+
+  // 1.3.1: a rebirth or sticker upgrade has just opened. A sticker says so at once;
+  // a new generation's upgrade waits for the new pup to say hello (bigCageLeft).
+  let newUpgrades: string[] = [];
+  game.on('upgradeUnlocked', (e) => {
+    const def = game.getUpgradeDef(e.id)!;
+    if (game.state.bigCage) { newUpgrades.push(def.name); return; }
+    sound.play('unlock');
+    const where = def.scope === 'machine' ? `in the ${(game.data.machines.find((m) => def.machines && def.machines.includes(m.id)) || { name: 'machine' }).name}'s upgrades` : 'in Upgrades';
+    say(`A diary sticker unlocked a new upgrade: ${def.name}! It's ${where}.`, 4500);
+  });
 
   // Welcome back: coins the hamster earned while the game was closed or hidden.
   game.on('offlineEarned', (e) => {

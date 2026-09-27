@@ -25,7 +25,7 @@ export function createDebugPanel(
     </div>
     <div class="row"><span class="row-label">Family (earned coins count toward Heirloom Seeds)</span>
       <button data-earn="10000">Earn +10K</button><button data-earn="100000">Earn +100K</button><button id="dbg-seeds">+5 seeds</button>
-      <button id="dbg-cage">Open the Big Cage</button>
+      <button id="dbg-cage">Open the Big Cage</button><button id="dbg-unlock">Unlock every upgrade</button>
     </div>
     <div class="row"><span class="row-label">Capsules</span>
       <button data-tokens="10">+10 tokens</button><button data-tokens="100">+100 tokens</button><button id="dbg-skins">Every skin</button>
@@ -85,6 +85,11 @@ export function createDebugPanel(
     });
   });
   panel.querySelector('#dbg-skins')!.addEventListener('click', () => game.ownAllSkins());
+  // 1.3.1: every rebirth and sticker upgrade on sale now (until the page reloads).
+  panel.querySelector('#dbg-unlock')!.addEventListener('click', () => {
+    game.unlockAllUpgrades();
+    setStatus('Every rebirth and sticker upgrade is on sale (until the page reloads).');
+  });
   panel.querySelector('#dbg-hold')!.addEventListener('click', () => {
     if (!game.triggerHold(6)) setStatus('No hold & spin here (try the Acorn Vault), or the machine is busy.');
   });
@@ -199,6 +204,7 @@ export function createDebugPanel(
       `Heirloom bonus +${game.getHeirloomBonus().mul(100).toFixed(0)}% payouts · lifetime earned ${formatCoins(s.coinsEarned)}`,
       `Tokens         ${game.state.tokens} (${s.tokensEarned} earned) · stickers ${Object.keys(game.state.diary).length}/${(game.data.diary || []).length}`,
       `Capsules       ${s.capsulesOpened} opened · ${Object.keys(game.state.skins.owned).length} skins · pity in ${game.getPityRemaining()} · jackpots ${s.goldenJackpots}`,
+      `1.3.1          double ${(game.getDoubleChance() * 100).toFixed(0)}% (${s.doubleWins} doubled) · helper ${game.hasHelper() ? (game.state.helper ? 'on' : 'off') : 'none'} (${s.helperBuys} bought) · locked ${game.data.upgrades.filter((u) => !game.isUpgradeUnlocked(u.id)).length} · offline up to ${(game.getOfflineCap() / 3600).toFixed(0)} h`,
       `Seed           ${game.rng.seed}`,
     ].filter((line) => line !== null).join('\n');
   }

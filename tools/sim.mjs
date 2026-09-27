@@ -27,6 +27,8 @@ const HELP = `node tools/sim.mjs [options]
   --no-capsules          never open capsules (to measure the game without the M10 wardrobe buffs)
   --casino               spend the casino chips it earns on boosts, best first (M11; it never buys
                          chips or plays a table): the most the casino can speed a life up
+  --no-helper            keep the Hamster Helper switched off once Helping Paws is planted (1.3.1),
+                         so the bot does all the buying itself
   --plant S              at the Big Cage, plant a trait if it costs at most S x the
                          seeds held (or 1 seed); hold the rest for their bonus   (default 0.25)
   --data FILE            another data.json to try                               (default data.json)
@@ -35,7 +37,7 @@ const HELP = `node tools/sim.mjs [options]
 // ───────────────────────── Options ─────────────────────────
 
 function parseArgs(argv) {
-  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true, casino: false };
+  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true, casino: false, helper: true };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -52,6 +54,7 @@ function parseArgs(argv) {
     else if (a === '--verbose') opts.verbose = true;
     else if (a === '--no-capsules') opts.capsules = false;
     else if (a === '--casino') opts.casino = true;
+    else if (a === '--no-helper') opts.helper = false;
     else { console.log(`Unknown option ${a}\n\n${HELP}`); process.exit(1); }
   }
   if (!['idle', 'active'].includes(opts.player)) { console.log('--player must be idle or active'); process.exit(1); }
@@ -321,6 +324,7 @@ function playSeed(seed) {
       lives.push(life);
       g.retire();
       plantTree(g); // (the nodes land in this life's "planted" list: planted after it)
+      if (!opts.helper) g.setHelper(false); // --no-helper (1.3.1): does nothing before Helping Paws
       life.held = num(g.state.seeds); // seeds held into the next life
       life.bonus = num(g.getHeirloomBonus());
       life.totalStars = Object.values(g.state.stars).reduce((a, b) => a + b, 0);
@@ -369,7 +373,7 @@ const seeds = Array.from({ length: opts.seeds }, (_, i) => i + 1);
 const results = seeds.map((s) => playSeed(s));
 const runs = results.map((r) => r.lives);
 
-console.log(`Hamster Slots balance sim · ${opts.player} player · ${opts.seeds} seeds · retire at max(3, ${opts.retire} × seeds earned), max ${opts.minutes} min a life${opts.casino ? ' · spends casino chips on boosts' : ''}`);
+console.log(`Hamster Slots balance sim · ${opts.player} player · ${opts.seeds} seeds · retire at max(3, ${opts.retire} × seeds earned), max ${opts.minutes} min a life${opts.casino ? ' · spends casino chips on boosts' : ''}${opts.helper ? '' : ' · Hamster Helper off'}`);
 console.log(`(times are minutes into the life; ranges are over seeds; income is the bot's expected coins/s)\n`);
 
 // Which milestones to report: everything that happened in any life, in a sensible order.
@@ -385,6 +389,9 @@ const MARKS = [
   [`Wheel ${wheelMax}`, (l) => l.marks[`wheel${wheelMax}`]],
   ...data.machines.slice(1).map((md) => [md.name, (l) => l.marks[`machine:${md.id}`]]),
   ...(data.upgrades.some((u) => u.id === 'highRoller') ? [['Bet ×2', (l) => l.marks.highRoller1], ['Bet ×10', (l) => l.marks.highRoller4]] : []),
+  // 1.3.1: the first level of each new upgrade the bot buys (it only buys what raises its income).
+  ...['luckyPennies', 'runningShoes', 'couponBook', 'stickerAlbum', 'starPolish', 'megaCheeks', 'moneyBags', 'lineDance', 'blazingStreak', 'hotSauce', 'rabbitsFoot']
+    .filter((id) => data.upgrades.some((u) => u.id === id)).map((id) => [data.upgrades.find((u) => u.id === id).name, (l) => l.marks[`${id}1`]]),
   // "Pays Both Ways" on each machine that sells it.
   ...data.upgrades.filter((u) => u.effect.type === 'bothWays').map((u) => [`Both Ways ${(data.machines.find((m) => u.machines && u.machines.includes(m.id)) || { name: u.id }).name}`, (l) => l.marks[`${u.id}1`]]),
 ];

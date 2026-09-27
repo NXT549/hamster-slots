@@ -132,6 +132,13 @@ export type Effect =
   | { type: 'streakCap'; perLevel: number } // Hot Streak can climb this many steps higher
   | { type: 'deliveryTokens'; every: number } // a Hamster Token every Nth delivery (instead of the usual)
   | { type: 'gambleHistory'; perLevel: number } // the card gamble shows this many more past cards
+  // 1.3.1 (Nuts & Bolts): the new upgrades and traits
+  | { type: 'doubleWin'; perLevel: number } // Lucky Pennies: a winning paid spin pays double with this chance (per level)
+  | { type: 'offlineTime'; perLevel: number } // Cosy Nest: offline earnings count this many more seconds (per level)
+  | { type: 'stickerPayout'; perLevel: number } // Sticker Album: + this × every diary sticker earned, to payouts (per level)
+  | { type: 'starPayout'; perLevel: number } // Star Polish: every Machine Star pays this much more (per level)
+  | { type: 'generationPayout'; perLevel: number } // Deep Roots: + this × the generation, to payouts (per level)
+  | { type: 'autoBuy'; share: number; interval: number } // Helping Paws: the Hamster Helper buys an upgrade that costs at most share × your coins, every `interval` seconds
   | { type: 'shiftWeight'; from: string; to: string; amount: number }
   | { type: 'fullLineMultiplier'; multiplier: number }
   | { type: 'startingLevel'; upgrade: string; levels: number }
@@ -151,6 +158,14 @@ export interface Priced {
   maxLevel: number | null; // null = no max
 }
 
+// 1.3.1: what an upgrade needs before the shop sells it (both, if it lists both).
+//   generation: a rebirth upgrade, from this generation on (the 3rd hamster = 2 retirements)
+//   sticker:    a sticker upgrade, once this Hamster Diary sticker is earned
+export interface UpgradeUnlock {
+  generation?: number;
+  sticker?: string;
+}
+
 export interface UpgradeDef extends Priced {
   id: string;
   name: string;
@@ -158,6 +173,7 @@ export interface UpgradeDef extends Priced {
   scope: 'global' | 'machine'; // the hamster's, or one machine's
   machines?: string[]; // machine upgrades: which machines sell it (missing = all)
   requires?: string[]; // upgrade ids that must be bought first (e.g. Old Clunky's Both Ways needs the Third Reel)
+  unlock?: UpgradeUnlock; // 1.3.1: locked until then (missing = sold from the start)
   effect: Effect;
 }
 
@@ -223,7 +239,8 @@ export type Goal =
   | { type: 'treeNodes'; target: number }
   | { type: 'skinsOwned'; target: number }
   | { type: 'categoryOwned'; category: string; target: number } // M10: skins found in one category (e.g. hats)
-  | { type: 'machinesOwned'; target: number };
+  | { type: 'machinesOwned'; target: number }
+  | { type: 'stickers'; target: number }; // 1.3.1: diary stickers earned
 
 export interface Sticker {
   id: string;
@@ -438,6 +455,9 @@ export interface Stats {
   derbyLongshots: number; // races won on the long shot
   seedDropEdges: number; // seeds landed in an edge bin (the biggest)
   prizesBought: number;
+  // 1.3.1 (save v12): the new upgrades
+  doubleWins: number; // wins Lucky Pennies paid double
+  helperBuys: number; // upgrade levels the Hamster Helper bought
 }
 
 export interface GameState {
@@ -457,6 +477,7 @@ export interface GameState {
   tree: Levels;
   stars: Record<string, number>; // M8: Machine Stars by machine type, e.g. { clunky: 2 }
   bigCage: boolean; // M8: between lives, on the Big Cage page (time stands still; the only time you can plant)
+  helper: boolean; // 1.3.1: the Hamster Helper is switched on (it only works once the family has planted Helping Paws)
   // the collection (also kept)
   tokens: Money;
   diary: Record<string, boolean>;
@@ -504,6 +525,7 @@ export interface GameEvents {
   spinResolved: {
     machineId: string; result: Grid; wins: PaidWin[]; payout: Money; fullLine: boolean; tier: string;
     bet: number; free: boolean; streak: number; featureCells: Cell[];
+    doubled: boolean; // 1.3.1: Lucky Pennies doubled this win (already in every line's payout)
   };
   spinBlocked: { reason: 'coins' | 'delivery' | 'gamble' | 'bonus' | 'bigCage'; source: SpinSource; cost?: Money };
   betChanged: { machineId: string; index: number; bet: number };
@@ -520,7 +542,9 @@ export interface GameEvents {
   gambleEnded: { machineId: string; reason: GambleEndReason; won: Money; rounds: number; started: boolean };
   coinsChanged: { coins: Money; amount: Money };
   seedsChanged: { seeds: Money; amount: Money };
-  upgradeBought: { id: string; level: number; cost: Money; count: number };
+  upgradeBought: { id: string; level: number; cost: Money; count: number; helper: boolean }; // helper: the Hamster Helper bought it (1.3.1)
+  upgradeUnlocked: { id: string; reason: 'generation' | 'sticker' }; // 1.3.1: a rebirth or sticker upgrade is on sale now
+  helperChanged: { on: boolean }; // 1.3.1: the Hamster Helper was switched on or off
   machineBought: { id: string; cost: Money };
   machineSwitched: { id: string; from: string };
   treeNodeBought: { id: string; level: number; cost: Money };

@@ -4,11 +4,33 @@ Everything that changes in **Hamster Slots**, written for players.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the game uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html): a patch (0.1.1) fixes things, a minor version (0.2.0) adds features or content, and 1.0.0 is the full public release.
 
+**Every update has a name** that says what it's about, after its version and date (and in the game's Menu).
+
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased]
+## [Unreleased] · 1.3.1 "Nuts & Bolts"
 
-## [1.3.0] - 2026-09-27
+**A big upgrades update: 20 new upgrades (some you unlock by retiring, some with diary stickers), four new Family Tree traits, a helper hamster that buys upgrades for you, and wins that can pay double.**
+
+### Added
+
+- **Rebirth upgrades.** Each new generation of your family unlocks a new upgrade, in every life after that: **Running Shoes** (generation 2: quicker spins), the **Coupon Book** (3: cheaper spins on every machine), the **Sticker Album** (4: +1% payouts for every diary sticker you've earned), **Star Polish** (5: every Machine Star pays more), **Mega Cheeks** (6: +100% payouts a level, with no limit) and **Hot Sauce** (8: Hot Streak pays more for every win in a row).
+- **Sticker upgrades.** Diary stickers now unlock upgrades as well as paying tokens: **Blazing Streak** (On Fire: Hot Streak counts more wins in a row), **Line Dance** (Line Dancer: full lines pay more), the **Rabbit's Foot** (Four-Leaf Hamster: more Luck everywhere), **Golden Touch** (Golden Moment: more tokens for golden jackpots), the **Tip Jar** (Regular Courier: a token every 3rd delivery), the **Card Counter** (Card Shark: see more past cards in the gamble), **Money Bags** (Millionaire: +50% payouts a level), **Deep Pockets** (Pot Luck: bigger jackpot pots), and one for three machines: **Ball Bearings** (the Burrow Bonanza: more free spins), **Acorn Stash** (the Acorn Vault: one more respin) and **Sharp Cheddar** (the Big Cheese: bigger cheese wedges). The Diary shows which sticker unlocks what.
+- **Lucky Pennies**, a new upgrade for everyone: every win you pay for has a chance to **pay double**. "×2 DOUBLE!" pops over the machine when it does.
+- **Night Shift** (more coins while you're away) and the **Cosy Nest** (your hamster keeps earning for up to 6 hours while you're away, instead of 2).
+- **Four new Family Tree traits:** **Helping Paws** (the Hamster Helper, below), **Deep Roots** (+2% payouts for every generation of your family), the **Four-Leaf Heirloom** (every pup starts with Four-Leaf Clover) and the **Penny Jar** (more wins pay double). The family's tree in the Big Cage grows to fit them.
+- **The Hamster Helper.** Plant Helping Paws and a little helper buys upgrades for you, one level a second: the cheapest one, and only if it costs a tenth of your coins or less, so it never spends what you're saving up for a machine. Switch it on or off in Upgrades → Hamster.
+- **7 new diary stickers:** Seeing Double, Night Owl, Busy Paws, Little Helper, Sticker Book (30 stickers), Dynasty (generation 10) and Billionaire.
+- **New icons** for the new upgrades: pennies, a moon, a cosy nest, running shoes, a coupon, a sticker album, a jar, a paw print and the family's roots.
+- **Every update now has a name.** This one is "Nuts & Bolts". The Menu shows it next to the version.
+
+### Changed
+
+- **Upgrades you can't buy yet are folded away** under each list ("🔒 N upgrades still locked"): tap to see them and what unlocks each one. In your first life only the next rebirth upgrade shows. When one unlocks, your hamster tells you, and a new pup mentions it when they say hello.
+- The Info tab explains Lucky Pennies, and the Machine Stars card counts Star Polish.
+- Golden jackpots now say how many tokens they gave.
+
+## [1.3.0] - 2026-09-27 · The Hamster Casino
 
 **The Hamster Casino opens: roulette, blackjack, a hamster derby and Seed Drop.**
 
@@ -28,7 +50,7 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 - On a phone, the cage steps aside while the Casino tab is open, so the tables get the whole screen. Any other tab brings it back.
 
-## [1.2.0] - 2026-09-27
+## [1.2.0] - 2026-09-27 · A New Look
 
 **A new look: everything fits on one screen, and a family tree that grows as you plant.**
 
@@ -47,7 +69,7 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 - **A new rebirth animation.** Retire and your hamster walks into the meadow with an Heirloom Seed, digs, and plants it. The family's tree shoots up to the size your family has grown it to, its branches grow out, the leaves pop out, and the traits sprout onto the branches. Then the seeds rain down and the numbers slide in. Tap to skip it; with Motion "Less" the tree is simply there. The more traits your family plants, the more the tree blossoms.
 - Little flowers in the grass, clouds and a sun over the hills, and the hamster chatting in the Big Cage as you plant.
 
-## [1.1.0] - 2026-09-27
+## [1.1.0] - 2026-09-27 · Machines & Hats
 
 **Three new machines, hats, and clothes that do something.**
 
@@ -77,7 +99,7 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 - On a phone, the Info tab's paytable no longer makes the whole page slide sideways: the table scrolls on its own, and its cells are a little tighter.
 
-## [1.0.0] - 2026-09-27
+## [1.0.0] - 2026-09-27 · The Big Cage
 
 **The full release!** Everything so far, plus the Big Cage, polished with a lot of new animations and effects.
 
@@ -105,7 +127,7 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 - Seeds are planted in the Big Cage when you retire; the Family tab shows the tree and what each trait does.
 - The "Full Bloom" sticker now needs all 18 Family Tree traits.
 
-## [0.2.0] - 2026-09-26
+## [0.2.0] - 2026-09-26 · New Foundations
 
 Behind the scenes, the game moved to a new foundation (TypeScript and Vite), ready to be played from a link. It plays exactly the same as 0.1.0.
 
@@ -119,7 +141,7 @@ Behind the scenes, the game moved to a new foundation (TypeScript and Vite), rea
 - Very big numbers, from a quadrillion up, are now written like **1.23e15** (that's 1.23 × 10¹⁵), instead of piling up as 1,000T and beyond. That goes for coins, Heirloom Seeds and Hamster Tokens.
 - The game's fonts now come with it, so it looks right even without an internet connection.
 
-## [0.1.0] - 2026-09-25
+## [0.1.0] - 2026-09-25 · First Spin
 
 The first numbered version: everything built so far.
 

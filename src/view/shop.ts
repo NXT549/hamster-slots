@@ -8,7 +8,7 @@
 // and reads state.
 
 import { spriteImg, upgradeIcon, MACHINE_SPRITES } from './art.ts';
-import { formatCoins, formatSeconds, formatWait, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
+import { formatCoins, formatSeconds, formatWait, formatDuration, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
 import { effectAs } from '../logic/game.ts';
 import { divide } from '../logic/money.ts';
 import type { Game } from '../logic/game.ts';
@@ -66,7 +66,45 @@ function effectFormats(game: Game): Record<string, (def: Def) => [string, Format
     // M9
     extraRespins: () => ['Respins', String],
     wheelBonus: () => ['Average wedge', (v) => `×${Number(v.toFixed(2))}`],
+    // 1.3.1 (some were only on skins before)
+    doubleWin: () => ['Wins paid double', (v) => `${Math.round(v * 100)}%`],
+    offlineBonus: () => ['Coins while away', (v) => `×${Number(v.toFixed(2))}`],
+    offlineTime: () => ['Pays while away for up to', (v) => formatDuration(v)],
+    stickerPayout: () => ['Payouts', (v) => `×${v.toFixed(2)}`],
+    starPayout: () => ['Each Machine Star', (v) => `+${Math.round(v * 100)}% payouts`],
+    generationPayout: () => ['Payouts', (v) => `×${v.toFixed(2)}`],
+    streakCap: () => ['Hot Streak counts', (v) => `${v} wins in a row`],
+    jackpotTokens: () => ['Tokens a golden jackpot', String],
+    deliveryTokens: () => ['A token every', (v) => `${ordinal(v)} delivery`],
+    gambleHistory: () => ['Past cards shown', String],
+    autoBuy: () => ['Hamster Helper', (v) => (v ? 'yes' : 'no')],
   };
+}
+
+// "1st", "2nd", "3rd", "5th" …
+function ordinal(n: number): string {
+  if (n % 100 >= 11 && n % 100 <= 13) return `${n}th`;
+  return `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] || 'th'}`;
+}
+
+// 1.3.1: what a rebirth or sticker upgrade is still waiting for, short (a tile) or
+// long (the detail card). null = it's on sale.
+export function lockText(game: Game, id: string, long = false): string | null {
+  const lock = game.getUpgradeLock(id);
+  if (!lock) return null;
+  const parts: string[] = [];
+  if (lock.generation) {
+    const left = lock.generation - game.state.generation;
+    parts.push(long
+      ? `a rebirth upgrade: on sale from generation ${lock.generation} (your family is on ${game.state.generation}: retire ${left} more time${left === 1 ? '' : 's'})`
+      : `Generation ${lock.generation}`);
+  }
+  if (lock.sticker) {
+    const sticker = game.data.diary.find((d) => d.id === lock.sticker);
+    const name = sticker ? sticker.name : lock.sticker;
+    parts.push(long ? `a sticker upgrade: on sale once you earn the diary sticker <b>${name}</b> (${sticker ? sticker.description : ''})` : `Sticker: ${name}`);
+  }
+  return long ? `🔒 ${parts.join(', and ').replace(/^./, (c) => c.toUpperCase())}.` : `🔒 ${parts.join(' + ')}`;
 }
 
 // Milestone 7: Luck and symbol unlocks change two things at once, so their line
@@ -162,6 +200,7 @@ const AMOUNTS: [Settings['buyAmount'], string][] = [[1, '×1'], [10, '×10'], ['
 interface Tile {
   id: string;
   def: UpgradeDef;
+  locked: boolean; // 1.3.1: built as a locked tile (in the "still locked" group)
   tile: HTMLElement;
   button: HTMLButtonElement;
   pips: HTMLElement[];
@@ -189,7 +228,16 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
   const el = {
     machines: $('machine-list'), hamster: $('upgrade-list-hamster'), machine: $('upgrade-list-machine'),
     amount: $('buy-amount'), machineNote: $('machine-upgrades-note'), detail: $('upgrade-detail'),
+    // 1.3.1: the upgrades still locked (rebirth and sticker upgrades), folded away under the others
+    lockedHamster: $<HTMLDetailsElement>('locked-hamster'), lockedMachine: $<HTMLDetailsElement>('locked-machine'),
+    helper: $('helper-row'), helperBtn: $<HTMLButtonElement>('helper-btn'), helperText: $('helper-text'),
   };
+  el.helper.querySelector('.helper-icon')!.appendChild(spriteImg('paw', 32, '🐾'));
+  // The Hamster Helper's switch (1.3.1, the Helping Paws trait).
+  el.helperBtn.addEventListener('click', (e) => {
+    (e.currentTarget as HTMLElement).blur();
+    game.setHelper(!game.state.helper);
+  });
   // M15: the tiles are small, like the Family Tree's traits. Tap one (not its buy
   // button) and a detail card at the bottom of the tab tells you all about it.
   let selected: string | null = null;
@@ -308,9 +356,9 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
 
   // A compact tile: icon, name, level and the short "now → next" (a button: tap it
   // for the detail card), level pips, and the buy button (one tap still buys).
-  function makeTile(def: UpgradeDef): Tile {
+  function makeTile(def: UpgradeDef, locked = false): Tile {
     const tile = document.createElement('div');
-    tile.className = 'tile';
+    tile.className = locked ? 'tile locked' : 'tile';
     tile.innerHTML = `
       <button class="tile-info">
         <span class="tile-icon"></span>
@@ -347,7 +395,7 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       game.buyUpgrade(def.id, want());
     });
     return {
-      id: def.id, def, tile, button, pips,
+      id: def.id, def, tile, button, pips, locked,
       level: tile.querySelector<HTMLElement>('.tile-level')!,
       effect: tile.querySelector<HTMLElement>('.tile-effect')!,
       fill: tile.querySelector<HTMLElement>('.buy-fill')!,
@@ -355,17 +403,43 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
     };
   }
 
-  // Hamster upgrades go in one sub-tab, this machine's in the other.
+  // Which tiles to build: every upgrade the shop sells here, and which are locked.
+  // A rebirth upgrade only shows (locked) once the family has retired, or when
+  // it's the very next one: a first life isn't a wall of padlocks.
+  function tileDefs() {
+    const next = Math.min(...game.getAvailableUpgrades().map((d) => (game.getUpgradeLock(d.id) || {}).generation || Infinity));
+    return game.getAvailableUpgrades().filter((d) => {
+      const lock = game.getUpgradeLock(d.id);
+      return !lock || !lock.generation || game.state.generation > 1 || lock.generation === next;
+    });
+  }
+  const keyOf = () => tileDefs().map((d) => `${d.id}${game.isUpgradeUnlocked(d.id) ? '' : '!'}`).join();
+
+  // Hamster upgrades go in one sub-tab, this machine's in the other. Locked ones
+  // (1.3.1) go in a folded group under each list: rebirth upgrades first, then sticker ones.
   function buildTiles() {
-    const defs = game.getAvailableUpgrades();
-    tileKey = defs.map((d) => d.id).join();
+    const defs = tileDefs();
+    tileKey = keyOf();
     el.hamster.replaceChildren();
     el.machine.replaceChildren();
-    tiles = defs.map((def) => {
-      const t = makeTile(def);
-      (def.scope === 'machine' ? el.machine : el.hamster).appendChild(t.tile);
+    const lockedLists = { hamster: el.lockedHamster.querySelector('.upgrade-grid')!, machine: el.lockedMachine.querySelector('.upgrade-grid')! };
+    lockedLists.hamster.replaceChildren();
+    lockedLists.machine.replaceChildren();
+    const order = (d: UpgradeDef) => { const l = game.getUpgradeLock(d.id); return l ? l.generation || 100 : -1; }; // the next rebirth upgrade first
+    const sorted = [...defs].sort((a, b) => order(a) - order(b) || defs.indexOf(a) - defs.indexOf(b));
+    tiles = sorted.map((def) => {
+      const locked = !game.isUpgradeUnlocked(def.id);
+      const t = makeTile(def, locked);
+      const side = def.scope === 'machine' ? 'machine' : 'hamster';
+      (locked ? lockedLists[side] : side === 'machine' ? el.machine : el.hamster).appendChild(t.tile);
       return t;
     });
+    for (const side of ['hamster', 'machine'] as const) {
+      const group = side === 'hamster' ? el.lockedHamster : el.lockedMachine;
+      const n = lockedLists[side].children.length;
+      group.classList.toggle('hidden', n === 0);
+      setHTML(group.querySelector('summary')!, `🔒 ${n} upgrade${n === 1 ? '' : 's'} still locked <span class="note">(retire, or earn diary stickers, to open them)</span>`);
+    }
     const md = game.getMachineData();
     subtabs.setLabel('machine', md.name);
     setText(el.machineNote, `${md.name}'s own upgrades: they stay with it when you switch. Tap one to read about it.`);
@@ -407,7 +481,7 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
   function render() {
     const s = game.state;
     const rate = game.getEconomy().expectedAutoProfitPerSecond;
-    if (tileKey !== game.getAvailableUpgrades().map((d) => d.id).join()) buildTiles(); // switched machine
+    if (tileKey !== keyOf()) buildTiles(); // switched machine, or an upgrade just unlocked
 
     [...el.amount.children].forEach((b, i) => b.classList.toggle('active', AMOUNTS[i][0] === settings.buyAmount));
     el.amount.classList.toggle('hidden', subtabs.current === 'machines');
@@ -449,16 +523,19 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       const level = game.getUpgradeLevel(t.id);
       const maxed = game.isMaxed(t.id);
       const bulk = game.getUpgradeBulk(t.id, want());
-      // An upgrade that needs another one first (Old Clunky's Both Ways needs the Third Reel).
+      // An upgrade that needs another one first (Old Clunky's Both Ways needs the Third Reel),
+      // or is still locked (1.3.1: a rebirth or sticker upgrade).
       const needs = game.getUpgradeNeeds(t.id);
-      const preview = needs.length > 0 ? null : game.previewUpgrade(t.id, bulk.count);
+      const lock = lockText(game, t.id);
+      const blocked = needs.length > 0 || lock !== null;
+      const preview = blocked ? null : game.previewUpgrade(t.id, bulk.count);
       setText(t.level, maxed ? 'MAX' : t.def.maxLevel ? `Lv ${level}/${t.def.maxLevel}` : `Lv ${level}`);
-      setHTML(t.effect, preview ? shortEffect(game, t.def, preview) : `<span class="note">Needs ${needs.join(' + ')}</span>`);
+      setHTML(t.effect, preview ? shortEffect(game, t.def, preview) : `<span class="note">${lock || `Needs ${needs.join(' + ')}`}</span>`);
       t.pips.forEach((pip, i) => pip.classList.toggle('on', i < level));
       const times = bulk.count > 1 ? `×${bulk.count} · ` : '';
-      const label = maxed ? 'Maxed out' : needs.length > 0 ? 'Locked' : coinLabel(`${times}${formatCoins(bulk.cost)}`);
+      const label = maxed ? 'Maxed out' : blocked ? 'Locked' : coinLabel(`${times}${formatCoins(bulk.cost)}`);
       setHTML(t.label, label);
-      const paint = { maxed, affordable: bulk.affordable, progress: needs.length > 0 ? 0 : divide(s.coins, bulk.cost).toNumber() };
+      const paint = { maxed, affordable: bulk.affordable, progress: blocked ? 0 : divide(s.coins, bulk.cost).toNumber() };
       paintBuy(t.button, t.fill, paint);
       t.tile.classList.toggle('ready', bulk.affordable);
       t.tile.classList.toggle('selected', t.id === selected);
@@ -473,10 +550,12 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
         }
         const scope = t.def.scope === 'machine' ? game.getMachineData().name : 'Hamster · every machine';
         setText(detail.tag, `${scope} · ${maxed ? 'MAX' : t.def.maxLevel ? `Lv ${level} of ${t.def.maxLevel}` : `Lv ${level}`}`);
-        setHTML(detail.effect, preview ? describeEffect(game, t.def, preview) : `<span class="note">Needs the ${needs.join(' and the ')} first</span>`);
+        const why = lockText(game, t.id, true);
+        setHTML(detail.effect, preview ? describeEffect(game, t.def, preview)
+          : `<span class="note">${why ? `${why}${needs.length ? ` It also needs the ${needs.join(' and the ')}.` : ''}` : `Needs the ${needs.join(' and the ')} first`}</span>`);
         setHTML(detail.label, label);
         paintBuy(detail.button, detail.fill, paint);
-        setText(detail.wait, maxed || bulk.affordable || needs.length > 0 ? '' : waitText(bulk.cost, rate));
+        setText(detail.wait, maxed || bulk.affordable || blocked ? '' : waitText(bulk.cost, rate));
       }
     }
     const open = subtabs.current;
@@ -489,7 +568,7 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
     const showRebuild = here.fullyUpgraded && here.stars < here.maxStars;
     rebuildEl.card.classList.toggle('hidden', !(showRebuild || here.stars > 0));
     setHTML(rebuildEl.text, showRebuild
-      ? `<b>Every upgrade on ${game.getMachineData().name} is maxed!</b> Rebuild it for Machine Star ${here.stars + 1} of ${here.maxStars}: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck on this machine, for good. Its upgrades start again from nothing (your coins stay).<div>${starRow(here.stars, here.maxStars)}</div>`
+      ? `<b>Every upgrade on ${game.getMachineData().name} is maxed!</b> Rebuild it for Machine Star ${here.stars + 1} of ${here.maxStars}: +${Math.round(game.getStarPayout() * 100)}% payouts and +${st.luckPerStar} Luck on this machine, for good. Its upgrades start again from nothing (your coins stay).<div>${starRow(here.stars, here.maxStars)}</div>`
       : here.stars >= here.maxStars
         ? `${starRow(here.stars, here.maxStars)} Every star this machine can have.`
         : `${starRow(here.stars, here.maxStars)} Max every upgrade here to rebuild it for another star.`);
@@ -497,6 +576,18 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
     rebuildEl.button.disabled = !here.canRebuild; // (busy: spinning, free spins, the jackpot wheel)
     setText(rebuildEl.button, armed(here.id) ? 'Tap again: reset its upgrades for a star' : here.canRebuild ? 'Rebuild for a star' : 'Rebuild when the machine is idle');
     if (showRebuild && here.canRebuild) ready.machine = true;
+
+    // The Hamster Helper's switch, once the family has planted Helping Paws (1.3.1).
+    const helper = game.getHelper();
+    el.helper.classList.toggle('hidden', !helper);
+    if (helper) {
+      el.helper.classList.toggle('off', !s.helper);
+      setText(el.helperBtn, s.helper ? 'On' : 'Off');
+      el.helperBtn.setAttribute('aria-pressed', String(s.helper));
+      setHTML(el.helperText, `<b>Hamster Helper</b> <span class="note">${s.helper
+        ? `buys the cheapest upgrade here that costs ${Math.round(helper.share * 100)}% of your coins or less`
+        : 'switched off: tap to let it buy cheap upgrades for you'}${s.stats.helperBuys ? ` · ${s.stats.helperBuys.toLocaleString('en-US')} levels bought so far` : ''}</span>`);
+    }
 
     subtabs.setDot('hamster', ready.hamster);
     subtabs.setDot('machine', ready.machine);

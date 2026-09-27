@@ -12,6 +12,7 @@
 //   game.spin(), game.startDelivery(), game.buyUpgrade(id, count)  ← actions (return true/false)
 //   game.buyMachine(id), game.switchMachine(id)                     ← machine actions
 //   game.retire(), game.buyTreeNode(id)                             ← family actions
+//   game.setHelper(on)                                              ← the Hamster Helper (1.3.1)
 //   game.pullCapsule(), game.equipSkin(id)                          ← capsule/skin actions
 //   game.setBet(index), game.gamble("red"), game.collectGamble()    ← bets + the card gamble
 //   game.applyOfflineEarnings(seconds)                              ← coins for time away
@@ -31,7 +32,7 @@ import type { Money, MoneyLike } from './money.ts';
 import type {
   GameData, GameState, GameEvents, MachineDef, MachineState, SymbolDef, UpgradeDef, TreeNodeDef, Priced, Effect, EffectType,
   EffectOf, Levels, Overrides, Stats, SaveData, Goal, Grid, SpinSource, Suit, CardColor, Card, GambleEndReason, TokenSource, PotDef,
-  Cell, HoldState, BlackjackHand,
+  Cell, HoldState, BlackjackHand, UpgradeUnlock,
 } from './types.ts';
 
 // v2 added retirement: generation, Heirloom Seeds, the family tree, per-run
@@ -50,8 +51,10 @@ import type {
 // stats bestWays, holdBonuses, holdGrands and bestWheel.
 // v11 (M11, the Hamster Casino) added the casino (chips, boosts, a blackjack hand)
 // and the casino stats.
+// v12 (1.3.1, Nuts & Bolts) added the Hamster Helper's switch (helper) and the
+// stats doubleWins and helperBuys.
 // See migrateSave() below.
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -129,6 +132,13 @@ export function createGame(initialData: GameData, rng: Rng) {
   // The last few gamble cards, newest first (shown along the top of the gamble
   // panel, like a real pokie). Just for show: never saved.
   let cardHistory: Card[] = [];
+  // 1.3.1: the Hamster Helper's clock (seconds since it last looked at the shop),
+  // and the rebirth/sticker upgrades still locked (to announce each one as it opens).
+  // Neither is saved: they're worked out again on load.
+  let helperTimer = 0;
+  let stillLocked = new Set<string>();
+  // Debug (the debug panel, tests): every rebirth and sticker upgrade on sale now. Not saved.
+  let allUnlocked = false;
 
   // ───────────────────────── Lookups ─────────────────────────
 
@@ -211,7 +221,53 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   function canBuyUpgrade(id: string): boolean {
     const def = getUpgradeDef(id);
-    return isUpgradeAvailable(def) && !isMaxed(id) && getUpgradeNeeds(id).length === 0 && canAfford(getUpgradeCost(id));
+    return isUpgradeAvailable(def) && !isMaxed(id) && getUpgradeNeeds(id).length === 0 && !getUpgradeLock(id) && canAfford(getUpgradeCost(id));
+  }
+
+  // ── Rebirth and sticker upgrades (1.3.1) ──
+  // Some upgrades aren't on sale from the start ("unlock" in data.json):
+  //   { "generation": 3 }     a REBIRTH upgrade: from the family's 3rd hamster on
+  //   { "sticker": "onFire" } a STICKER upgrade: once that diary sticker is earned
+  // Until then the shop shows them locked, with what opens them. Neither lock can
+  // close again (the generation only goes up, a sticker stays earned), so a locked
+  // upgrade is always at level 0.
+  // Returns what's still missing, or null when it's on sale.
+  function getUpgradeLock(id: string): UpgradeUnlock | null {
+    const def = getUpgradeDef(id);
+    const u = def && def.unlock;
+    if (!u || allUnlocked) return null;
+    const lock: UpgradeUnlock = {};
+    if (u.generation && state.generation < u.generation) lock.generation = u.generation;
+    if (u.sticker && !state.diary[u.sticker]) lock.sticker = u.sticker;
+    return lock.generation || lock.sticker ? lock : null;
+  }
+
+  function isUpgradeUnlocked(id: string): boolean {
+    return getUpgradeLock(id) === null;
+  }
+
+  // The gated upgrades that are still locked (to notice when one opens).
+  function lockedUpgradeIds(): Set<string> {
+    if (allUnlocked) return new Set();
+    return new Set(data.upgrades.filter((u) => u.unlock && !isUpgradeUnlocked(u.id)).map((u) => u.id));
+  }
+
+  // Debug only (the debug panel, tests): put every rebirth and sticker upgrade on
+  // sale now, without a retirement or a sticker (quietly: no announcements).
+  function unlockAllUpgrades(): boolean {
+    allUnlocked = true;
+    stillLocked.clear();
+    return true;
+  }
+
+  // Say so when a locked upgrade has just opened (after a retirement or a sticker).
+  function announceUnlocks(): void {
+    for (const id of [...stillLocked]) {
+      if (!isUpgradeUnlocked(id)) continue;
+      stillLocked.delete(id);
+      const def = getUpgradeDef(id)!;
+      events.emit('upgradeUnlocked', { id, reason: def.unlock!.sticker ? 'sticker' : 'generation' });
+    }
   }
 
   // ───────────────────── Effects ─────────────────────
@@ -262,7 +318,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // The sum of perLevel × level over one effect type (for the simple M10 twists).
-  function sumOf(type: 'offlineBonus' | 'jackpotTokens' | 'streakCap' | 'gambleHistory', overrides?: Overrides): number {
+  function sumOf(type: 'offlineBonus' | 'jackpotTokens' | 'streakCap' | 'gambleHistory' | 'doubleWin' | 'offlineTime' | 'starPayout', overrides?: Overrides): number {
     let sum = 0;
     for (const { effect, level } of effectsOfType(type, overrides)) sum += effect.perLevel * level;
     return sum;
@@ -282,18 +338,34 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Multiplying is what makes the family feel strong in every new life, and keeps
   // a fur skin's +5% worth having however many Chubby Cheeks levels you own (M10).
   // (A Money: the heirloom bonus grows with the seeds, and seeds can grow huge.)
+  // 1.3.1: the Sticker Album adds per diary sticker earned, and Deep Roots per
+  // generation, each to the group of whatever gives it (a coin upgrade, a trait).
   function getPayoutMultiplier(overrides?: Overrides): Money {
     let upgrades = 1;
     let wardrobe = 1;
     let boost = 1;
     let family = money(1).add(getHeirloomBonus(overrides));
-    for (const { effect, level, fromTree, scope } of effectsOfType('payoutMultiplier', overrides)) {
-      if (fromTree) family = family.add(effect.perLevel * level);
-      else if (scope === 'wardrobe') wardrobe += effect.perLevel * level;
-      else if (scope === 'boost') boost += effect.perLevel * level;
-      else upgrades += effect.perLevel * level;
-    }
+    const add = ({ fromTree, scope }: { fromTree: boolean; scope: string }, amount: number) => {
+      if (fromTree) family = family.add(amount);
+      else if (scope === 'wardrobe') wardrobe += amount;
+      else if (scope === 'boost') boost += amount;
+      else upgrades += amount;
+    };
+    for (const x of effectsOfType('payoutMultiplier', overrides)) add(x, x.effect.perLevel * x.level);
+    const stickers = countStickers();
+    for (const x of effectsOfType('stickerPayout', overrides)) add(x, x.effect.perLevel * x.level * stickers);
+    for (const x of effectsOfType('generationPayout', overrides)) add(x, x.effect.perLevel * x.level * state.generation);
     return family.mul(upgrades).mul(wardrobe).mul(boost);
+  }
+
+  // How many diary stickers the family has earned (the Sticker Album, a diary goal).
+  function countStickers(): number {
+    return Object.keys(state.diary).length;
+  }
+
+  // Lucky Pennies (1.3.1): the chance a winning paid spin pays double.
+  function getDoubleChance(overrides?: Overrides): number {
+    return Math.min(1, sumOf('doubleWin', overrides));
   }
 
   // Heirloom bonus (M8): every seed you HOLD adds a little to payouts. Planting a
@@ -631,14 +703,20 @@ export function createGame(initialData: GameData, rng: Rng) {
     return state.stars[id] || 0;
   }
 
+  // What one Machine Star adds to its machine's payouts (Star Polish adds more, 1.3.1).
+  function getStarPayout(overrides?: Overrides): number {
+    return starData().payoutPerStar + sumOf('starPayout', overrides);
+  }
+
   // What a machine's stars multiply its payouts by (1 = no stars).
-  function getStarMultiplier(machine: MachineState = activeMachine()): number {
-    return 1 + starData().payoutPerStar * getStars(machine.typeId);
+  function getStarMultiplier(machine: MachineState = activeMachine(), overrides?: Overrides): number {
+    return 1 + getStarPayout(overrides) * getStars(machine.typeId);
   }
 
   // Every upgrade this machine sells is at its max level.
+  // (An upgrade that's still locked doesn't count, 1.3.1: it can't be bought yet.)
   function isFullyUpgraded(machine: MachineState): boolean {
-    const defs = data.upgrades.filter((u) => u.scope === 'machine' && isUpgradeAvailable(u, machine));
+    const defs = data.upgrades.filter((u) => u.scope === 'machine' && isUpgradeAvailable(u, machine) && isUpgradeUnlocked(u.id));
     return defs.length > 0 && defs.every((u) => maxedAtLevel(u, getUpgradeLevel(u.id, machine)));
   }
 
@@ -715,12 +793,19 @@ export function createGame(initialData: GameData, rng: Rng) {
     // M9
     extraRespins: (def, o) => getHoldRespins(o),
     wheelBonus: (def, o) => getWheelAverage(o),
-    // M10: only worn skins have these (never sold or planted), but every effect type needs a preview
-    offlineBonus: () => getOfflineMultiplier(),
-    jackpotTokens: () => getJackpotTokens(),
+    // M10: worn skins have these (and since 1.3.1 some upgrades too)
+    offlineBonus: (def, o) => getOfflineMultiplier(o),
+    jackpotTokens: (def, o) => getJackpotTokens(o),
     streakCap: (def, o) => getStreakCap(o),
-    deliveryTokens: () => getDeliveryTokenEvery(),
-    gambleHistory: () => getCardHistoryLength(),
+    deliveryTokens: (def, o) => getDeliveryTokenEvery(o),
+    gambleHistory: (def, o) => getCardHistoryLength(o),
+    // 1.3.1
+    doubleWin: (def, o) => getDoubleChance(o),
+    offlineTime: (def, o) => getOfflineCap(o),
+    stickerPayout: (def, o) => getPayoutMultiplier(o),
+    starPayout: (def, o) => getStarPayout(o),
+    generationPayout: (def, o) => getPayoutMultiplier(o),
+    autoBuy: (def, o) => getHelper(o) !== null,
   };
 
   // The affected stat now, and after `levels` more levels (next = null when maxed).
@@ -759,6 +844,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       potSeedMultiplier: getPotSeedMultiplier(overrides),
       extraRespins: getHoldRespins(overrides, machine) - (getMachineData(machine).holdSpin?.respins || 0),
       wheelBonus: getWheelBonus(overrides, machine),
+      doubleChance: getDoubleChance(overrides),
     });
   }
 
@@ -957,10 +1043,15 @@ export function createGame(initialData: GameData, rng: Rng) {
         state.stats.bestWheel = Math.max(state.stats.bestWheel, w.wheel);
       }
     }
+    // Lucky Pennies (1.3.1): a winning paid spin pays double with this chance. (The
+    // coin is only tossed when it could matter, so without it the RNG runs as before.)
+    const doubleChance = free ? 0 : getDoubleChance();
+    const doubled = wins.length > 0 && doubleChance > 0 && rng.next() < doubleChance;
+    const doubleMultiplier = doubled ? 2 : 1;
     let payout = money(0);
     let basePayout = 0; // for the win tier: every line's base pay, × its wheel
     const paid = wins.map((w) => {
-      const linePayout = roundMoney(multiplier.mul(w.basePayout * (w.fullLine ? fullLineBonus : 1) * (w.wheel || 1)).mul(featureMultiplier).mul(streakMultiplier));
+      const linePayout = roundMoney(multiplier.mul(w.basePayout * (w.fullLine ? fullLineBonus : 1) * (w.wheel || 1) * doubleMultiplier).mul(featureMultiplier).mul(streakMultiplier));
       payout = payout.add(linePayout);
       basePayout += w.basePayout * (w.wheel || 1);
       if (w.ways) state.stats.bestWays = Math.max(state.stats.bestWays, w.ways);
@@ -981,6 +1072,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       state.stats.biggestWin = state.stats.biggestWin.max(payout);
       state.stats.mostLinesWon = Math.max(state.stats.mostLinesWon, new Set(paid.filter((w) => !w.ways).map((w) => w.line)).size); // a line that pays both ways is still one line (ways wins aren't lines)
       if (paid.some((w) => w.usedWild)) state.stats.wildWins++;
+      if (doubled) state.stats.doubleWins++;
       if (free && machine.freeSpins) {
         machine.freeSpins.won = roundMoney(machine.freeSpins.won.add(payout));
         state.stats.freeSpinCoins = roundMoney(state.stats.freeSpinCoins.add(payout));
@@ -1001,6 +1093,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       machineId: machine.typeId, result: copyGrid(machine.result!), wins: paid, payout, fullLine: paid.some((w) => w.fullLine), tier,
       bet, free, streak: machine.streak || 0,
       featureCells: award > 0 ? scatterCells : wheel ? pouchCells : hold ? coinCells : [],
+      doubled,
     });
 
     // Golden jackpot (the jackpot symbol on every reel of a line, 3+ reels): a
@@ -1362,21 +1455,24 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // How many past cards the gamble shows (M10: the Crown shows more).
-  function getCardHistoryLength(): number {
-    return Math.max(1, (data.gamble.history || 5) + sumOf('gambleHistory'));
+  function getCardHistoryLength(overrides?: Overrides): number {
+    return Math.max(1, (data.gamble.history || 5) + sumOf('gambleHistory', overrides));
   }
 
-  // A Hamster Token every Nth delivery (M10: the Sunflower Field room tips more often). 0 = never.
-  function getDeliveryTokenEvery(): number {
+  // A Hamster Token every Nth delivery (M10: the Sunflower Field room tips more
+  // often; 1.3.1: so does the Tip Jar, once bought). 0 = never.
+  function getDeliveryTokenEvery(overrides?: Overrides): number {
     const t = data.tokens;
     let every = t && t.deliveryEvery > 0 ? t.deliveryEvery : 0;
-    for (const { effect } of effectsOfType('deliveryTokens')) if (effect.every > 0) every = every > 0 ? Math.min(every, effect.every) : effect.every;
+    for (const { effect, level } of effectsOfType('deliveryTokens', overrides)) {
+      if (level > 0 && effect.every > 0) every = every > 0 ? Math.min(every, effect.every) : effect.every;
+    }
     return every;
   }
 
-  // Tokens a golden jackpot gives (M10: Golden Glow gives more).
-  function getJackpotTokens(): number {
-    return (data.tokens ? data.tokens.perJackpot : 0) + sumOf('jackpotTokens');
+  // Tokens a golden jackpot gives (M10: Golden Glow gives more; 1.3.1: Golden Touch too).
+  function getJackpotTokens(overrides?: Overrides): number {
+    return (data.tokens ? data.tokens.perJackpot : 0) + sumOf('jackpotTokens', overrides);
   }
 
   // What the hamster is wearing that does something, slot by slot (M10), for the Wardrobe.
@@ -1390,9 +1486,14 @@ export function createGame(initialData: GameData, rng: Rng) {
     return out;
   }
 
-  // Offline earnings × this (M10: room skins).
-  function getOfflineMultiplier(): number {
-    return 1 + sumOf('offlineBonus');
+  // Offline earnings × this (M10: room skins; 1.3.1: Night Shift).
+  function getOfflineMultiplier(overrides?: Overrides): number {
+    return 1 + sumOf('offlineBonus', overrides);
+  }
+
+  // The most time away that pays, in seconds (1.3.1: Cosy Nest adds to it).
+  function getOfflineCap(overrides?: Overrides): number {
+    return (data.offline ? data.offline.maxSeconds : 0) + sumOf('offlineTime', overrides);
   }
 
   // Food delivery: always allowed (even at 0 coins) unless one is already running.
@@ -1444,11 +1545,13 @@ export function createGame(initialData: GameData, rng: Rng) {
       count++;
       if (want === Infinity && !canAfford(cost)) break; // not even one level: keep it as the price to show
     }
-    // Still the price to show when it needs another upgrade first, but not buyable yet.
-    return { count, cost, affordable: count > 0 && canAfford(cost) && getUpgradeNeeds(id).length === 0 };
+    // Still the price to show when it needs another upgrade first (or is still
+    // locked, 1.3.1), but not buyable yet.
+    return { count, cost, affordable: count > 0 && canAfford(cost) && getUpgradeNeeds(id).length === 0 && isUpgradeUnlocked(id) };
   }
 
-  function buyUpgrade(id: string, want = 1): boolean {
+  // helper = the Hamster Helper is buying it (1.3.1), not the player.
+  function buyUpgrade(id: string, want = 1, helper = false): boolean {
     const def = getUpgradeDef(id);
     const { count, cost, affordable } = getUpgradeBulk(id, want);
     if (!def || !affordable) return false;
@@ -1456,10 +1559,53 @@ export function createGame(initialData: GameData, rng: Rng) {
     changeCoins(cost.neg());
     levelStore(def)[id] = level;
     state.stats.upgradesBought += count;
+    if (helper) state.stats.helperBuys += count;
     if (def.effect.type === 'unlockSymbol') state.stats.symbolsUnlocked += count;
-    events.emit('upgradeBought', { id, level, cost, count });
+    events.emit('upgradeBought', { id, level, cost, count, helper });
     checkDiary();
     return true;
+  }
+
+  // ── The Hamster Helper (1.3.1, the Helping Paws trait) ──
+  // While it's switched on, the helper buys upgrades for you: every `interval`
+  // seconds, the cheapest one on sale (the hamster's or the running machine's)
+  // that costs at most `share` of your coins. A tenth of your coins at most means
+  // it never spends what you're saving up for a machine; it never buys machines.
+  function getHelper(overrides?: Overrides): { share: number; interval: number } | null {
+    let best: { share: number; interval: number } | null = null;
+    for (const { effect, level } of effectsOfType('autoBuy', overrides)) {
+      if (level > 0 && (!best || effect.share > best.share)) best = { share: effect.share, interval: effect.interval };
+    }
+    return best;
+  }
+
+  function hasHelper(): boolean {
+    return getHelper() !== null;
+  }
+
+  // The switch (in the Upgrades tab). Only once the family has the helper.
+  function setHelper(on: boolean): boolean {
+    if (!hasHelper()) return false;
+    state.helper = on;
+    events.emit('helperChanged', { on });
+    return true;
+  }
+
+  // One look at the shop: buy the cheapest upgrade the helper may buy. true = bought one.
+  function helperStep(): boolean {
+    const h = getHelper();
+    if (!h || !state.helper || state.bigCage) return false;
+    const limit = state.coins.mul(h.share);
+    let pick: string | null = null;
+    let pickCost: Money | null = null;
+    for (const def of getAvailableUpgrades()) {
+      if (!canBuyUpgrade(def.id)) continue;
+      const cost = getUpgradeCost(def.id);
+      if (cost.gt(limit) || (pickCost && !cost.lt(pickCost))) continue;
+      pick = def.id;
+      pickCost = cost;
+    }
+    return pick !== null && buyUpgrade(pick, 1, true);
   }
 
   // ───────────────────────── Machines ─────────────────────────
@@ -1802,6 +1948,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       case 'skinsOwned': return capsuleSkinsOwned().length;
       case 'categoryOwned': return capsuleSkinsOwned().filter((id) => getSkinDef(id)!.category === goal.category).length;
       case 'machinesOwned': return state.machines.length;
+      case 'stickers': return countStickers(); // 1.3.1
       default: return 0;
     }
   }
@@ -1831,6 +1978,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       earnTokens(sticker.tokens, 'sticker');
       events.emit('stickerEarned', { id: sticker.id, tokens: money(sticker.tokens) });
     }
+    announceUnlocks(); // 1.3.1: a new sticker (or generation) can open a sticker (or rebirth) upgrade
   }
 
   // ─────────────────── Capsule Machine + skins ───────────────────
@@ -1974,7 +2122,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     const o = data.offline;
     // Nothing runs while you're in the Big Cage between lives.
     if (!o || !(seconds >= o.minSeconds) || state.bigCage) return { seconds: 0, coins: money(0) };
-    const counted = Math.min(seconds, o.maxSeconds);
+    const counted = Math.min(seconds, getOfflineCap());
     const perSecond = withoutBoosts(() => getEconomy().expectedAutoProfitPerSecond.max(0)); // boosts only count while you play
     return { seconds: counted, coins: roundMoney(perSecond.mul(counted).mul(o.efficiency * getOfflineMultiplier())) };
   }
@@ -2087,6 +2235,16 @@ export function createGame(initialData: GameData, rng: Rng) {
     if (!state.delivery.active && !machine.spinning && !held && !gambling && getSpinBet() === null && hasAutoDelivery()) {
       startDelivery('auto');
     }
+
+    // 8) The Hamster Helper (1.3.1) looks at the shop once a second (its "interval").
+    const helper = getHelper();
+    if (helper && state.helper) {
+      helperTimer += dt;
+      if (helperTimer >= helper.interval - EPS) {
+        helperTimer = 0;
+        helperStep();
+      }
+    }
   }
 
   // ─────────────────────── UI helpers ───────────────────────
@@ -2111,6 +2269,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function setData(newData: GameData): void {
     data = newData;
     state = sanitizeState(state, data);
+    stillLocked = lockedUpgradeIds();
     applyStartingLevels();
     checkDiary();
     events.emit('dataReloaded', {});
@@ -2133,14 +2292,18 @@ export function createGame(initialData: GameData, rng: Rng) {
     const save = migrateSave(obj, data);
     if (!save) return false;
     state = sanitizeState(save, data);
+    stillLocked = lockedUpgradeIds(); // what this save hasn't unlocked yet (no announcements for the rest)
     applyStartingLevels();
     checkDiary(); // award goals an older save had already reached
     accumulator = 0;
+    helperTimer = 0;
     queuedManual = false;
     events.emit('stateLoaded', {});
     events.emit('coinsChanged', { coins: state.coins, amount: money(0) });
     return true;
   }
+
+  stillLocked = lockedUpgradeIds(); // a new game: every rebirth and sticker upgrade is still locked
 
   return {
     // Read-only by convention: draw from these, but change things only via the actions.
@@ -2153,12 +2316,14 @@ export function createGame(initialData: GameData, rng: Rng) {
 
     // actions
     update, spin, startDelivery, buyUpgrade, buyMachine, switchMachine, retire, leaveBigCage, buyTreeNode, rebuild, pullCapsule, equipSkin,
-    setBet, gamble, collectGamble,
+    setBet, gamble, collectGamble, setHelper,
     applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, triggerHold, openBigCage, ownAllSkins, setData,
+    unlockAllUpgrades,
 
     // queries: coins, upgrades
     getUpgradeDef, getAvailableUpgrades, getUpgradeLevel, getUpgradeCost, getUpgradeBulk, getUpgradeNeeds, isMaxed, canAfford, canBuyUpgrade,
-    previewUpgrade,
+    previewUpgrade, getUpgradeLock, isUpgradeUnlocked, hasHelper, getHelper,
+    getDoubleChance, getStarPayout, getOfflineCap, countStickers,
 
     // queries: machines, symbols, Luck
     getMachineData, getMachineInfo, getMachineCost, ownsMachine, canBuyMachine,
@@ -2265,6 +2430,9 @@ function newStats(): Stats {
     biggestCasinoWin: money(0), // the most chips one game paid back
     rouletteNumbers: 0, blackjacks: 0, derbyLongshots: 0, seedDropEdges: 0, // straight-up numbers, blackjacks, long-shot wins, edge bins
     prizesBought: 0,
+    // v12 (1.3.1): the new upgrades
+    doubleWins: 0, // wins Lucky Pennies paid double
+    helperBuys: 0, // upgrade levels the Hamster Helper bought
   };
 }
 
@@ -2287,6 +2455,7 @@ export function newState(data: GameData): GameState {
     tree: {}, // family tree node levels, e.g. { familyPride: 1 }
     stars: {}, // Machine Stars by machine type, e.g. { clunky: 2 } (M8)
     bigCage: false, // true between lives: on the Big Cage page, where you plant (M8)
+    helper: true, // the Hamster Helper's switch (1.3.1): on, so it starts working as soon as Helping Paws is planted
 
     // ── collection (also kept when retiring) ──
     tokens: money(0), // unspent Hamster Tokens
@@ -2406,6 +2575,13 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
   // fills all of that in), so only the version changes here.
   if (save.saveVersion === 10) {
     save.saveVersion = 11;
+  }
+
+  // v11 → v12: 1.3.1 (Nuts & Bolts). The Hamster Helper's switch starts on (it
+  // does nothing until the family plants Helping Paws), and the new stats start at
+  // 0 (sanitizeState fills both in), so only the version changes here.
+  if (save.saveVersion === 11) {
+    save.saveVersion = 12;
   }
 
   if (save.saveVersion !== SAVE_VERSION) return null;
@@ -2563,6 +2739,7 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
     }
   }
   s.bigCage = raw.bigCage === true;
+  s.helper = raw.helper !== false; // 1.3.1: on unless it was switched off
 
   s.tokens = moneyFrom(raw.tokens, 0).floor().max(0);
   if (raw.diary && typeof raw.diary === 'object') {

@@ -6,7 +6,7 @@
 
 import { describe } from 'vitest';
 import { check } from '../check.js';
-import { data, near, deepEqual, num, newGame, bonanza, soldOn, land, spinExpectation, clunky } from './helpers.js';
+import { data, near, deepEqual, num, newGame, bonanza, soldOn, land, spinExpectation, clunky, SAVE_VERSION } from './helpers.js';
 import { createRng } from '../../src/logic/rng.ts';
 import {
   RED_NUMBERS, WHEEL_ORDER, POCKETS, ROULETTE_KINDS, picksFor, covers, coverage, paysFor, rouletteRtp, pocketColor,
@@ -377,7 +377,7 @@ describe('the casino in a save (v11)', () => {
   g.update(10);
   const save = g.toSaveData();
   check('the save keeps the chips (as text), the boosts and the family\'s best earnings',
-    save.saveVersion === 11 && typeof save.casino.chips === 'string' && near(save.casino.boosts.goldenHour, 80, 1e-6) && save.casino.boosts.luckyCharm === 100
+    save.saveVersion === SAVE_VERSION && typeof save.casino.chips === 'string' && near(save.casino.boosts.goldenHour, 80, 1e-6) && save.casino.boosts.luckyCharm === 100
     && typeof save.casino.bestIncome === 'string');
   const h = newGame(100);
   h.loadSaveData(save);

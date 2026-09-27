@@ -314,9 +314,12 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       el.dialog.classList.add('ui-in');
       if (heldRoll) heldRoll.at = performance.now();
       fx.rain('heirloom', el.scene, lastRetired ? Math.min(40, 12 + lastRetired.seedsGained.toNumber()) : 10, { scale: 2, floor: false });
-      say(shape.tier === 0 ? 'Plant Family Pride and watch the tree grow!'
+      // 1.3.1: this generation opens a rebirth upgrade? The hamster says so first.
+      const fresh = game.data.upgrades.filter((u) => u.unlock && u.unlock.generation === game.state.generation && game.isUpgradeUnlocked(u.id));
+      const news = fresh.length ? `And this life I can buy ${fresh.map((u) => u.name).join(' and ')}! ` : '';
+      say(news + (shape.tier === 0 ? 'Plant Family Pride and watch the tree grow!'
         : game.data.familyTree.nodes.some((n) => game.canBuyTreeNode(n.id)) ? 'Tap a trait to plant it. Every pup after me is born with it!'
-          : 'Start the new life when you\'re ready!', 4500);
+          : 'Start the new life when you\'re ready!'), news ? 6500 : 4500);
     }, true);
   }
 

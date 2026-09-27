@@ -1,7 +1,7 @@
 # Hamster Slots — Design
 
 > Working title. A cute pixel-art idle/clicker game. A tiny hamster runs on a wheel, and the wheel powers a slot machine.
-> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates: **1.1.0** (the same day) added M9, three more machines (§24), and M10, Wardrobe buffs (§25). The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
+> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates: **1.1.0** (the same day) added M9, three more machines (§24), and M10, Wardrobe buffs (§25); then 1.2.0 the visual redesign (§26), 1.3.0 the Hamster Casino (§27) and **1.3.1 "Nuts & Bolts"**, more upgrades (§28). **Every update has a name** from what it's about (AGENTS.md → Git and releases). The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
 > All currency is fake in-game coins. There is no real money and nothing to buy with real money.
 
 Every number in this file comes from `data.json`. If you change one there, change it here too, and log it in `PORTING_NOTES.md` → Balance log.
@@ -136,6 +136,10 @@ With chance `p` for a symbol on each reel:
 | 3 reels, both unlocked | 14.24 | 5 | **285%** | +9.24 | 18.8% |
 | 2 reels, fresh, max Luck (100) | 12.84 | 5 | 257% | +7.84 | 47.6% |
 | 3 reels, both unlocked, max Luck | 22.08 | 5 | 442% | +17.08 | 27.3% |
+| 2 reels, fresh, Luck 120 (+ the Rabbit's Foot, 1.3.1) | 13.60 | 5 | 272% | +8.60 | 50.4% |
+| 3 reels, both unlocked, Luck 120 | 23.09 | 5 | 462% | +18.09 | 28.3% |
+
+"Max Luck" is Luck 100 (the Four-Leaf Clover and the Lucky Horseshoe maxed). Since 1.3.1 a sticker unlocks the Rabbit's Foot, +20 Hamster Luck more (§28), so the most is 120 from upgrades (family traits, hats and the casino's charm add more).
 
 The hit rate is the same on 2 and 3 reels because a win only needs reels 1 and 2 to match. The third reel just makes some of those wins bigger. **Every unlock raises the EV and lowers the hit rate; every point of Luck raises both** (tests check both, §9).
 
@@ -175,6 +179,8 @@ cost(owned) = floor( baseCost × growthRate ^ owned )
 Upgrades are either **global** (they belong to the hamster and work on every machine) or **machine** (they belong to one machine, and each machine keeps its own levels). A machine upgrade can list the machines that sell it (`"machines": ["clunky"]` in data.json): the Oiled Lever and Third Reel are Old Clunky's, and the Snack Stacker has its own (§16). The shop only shows the hamster's upgrades plus the ones for the machine you're running.
 
 You can buy one level, **×10**, or **Max** at a time (§17). A bundle costs the sum of its levels, each from the formula above.
+
+**Since 1.3.1** there are 20 more upgrades (§28), and some are **locked** until the family reaches a generation (**rebirth upgrades**) or earns a diary sticker (**sticker upgrades**). The Hamster Helper (a Family Tree trait) can buy the cheap ones for you.
 
 ### 🐹 Chubby Cheeks (global, payouts)
 *"Stuffs more coins in those cheeks."*
@@ -288,6 +294,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 - **Save version 6** (milestone 6) gave every machine its chosen **bet**, **free spins** (left, total, bet, won), its **jackpot pots**, a jackpot wheel in progress (`bonus`), its **win streak**, and the bet a running spin was paid with. New lifetime stats: `biggestBet`, `freeSpins`, `freeSpinTriggers`, `freeSpinCoins`, `wildWins`, `bestStreak`, `jackpotsWon`, `grandJackpots`, `gambleWins`, `gambleLosses`, `bestGambleRun`. A v5 save starts them all at their defaults (bet ×1, pots at their seeds, 0). An open **gamble is never saved** (dropping it = collecting: its coins are already in your pile).
 - **Save version 9** (milestone 8) added **Machine Stars** (`stars`, by machine type, kept through retiring), the **Big Cage** flag (`bigCage`: between lives, §22) and the stats `rebuilds`, `bestStars` and `mostSeedsHeld`. A v8 save has no stars and is mid-life. (Save version 8 wrote money as text, see above.)
 - **Save version 10** (milestone 9) added a hold & spin in progress on a machine (`hold`: the acorns, every respin, the bet and its timer; §24) and the stats `bestWays`, `holdBonuses`, `holdGrands` and `bestWheel`. A v9 save has no hold under way and starts them at 0. A saved hold that doesn't fit the machine any more (a data change) is dropped, like a broken spin.
+- **Save version 11** (M11) added the family's casino (chips, boosts, a blackjack hand) and nine casino stats (§27). **Save version 12** (1.3.1) added the Hamster Helper's switch (`helper`) and the stats `doubleWins` and `helperBuys` (§28); an older save starts with the switch on and the stats at 0.
 - **Save version 7** (milestone 7) added **symbols you unlock** and the stats `symbolsUnlocked`, `bestLuck` and `suitWins`. Machines now start with some symbols locked, so a v6 save gives every machine every unlock it sells (maxed): an older hamster had every symbol, and nobody loses one. Luck isn't stored (it comes from upgrade levels), and neither is the gamble's card history.
 - The save also keeps `savedAt` (real-world time), which pays **offline earnings** on the next visit (§15).
 - Settings (sound on/off and volume, Motion, Quick reels, Numbers, the ×1/×10/Max choice) are stored separately from the save, so **Reset progress** keeps them.
@@ -304,7 +311,7 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's
 - **Expected auto profit/s** vs **measured net coins/s** (last 10 s of game time: payouts + deliveries − spin costs)
 - Spins, hit rate (vs expected), deliveries, play time, RNG seed
 - Buttons to add coins: +100 / +1K / +10K. These are free coins and **don't** count as earned, so they give no seeds.
-- Family buttons: **Earn +10K / +100K** (counts as earned, so you can test retiring quickly), **+5 seeds** and **Open the Big Cage** (M8: plant without retiring; the new life starts when you leave).
+- Family buttons: **Earn +10K / +100K** (counts as earned, so you can test retiring quickly), **+5 seeds**, **Open the Big Cage** (M8: plant without retiring; the new life starts when you leave) and **Unlock every upgrade** (1.3.1: every rebirth and sticker upgrade on sale, until the page reloads).
 - Capsule buttons: **+10 / +100 tokens** (free, not counted as earned). Stats: tokens, stickers, capsules opened, skins, pity countdown, golden jackpots.
 - Offline buttons: pretend you were away **10 min / 1 h / 10 h** (opens the welcome-back dialog; needs Wheel Training).
 - Bonus buttons (milestone 6): **+5 free spins** (machines with free spins) and **Wheel: Mini / Minor / Major / Grand** (starts the jackpot wheel on a chosen pot; machines with pots, when not spinning). Stats: feature odds and EV, pots, free spins left, bet (chosen, max, what the next spin uses), streak.
@@ -328,6 +335,7 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's
 8. **The auto-spin interval is never shorter than the spin time + the rest** (0.8 s; milestone 7), on every machine and Wheel Training level, with or without Quick Paws.
 10. **Ways, hold & spin and the cheese wheel are exact** (M9): the ways EV and hit rate match every grid of a small test machine added up by brute force (to 1e-9) and sampled Maze spins; hold & spin's trigger is exactly the binomial tail and its average matches a Monte Carlo of the bonus; the wheel's EV matches sampling. The time a hold & spin takes is counted in the machine's coins per second.
 11. **The casino keeps a small house edge and can't farm anything** (M11, §27): every casino bet gives back between 94% and 99.5% on average (each game's return is exact and matches play), and chips never turn into coins or count as coins earned. **Every rule above holds with every casino boost on:** the Lucky Charm is Luck (so it raises the hit rate and the EV), Turbo Wheel keeps the rest floor, deliveries stay below auto-spin, and free spins still end with the charm on top of the whole tree, max Luck, every Bouncy Ball and the best wardrobe.
+12. **The new upgrades keep every rule** (1.3.1, §28): Lucky Pennies' double is exact (the lines × (1 + chance)); free spins still end with Ball Bearings; auto-spin never beats spin + rest with Running Shoes; offline earnings stay below playing with Night Shift maxed; the bet still stops at ×10 (D80).
 
 ## 10. Balance targets (what "good" looks like)
 
@@ -411,6 +419,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | 13 | Delivery depth | Only if playtests say deliveries are fun: routes (short/safe vs long/lucrative), helper hamsters. (The scooter, backpack and auto-delivery are now Family Tree traits.) |
 | 14 | Release prep (toward 1.0.0) *(done: moved up after M8 and released as 1.0.0 on 2026-09-27, §23)* | The user's "I want a full release before trying to make the game longer" (2026-09-27): **1.0 = M1–M8, polished**, with the user's "cool animations and effects" (celebrations, reel and win-show effects, little touches, the big moments between lives) and the release basics (icons, a link card, the version in the Menu, a crash screen, a README). Then 1.0.0, the full public release (AGENTS → Git and releases); M9 onwards come after it as updates. Still before each store release: the store-rule checks below. *Was "Port-prep freeze" for the Godot rebuild (D106).* |
 | **15** | **Visual redesign** *(done; released in 1.2.0; §26)* | The user's "i want an entire visual redesign" (2026-09-27), built before M11 ("build this now"): still pixel art, **a cleaner layout that fits the window** on big and small screens (the tray beside the cage, or under it on a phone; no page scrolling), **small upgrade tiles like the tree's** with a detail card, **the Family Tree only in the Big Cage**, the Big Cage as **a meadow with the family's pixel-art tree**, which **grows with the family** (a sapling at first; every trait planted grows the trunk and a branch out to the traits it unlocks; only traits you can plant show), and **a new rebirth animation** (the hamster plants an Heirloom Seed, the tree shoots up, the traits branch off it). View only: no rules, balance or save changes. |
+| — | **Update 1.3.1 "Nuts & Bolts"** *(built; waiting for the user's OK; §28)* | Not a milestone: the user's "a ton of new upgrades and improvements some gated behind rebirths… maybe some from achievements" (2026-09-27). 20 upgrades (3 for everyone, 6 rebirth upgrades, 11 sticker upgrades), 4 Family Tree traits (the Hamster Helper buys cheap upgrades for you), 7 stickers, Lucky Pennies (a win can pay double), save v12. And from now on **every update has a name** (the user's wish). |
 | → | **Releases** | GitHub Pages from the start; then itch.io, Steam (Electron or Tauri), maybe mobile (Capacitor), all from the same web codebase. See PORTING_NOTES → The plan. |
 
 **Particles and animations are now a thread, not a milestone** (the user's "fun particle effects and animations"): every milestone ships the effects for what it adds (M7: dust puffs as each reel stops, sparkles per winning line, rolling WIN digits, a card flip, a clover sparkle when luck goes up; M8: the Big Cage scene and a star burst on a rebuild; and so on). **1.0 went through the whole game** (the user's "I also really want some cool animations and effects", §23). Motion "Less" keeps turning them all off.
@@ -537,8 +546,12 @@ Nodes are bought ("planted") with Heirloom Seeds and are **permanent**. They use
 | Head Start *(M8)* | 🍓 **Snack Inheritance** | 10 | Seed Vault | Every pup starts owning the Snack Stacker |
 | Bonuses *(M8)* | ⚽ **Ball Pit** | 5 × 2ⁿ, max 3 | Family Pride | +0.4 weight on the Hamster Ball (Burrow Bonanza) per level: free spins come sooner |
 | Bonuses *(M8)* | 👝 **Golden Pouches** | 6 × 2ⁿ, max 3 | Ball Pit | Every jackpot pot starts (and restarts) at its seed × (1 + 0.5 per level) |
+| Roots *(1.3.1)* | 🐾 **Helping Paws** | 4 | Family Fortune | The **Hamster Helper**: buys the cheapest upgrade that costs 10% of your coins or less, every second (switch in Upgrades; §28) |
+| Roots *(1.3.1)* | 🌳 **Deep Roots** | 10 | Helping Paws | +2% payouts for every generation (family group) |
+| Charms *(1.3.1)* | 🍀 **Four-Leaf Heirloom** | 4 × 2ⁿ, max 2 | Lucky Heirlooms | Every pup starts with Four-Leaf Clover Lv 1, then 2 |
+| Bonuses *(1.3.1)* | 🫙 **Penny Jar** | 5 × 2ⁿ, max 3 | Golden Pouches | +2% a level that a paid win pays double (with Lucky Pennies, §28) |
 
-The whole tree costs **71 seeds** (every trait at level 1, Family Fortune once; 37 before M8). The Delivery branch is cheaper because it's mostly quality of life, not raw power. Since M8 the traits that "keep" something are free levels at the start of every life (like Warm-up Laps), not memories of the last life (D120).
+The whole tree costs **94 seeds** (every trait at level 1, Family Fortune once; 71 before 1.3.1, 37 before M8). The Delivery branch is cheaper because it's mostly quality of life, not raw power. Since M8 the traits that "keep" something are free levels at the start of every life (like Warm-up Laps), not memories of the last life (D120).
 
 Free levels (Warm-up Laps, Heirloom Reel) are real upgrade levels. The next Wheel Training level costs the Lv 1 price (960), and a free level never lowers one you bought. Since M7, Warm-up Laps is the trait that makes later lives zip: the first retirement (3 seeds) buys Family Pride, Warm-up Laps and Speedy Scooter, so generation 2 skips the ~10 minutes of clicking.
 
@@ -593,7 +606,7 @@ The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **
 
 | Source | Tokens | Notes |
 |---|---:|---|
-| **Hamster Diary stickers** (table below) | 1–5 each, 122 in total (39 stickers) | One-time goals. They're checked after every spin (when it starts and when it lands), delivery, purchase, retirement and capsule, and on load, so an older save gets the stickers it already earned. |
+| **Hamster Diary stickers** (table below) | 1–5 each, 159 in total (51 stickers since 1.3.1) | One-time goals. They're checked after every spin (when it starts and when it lands), delivery, purchase, retirement and capsule, and on load, so an older save gets the stickers it already earned. |
 | **Golden jackpot**: a Golden Seed on every reel of a payline, 3+ reels | 1 per golden line | Old Clunky (once the Golden Seed is unlocked, M7): 1 in 1,331 spins with no Luck, 1 in 760 with max Luck. A 2-reel golden pair doesn't count. On the Snack Stacker each payline counts on its own. Since M6, Hamster Wilds may fill in (golden, wild, golden counts); a line of wilds alone doesn't. |
 | **Every 5th delivery** ("a customer tipped me") | 1 | Counts lifetime deliveries. A counter, not luck. Every 3rd with the Sunflower Field room on (M10). |
 | **Retiring** | 3 | Plus the "The Big Cage" sticker the first time |
@@ -629,7 +642,7 @@ The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **
 | Capsule Collector | Open 1 capsule | 1 |
 | Marathon Runner | 10,000 spins | 5 |
 | Big Family | Generation 5 | 5 |
-| Full Bloom | Every Family Tree trait (18 since M8; 11 before) | 5 |
+| Full Bloom | Every Family Tree trait (22 since 1.3.1; 18 since M8; 11 before) | 5 |
 | Fashion Hamster | 8 skins from capsules | 5 |
 | Full Cage *(M6)* | Own four machines at once (every machine until M9) | 5 |
 | Grand Hamster *(M6)* | Win the Grand jackpot | 5 |
@@ -641,8 +654,16 @@ The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **
 | The Big Cheese *(M9)* | Land a ×10 wedge on the cheese wheel | 4 |
 | Whole Arcade *(M9)* | Own all seven machines at once | 5 |
 | Hat Trick *(M10)* | Find 3 hats in capsules | 3 |
+| Lucky Number, Blackjack!, Photo Finish, Edge of the Board, Prize Winner *(M11)* | The casino (§27) | 13 in all |
+| Seeing Double *(1.3.1)* | Get a win paid double by Lucky Pennies | 2 |
+| Night Owl *(1.3.1)* | Come back to coins earned while away | 2 |
+| Busy Paws *(1.3.1)* | Buy 500 upgrade levels | 3 |
+| Little Helper *(1.3.1)* | Let the Hamster Helper buy an upgrade | 2 |
+| Sticker Book *(1.3.1)* | Earn 30 diary stickers | 5 |
+| Dynasty *(1.3.1)* | Reach generation 10 | 5 |
+| Billionaire *(1.3.1)* | Earn 1,000,000,000 coins in total | 5 |
 
-Goal types (data.json `goal.type`): `stat` (a lifetime stat ≥ target), `upgradeLevel` (the best level on any machine), `generation`, `treeNodes`, `skinsOwned`, `machinesOwned` (M6: how many machines you own right now), `categoryOwned` (M10: skins found in one category, e.g. hats). A new sticker of an existing type needs only data.json. The two M5 stickers use the new stats `machinesBought` and `mostLinesWon`; the M6 stickers use `bestStreak`, `biggestBet`, `bestGambleRun`, `wildWins`, `freeSpinTriggers`, `jackpotsWon` and `grandJackpots`; the M7 stickers `symbolsUnlocked`, `suitWins` and `bestLuck` (the most Luck any machine has had, noted just before the diary is checked); the M8 stickers `mostSeedsHeld`, `rebuilds` and `bestStars`; the M9 stickers `bestWays`, `holdGrands` and `bestWheel` (the biggest wedge, Aged Cheese included).
+Goal types (data.json `goal.type`): `stat` (a lifetime stat ≥ target), `upgradeLevel` (the best level on any machine), `generation`, `treeNodes`, `skinsOwned`, `machinesOwned` (M6: how many machines you own right now), `categoryOwned` (M10: skins found in one category, e.g. hats), `stickers` (1.3.1: diary stickers earned). **Since 1.3.1 a sticker can also unlock an upgrade** (a sticker upgrade, §28): the Diary says which under the sticker. A new sticker of an existing type needs only data.json. The two M5 stickers use the new stats `machinesBought` and `mostLinesWon`; the M6 stickers use `bestStreak`, `biggestBet`, `bestGambleRun`, `wildWins`, `freeSpinTriggers`, `jackpotsWon` and `grandJackpots`; the M7 stickers `symbolsUnlocked`, `suitWins` and `bestLuck` (the most Luck any machine has had, noted just before the diary is checked); the M8 stickers `mostSeedsHeld`, `rebuilds` and `bestStars`; the M9 stickers `bestWays`, `holdGrands` and `bestWheel` (the biggest wedge, Aged Cheese included).
 
 The first five goals (First Spin, Beginner's Luck, Look No Paws!, Warming Up, Three's Company) pay exactly **10 tokens, the first pull** (a test checks this). So the **Capsules tab appears after ~3–6 minutes** of a first game in M6; with M7's slog it waits for Wheel Training and the Third Reel, so ~12–47 minutes into a first life (the simulator's range for an idle player).
 
@@ -985,7 +1006,7 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 - **Unchanged by the bet:** win tiers (base payout ÷ base spin cost, D54), balance rules 2 and 3 (checked at ×1), Self-Starter ("can't afford ×1").
 - The bet resets to ×1 on retiring (High Roller is a coin upgrade). Milestone 8 may add a "start with" trait.
 
-**Why unlocked by an upgrade?** Every machine pays back more than it costs, so a free choice of bet would multiply income for nothing. The user picked "unlock steps with upgrades" from three options (D73). **Why only up to ×10?** With ×20 … ×100 the simulator showed later lives collapsing to about 2 minutes (bets multiply everything else), see D80.
+**Why unlocked by an upgrade?** Every machine pays back more than it costs, so a free choice of bet would multiply income for nothing. The user picked "unlock steps with upgrades" from three options (D73). **Why only up to ×10?** With ×20 … ×100 the simulator showed later lives collapsing to about 2 minutes (bets multiply everything else), see D80. (1.3.1 kept it that way: its rebirth upgrades make other things stronger, D139.)
 
 ## 19. Bonus features (milestone 6)
 
@@ -1567,3 +1588,119 @@ The family's casino: its chips, the best earnings noted (a chip's price), the sp
 - On a phone: is it fine that the cage steps aside while you're at the casino?
 - A small house edge: does losing a little on average feel fair, or does it put you off playing?
 
+
+---
+
+## 28. Nuts & Bolts: more upgrades (update 1.3.1)
+
+> **Status: built, waiting for the user's OK to release** (a release candidate, 1.3.1-rc.1, on the branch `claude/nifty-carson-bcaz1t`; PORTING_NOTES D138–D140). Not a roadmap milestone: an update the user asked for between M11 and M12.
+
+*"i want a ton of new upgrades and improvements some gated behind rebirths and some not maybe some from achievements just want a big 1.3.1 update of upgrades"* (the user, 2026-09-27). **Every update now has a name** (the user's wish, same message; AGENTS.md → Git and releases): this one is **"Nuts & Bolts"**, because it's about the upgrades, the nuts and bolts of the game.
+
+What's new: **20 upgrades** (3 on sale from the start, 6 **rebirth upgrades** that a new generation unlocks, 11 **sticker upgrades** that a Hamster Diary sticker unlocks), **4 Family Tree traits** (one is the **Hamster Helper**, which buys cheap upgrades for you), **7 diary stickers**, and some improvements to how the shop shows all of it. One new mechanic: **Lucky Pennies**, a chance for a win to pay double. Save v12.
+
+### How upgrades unlock (the new system)
+
+An upgrade in data.json can have `"unlock"`:
+
+- `{ "generation": 4 }`: a **rebirth upgrade**. It's on sale from the family's 4th hamster on (after 3 retirements), in every life after that. The lock can't close again: the generation only goes up.
+- `{ "sticker": "onFire" }`: a **sticker upgrade**. It's on sale once the family has earned that diary sticker (the Diary says "Unlocks the upgrade …" under the sticker). Stickers stay earned, so it stays open.
+- No `unlock`: on sale from the start, as before.
+
+Until then the upgrade is **locked**: it can't be bought (game.ts `getUpgradeLock` says what's missing; `canBuyUpgrade` and the bulk price say no). The shop folds the locked ones away under each list (**"🔒 N upgrades still locked"**, tap to open), rebirth upgrades first, each saying what opens it ("Generation 4", "Sticker: On Fire"); the detail card says it in full ("retire 2 more times"). In the first life, before the family knows about retiring, only the next rebirth upgrade shows (so a first life isn't a wall of padlocks). When one opens, the hamster says so: at once for a sticker, and for a new generation in the Big Cage ("And this life I can buy Running Shoes!") and again when the pup says hello. `upgradeUnlocked` is the event. A machine upgrade that's still locked doesn't count for **Machine Stars** (a machine with everything else maxed can be rebuilt); once it opens, it has to be maxed too.
+
+### Upgrades for everyone (the Hamster sub-tab)
+
+| Upgrade | Cost | Max | What it does |
+|---|---|---:|---|
+| 🪙 **Lucky Pennies** | 2,500 × 2.5ⁿ | 5 | **+2% a level: a win you pay for pays double** (every line of it). Free spins never double. **New effect** `doubleWin`. |
+| 🌙 **Night Shift** | 1,000 × 3ⁿ | 5 | +10% offline earnings a level (×1.5 maxed). Needs Wheel Training. |
+| 🛏️ **Cosy Nest** | 2,000 × 4ⁿ | 4 | Time away pays for **1 hour longer** a level (2 h → 6 h). Needs Wheel Training. **New effect** `offlineTime`. |
+
+### Rebirth upgrades (a new generation unlocks one)
+
+| Generation | Upgrade | Cost | Max | What it does |
+|---:|---|---|---:|---|
+| 2 | 👟 **Running Shoes** | 4,000 × 4ⁿ | 3 | Spins and auto-spins ×0.95 a level, on every machine (auto-spin still never beats the spin + the rest) |
+| 3 | 🎟️ **Coupon Book** | 8,000 × 3ⁿ | 5 | Spins on every machine cost ×0.95 a level |
+| 4 | 📒 **Sticker Album** | 25,000 × 5ⁿ | 3 | **+1% payouts for every diary sticker earned**, a level (the coin upgrades' group). **New effect** `stickerPayout` |
+| 5 | ⭐ **Star Polish** | 100,000 × 8ⁿ | 2 | Every Machine Star pays **+5% more** a level (+10% → +20% a star). **New effect** `starPayout` |
+| 6 | 🐹 **Mega Cheeks** | 1M × 1.5ⁿ | none | **+100% payouts** a level (the coin upgrades' group): the late game's coin sink, like Chubby Cheeks but bigger |
+| 8 | 🌶️ **Hot Sauce** | 5M × 3ⁿ | 5 | Hot Streak pays **+2% more for every win in a row**, a level (5% → 7%). Needs Hot Streak |
+
+**Not bigger bets.** Bets above ×10 were tried in M6 and made the later lives collapse to about 2 minutes (§18, D80), so no rebirth upgrade raises the bet (D139).
+
+### Sticker upgrades (a diary sticker unlocks one)
+
+| Sticker | Upgrade | Cost | Max | What it does |
+|---|---|---|---:|---|
+| On Fire (5 wins in a row) | 🔥 **Blazing Streak** | 60,000 × 4ⁿ | 3 | Hot Streak counts **one more win in a row** a level (5 → 8). Needs Hot Streak |
+| Line Dancer (3 lines at once) | **Line Dance** | 15,000 × 3ⁿ | 5 | Full lines (every reel matches) pay ×1.1 a level (on top of Jackpot Dance) |
+| Four-Leaf Hamster (Luck 50) | **Rabbit's Foot** | 50,000 × 3ⁿ | 4 | +5 Hamster Luck a level (every machine) |
+| Golden Moment (a golden jackpot) | **Golden Touch** | 10,000 × 5ⁿ | 2 | +1 Hamster Token for every golden jackpot, a level |
+| Regular Courier (25 deliveries) | 🫙 **Tip Jar** | 5,000 | 1 | A token every 3rd delivery instead of every 5th |
+| Card Shark (a suit guessed) | **Card Counter** | 3,000 | 1 | The card gamble shows 3 more past cards (every card is still a fresh draw) |
+| Millionaire (1M coins earned) | 💰 **Money Bags** | 400,000 × 3ⁿ | 5 | +50% payouts a level (the coin upgrades' group) |
+| Pot Luck (a jackpot pot won) | **Deep Pockets** | 3M × 3ⁿ | 4 | Every jackpot pot starts (and restarts) 25% bigger a level (on top of Golden Pouches) |
+| Free Ride (3 Hamster Balls) | ⚽ **Ball Bearings** (the Burrow Bonanza's) | 150,000 × 3ⁿ | 3 | +1 free spin every time free spins start, a level |
+| Nut Hoarder (hold & spin's Grand) | 🌰 **Acorn Stash** (the Acorn Vault's) | 50B | 1 | +1 respin in hold & spin |
+| The Big Cheese (a ×10 wedge) | 🧀 **Sharp Cheddar** (the Big Cheese's) | 5T | 1 | +1 on every cheese wedge |
+
+The last three are machine upgrades (they reset with their machine and count for its Machine Stars once they're open); the rest are the hamster's.
+
+### Four new Family Tree traits (94 seeds for every trait once; 71 before)
+
+They sit where the Big Cage's tree has room (§26, `tests/bigtree.test.js` checks every size): two more on the trunk, and the third trait of Charms and of Bonuses.
+
+| Branch | Trait | Cost | Needs | Effect |
+|---|---|---:|---|---|
+| Roots (the trunk) | 🐾 **Helping Paws** | 4 | Family Fortune | **The Hamster Helper** (below). **New effect** `autoBuy` |
+| Roots (the trunk) | 🌳 **Deep Roots** | 10 | Helping Paws | **+2% payouts for every generation** (the family's group): gen 10 = +20%. **New effect** `generationPayout` |
+| Charms | 🍀 **Four-Leaf Heirloom** | 4 × 2ⁿ, max 2 | Lucky Heirlooms | Every pup starts with Four-Leaf Clover Lv 1 (then 2), like Warm-up Laps |
+| Bonuses | 🫙 **Penny Jar** | 5 × 2ⁿ, max 3 | Golden Pouches | +2% a level that a paid win pays double (adds to Lucky Pennies: 10% + 6% = 16% at most) |
+
+### The Hamster Helper (Helping Paws)
+
+**An improvement for the late game**, where lives are a few minutes long and there are dozens of upgrades to click. Once the family has planted Helping Paws, a little helper hamster **buys an upgrade for you every second**: **the cheapest one on sale** (the hamster's, or the machine you're running), **but only if it costs 10% of your coins or less**. So it never spends what you're saving up for a machine, and it **never buys machines**. It rests in the Big Cage. A switch in the Upgrades tab (**Hamster Helper: On/Off**, with how many levels it has bought) turns it off and on; the switch is saved (the family's, so it stays through retiring). Levels it buys show a small "LV 5" on the tile, without the usual sound and speech. (Its clock isn't saved: after a load it waits a second before its first look, like the frame accumulator.)
+
+### Seven new diary stickers (51 in all, 159 tokens)
+
+Seeing Double (a win paid double, 2) · Night Owl (coins earned while away, 2) · Busy Paws (500 upgrade levels bought, 3) · Little Helper (the Hamster Helper buys a level, 2) · **Sticker Book** (30 stickers: a new goal type, `stickers`, 5) · **Dynasty** (generation 10, 5) · **Billionaire** (1,000,000,000 coins earned, 5). An older save gets the ones it already reached when it loads (Night Owl and Billionaire, usually).
+
+### The rules still hold (tested, `tests/logic/nutsbolts.test.js`)
+
+- **Lucky Pennies is exact:** the coin toss doesn't depend on the reels, so a paid spin's lines pay × (1 + chance) on average (machine.ts `spinExpectation`, `doubleChance`); the test checks the EV, that about 16% of 5,000 winning spins double, that a doubled win is exactly twice on every line, and that **without it the RNG runs exactly as before** (the coin is only tossed when it can matter, so older recordings replay).
+- **Rule 5:** free spins still end with Ball Bearings on top of every Bouncy Ball, max Luck and the whole tree. **Rule 8:** auto-spin never beats spin + rest with Running Shoes and Quick Paws on every machine. **Offline** stays below playing (0.5 × 1.7 with Night Shift and the best room). **Machine Stars** only need the upgrades that are on sale. Hot Sauce and Blazing Streak keep the streak factor exact (8 wins counted).
+- A locked upgrade can't be bought and stays at level 0; each generation opens exactly its upgrade, once; a sticker opens its upgrade; a loaded save doesn't announce anything again. The debug panel's **Unlock every upgrade** (and the tests' `newGame`) put them all on sale.
+
+### Balance
+
+`node tools/sim.mjs --lives 12` (5 seeds), before and after; the full tables are in PORTING_NOTES → Playtest notes (1.3.1). Life lengths in minutes:
+
+| | idle before | idle after | active before | active after |
+|---|---|---|---|---|
+| Gen 1 | 46–76 | the same | 29–40 | the same |
+| Gen 2–3 | 32–47 · 38–47 | 32–47 · 38–48 | 23–30 · 21–33 | the same |
+| Gen 4–6 | 35–57 · 30–55 · 25–48 | 36–59 · 36–52 · 30–41 | 25–33 · 19–35 · 16–27 | 25–35 · 21–31 · 18–28 |
+| Gen 7–8 | 9–24 · 11–17 | 12–25 · 10–17 | 8–18 · 7–12 | 12–25 · 7–11 |
+| Gen 9–10 | 6–18 · 5–11 | 5–13 · 7–12 | 6–13 · 3.5–9 | 4–10 · 4–6 |
+| Gen 11–12 | 3–9 · 3.7–9.6 | 4–7 · **2.4–3.5** | 2–7 · 2.7–4.7 | 3–5 · **1.5–3.5** |
+| **12 lives in all** | 5.0–5.9 h | **5.2–5.6 h** | 3.4–3.6 h | **3.4–3.7 h** |
+| Whole Family Tree | 4.7–5.8 h | 5.0–5.6 h (22 traits) | 3.4–3.6 h | 3.3–3.7 h |
+
+- **The whole game takes as long as before**, and the first life is untouched (the bot doesn't buy Lucky Pennies before generation 3; the rest are locked). Lives 4–7 even get a little **longer**: there's more to spend on, and the new upgrades pay back more slowly than the old ones.
+- **The last lives get shorter**: generation 12 from 3.7–9.6 to 2.4–3.5 min (idle) and 2.7–4.7 to 1.5–3.5 (active). That's the open problem of the late lives (§10) getting a bit worse. It isn't one upgrade: making Mega Cheeks cost ×2 a level, or halving it and Money Bags, left generation 12 at 2.0–3.8 and 1.7–3.6 min. With the helper switched off (`--no-helper`, the bot does all the buying) generation 12 is 3.0–4.5 min: the helper spends coins the moment they're there. The late lives need their own fix (the roadmap's M12, or a rework of the seeds), not smaller upgrades.
+- When the bot first buys them (idle): Lucky Pennies at generation 3–4, Running Shoes 4, the Coupon Book 5, the Sticker Album, Line Dance and the Rabbit's Foot 8, Mega Cheeks, Money Bags, Star Polish and Blazing Streak 10. (The bot only buys what raises its income, so it never buys Night Shift, the Cosy Nest, Golden Touch, the Tip Jar or the Card Counter.)
+- **Levers**, all data: the costs above, Mega Cheeks' +100%, the helper's 10% share, Lucky Pennies' 2% a level.
+
+### Save v12
+
+The Hamster Helper's switch (`helper`, on) and two stats (`doubleWins`, `helperBuys`). An older save starts with the switch on (it does nothing until Helping Paws is planted) and the stats at 0, and gets the new stickers it already earned. Data schema 13.
+
+### Questions the playtest must answer
+
+- Do the locked upgrades make you want to retire, or chase a sticker? Is folding them away right, or should they be in plain sight?
+- Is the Hamster Helper a relief, or does it take the fun out of buying? Is "a tenth of your coins" the right limit?
+- Does a doubled win feel good, or go unnoticed? Is 16% at most too much?
+- Which new upgrades do you never buy? (Card Counter and Night Shift are the likely ones.)
+- Is 1.3.1's name, "Nuts & Bolts", the kind of name you want for updates?

@@ -12,10 +12,13 @@ import {
 describe('data.json sanity', () => {
   const knownTypes = ['payoutMultiplier', 'autoSpin', 'spinCostMultiplier', 'extraReel', 'extraPayline',
     'betSteps', 'winStreak', 'symbolWeight', 'extraFreeSpins', 'jackpotGrowth', 'luck', 'unlockSymbol', 'bothWays',
-    'extraRespins', 'wheelBonus']; // M9
+    'extraRespins', 'wheelBonus', // M9
+    'doubleWin', 'offlineBonus', 'offlineTime', 'spinSpeed', 'stickerPayout', 'starPayout', 'streakCap', 'fullLineMultiplier',
+    'jackpotTokens', 'deliveryTokens', 'gambleHistory', 'potSeedBonus']; // 1.3.1
   const treeTypes = ['payoutMultiplier', 'shiftWeight', 'fullLineMultiplier', 'startingLevel', 'spinSpeed',
     'deliveryTime', 'deliveryPayoutBonus', 'autoDelivery',
-    'seedJar', 'luck', 'startingMachineLevel', 'startingMachine', 'symbolWeight', 'potSeedBonus']; // M8
+    'seedJar', 'luck', 'startingMachineLevel', 'startingMachine', 'symbolWeight', 'potSeedBonus', // M8
+    'autoBuy', 'generationPayout', 'doubleWin']; // 1.3.1
   check('every upgrade has a known effect type', data.upgrades.every((u) => knownTypes.includes(u.effect.type)));
   check('every tree node has a known effect type', nodes.every((n) => treeTypes.includes(n.effect.type)),
     nodes.filter((n) => !treeTypes.includes(n.effect.type)).map((n) => n.id).join(', '));
@@ -139,7 +142,7 @@ describe('data.json sanity: tokens, capsules, skins, diary', () => {
   check('skin ids are unique', new Set(skinIds).size === skinIds.length);
   const stickerIds = data.diary.map((d) => d.id);
   check('diary ids are unique', new Set(stickerIds).size === stickerIds.length);
-  const goalTypes = ['stat', 'upgradeLevel', 'generation', 'treeNodes', 'skinsOwned', 'machinesOwned', 'categoryOwned'];
+  const goalTypes = ['stat', 'upgradeLevel', 'generation', 'treeNodes', 'skinsOwned', 'machinesOwned', 'categoryOwned', 'stickers'];
   check('"machinesOwned" goals are reachable', data.diary.filter((d) => d.goal.type === 'machinesOwned').every((d) => d.goal.target <= data.machines.length));
   check('every diary goal has a known type', data.diary.every((d) => goalTypes.includes(d.goal.type)));
   const statKeys = Object.keys(newGame().state.stats);

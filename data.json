@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 12,
+  "schemaVersion": 13,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -318,6 +318,194 @@
       "effect": { "type": "winStreak", "perStack": 0.05, "maxStacks": 5 }
     },
     {
+      "id": "luckyPennies",
+      "name": "Lucky Pennies",
+      "description": "A jar of lucky pennies by the wheel. Every win you pay for has a chance to pay double.",
+      "scope": "global",
+      "baseCost": 2500,
+      "growthRate": 2.5,
+      "maxLevel": 5,
+      "effect": { "type": "doubleWin", "perLevel": 0.02 }
+    },
+    {
+      "id": "nightShift",
+      "name": "Night Shift",
+      "description": "Your hamster works harder while you're away: more coins waiting when you come back.",
+      "scope": "global",
+      "requires": ["wheel"],
+      "baseCost": 1000,
+      "growthRate": 3,
+      "maxLevel": 5,
+      "effect": { "type": "offlineBonus", "perLevel": 0.1 }
+    },
+    {
+      "id": "cosyNest",
+      "name": "Cosy Nest",
+      "description": "A comfier nest, so your hamster keeps running longer while you're away: one more hour each level.",
+      "scope": "global",
+      "requires": ["wheel"],
+      "baseCost": 2000,
+      "growthRate": 4,
+      "maxLevel": 4,
+      "effect": { "type": "offlineTime", "perLevel": 3600 }
+    },
+    {
+      "id": "runningShoes",
+      "name": "Running Shoes",
+      "description": "Tiny running shoes: every spin and auto-spin is a little quicker, on every machine.",
+      "scope": "global",
+      "unlock": { "generation": 2 },
+      "baseCost": 4000,
+      "growthRate": 4,
+      "maxLevel": 3,
+      "effect": { "type": "spinSpeed", "multiplier": 0.95 }
+    },
+    {
+      "id": "couponBook",
+      "name": "Coupon Book",
+      "description": "Clip a coupon: spins on every machine cost 5% less, each level.",
+      "scope": "global",
+      "unlock": { "generation": 3 },
+      "baseCost": 8000,
+      "growthRate": 3,
+      "maxLevel": 5,
+      "effect": { "type": "spinCostMultiplier", "perLevel": 0.95 }
+    },
+    {
+      "id": "stickerAlbum",
+      "name": "Sticker Album",
+      "description": "Show off the Hamster Diary: +1% payouts for every sticker you've earned, each level.",
+      "scope": "global",
+      "unlock": { "generation": 4 },
+      "baseCost": 25000,
+      "growthRate": 5,
+      "maxLevel": 3,
+      "effect": { "type": "stickerPayout", "perLevel": 0.01 }
+    },
+    {
+      "id": "starPolish",
+      "name": "Star Polish",
+      "description": "Polish your Machine Stars: each star pays 5% more on its machine, each level.",
+      "scope": "global",
+      "unlock": { "generation": 5 },
+      "baseCost": 100000,
+      "growthRate": 8,
+      "maxLevel": 2,
+      "effect": { "type": "starPayout", "perLevel": 0.05 }
+    },
+    {
+      "id": "megaCheeks",
+      "name": "Mega Cheeks",
+      "description": "Cheeks so big they need their own postcode: +100% payouts a level, with no limit.",
+      "scope": "global",
+      "unlock": { "generation": 6 },
+      "baseCost": 1000000,
+      "growthRate": 1.5,
+      "maxLevel": null,
+      "effect": { "type": "payoutMultiplier", "perLevel": 1 }
+    },
+    {
+      "id": "hotSauce",
+      "name": "Hot Sauce",
+      "description": "A dash of hot sauce: Hot Streak pays 2% more for every win in a row, each level.",
+      "scope": "global",
+      "requires": ["hotStreak"],
+      "unlock": { "generation": 8 },
+      "baseCost": 5000000,
+      "growthRate": 3,
+      "maxLevel": 5,
+      "effect": { "type": "winStreak", "perStack": 0.02, "maxStacks": 5 }
+    },
+    {
+      "id": "blazingStreak",
+      "name": "Blazing Streak",
+      "description": "Hot Streak burns longer: it counts one more win in a row each level, so the bonus climbs higher.",
+      "scope": "global",
+      "requires": ["hotStreak"],
+      "unlock": { "sticker": "onFire" },
+      "baseCost": 60000,
+      "growthRate": 4,
+      "maxLevel": 3,
+      "effect": { "type": "streakCap", "perLevel": 1 }
+    },
+    {
+      "id": "lineDance",
+      "name": "Line Dance",
+      "description": "Every win where all the reels match pays 10% more, each level.",
+      "scope": "global",
+      "unlock": { "sticker": "threeLines" },
+      "baseCost": 15000,
+      "growthRate": 3,
+      "maxLevel": 5,
+      "effect": { "type": "fullLineMultiplier", "multiplier": 1.1 }
+    },
+    {
+      "id": "rabbitsFoot",
+      "name": "Rabbit's Foot",
+      "description": "A lucky (toy) rabbit's foot. More Luck on every machine.",
+      "scope": "global",
+      "unlock": { "sticker": "luck50" },
+      "baseCost": 50000,
+      "growthRate": 3,
+      "maxLevel": 4,
+      "effect": { "type": "luck", "perLevel": 5 }
+    },
+    {
+      "id": "goldenTouch",
+      "name": "Golden Touch",
+      "description": "Every golden jackpot gives one more Hamster Token, each level.",
+      "scope": "global",
+      "unlock": { "sticker": "goldenJackpot" },
+      "baseCost": 10000,
+      "growthRate": 5,
+      "maxLevel": 2,
+      "effect": { "type": "jackpotTokens", "perLevel": 1 }
+    },
+    {
+      "id": "tipJar",
+      "name": "Tip Jar",
+      "description": "Customers tip more often: a Hamster Token every 3rd delivery instead of every 5th.",
+      "scope": "global",
+      "unlock": { "sticker": "deliveries25" },
+      "baseCost": 5000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "deliveryTokens", "every": 3 }
+    },
+    {
+      "id": "cardCounter",
+      "name": "Card Counter",
+      "description": "The card gamble shows 3 more of the cards that came before. (Every card is still a fresh draw!)",
+      "scope": "global",
+      "unlock": { "sticker": "cardShark" },
+      "baseCost": 3000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "gambleHistory", "perLevel": 3 }
+    },
+    {
+      "id": "deepPockets",
+      "name": "Deep Pockets",
+      "description": "Every jackpot pot starts 25% bigger, and starts again bigger after it's won, each level.",
+      "scope": "global",
+      "unlock": { "sticker": "potLuck" },
+      "baseCost": 3000000,
+      "growthRate": 3,
+      "maxLevel": 4,
+      "effect": { "type": "potSeedBonus", "perLevel": 0.25 }
+    },
+    {
+      "id": "moneyBags",
+      "name": "Money Bags",
+      "description": "A millionaire's money bags: +50% payouts a level.",
+      "scope": "global",
+      "unlock": { "sticker": "millionaire" },
+      "baseCost": 400000,
+      "growthRate": 3,
+      "maxLevel": 5,
+      "effect": { "type": "payoutMultiplier", "perLevel": 0.5 }
+    },
+    {
       "id": "lever",
       "name": "Oiled Lever",
       "description": "A drop of oil and the old lever takes fewer coins per pull.",
@@ -517,6 +705,18 @@
       "effect": { "type": "bothWays" }
     },
     {
+      "id": "ballBearings",
+      "name": "Ball Bearings",
+      "description": "Smoother Hamster Balls: one more free spin every time free spins start on the Burrow Bonanza, each level.",
+      "scope": "machine",
+      "machines": ["bonanza"],
+      "unlock": { "sticker": "freeRide" },
+      "baseCost": 150000,
+      "growthRate": 3,
+      "maxLevel": 3,
+      "effect": { "type": "extraFreeSpins", "perLevel": 1 }
+    },
+    {
       "id": "velvetGears",
       "name": "Velvet Gears",
       "description": "Plush-lined gears. The Pouch Palace takes fewer coins per spin.",
@@ -704,6 +904,18 @@
       "effect": { "type": "bothWays" }
     },
     {
+      "id": "acornStash",
+      "name": "Acorn Stash",
+      "description": "Hold & spin on the Acorn Vault gets one more respin: to start with, and after every new acorn.",
+      "scope": "machine",
+      "machines": ["vault"],
+      "unlock": { "sticker": "nutHoarder" },
+      "baseCost": 50000000000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "extraRespins", "perLevel": 1 }
+    },
+    {
       "id": "cheeseSlicer",
       "name": "Cheese Slicer",
       "description": "Thinner slices: each level makes a Big Cheese spin 10% cheaper.",
@@ -768,6 +980,18 @@
       "growthRate": 1,
       "maxLevel": 1,
       "effect": { "type": "bothWays" }
+    },
+    {
+      "id": "sharpCheddar",
+      "name": "Sharp Cheddar",
+      "description": "Every wedge of the cheese wheel gets +1 (x2 becomes x3, and so on).",
+      "scope": "machine",
+      "machines": ["cheese"],
+      "unlock": { "sticker": "bigCheese" },
+      "baseCost": 5000000000000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "wheelBonus", "perLevel": 1 }
     }
   ],
   "winTiers": [
@@ -998,6 +1222,50 @@
         "growthRate": 2,
         "maxLevel": 3,
         "effect": { "type": "potSeedBonus", "perLevel": 0.5 }
+      },
+      {
+        "id": "helpingPaws",
+        "name": "Helping Paws",
+        "description": "A little helper hamster buys cheap upgrades for you, whenever one costs a tenth of your coins or less. Switch it on or off in the Upgrades tab.",
+        "branch": "roots",
+        "requires": ["familyFortune"],
+        "baseCost": 4,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "autoBuy", "share": 0.1, "interval": 1 }
+      },
+      {
+        "id": "deepRoots",
+        "name": "Deep Roots",
+        "description": "The older the family, the deeper its roots: +2% payouts for every generation.",
+        "branch": "roots",
+        "requires": ["helpingPaws"],
+        "baseCost": 10,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "generationPayout", "perLevel": 0.02 }
+      },
+      {
+        "id": "cloverHeirloom",
+        "name": "Four-Leaf Heirloom",
+        "description": "A pressed four-leaf clover, passed down: every pup starts with a level of Four-Leaf Clover (then two).",
+        "branch": "charms",
+        "requires": ["luckyHeirlooms"],
+        "baseCost": 4,
+        "growthRate": 2,
+        "maxLevel": 2,
+        "effect": { "type": "startingLevel", "upgrade": "clover", "levels": 1 }
+      },
+      {
+        "id": "pennyJar",
+        "name": "Penny Jar",
+        "description": "The family penny jar: +2% chance a level that a win you pay for pays double.",
+        "branch": "bonuses",
+        "requires": ["goldenPouches"],
+        "baseCost": 5,
+        "growthRate": 2,
+        "maxLevel": 3,
+        "effect": { "type": "doubleWin", "perLevel": 0.02 }
       }
     ]
   },
@@ -1094,7 +1362,7 @@
     { "id": "firstCapsule", "name": "Capsule Collector", "description": "Open a capsule.", "goal": { "type": "stat", "stat": "capsulesOpened", "target": 1 }, "tokens": 1 },
     { "id": "spins10000", "name": "Marathon Runner", "description": "Spin 10,000 times.", "goal": { "type": "stat", "stat": "spins", "target": 10000 }, "tokens": 5 },
     { "id": "generation5", "name": "Big Family", "description": "Reach generation 5.", "goal": { "type": "generation", "target": 5 }, "tokens": 5 },
-    { "id": "treeAll", "name": "Full Bloom", "description": "Plant every Family Tree trait.", "goal": { "type": "treeNodes", "target": 18 }, "tokens": 5 },
+    { "id": "treeAll", "name": "Full Bloom", "description": "Plant every Family Tree trait.", "goal": { "type": "treeNodes", "target": 22 }, "tokens": 5 },
     { "id": "fashion", "name": "Fashion Hamster", "description": "Collect 8 skins from capsules.", "goal": { "type": "skinsOwned", "target": 8 }, "tokens": 5 },
     { "id": "hatTrick", "name": "Hat Trick", "description": "Find 3 hats in capsules.", "goal": { "type": "categoryOwned", "category": "hat", "target": 3 }, "tokens": 3 },
     { "id": "fullCage", "name": "Full Cage", "description": "Own four machines at once.", "goal": { "type": "machinesOwned", "target": 4 }, "tokens": 5 },
@@ -1110,7 +1378,14 @@
     { "id": "blackjack", "name": "Blackjack!", "description": "Get a blackjack at the hamster dealer's table.", "goal": { "type": "stat", "stat": "blackjacks", "target": 1 }, "tokens": 2 },
     { "id": "photoFinish", "name": "Photo Finish", "description": "Win the Hamster Derby on Wobbles, the long shot.", "goal": { "type": "stat", "stat": "derbyLongshots", "target": 1 }, "tokens": 3 },
     { "id": "edgeBin", "name": "Edge of the Board", "description": "Drop a seed into an edge bin at Seed Drop.", "goal": { "type": "stat", "stat": "seedDropEdges", "target": 1 }, "tokens": 3 },
-    { "id": "prizeWinner", "name": "Prize Winner", "description": "Buy something at the casino's Prize Counter.", "goal": { "type": "stat", "stat": "prizesBought", "target": 1 }, "tokens": 2 }
+    { "id": "prizeWinner", "name": "Prize Winner", "description": "Buy something at the casino's Prize Counter.", "goal": { "type": "stat", "stat": "prizesBought", "target": 1 }, "tokens": 2 },
+    { "id": "seeingDouble", "name": "Seeing Double", "description": "Get a win paid double by Lucky Pennies.", "goal": { "type": "stat", "stat": "doubleWins", "target": 1 }, "tokens": 2 },
+    { "id": "nightOwl", "name": "Night Owl", "description": "Come back to coins your hamster earned while you were away.", "goal": { "type": "stat", "stat": "offlineCoins", "target": 1 }, "tokens": 2 },
+    { "id": "busyPaws", "name": "Busy Paws", "description": "Buy 500 upgrade levels.", "goal": { "type": "stat", "stat": "upgradesBought", "target": 500 }, "tokens": 3 },
+    { "id": "littleHelper", "name": "Little Helper", "description": "Let the Hamster Helper buy an upgrade for you.", "goal": { "type": "stat", "stat": "helperBuys", "target": 1 }, "tokens": 2 },
+    { "id": "stickerBook", "name": "Sticker Book", "description": "Earn 30 diary stickers.", "goal": { "type": "stickers", "target": 30 }, "tokens": 5 },
+    { "id": "dynasty", "name": "Dynasty", "description": "Reach generation 10.", "goal": { "type": "generation", "target": 10 }, "tokens": 5 },
+    { "id": "billionaire", "name": "Billionaire", "description": "Earn 1,000,000,000 coins in total.", "goal": { "type": "stat", "stat": "coinsEarned", "target": 1000000000 }, "tokens": 5 }
   ],
   "casino": {
     "enabled": true,

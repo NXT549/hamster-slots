@@ -10,8 +10,9 @@
 // Vite bundles data.json into the game's code, so there's no separate file to
 // load: it works the same on every platform (and even offline).
 import bundledData from '../data.json';
-// The game's version (package.json), shown at the bottom of the Menu.
-import { version } from '../package.json';
+// The game's version and the update's name (package.json), shown at the bottom of
+// the Menu: every update gets a name from what it's about (AGENTS.md → Git and releases).
+import { version, releaseName } from '../package.json';
 // The two fonts come with the game (the Fontsource packages; both fonts are OFL,
 // so that's allowed), so it looks the same offline, on itch.io, and later in the
 // desktop and phone apps. Pixelify Sans (pixel words) only at weight 500, Nunito
@@ -94,7 +95,7 @@ function boot(platform: Platform) {
   const ui = createUI(game, {
     sound,
     settings,
-    version,
+    version: releaseName ? `${version} “${releaseName}”` : version,
     onReset() {
       autosave.stop(); // or the "save when the page closes" would write the old progress straight back
       clearSave(platform);

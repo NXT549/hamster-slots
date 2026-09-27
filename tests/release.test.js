@@ -25,6 +25,25 @@ test('package.json has a semantic version', () => {
   expect(lock.packages[''].version).toBe(version);
 });
 
+// Every update has a name from what it's about (the user's pick, 1.3.1; AGENTS.md →
+// Git and releases): package.json's releaseName, shown in the Menu, and every
+// version's heading in the CHANGELOG ("## [1.3.0] - 2026-09-27 · The Hamster Casino").
+test('every update has a name', () => {
+  const { version, releaseName } = JSON.parse(read('package.json'));
+  expect(typeof releaseName).toBe('string');
+  expect(releaseName.trim().length).toBeGreaterThan(0);
+  const changelog = read('CHANGELOG.md').toString();
+  // A release candidate's entries wait under [Unreleased], which names the update to come.
+  const heading = version.includes('-')
+    ? changelog.match(/^## \[Unreleased\].*$/m)
+    : changelog.match(new RegExp(`^## \\[${version.replace(/\./g, '\\.')}\\].*$`, 'm'));
+  expect(heading, `a CHANGELOG heading for ${version}`).not.toBeNull();
+  expect(heading[0]).toContain(releaseName);
+  const released = [...changelog.matchAll(/^## \[(\d+\.\d+\.\d+)\] - \d{4}-\d{2}-\d{2}(.*)$/gm)];
+  expect(released.length).toBeGreaterThan(5);
+  for (const [line, , name] of released) expect(name, line).toMatch(/^ · \S/);
+});
+
 test('the web app manifest lists icons that exist, at their real sizes', () => {
   const manifest = JSON.parse(read('public/manifest.webmanifest'));
   expect(manifest.name).toBe('Hamster Slots');

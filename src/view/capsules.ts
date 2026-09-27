@@ -123,6 +123,14 @@ export function createCapsulesView(
         <span class="diary-reward">${iconHTML('token', 24)}+${sticker.tokens}</span>`;
       row.querySelector('.diary-name')!.textContent = sticker.name;
       row.querySelector('.note')!.textContent = sticker.description;
+      // 1.3.1: a sticker can unlock an upgrade (a sticker upgrade) as well as pay tokens.
+      const opens = game.data.upgrades.filter((u) => u.unlock && u.unlock.sticker === sticker.id);
+      if (opens.length) {
+        const line = document.createElement('div');
+        line.className = 'diary-unlocks';
+        line.textContent = `Unlocks the upgrade ${opens.map((u) => u.name).join(' and ')}`;
+        row.querySelector('.diary-text')!.appendChild(line);
+      }
       el.diary.appendChild(row);
       diaryRows.set(sticker.id, { row, fill: row.querySelector<HTMLElement>('.diary-fill')!, count: row.querySelector<HTMLElement>('.diary-count')! });
     }

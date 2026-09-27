@@ -1,6 +1,6 @@
 {
  "recordedWith": {
-  "schemaVersion": 12
+  "schemaVersion": 13
  },
  "sessions": {
   "firstLife": [
@@ -47,6 +47,7 @@
       "firstWin": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -76,7 +77,7 @@
       "coinsEarned": "330",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -106,6 +107,7 @@
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -113,6 +115,7 @@
       "gambleWins": 0,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -183,6 +186,7 @@
       "firstWin": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -212,7 +216,7 @@
       "coinsEarned": "707",
       "playTime": 599.999999999783
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -242,6 +246,7 @@
       "deliveries": 7,
       "deliveryCoins": "140",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -249,6 +254,7 @@
       "gambleWins": 1,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -320,6 +326,7 @@
       "spins100": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -349,7 +356,7 @@
       "coinsEarned": "1084",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -379,6 +386,7 @@
       "deliveries": 11,
       "deliveryCoins": "220",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -386,6 +394,7 @@
       "gambleWins": 4,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -459,6 +468,7 @@
       "spins100": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -488,7 +498,7 @@
       "coinsEarned": "1603",
       "playTime": 1199.9999999992374
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -518,6 +528,7 @@
       "deliveries": 14,
       "deliveryCoins": "280",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -525,6 +536,7 @@
       "gambleWins": 7,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -600,6 +612,7 @@
       "spins100": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -631,7 +644,7 @@
       "coinsEarned": "2493.25",
       "playTime": 1499.9999999989645
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -661,6 +674,7 @@
       "deliveries": 17,
       "deliveryCoins": "340",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -668,6 +682,7 @@
       "gambleWins": 13,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -744,6 +759,7 @@
       "spins100": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -776,7 +792,7 @@
       "coinsEarned": "3410.75",
       "playTime": 1799.9999999986917
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -806,6 +822,7 @@
       "deliveries": 19,
       "deliveryCoins": "380",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -813,6 +830,7 @@
       "gambleWins": 18,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -889,6 +907,7 @@
       "spins100": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -921,7 +940,7 @@
       "coinsEarned": "3848.75",
       "playTime": 2099.9999999991282
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -951,6 +970,7 @@
       "deliveries": 22,
       "deliveryCoins": "440",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -958,6 +978,7 @@
       "gambleWins": 20,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -1034,6 +1055,7 @@
       "spins100": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -1067,7 +1089,7 @@
       "coinsEarned": "5032.75",
       "playTime": 2400.000000002948
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1097,6 +1119,7 @@
       "deliveries": 23,
       "deliveryCoins": "460",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1104,6 +1127,7 @@
       "gambleWins": 27,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -1180,6 +1204,7 @@
       "spins100": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -1213,7 +1238,7 @@
       "coinsEarned": "7310.5",
       "playTime": 2700.000000006768
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1243,6 +1268,7 @@
       "deliveries": 23,
       "deliveryCoins": "460",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1250,6 +1276,7 @@
       "gambleWins": 34,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -1329,6 +1356,7 @@
       "wheelTraining": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -1362,7 +1390,7 @@
       "coinsEarned": "10245.5",
       "playTime": 3000.000000010588
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1392,6 +1420,7 @@
       "deliveries": 25,
       "deliveryCoins": "500",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1399,6 +1428,7 @@
       "gambleWins": 38,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -1483,6 +1513,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -1505,7 +1536,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "2",
      "seedsEarned": "2",
      "skins": {
@@ -1535,6 +1566,7 @@
       "deliveries": 25,
       "deliveryCoins": "500",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1542,6 +1574,7 @@
       "gambleWins": 38,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -1624,6 +1657,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -1646,7 +1680,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -1676,6 +1710,7 @@
       "deliveries": 25,
       "deliveryCoins": "500",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1683,6 +1718,7 @@
       "gambleWins": 38,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -1770,6 +1806,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -1801,7 +1838,7 @@
       "coinsEarned": "1671.64",
       "playTime": 599.999999999783
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -1831,6 +1868,7 @@
       "deliveries": 28,
       "deliveryCoins": "560",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1838,6 +1876,7 @@
       "gambleWins": 42,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -1876,12 +1915,12 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 32,
+     "coinsChanged": 36,
      "machineBought": 3,
      "machineSwitched": 7,
      "stickerEarned": 7,
      "tokensChanged": 7,
-     "upgradeBought": 28
+     "upgradeBought": 32
     },
     "label": "bought everything",
     "paid": 0,
@@ -1900,7 +1939,7 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "2450545",
+     "coins": "1598452",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -1916,6 +1955,7 @@
       "wheelTraining": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -2006,7 +2046,7 @@
        "streak": 0,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -2018,7 +2058,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2029,7 +2069,7 @@
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 0,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
       "bestStreak": 0,
       "bestWays": 0,
@@ -2048,6 +2088,7 @@
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -2055,6 +2096,7 @@
       "gambleWins": 0,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -2072,7 +2114,7 @@
       "suitWins": 0,
       "symbolsUnlocked": 7,
       "tokensEarned": "19",
-      "upgradesBought": 192,
+      "upgradesBought": 209,
       "wildWins": 0,
       "wins": 0
      },
@@ -2081,8 +2123,12 @@
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
@@ -2091,24 +2137,24 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 129,
-     "gambleEnded": 18,
-     "gambleOffered": 18,
-     "gambleResolved": 14,
+     "coinsChanged": 123,
+     "gambleEnded": 14,
+     "gambleOffered": 14,
+     "gambleResolved": 10,
      "machineBought": 3,
      "machineSwitched": 8,
-     "spinResolved": 54,
-     "spinStarted": 55,
-     "stickerEarned": 11,
-     "tokensChanged": 11,
-     "upgradeBought": 28
+     "spinResolved": 55,
+     "spinStarted": 56,
+     "stickerEarned": 13,
+     "tokensChanged": 13,
+     "upgradeBought": 32
     },
     "label": "played the clunky",
-    "paid": 494475.04,
-    "rng": 1432766053,
+    "paid": 418950.02,
+    "rng": 3704343945,
     "save": {
      "activeMachine": 0,
-     "autoTimer": 0.2499999999999999,
+     "autoTimer": 1.2500000000000004,
      "bigCage": false,
      "capsules": {
       "sincePity": 0
@@ -2120,7 +2166,7 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "3065675.04",
+     "coins": "2044341.77",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -2134,12 +2180,15 @@
       "highRoller": true,
       "luck50": true,
       "newSeed": true,
+      "onFire": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "thirdReel": true,
       "wheelMax": true,
       "wheelTraining": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -2149,7 +2198,7 @@
        "pots": {},
        "result": [
         [
-         "carrot"
+         "blank"
         ],
         [
          "seed"
@@ -2161,9 +2210,9 @@
        "spinBet": 10,
        "spinFree": false,
        "spinSource": "auto",
-       "spinTimer": 2.7666666666666675,
+       "spinTimer": 1.766666666666671,
        "spinning": true,
-       "streak": 3,
+       "streak": 1,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -2240,7 +2289,7 @@
        "streak": 0,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -2249,10 +2298,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "494475.04",
+      "coinsEarned": "418950.02",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2261,39 +2310,41 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 18,
+      "autoSpins": 14,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 4,
+      "bestStreak": 6,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "83125",
+      "biggestWin": "118750",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "494475.04",
-      "coinsSpent": "1182.5",
-      "coinsWon": "494475.04",
+      "coinsEarned": "418950.02",
+      "coinsSpent": "1204",
+      "coinsWon": "418950.02",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 2,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
       "gambleLosses": 7,
-      "gambleWins": 7,
+      "gambleWins": 3,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
       "machinesBought": 3,
-      "manualSpins": 37,
+      "manualSpins": 42,
       "mostLinesWon": 1,
       "mostSeedsHeld": 0,
       "offlineCoins": "0",
@@ -2302,21 +2353,25 @@
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 55,
-      "suitWins": 3,
+      "spins": 56,
+      "suitWins": 2,
       "symbolsUnlocked": 7,
-      "tokensEarned": "28",
-      "upgradesBought": 192,
+      "tokensEarned": "32",
+      "upgradesBought": 209,
       "wildWins": 0,
-      "wins": 28
+      "wins": 21
      },
-     "tokens": "28",
+     "tokens": "32",
      "tree": {},
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
@@ -2325,24 +2380,24 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 252,
-     "gambleEnded": 44,
-     "gambleOffered": 44,
-     "gambleResolved": 34,
+     "coinsChanged": 242,
+     "gambleEnded": 38,
+     "gambleOffered": 38,
+     "gambleResolved": 29,
      "machineBought": 3,
      "machineSwitched": 9,
-     "spinResolved": 106,
-     "spinStarted": 107,
-     "stickerEarned": 16,
-     "tokensChanged": 16,
-     "upgradeBought": 28
+     "spinResolved": 107,
+     "spinStarted": 108,
+     "stickerEarned": 17,
+     "tokensChanged": 17,
+     "upgradeBought": 32
     },
     "label": "played the stacker",
-    "paid": 9463009.58,
-    "rng": 4140110521,
+    "paid": 14285684.52,
+    "rng": 2300968408,
     "save": {
      "activeMachine": 1,
-     "autoTimer": 0.2499999999999999,
+     "autoTimer": 4,
      "bigCage": false,
      "capsules": {
       "sincePity": 0
@@ -2354,7 +2409,7 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "10840223.71",
+     "coins": "14684434.23",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -2371,6 +2426,7 @@
       "newSeed": true,
       "onFire": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "thirdReel": true,
       "threeLines": true,
@@ -2379,6 +2435,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -2388,7 +2445,7 @@
        "pots": {},
        "result": [
         [
-         "carrot"
+         "blank"
         ],
         [
          "seed"
@@ -2402,7 +2459,7 @@
        "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 4,
+       "streak": 2,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -2420,32 +2477,32 @@
        "pots": {},
        "result": [
         [
-         "golden",
+         "seed",
          "blank",
-         "seed"
-        ],
-        [
-         "carrot",
-         "carrot",
          "carrot"
         ],
         [
-         "blueberry",
+         "seed",
          "carrot",
-         "blank"
+         "strawberry"
         ],
         [
          "blank",
-         "carrot",
+         "seed",
+         "golden"
+        ],
+        [
+         "strawberry",
+         "seed",
          "seed"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
-       "spinSource": "auto",
-       "spinTimer": 2.9666666666666677,
+       "spinSource": "manual",
+       "spinTimer": 1.166666666666674,
        "spinning": true,
-       "streak": 1,
+       "streak": 6,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -2500,7 +2557,7 @@
        "streak": 0,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -2509,10 +2566,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "9463009.58",
+      "coinsEarned": "14285684.52",
       "playTime": 360.00000000000125
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2521,39 +2578,41 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 44,
+      "autoSpins": 38,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 49,
+      "bestStreak": 17,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "1058062.5",
+      "biggestWin": "6006375",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "9463009.58",
-      "coinsSpent": "6777.7",
-      "coinsWon": "9463009.58",
+      "coinsEarned": "14285684.52",
+      "coinsSpent": "6799.2",
+      "coinsWon": "14285684.52",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 6,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
-      "gambleLosses": 21,
-      "gambleWins": 13,
+      "gambleLosses": 20,
+      "gambleWins": 9,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
       "machinesBought": 3,
-      "manualSpins": 63,
+      "manualSpins": 70,
       "mostLinesWon": 5,
       "mostSeedsHeld": 0,
       "offlineCoins": "0",
@@ -2562,21 +2621,25 @@
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 107,
-      "suitWins": 6,
+      "spins": 108,
+      "suitWins": 5,
       "symbolsUnlocked": 7,
-      "tokensEarned": "40",
-      "upgradesBought": 192,
-      "wildWins": 19,
-      "wins": 79
+      "tokensEarned": "42",
+      "upgradesBought": 209,
+      "wildWins": 21,
+      "wins": 69
      },
-     "tokens": "40",
+     "tokens": "42",
      "tree": {},
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
@@ -2585,26 +2648,26 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 313,
+     "coinsChanged": 340,
      "freeSpinsEnded": 1,
-     "freeSpinsStarted": 2,
-     "gambleEnded": 53,
-     "gambleOffered": 53,
-     "gambleResolved": 41,
+     "freeSpinsStarted": 1,
+     "gambleEnded": 57,
+     "gambleOffered": 57,
+     "gambleResolved": 44,
      "machineBought": 3,
      "machineSwitched": 10,
-     "spinResolved": 149,
-     "spinStarted": 149,
-     "stickerEarned": 17,
-     "tokensChanged": 17,
-     "upgradeBought": 28
+     "spinResolved": 153,
+     "spinStarted": 154,
+     "stickerEarned": 18,
+     "tokensChanged": 18,
+     "upgradeBought": 32
     },
     "label": "played the bonanza",
-    "paid": 53622572.17,
-    "rng": 2616428890,
+    "paid": 94183950.29,
+    "rng": 4113136118,
     "save": {
      "activeMachine": 2,
-     "autoTimer": 3.599999999999992,
+     "autoTimer": 0.2499999999999999,
      "bigCage": false,
      "capsules": {
       "sincePity": 0
@@ -2616,7 +2679,7 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "52913481.82",
+     "coins": "96262283.9",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -2634,6 +2697,7 @@
       "newSeed": true,
       "onFire": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "thirdReel": true,
       "threeLines": true,
@@ -2642,6 +2706,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -2651,7 +2716,7 @@
        "pots": {},
        "result": [
         [
-         "carrot"
+         "blank"
         ],
         [
          "seed"
@@ -2665,7 +2730,7 @@
        "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 4,
+       "streak": 2,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -2683,32 +2748,32 @@
        "pots": {},
        "result": [
         [
-         "golden",
+         "seed",
          "blank",
-         "seed"
-        ],
-        [
-         "carrot",
-         "carrot",
          "carrot"
         ],
         [
-         "blueberry",
+         "seed",
          "carrot",
-         "blank"
+         "strawberry"
         ],
         [
          "blank",
-         "carrot",
+         "seed",
+         "golden"
+        ],
+        [
+         "strawberry",
+         "seed",
          "seed"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
-       "spinSource": "auto",
+       "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 2,
+       "streak": 7,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -2723,48 +2788,42 @@
       {
        "bet": 4,
        "bonus": null,
-       "freeSpins": {
-        "bet": 10,
-        "left": 5,
-        "timer": 0.8499999999999995,
-        "total": 23,
-        "won": "18042875"
-       },
+       "freeSpins": null,
        "hold": null,
        "pots": {},
        "result": [
         [
-         "ball",
-         "blank",
-         "apple"
-        ],
-        [
-         "corn",
-         "blank",
-         "carrot"
+         "golden",
+         "carrot",
+         "blank"
         ],
         [
          "seed",
+         "seed",
+         "blank"
+        ],
+        [
+         "golden",
          "carrot",
-         "apple"
+         "carrot"
+        ],
+        [
+         "carrot",
+         "carrot",
+         "seed"
         ],
         [
          "corn",
-         "blank",
-         "corn"
-        ],
-        [
-         "apple",
-         "golden",
-         "carrot"
+         "wild",
+         "seed"
         ]
        ],
        "spinBet": 10,
-       "spinFree": true,
-       "spinSource": "free",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 4,
+       "spinFree": false,
+       "spinSource": "auto",
+       "spinTimer": 3.3666666666666676,
+       "spinning": true,
+       "streak": 1,
        "typeId": "bonanza",
        "upgrades": {
         "acorn": 5,
@@ -2795,7 +2854,7 @@
        "streak": 0,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -2804,10 +2863,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "53622572.17",
+      "coinsEarned": "94183950.29",
       "playTime": 539.9999999998375
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2816,40 +2875,42 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 53,
+      "autoSpins": 57,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 49,
+      "bestStreak": 22,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "4256000",
+      "biggestWin": "9567984.38",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "53622572.17",
-      "coinsSpent": "14957.2",
-      "coinsWon": "53622572.17",
+      "coinsEarned": "94183950.29",
+      "coinsSpent": "24449.7",
+      "coinsWon": "94183950.29",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "freeSpinCoins": "24697625",
-      "freeSpinTriggers": 2,
-      "freeSpins": 23,
-      "gambleLosses": 26,
-      "gambleWins": 15,
+      "doubleWins": 13,
+      "freeSpinCoins": "11077000",
+      "freeSpinTriggers": 1,
+      "freeSpins": 5,
+      "gambleLosses": 31,
+      "gambleWins": 13,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
       "machinesBought": 3,
-      "manualSpins": 73,
-      "mostLinesWon": 7,
+      "manualSpins": 92,
+      "mostLinesWon": 9,
       "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 539.9999999998375,
@@ -2857,21 +2918,25 @@
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 149,
+      "spins": 154,
       "suitWins": 7,
       "symbolsUnlocked": 7,
-      "tokensEarned": "43",
-      "upgradesBought": 192,
-      "wildWins": 34,
-      "wins": 114
+      "tokensEarned": "45",
+      "upgradesBought": 209,
+      "wildWins": 41,
+      "wins": 111
      },
-     "tokens": "43",
+     "tokens": "45",
      "tree": {},
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
@@ -2880,29 +2945,29 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 400,
+     "coinsChanged": 433,
      "freeSpinsEnded": 1,
-     "freeSpinsStarted": 2,
-     "gambleEnded": 70,
-     "gambleOffered": 70,
-     "gambleResolved": 54,
+     "freeSpinsStarted": 1,
+     "gambleEnded": 74,
+     "gambleOffered": 74,
+     "gambleResolved": 57,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 11,
-     "spinBlocked": 6,
-     "spinResolved": 194,
-     "spinStarted": 195,
-     "stickerEarned": 19,
-     "tokensChanged": 19,
-     "upgradeBought": 28
+     "spinBlocked": 4,
+     "spinResolved": 201,
+     "spinStarted": 202,
+     "stickerEarned": 21,
+     "tokensChanged": 21,
+     "upgradeBought": 32
     },
     "label": "played the palace",
-    "paid": 161210072.17,
-    "rng": 1717006629,
+    "paid": 303604028.43,
+    "rng": 2070348611,
     "save": {
      "activeMachine": 3,
-     "autoTimer": 2.249999999999997,
+     "autoTimer": 4.4,
      "bigCage": false,
      "capsules": {
       "sincePity": 0
@@ -2914,13 +2979,14 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "978316351.02",
+     "coins": "1028424551.64",
      "delivery": {
       "active": false,
       "duration": 0,
       "timer": 0
      },
      "diary": {
+      "billionaire": true,
       "cardShark": true,
       "firstSpin": true,
       "firstWin": true,
@@ -2934,6 +3000,7 @@
       "onFire": true,
       "potLuck": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "thirdReel": true,
       "threeLines": true,
@@ -2942,6 +3009,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -2951,7 +3019,7 @@
        "pots": {},
        "result": [
         [
-         "carrot"
+         "blank"
         ],
         [
          "seed"
@@ -2965,7 +3033,7 @@
        "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 4,
+       "streak": 2,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -2983,32 +3051,32 @@
        "pots": {},
        "result": [
         [
-         "golden",
+         "seed",
          "blank",
-         "seed"
-        ],
-        [
-         "carrot",
-         "carrot",
          "carrot"
         ],
         [
-         "blueberry",
+         "seed",
          "carrot",
-         "blank"
+         "strawberry"
         ],
         [
          "blank",
-         "carrot",
+         "seed",
+         "golden"
+        ],
+        [
+         "strawberry",
+         "seed",
          "seed"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
-       "spinSource": "auto",
+       "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 2,
+       "streak": 7,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -3023,48 +3091,42 @@
       {
        "bet": 4,
        "bonus": null,
-       "freeSpins": {
-        "bet": 10,
-        "left": 5,
-        "timer": 0.8499999999999995,
-        "total": 23,
-        "won": "18042875"
-       },
+       "freeSpins": null,
        "hold": null,
        "pots": {},
        "result": [
         [
-         "ball",
-         "blank",
-         "apple"
-        ],
-        [
-         "corn",
-         "blank",
-         "carrot"
+         "golden",
+         "carrot",
+         "blank"
         ],
         [
          "seed",
+         "seed",
+         "blank"
+        ],
+        [
+         "golden",
          "carrot",
-         "apple"
+         "carrot"
+        ],
+        [
+         "carrot",
+         "carrot",
+         "seed"
         ],
         [
          "corn",
-         "blank",
-         "corn"
-        ],
-        [
-         "apple",
-         "golden",
-         "carrot"
+         "wild",
+         "seed"
         ]
        ],
        "spinBet": 10,
-       "spinFree": true,
-       "spinSource": "free",
+       "spinFree": false,
+       "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 4,
+       "streak": 2,
        "typeId": "bonanza",
        "upgrades": {
         "acorn": 5,
@@ -3088,40 +3150,40 @@
        },
        "result": [
         [
-         "blueberry",
-         "apple",
-         "blank"
-        ],
-        [
-         "blank",
-         "blank",
-         "blueberry"
-        ],
-        [
          "blank",
          "seed",
-         "blank"
+         "apple"
         ],
         [
-         "apple",
-         "strawberry",
-         "blank"
-        ],
-        [
-         "blueberry",
+         "seed",
          "blank",
+         "strawberry"
+        ],
+        [
+         "blank",
+         "strawberry",
          "seed"
+        ],
+        [
+         "seed",
+         "seed",
+         "pouch"
+        ],
+        [
+         "blank",
+         "wild",
+         "blueberry"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
-       "spinSource": "auto",
-       "spinTimer": 1.3666666666666747,
+       "spinSource": "manual",
+       "spinTimer": 0.9666666666666759,
        "spinning": true,
-       "streak": 1,
+       "streak": 2,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -3130,10 +3192,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "971963822.17",
-      "playTime": 725.4333333330022
+      "coinsEarned": "1114478903.43",
+      "playTime": 732.8666666663288
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3142,90 +3204,96 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 70,
+      "autoSpins": 74,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 49,
+      "bestStreak": 22,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "713960625",
+      "biggestWin": "714031875",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "971963822.17",
-      "coinsSpent": "113963",
-      "coinsWon": "161210072.17",
+      "coinsEarned": "1114478903.43",
+      "coinsSpent": "127760.1",
+      "coinsWon": "303604028.43",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "freeSpinCoins": "24697625",
-      "freeSpinTriggers": 2,
-      "freeSpins": 23,
-      "gambleLosses": 35,
-      "gambleWins": 19,
+      "doubleWins": 16,
+      "freeSpinCoins": "11077000",
+      "freeSpinTriggers": 1,
+      "freeSpins": 5,
+      "gambleLosses": 41,
+      "gambleWins": 16,
       "goldenJackpots": 0,
       "grandJackpots": 1,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 102,
-      "mostLinesWon": 10,
+      "manualSpins": 123,
+      "mostLinesWon": 13,
       "mostSeedsHeld": 0,
       "offlineCoins": "0",
-      "playTime": 725.4333333330022,
+      "playTime": 732.8666666663288,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 195,
-      "suitWins": 9,
+      "spins": 202,
+      "suitWins": 8,
       "symbolsUnlocked": 7,
-      "tokensEarned": "51",
-      "upgradesBought": 192,
-      "wildWins": 44,
-      "wins": 138
+      "tokensEarned": "58",
+      "upgradesBought": 209,
+      "wildWins": 56,
+      "wins": 139
      },
-     "tokens": "51",
+     "tokens": "58",
      "tree": {},
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
-    "t": 725.434
+    "t": 732.868
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 410,
+     "coinsChanged": 438,
      "freeSpinsEnded": 1,
-     "freeSpinsStarted": 2,
-     "gambleEnded": 70,
-     "gambleOffered": 70,
-     "gambleResolved": 54,
+     "freeSpinsStarted": 1,
+     "gambleEnded": 75,
+     "gambleOffered": 75,
+     "gambleResolved": 57,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
-     "spinBlocked": 6,
-     "spinResolved": 200,
-     "spinStarted": 201,
-     "stickerEarned": 19,
-     "tokensChanged": 19,
-     "upgradeBought": 28
+     "spinBlocked": 4,
+     "spinResolved": 205,
+     "spinStarted": 206,
+     "stickerEarned": 21,
+     "tokensChanged": 21,
+     "upgradeBought": 32
     },
     "label": "switched mid-spin",
-    "paid": 169031244.05,
-    "rng": 637582580,
+    "paid": 304245278.43,
+    "rng": 3710090833,
     "save": {
      "activeMachine": 0,
      "autoTimer": 2.5999999999999956,
@@ -3240,13 +3308,14 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "986133046.2",
+     "coins": "1029065629.54",
      "delivery": {
       "active": false,
       "duration": 0,
       "timer": 0
      },
      "diary": {
+      "billionaire": true,
       "cardShark": true,
       "firstSpin": true,
       "firstWin": true,
@@ -3260,6 +3329,7 @@
       "onFire": true,
       "potLuck": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "thirdReel": true,
       "threeLines": true,
@@ -3268,6 +3338,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -3277,13 +3348,13 @@
        "pots": {},
        "result": [
         [
+         "golden"
+        ],
+        [
+         "golden"
+        ],
+        [
          "blank"
-        ],
-        [
-         "seed"
-        ],
-        [
-         "carrot"
         ]
        ],
        "spinBet": 10,
@@ -3291,7 +3362,7 @@
        "spinSource": "auto",
        "spinTimer": 0.4000000000000056,
        "spinning": true,
-       "streak": 6,
+       "streak": 0,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -3310,22 +3381,22 @@
        "result": [
         [
          "seed",
-         "seed",
-         "seed"
+         "blank",
+         "strawberry"
         ],
         [
          "carrot",
-         "seed",
+         "carrot",
          "seed"
         ],
         [
          "seed",
-         "carrot",
+         "seed",
          "blueberry"
         ],
         [
-         "seed",
-         "seed",
+         "carrot",
+         "carrot",
          "seed"
         ]
        ],
@@ -3334,7 +3405,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 3,
+       "streak": 0,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -3349,48 +3420,42 @@
       {
        "bet": 4,
        "bonus": null,
-       "freeSpins": {
-        "bet": 10,
-        "left": 5,
-        "timer": 0.8499999999999995,
-        "total": 23,
-        "won": "18042875"
-       },
+       "freeSpins": null,
        "hold": null,
        "pots": {},
        "result": [
         [
-         "ball",
-         "blank",
-         "apple"
-        ],
-        [
-         "corn",
-         "blank",
-         "carrot"
+         "golden",
+         "carrot",
+         "blank"
         ],
         [
          "seed",
+         "seed",
+         "blank"
+        ],
+        [
+         "golden",
          "carrot",
-         "apple"
+         "carrot"
+        ],
+        [
+         "carrot",
+         "carrot",
+         "seed"
         ],
         [
          "corn",
-         "blank",
-         "corn"
-        ],
-        [
-         "apple",
-         "golden",
-         "carrot"
+         "wild",
+         "seed"
         ]
        ],
        "spinBet": 10,
-       "spinFree": true,
-       "spinSource": "free",
+       "spinFree": false,
+       "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 4,
+       "streak": 2,
        "typeId": "bonanza",
        "upgrades": {
         "acorn": 5,
@@ -3407,47 +3472,47 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3001050",
-        "major": "301080",
-        "mini": "30570",
-        "minor": "75840"
+        "grand": "3000750",
+        "major": "300960",
+        "mini": "30540",
+        "minor": "75780"
        },
        "result": [
         [
-         "strawberry",
+         "blank",
          "seed",
+         "apple"
+        ],
+        [
+         "seed",
+         "blank",
          "strawberry"
         ],
         [
          "blank",
          "strawberry",
-         "blank"
-        ],
-        [
-         "blank",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "blueberry",
          "seed"
         ],
         [
          "seed",
+         "seed",
+         "pouch"
+        ],
+        [
          "blank",
-         "seed"
+         "wild",
+         "blueberry"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
-       "spinSource": "auto",
+       "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 1,
+       "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -3456,10 +3521,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "979784994.05",
-      "playTime": 744.4999999996515
+      "coinsEarned": "1115120153.43",
+      "playTime": 744.333333332985
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3468,90 +3533,96 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 74,
+      "autoSpins": 77,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 49,
+      "bestStreak": 22,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "713960625",
+      "biggestWin": "714031875",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "979784994.05",
-      "coinsSpent": "118439.7",
-      "coinsWon": "169031244.05",
+      "coinsEarned": "1115120153.43",
+      "coinsSpent": "127932.2",
+      "coinsWon": "304245278.43",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "freeSpinCoins": "24697625",
-      "freeSpinTriggers": 2,
-      "freeSpins": 23,
-      "gambleLosses": 35,
-      "gambleWins": 19,
+      "doubleWins": 16,
+      "freeSpinCoins": "11077000",
+      "freeSpinTriggers": 1,
+      "freeSpins": 5,
+      "gambleLosses": 41,
+      "gambleWins": 16,
       "goldenJackpots": 0,
       "grandJackpots": 1,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 104,
-      "mostLinesWon": 10,
+      "manualSpins": 124,
+      "mostLinesWon": 13,
       "mostSeedsHeld": 0,
       "offlineCoins": "0",
-      "playTime": 744.4999999996515,
+      "playTime": 744.333333332985,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 201,
-      "suitWins": 9,
+      "spins": 206,
+      "suitWins": 8,
       "symbolsUnlocked": 7,
-      "tokensEarned": "51",
-      "upgradesBought": 192,
-      "wildWins": 44,
-      "wins": 142
+      "tokensEarned": "58",
+      "upgradesBought": 209,
+      "wildWins": 56,
+      "wins": 140
      },
-     "tokens": "51",
+     "tokens": "58",
      "tree": {},
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
-    "t": 744.001
+    "t": 743.835
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 411,
+     "coinsChanged": 440,
      "freeSpinsEnded": 1,
-     "freeSpinsStarted": 2,
-     "gambleEnded": 71,
-     "gambleOffered": 71,
-     "gambleResolved": 55,
+     "freeSpinsStarted": 1,
+     "gambleEnded": 76,
+     "gambleOffered": 76,
+     "gambleResolved": 58,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
-     "spinBlocked": 6,
-     "spinResolved": 201,
-     "spinStarted": 201,
-     "stickerEarned": 19,
-     "tokensChanged": 19,
-     "upgradeBought": 28
+     "spinBlocked": 4,
+     "spinResolved": 206,
+     "spinStarted": 206,
+     "stickerEarned": 21,
+     "tokensChanged": 21,
+     "upgradeBought": 32
     },
     "label": "card gamble",
-    "paid": 169031244.05,
-    "rng": 2469148393,
+    "paid": 304311778.43,
+    "rng": 3078255163,
     "save": {
      "activeMachine": 0,
      "autoTimer": 2.9999999999999942,
@@ -3566,13 +3637,14 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "986132796.2",
+     "coins": "1029131879.54",
      "delivery": {
       "active": false,
       "duration": 0,
       "timer": 0
      },
      "diary": {
+      "billionaire": true,
       "cardShark": true,
       "firstSpin": true,
       "firstWin": true,
@@ -3586,6 +3658,7 @@
       "onFire": true,
       "potLuck": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "thirdReel": true,
       "threeLines": true,
@@ -3594,6 +3667,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -3603,13 +3677,13 @@
        "pots": {},
        "result": [
         [
+         "golden"
+        ],
+        [
+         "golden"
+        ],
+        [
          "blank"
-        ],
-        [
-         "seed"
-        ],
-        [
-         "carrot"
         ]
        ],
        "spinBet": 10,
@@ -3617,7 +3691,7 @@
        "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 1,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -3636,22 +3710,22 @@
        "result": [
         [
          "seed",
-         "seed",
-         "seed"
+         "blank",
+         "strawberry"
         ],
         [
          "carrot",
-         "seed",
+         "carrot",
          "seed"
         ],
         [
          "seed",
-         "carrot",
+         "seed",
          "blueberry"
         ],
         [
-         "seed",
-         "seed",
+         "carrot",
+         "carrot",
          "seed"
         ]
        ],
@@ -3660,7 +3734,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 3,
+       "streak": 0,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -3675,48 +3749,42 @@
       {
        "bet": 4,
        "bonus": null,
-       "freeSpins": {
-        "bet": 10,
-        "left": 5,
-        "timer": 0.8499999999999995,
-        "total": 23,
-        "won": "18042875"
-       },
+       "freeSpins": null,
        "hold": null,
        "pots": {},
        "result": [
         [
-         "ball",
-         "blank",
-         "apple"
-        ],
-        [
-         "corn",
-         "blank",
-         "carrot"
+         "golden",
+         "carrot",
+         "blank"
         ],
         [
          "seed",
+         "seed",
+         "blank"
+        ],
+        [
+         "golden",
          "carrot",
-         "apple"
+         "carrot"
+        ],
+        [
+         "carrot",
+         "carrot",
+         "seed"
         ],
         [
          "corn",
-         "blank",
-         "corn"
-        ],
-        [
-         "apple",
-         "golden",
-         "carrot"
+         "wild",
+         "seed"
         ]
        ],
        "spinBet": 10,
-       "spinFree": true,
-       "spinSource": "free",
+       "spinFree": false,
+       "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 4,
+       "streak": 2,
        "typeId": "bonanza",
        "upgrades": {
         "acorn": 5,
@@ -3733,47 +3801,47 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3001050",
-        "major": "301080",
-        "mini": "30570",
-        "minor": "75840"
+        "grand": "3000750",
+        "major": "300960",
+        "mini": "30540",
+        "minor": "75780"
        },
        "result": [
         [
-         "strawberry",
+         "blank",
          "seed",
+         "apple"
+        ],
+        [
+         "seed",
+         "blank",
          "strawberry"
         ],
         [
          "blank",
          "strawberry",
-         "blank"
-        ],
-        [
-         "blank",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "blueberry",
          "seed"
         ],
         [
          "seed",
+         "seed",
+         "pouch"
+        ],
+        [
          "blank",
-         "seed"
+         "wild",
+         "blueberry"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
-       "spinSource": "auto",
+       "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 1,
+       "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -3782,10 +3850,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "979784994.05",
-      "playTime": 744.8999999996512
+      "coinsEarned": "1115186653.43",
+      "playTime": 744.7333333329847
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3794,91 +3862,97 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 74,
+      "autoSpins": 77,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 49,
+      "bestStreak": 22,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "713960625",
+      "biggestWin": "714031875",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "979784994.05",
-      "coinsSpent": "118439.7",
-      "coinsWon": "169031244.05",
+      "coinsEarned": "1115186653.43",
+      "coinsSpent": "127932.2",
+      "coinsWon": "304311778.43",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "freeSpinCoins": "24697625",
-      "freeSpinTriggers": 2,
-      "freeSpins": 23,
-      "gambleLosses": 36,
-      "gambleWins": 19,
+      "doubleWins": 16,
+      "freeSpinCoins": "11077000",
+      "freeSpinTriggers": 1,
+      "freeSpins": 5,
+      "gambleLosses": 42,
+      "gambleWins": 16,
       "goldenJackpots": 0,
       "grandJackpots": 1,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 104,
-      "mostLinesWon": 10,
+      "manualSpins": 124,
+      "mostLinesWon": 13,
       "mostSeedsHeld": 0,
       "offlineCoins": "0",
-      "playTime": 744.8999999996512,
+      "playTime": 744.7333333329847,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 201,
-      "suitWins": 9,
+      "spins": 206,
+      "suitWins": 8,
       "symbolsUnlocked": 7,
-      "tokensEarned": "51",
-      "upgradesBought": 192,
-      "wildWins": 44,
-      "wins": 142
+      "tokensEarned": "58",
+      "upgradesBought": 209,
+      "wildWins": 56,
+      "wins": 141
      },
-     "tokens": "51",
+     "tokens": "58",
      "tree": {},
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
-    "t": 744.401008
+    "t": 744.235008
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 412,
+     "coinsChanged": 441,
      "freeSpinsEnded": 1,
-     "freeSpinsStarted": 2,
-     "gambleEnded": 71,
-     "gambleOffered": 71,
-     "gambleResolved": 55,
+     "freeSpinsStarted": 1,
+     "gambleEnded": 76,
+     "gambleOffered": 76,
+     "gambleResolved": 58,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
      "offlineEarned": 1,
-     "spinBlocked": 6,
-     "spinResolved": 201,
-     "spinStarted": 201,
-     "stickerEarned": 19,
-     "tokensChanged": 19,
-     "upgradeBought": 28
+     "spinBlocked": 4,
+     "spinResolved": 206,
+     "spinStarted": 206,
+     "stickerEarned": 22,
+     "tokensChanged": 22,
+     "upgradeBought": 32
     },
     "label": "an hour away",
-    "paid": 169031244.05,
-    "rng": 2469148393,
+    "paid": 304311778.43,
+    "rng": 3078255163,
     "save": {
      "activeMachine": 0,
      "autoTimer": 2.9999999999999942,
@@ -3893,13 +3967,14 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "990403301.66",
+     "coins": "1036537360.37",
      "delivery": {
       "active": false,
       "duration": 0,
       "timer": 0
      },
      "diary": {
+      "billionaire": true,
       "cardShark": true,
       "firstSpin": true,
       "firstWin": true,
@@ -3910,9 +3985,11 @@
       "luck50": true,
       "millionaire": true,
       "newSeed": true,
+      "nightOwl": true,
       "onFire": true,
       "potLuck": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "thirdReel": true,
       "threeLines": true,
@@ -3921,6 +3998,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -3930,13 +4008,13 @@
        "pots": {},
        "result": [
         [
+         "golden"
+        ],
+        [
+         "golden"
+        ],
+        [
          "blank"
-        ],
-        [
-         "seed"
-        ],
-        [
-         "carrot"
         ]
        ],
        "spinBet": 10,
@@ -3944,7 +4022,7 @@
        "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 1,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -3963,22 +4041,22 @@
        "result": [
         [
          "seed",
-         "seed",
-         "seed"
+         "blank",
+         "strawberry"
         ],
         [
          "carrot",
-         "seed",
+         "carrot",
          "seed"
         ],
         [
          "seed",
-         "carrot",
+         "seed",
          "blueberry"
         ],
         [
-         "seed",
-         "seed",
+         "carrot",
+         "carrot",
          "seed"
         ]
        ],
@@ -3987,7 +4065,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 3,
+       "streak": 0,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -4002,48 +4080,42 @@
       {
        "bet": 4,
        "bonus": null,
-       "freeSpins": {
-        "bet": 10,
-        "left": 5,
-        "timer": 0.8499999999999995,
-        "total": 23,
-        "won": "18042875"
-       },
+       "freeSpins": null,
        "hold": null,
        "pots": {},
        "result": [
         [
-         "ball",
-         "blank",
-         "apple"
-        ],
-        [
-         "corn",
-         "blank",
-         "carrot"
+         "golden",
+         "carrot",
+         "blank"
         ],
         [
          "seed",
+         "seed",
+         "blank"
+        ],
+        [
+         "golden",
          "carrot",
-         "apple"
+         "carrot"
+        ],
+        [
+         "carrot",
+         "carrot",
+         "seed"
         ],
         [
          "corn",
-         "blank",
-         "corn"
-        ],
-        [
-         "apple",
-         "golden",
-         "carrot"
+         "wild",
+         "seed"
         ]
        ],
        "spinBet": 10,
-       "spinFree": true,
-       "spinSource": "free",
+       "spinFree": false,
+       "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 4,
+       "streak": 2,
        "typeId": "bonanza",
        "upgrades": {
         "acorn": 5,
@@ -4060,47 +4132,47 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3001050",
-        "major": "301080",
-        "mini": "30570",
-        "minor": "75840"
+        "grand": "3000750",
+        "major": "300960",
+        "mini": "30540",
+        "minor": "75780"
        },
        "result": [
         [
-         "strawberry",
+         "blank",
          "seed",
+         "apple"
+        ],
+        [
+         "seed",
+         "blank",
          "strawberry"
         ],
         [
          "blank",
          "strawberry",
-         "blank"
-        ],
-        [
-         "blank",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "blueberry",
          "seed"
         ],
         [
          "seed",
+         "seed",
+         "pouch"
+        ],
+        [
          "blank",
-         "seed"
+         "wild",
+         "blueberry"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
-       "spinSource": "auto",
+       "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 1,
+       "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -4109,10 +4181,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "984055499.51",
-      "playTime": 744.8999999996512
+      "coinsEarned": "1122592134.26",
+      "playTime": 744.7333333329847
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4121,91 +4193,97 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 74,
+      "autoSpins": 77,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 49,
+      "bestStreak": 22,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "713960625",
+      "biggestWin": "714031875",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "984055499.51",
-      "coinsSpent": "118439.7",
-      "coinsWon": "169031244.05",
+      "coinsEarned": "1122592134.26",
+      "coinsSpent": "127932.2",
+      "coinsWon": "304311778.43",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "freeSpinCoins": "24697625",
-      "freeSpinTriggers": 2,
-      "freeSpins": 23,
-      "gambleLosses": 36,
-      "gambleWins": 19,
+      "doubleWins": 16,
+      "freeSpinCoins": "11077000",
+      "freeSpinTriggers": 1,
+      "freeSpins": 5,
+      "gambleLosses": 42,
+      "gambleWins": 16,
       "goldenJackpots": 0,
       "grandJackpots": 1,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 104,
-      "mostLinesWon": 10,
+      "manualSpins": 124,
+      "mostLinesWon": 13,
       "mostSeedsHeld": 0,
-      "offlineCoins": "4270505.46",
-      "playTime": 744.8999999996512,
+      "offlineCoins": "7405480.83",
+      "playTime": 744.7333333329847,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 201,
-      "suitWins": 9,
+      "spins": 206,
+      "suitWins": 8,
       "symbolsUnlocked": 7,
-      "tokensEarned": "51",
-      "upgradesBought": 192,
-      "wildWins": 44,
-      "wins": 142
+      "tokensEarned": "60",
+      "upgradesBought": 209,
+      "wildWins": 56,
+      "wins": 141
      },
-     "tokens": "51",
+     "tokens": "60",
      "tree": {},
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
-    "t": 744.401008
+    "t": 744.235008
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 412,
+     "coinsChanged": 441,
      "freeSpinsEnded": 1,
-     "freeSpinsStarted": 2,
-     "gambleEnded": 71,
-     "gambleOffered": 71,
-     "gambleResolved": 55,
+     "freeSpinsStarted": 1,
+     "gambleEnded": 76,
+     "gambleOffered": 76,
+     "gambleResolved": 58,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
      "offlineEarned": 1,
-     "spinBlocked": 6,
-     "spinResolved": 201,
-     "spinStarted": 201,
-     "stickerEarned": 19,
-     "tokensChanged": 19,
-     "upgradeBought": 28
+     "spinBlocked": 4,
+     "spinResolved": 206,
+     "spinStarted": 206,
+     "stickerEarned": 22,
+     "tokensChanged": 22,
+     "upgradeBought": 32
     },
     "label": "after save + load",
-    "paid": 169031244.05,
-    "rng": 2469148393,
+    "paid": 304311778.43,
+    "rng": 3078255163,
     "save": {
      "activeMachine": 0,
      "autoTimer": 2.9999999999999942,
@@ -4220,13 +4298,14 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "990403301.66",
+     "coins": "1036537360.37",
      "delivery": {
       "active": false,
       "duration": 0,
       "timer": 0
      },
      "diary": {
+      "billionaire": true,
       "cardShark": true,
       "firstSpin": true,
       "firstWin": true,
@@ -4237,9 +4316,11 @@
       "luck50": true,
       "millionaire": true,
       "newSeed": true,
+      "nightOwl": true,
       "onFire": true,
       "potLuck": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "thirdReel": true,
       "threeLines": true,
@@ -4248,6 +4329,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -4257,13 +4339,13 @@
        "pots": {},
        "result": [
         [
+         "golden"
+        ],
+        [
+         "golden"
+        ],
+        [
          "blank"
-        ],
-        [
-         "seed"
-        ],
-        [
-         "carrot"
         ]
        ],
        "spinBet": 1,
@@ -4271,7 +4353,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 1,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -4290,22 +4372,22 @@
        "result": [
         [
          "seed",
-         "seed",
-         "seed"
+         "blank",
+         "strawberry"
         ],
         [
          "carrot",
-         "seed",
+         "carrot",
          "seed"
         ],
         [
          "seed",
-         "carrot",
+         "seed",
          "blueberry"
         ],
         [
-         "seed",
-         "seed",
+         "carrot",
+         "carrot",
          "seed"
         ]
        ],
@@ -4314,7 +4396,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 3,
+       "streak": 0,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -4329,40 +4411,34 @@
       {
        "bet": 4,
        "bonus": null,
-       "freeSpins": {
-        "bet": 10,
-        "left": 5,
-        "timer": 0.8499999999999995,
-        "total": 23,
-        "won": "18042875"
-       },
+       "freeSpins": null,
        "hold": null,
        "pots": {},
        "result": [
         [
-         "ball",
-         "blank",
-         "apple"
-        ],
-        [
-         "corn",
-         "blank",
-         "carrot"
+         "golden",
+         "carrot",
+         "blank"
         ],
         [
          "seed",
+         "seed",
+         "blank"
+        ],
+        [
+         "golden",
          "carrot",
-         "apple"
+         "carrot"
+        ],
+        [
+         "carrot",
+         "carrot",
+         "seed"
         ],
         [
          "corn",
-         "blank",
-         "corn"
-        ],
-        [
-         "apple",
-         "golden",
-         "carrot"
+         "wild",
+         "seed"
         ]
        ],
        "spinBet": 1,
@@ -4370,7 +4446,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 4,
+       "streak": 2,
        "typeId": "bonanza",
        "upgrades": {
         "acorn": 5,
@@ -4387,36 +4463,36 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3001050",
-        "major": "301080",
-        "mini": "30570",
-        "minor": "75840"
+        "grand": "3000750",
+        "major": "300960",
+        "mini": "30540",
+        "minor": "75780"
        },
        "result": [
         [
-         "strawberry",
+         "blank",
          "seed",
+         "apple"
+        ],
+        [
+         "seed",
+         "blank",
          "strawberry"
         ],
         [
          "blank",
          "strawberry",
-         "blank"
-        ],
-        [
-         "blank",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "blueberry",
          "seed"
         ],
         [
          "seed",
+         "seed",
+         "pouch"
+        ],
+        [
          "blank",
-         "seed"
+         "wild",
+         "blueberry"
         ]
        ],
        "spinBet": 1,
@@ -4424,10 +4500,10 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 1,
+       "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -4436,10 +4512,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "984055499.51",
-      "playTime": 744.8999999996512
+      "coinsEarned": "1122592134.26",
+      "playTime": 744.7333333329847
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4448,91 +4524,97 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 74,
+      "autoSpins": 77,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 49,
+      "bestStreak": 22,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "713960625",
+      "biggestWin": "714031875",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "984055499.51",
-      "coinsSpent": "118439.7",
-      "coinsWon": "169031244.05",
+      "coinsEarned": "1122592134.26",
+      "coinsSpent": "127932.2",
+      "coinsWon": "304311778.43",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "freeSpinCoins": "24697625",
-      "freeSpinTriggers": 2,
-      "freeSpins": 23,
-      "gambleLosses": 36,
-      "gambleWins": 19,
+      "doubleWins": 16,
+      "freeSpinCoins": "11077000",
+      "freeSpinTriggers": 1,
+      "freeSpins": 5,
+      "gambleLosses": 42,
+      "gambleWins": 16,
       "goldenJackpots": 0,
       "grandJackpots": 1,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 104,
-      "mostLinesWon": 10,
+      "manualSpins": 124,
+      "mostLinesWon": 13,
       "mostSeedsHeld": 0,
-      "offlineCoins": "4270505.46",
-      "playTime": 744.8999999996512,
+      "offlineCoins": "7405480.83",
+      "playTime": 744.7333333329847,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 201,
-      "suitWins": 9,
+      "spins": 206,
+      "suitWins": 8,
       "symbolsUnlocked": 7,
-      "tokensEarned": "51",
-      "upgradesBought": 192,
-      "wildWins": 44,
-      "wins": 142
+      "tokensEarned": "60",
+      "upgradesBought": 209,
+      "wildWins": 56,
+      "wins": 141
      },
-     "tokens": "51",
+     "tokens": "60",
      "tree": {},
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
-    "t": 744.401008
+    "t": 744.235008
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 473,
+     "coinsChanged": 505,
      "freeSpinsEnded": 1,
-     "freeSpinsStarted": 2,
-     "gambleEnded": 81,
-     "gambleOffered": 81,
-     "gambleResolved": 63,
+     "freeSpinsStarted": 1,
+     "gambleEnded": 87,
+     "gambleOffered": 87,
+     "gambleResolved": 67,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
      "offlineEarned": 1,
-     "spinBlocked": 6,
-     "spinResolved": 237,
-     "spinStarted": 238,
-     "stickerEarned": 20,
-     "tokensChanged": 21,
-     "upgradeBought": 28
+     "spinBlocked": 4,
+     "spinResolved": 242,
+     "spinStarted": 243,
+     "stickerEarned": 23,
+     "tokensChanged": 24,
+     "upgradeBought": 32
     },
     "label": "played on after loading",
-    "paid": 169881078.45,
-    "rng": 1382148044,
+    "paid": 305078725.34,
+    "rng": 2431266893,
     "save": {
      "activeMachine": 0,
      "autoTimer": 3.8,
@@ -4547,13 +4629,14 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "990589596.81",
+     "coins": "1037281543.03",
      "delivery": {
       "active": false,
       "duration": 0,
       "timer": 0
      },
      "diary": {
+      "billionaire": true,
       "cardShark": true,
       "firstSpin": true,
       "firstWin": true,
@@ -4565,9 +4648,11 @@
       "luck50": true,
       "millionaire": true,
       "newSeed": true,
+      "nightOwl": true,
       "onFire": true,
       "potLuck": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "thirdReel": true,
       "threeLines": true,
@@ -4576,6 +4661,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 4,
@@ -4585,21 +4671,21 @@
        "pots": {},
        "result": [
         [
+         "carrot"
+        ],
+        [
          "blank"
         ],
         [
          "seed"
-        ],
-        [
-         "blank"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
        "spinSource": "manual",
-       "spinTimer": 0.766666666666673,
+       "spinTimer": 1.766666666666671,
        "spinning": true,
-       "streak": 0,
+       "streak": 2,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -4618,22 +4704,22 @@
        "result": [
         [
          "seed",
-         "seed",
-         "seed"
+         "blank",
+         "strawberry"
         ],
         [
          "carrot",
-         "seed",
+         "carrot",
          "seed"
         ],
         [
          "seed",
-         "carrot",
+         "seed",
          "blueberry"
         ],
         [
-         "seed",
-         "seed",
+         "carrot",
+         "carrot",
          "seed"
         ]
        ],
@@ -4642,7 +4728,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 3,
+       "streak": 0,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -4657,40 +4743,34 @@
       {
        "bet": 4,
        "bonus": null,
-       "freeSpins": {
-        "bet": 10,
-        "left": 5,
-        "timer": 0.8499999999999995,
-        "total": 23,
-        "won": "18042875"
-       },
+       "freeSpins": null,
        "hold": null,
        "pots": {},
        "result": [
         [
-         "ball",
-         "blank",
-         "apple"
-        ],
-        [
-         "corn",
-         "blank",
-         "carrot"
+         "golden",
+         "carrot",
+         "blank"
         ],
         [
          "seed",
+         "seed",
+         "blank"
+        ],
+        [
+         "golden",
          "carrot",
-         "apple"
+         "carrot"
+        ],
+        [
+         "carrot",
+         "carrot",
+         "seed"
         ],
         [
          "corn",
-         "blank",
-         "corn"
-        ],
-        [
-         "apple",
-         "golden",
-         "carrot"
+         "wild",
+         "seed"
         ]
        ],
        "spinBet": 1,
@@ -4698,7 +4778,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 4,
+       "streak": 2,
        "typeId": "bonanza",
        "upgrades": {
         "acorn": 5,
@@ -4715,36 +4795,36 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3001050",
-        "major": "301080",
-        "mini": "30570",
-        "minor": "75840"
+        "grand": "3000750",
+        "major": "300960",
+        "mini": "30540",
+        "minor": "75780"
        },
        "result": [
         [
-         "strawberry",
+         "blank",
          "seed",
+         "apple"
+        ],
+        [
+         "seed",
+         "blank",
          "strawberry"
         ],
         [
          "blank",
          "strawberry",
-         "blank"
-        ],
-        [
-         "blank",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "blueberry",
          "seed"
         ],
         [
          "seed",
+         "seed",
+         "pouch"
+        ],
+        [
          "blank",
-         "seed"
+         "wild",
+         "blueberry"
         ]
        ],
        "spinBet": 1,
@@ -4752,10 +4832,10 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 1,
+       "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 2,
+        "charm": 1,
         "extraPouches": 4,
         "pouchPolish": 3,
         "royalPantry": 1,
@@ -4764,10 +4844,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "984905333.91",
-      "playTime": 864.899999999542
+      "coinsEarned": "1123359081.17",
+      "playTime": 864.7333333328755
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4776,66 +4856,72 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 84,
+      "autoSpins": 88,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 49,
+      "bestStreak": 22,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "713960625",
+      "biggestWin": "714031875",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "984905333.91",
-      "coinsSpent": "119235.2",
-      "coinsWon": "169881078.45",
+      "coinsEarned": "1123359081.17",
+      "coinsSpent": "128727.7",
+      "coinsWon": "305078725.34",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "freeSpinCoins": "24697625",
-      "freeSpinTriggers": 2,
-      "freeSpins": 23,
-      "gambleLosses": 44,
+      "doubleWins": 17,
+      "freeSpinCoins": "11077000",
+      "freeSpinTriggers": 1,
+      "freeSpins": 5,
+      "gambleLosses": 48,
       "gambleWins": 19,
       "goldenJackpots": 1,
       "grandJackpots": 1,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 131,
-      "mostLinesWon": 10,
+      "manualSpins": 150,
+      "mostLinesWon": 13,
       "mostSeedsHeld": 0,
-      "offlineCoins": "4270505.46",
-      "playTime": 864.899999999542,
+      "offlineCoins": "7405480.83",
+      "playTime": 864.7333333328755,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 238,
+      "spins": 243,
       "suitWins": 9,
       "symbolsUnlocked": 7,
-      "tokensEarned": "55",
-      "upgradesBought": 192,
-      "wildWins": 44,
-      "wins": 158
+      "tokensEarned": "64",
+      "upgradesBought": 209,
+      "wildWins": 56,
+      "wins": 159
      },
-     "tokens": "55",
+     "tokens": "64",
      "tree": {},
      "upgrades": {
       "cheeks": 91,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
-    "t": 864.401
+    "t": 864.235
    }
   ],
   "family": [
@@ -4868,6 +4954,7 @@
      },
      "diary": {},
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -4890,7 +4977,7 @@
       "coinsEarned": "20000",
       "playTime": 0
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4920,6 +5007,7 @@
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -4927,6 +5015,7 @@
       "gambleWins": 0,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -4993,6 +5082,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -5015,7 +5105,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5045,6 +5135,7 @@
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -5052,6 +5143,7 @@
       "gambleWins": 0,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -5129,6 +5221,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -5151,7 +5244,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5206,6 +5299,7 @@
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -5213,6 +5307,7 @@
       "gambleWins": 0,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -5295,6 +5390,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -5324,7 +5420,7 @@
       "coinsEarned": "162",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5379,6 +5475,7 @@
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -5386,6 +5483,7 @@
       "gambleWins": 0,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -5472,6 +5570,7 @@
       "wheelTraining": true
      },
      "generation": 3,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -5496,7 +5595,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -5551,6 +5650,7 @@
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -5558,6 +5658,7 @@
       "gambleWins": 0,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -5613,8 +5714,8 @@
      "skinEquipped": 23,
      "spinResolved": 108,
      "spinStarted": 108,
-     "stickerEarned": 12,
-     "tokensChanged": 69,
+     "stickerEarned": 13,
+     "tokensChanged": 70,
      "treeNodeBought": 14,
      "upgradeBought": 14
     },
@@ -5651,11 +5752,13 @@
       "millionaire": true,
       "nestEgg": true,
       "newSeed": true,
+      "nightOwl": true,
       "spins100": true,
       "tree5": true,
       "wheelTraining": true
      },
      "generation": 3,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -5689,7 +5792,7 @@
       "coinsEarned": "4656.83",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -5744,6 +5847,7 @@
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -5751,6 +5855,7 @@
       "gambleWins": 0,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -5767,12 +5872,12 @@
       "spins": 108,
       "suitWins": 0,
       "symbolsUnlocked": 1,
-      "tokensEarned": "37",
+      "tokensEarned": "39",
       "upgradesBought": 14,
       "wildWins": 0,
       "wins": 24
      },
-     "tokens": "29",
+     "tokens": "31",
      "tree": {
       "bigBackpack": 1,
       "bigSpender": 1,
@@ -5801,12 +5906,12 @@
    {
     "events": {
      "betChanged": 1,
-     "coinsChanged": 26,
+     "coinsChanged": 30,
      "machineBought": 3,
      "machineSwitched": 3,
      "stickerEarned": 6,
      "tokensChanged": 6,
-     "upgradeBought": 22
+     "upgradeBought": 26
     },
     "label": "bought the new machines",
     "paid": 0,
@@ -5825,7 +5930,7 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "64420533055108",
+     "coins": "64420530603015",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -5840,6 +5945,7 @@
       "wheelTraining": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -5930,7 +6036,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5941,7 +6047,7 @@
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 0,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
       "bestStreak": 0,
       "bestWays": 0,
@@ -5960,6 +6066,7 @@
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -5967,6 +6074,7 @@
       "gambleWins": 0,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -5984,7 +6092,7 @@
       "suitWins": 0,
       "symbolsUnlocked": 6,
       "tokensEarned": "17",
-      "upgradesBought": 285,
+      "upgradesBought": 303,
       "wildWins": 0,
       "wins": 0
      },
@@ -5993,8 +6101,12 @@
      "upgrades": {
       "cheeks": 200,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
@@ -6003,21 +6115,21 @@
    {
     "events": {
      "betChanged": 1,
-     "coinsChanged": 124,
-     "gambleEnded": 16,
-     "gambleOffered": 16,
-     "gambleResolved": 12,
+     "coinsChanged": 140,
+     "gambleEnded": 22,
+     "gambleOffered": 22,
+     "gambleResolved": 17,
      "machineBought": 3,
      "machineSwitched": 4,
-     "spinResolved": 63,
-     "spinStarted": 64,
-     "stickerEarned": 11,
-     "tokensChanged": 11,
-     "upgradeBought": 22
+     "spinResolved": 62,
+     "spinStarted": 63,
+     "stickerEarned": 14,
+     "tokensChanged": 14,
+     "upgradeBought": 26
     },
     "label": "played the maze",
-    "paid": 255781575000,
-    "rng": 2165509736,
+    "paid": 68222700000,
+    "rng": 142120332,
     "save": {
      "activeMachine": 1,
      "autoTimer": 4.4,
@@ -6032,13 +6144,15 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "64613668091358.91",
+     "coins": "64498590525027.62",
      "delivery": {
       "active": false,
       "duration": 0,
       "timer": 0
      },
      "diary": {
+      "billionaire": true,
+      "cardShark": true,
       "firstSpin": true,
       "firstWin": true,
       "fullCage": true,
@@ -6047,11 +6161,13 @@
       "millionaire": true,
       "newSeed": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -6077,37 +6193,37 @@
        "pots": {},
        "result": [
         [
-         "golden",
-         "blank",
-         "blank"
+         "carrot",
+         "blueberry",
+         "corn"
         ],
         [
-         "blank",
+         "carrot",
+         "blueberry",
+         "strawberry"
+        ],
+        [
+         "wild",
+         "blueberry",
+         "corn"
+        ],
+        [
+         "corn",
          "seed",
-         "carrot"
+         "golden"
         ],
         [
-         "blank",
-         "blank",
-         "blank"
-        ],
-        [
-         "golden",
-         "seed",
-         "blueberry"
-        ],
-        [
-         "golden",
          "strawberry",
-         "seed"
+         "strawberry",
+         "blueberry"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
        "spinSource": "manual",
-       "spinTimer": 1.9666666666666726,
+       "spinTimer": 0.5666666666666746,
        "spinning": true,
-       "streak": 2,
+       "streak": 0,
        "typeId": "maze",
        "upgrades": {
         "hiddenSnacks": 2,
@@ -6165,10 +6281,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "255781575000",
+      "coinsEarned": "68222700000",
       "playTime": 240.00000000008313
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -6177,39 +6293,41 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 16,
+      "autoSpins": 22,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 3,
+      "bestStreak": 4,
       "bestWays": 6,
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "185895000000",
+      "biggestWin": "36903600000",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "255781575000",
-      "coinsSpent": "688748.8",
-      "coinsWon": "255781575000",
+      "coinsEarned": "68222700000",
+      "coinsSpent": "677987.1",
+      "coinsWon": "68222700000",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 2,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
-      "gambleLosses": 9,
-      "gambleWins": 3,
+      "gambleLosses": 8,
+      "gambleWins": 9,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
       "machinesBought": 3,
-      "manualSpins": 48,
+      "manualSpins": 41,
       "mostLinesWon": 0,
       "mostSeedsHeld": 0,
       "offlineCoins": "0",
@@ -6218,21 +6336,25 @@
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 64,
-      "suitWins": 0,
+      "spins": 63,
+      "suitWins": 2,
       "symbolsUnlocked": 6,
-      "tokensEarned": "28",
-      "upgradesBought": 285,
-      "wildWins": 8,
-      "wins": 22
+      "tokensEarned": "38",
+      "upgradesBought": 303,
+      "wildWins": 10,
+      "wins": 30
      },
-     "tokens": "28",
+     "tokens": "38",
      "tree": {},
      "upgrades": {
       "cheeks": 200,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
@@ -6241,21 +6363,602 @@
    {
     "events": {
      "betChanged": 1,
-     "coinsChanged": 259,
-     "gambleEnded": 44,
-     "gambleOffered": 44,
-     "gambleResolved": 34,
+     "coinsChanged": 278,
+     "gambleEnded": 50,
+     "gambleOffered": 50,
+     "gambleResolved": 38,
      "machineBought": 3,
      "machineSwitched": 5,
-     "spinResolved": 124,
-     "spinStarted": 125,
-     "stickerEarned": 15,
-     "tokensChanged": 15,
-     "upgradeBought": 22
+     "spinResolved": 123,
+     "spinStarted": 124,
+     "stickerEarned": 17,
+     "tokensChanged": 17,
+     "upgradeBought": 26
     },
     "label": "played the vault",
-    "paid": 613482187500,
-    "rng": 355758117,
+    "paid": 1274404575000,
+    "rng": 284240620,
+    "save": {
+     "activeMachine": 2,
+     "autoTimer": 4.4,
+     "bigCage": false,
+     "capsules": {
+      "sincePity": 0
+     },
+     "casino": {
+      "bestIncome": "0",
+      "boosts": {},
+      "chips": "0",
+      "hand": null,
+      "spinsToChip": 0
+     },
+     "coins": "65747913877028.02",
+     "delivery": {
+      "active": false,
+      "duration": 0,
+      "timer": 0
+     },
+     "diary": {
+      "billionaire": true,
+      "cardShark": true,
+      "firstSpin": true,
+      "firstWin": true,
+      "fullCage": true,
+      "highRoller": true,
+      "luck50": true,
+      "millionaire": true,
+      "newSeed": true,
+      "onFire": true,
+      "secondMachine": true,
+      "seeingDouble": true,
+      "spins100": true,
+      "threeLines": true,
+      "wheelMax": true,
+      "wheelTraining": true,
+      "wildThing": true
+     },
+     "generation": 1,
+     "helper": true,
+     "machines": [
+      {
+       "bet": 0,
+       "bonus": null,
+       "freeSpins": null,
+       "hold": null,
+       "pots": {},
+       "result": null,
+       "spinBet": 1,
+       "spinFree": false,
+       "spinSource": "manual",
+       "spinTimer": 0,
+       "spinning": false,
+       "streak": 0,
+       "typeId": "clunky",
+       "upgrades": {}
+      },
+      {
+       "bet": 4,
+       "bonus": null,
+       "freeSpins": null,
+       "hold": null,
+       "pots": {},
+       "result": [
+        [
+         "carrot",
+         "blueberry",
+         "corn"
+        ],
+        [
+         "carrot",
+         "blueberry",
+         "strawberry"
+        ],
+        [
+         "wild",
+         "blueberry",
+         "corn"
+        ],
+        [
+         "corn",
+         "seed",
+         "golden"
+        ],
+        [
+         "strawberry",
+         "strawberry",
+         "blueberry"
+        ]
+       ],
+       "spinBet": 10,
+       "spinFree": false,
+       "spinSource": "manual",
+       "spinTimer": 0,
+       "spinning": false,
+       "streak": 1,
+       "typeId": "maze",
+       "upgrades": {
+        "hiddenSnacks": 2,
+        "longerMaze": 2,
+        "luckyTurns": 5,
+        "mazeMap": 8,
+        "mazeRunner": 3
+       }
+      },
+      {
+       "bet": 4,
+       "bonus": null,
+       "freeSpins": null,
+       "hold": null,
+       "pots": {},
+       "result": [
+        [
+         "wild",
+         "blank",
+         "carrot"
+        ],
+        [
+         "carrot",
+         "blank",
+         "blank"
+        ],
+        [
+         "blank",
+         "blank",
+         "seed"
+        ],
+        [
+         "carrot",
+         "apple",
+         "seed"
+        ],
+        [
+         "goldAcorn",
+         "seed",
+         "golden"
+        ]
+       ],
+       "spinBet": 10,
+       "spinFree": false,
+       "spinSource": "manual",
+       "spinTimer": 0.9666666666666759,
+       "spinning": true,
+       "streak": 34,
+       "typeId": "vault",
+       "upgrades": {
+        "luckyCombination": 5,
+        "oiledHinges": 8,
+        "stickyPaws": 2,
+        "vaultBothWays": 1,
+        "vaultPantry": 2,
+        "widerVault": 5
+       }
+      },
+      {
+       "bet": 4,
+       "bonus": null,
+       "freeSpins": null,
+       "hold": null,
+       "pots": {},
+       "result": null,
+       "spinBet": 1,
+       "spinFree": false,
+       "spinSource": "manual",
+       "spinTimer": 0,
+       "spinning": false,
+       "streak": 0,
+       "typeId": "cheese",
+       "upgrades": {
+        "agedCheese": 3,
+        "biggerBoard": 5,
+        "cheeseBoard": 2,
+        "cheeseBothWays": 1,
+        "cheeseSlicer": 8,
+        "luckyRind": 5
+       }
+      }
+     ],
+     "run": {
+      "coinsEarned": "1274404575000",
+      "playTime": 479.9999999998921
+     },
+     "saveVersion": 12,
+     "seeds": "0",
+     "seedsEarned": "0",
+     "skins": {
+      "equipped": {},
+      "owned": {}
+     },
+     "stars": {},
+     "stats": {
+      "autoSpins": 51,
+      "bestGambleRun": 1,
+      "bestLuck": 120,
+      "bestStars": 0,
+      "bestStreak": 34,
+      "bestWays": 6,
+      "bestWheel": 0,
+      "biggestBet": 10,
+      "biggestCasinoWin": "0",
+      "biggestWin": "445602937500",
+      "blackjacks": 0,
+      "capsulesOpened": 0,
+      "casinoGames": 0,
+      "chipsBought": "0",
+      "chipsEarned": "0",
+      "coinsEarned": "1274404575000",
+      "coinsSpent": "13807236.7",
+      "coinsWon": "1274404575000",
+      "deliveries": 0,
+      "deliveryCoins": "0",
+      "derbyLongshots": 0,
+      "doubleWins": 7,
+      "freeSpinCoins": "0",
+      "freeSpinTriggers": 0,
+      "freeSpins": 0,
+      "gambleLosses": 19,
+      "gambleWins": 19,
+      "goldenJackpots": 0,
+      "grandJackpots": 0,
+      "helperBuys": 0,
+      "holdBonuses": 0,
+      "holdGrands": 0,
+      "jackpotsWon": 0,
+      "machinesBought": 3,
+      "manualSpins": 73,
+      "mostLinesWon": 16,
+      "mostSeedsHeld": 0,
+      "offlineCoins": "0",
+      "playTime": 479.9999999998921,
+      "prizesBought": 0,
+      "rebuilds": 0,
+      "rouletteNumbers": 0,
+      "seedDropEdges": 0,
+      "spins": 124,
+      "suitWins": 4,
+      "symbolsUnlocked": 6,
+      "tokensEarned": "45",
+      "upgradesBought": 303,
+      "wildWins": 36,
+      "wins": 86
+     },
+     "tokens": "45",
+     "tree": {},
+     "upgrades": {
+      "cheeks": 200,
+      "clover": 5,
+      "cosyNest": 4,
+      "highRoller": 4,
+      "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
+      "wheel": 4
+     }
+    },
+    "t": 480
+   },
+   {
+    "events": {
+     "betChanged": 1,
+     "coinsChanged": 415,
+     "gambleEnded": 78,
+     "gambleOffered": 78,
+     "gambleResolved": 60,
+     "machineBought": 3,
+     "machineSwitched": 6,
+     "spinResolved": 184,
+     "spinStarted": 185,
+     "stickerEarned": 17,
+     "tokensChanged": 17,
+     "upgradeBought": 26
+    },
+    "label": "played the cheese",
+    "paid": 3028004780250,
+    "rng": 2257926721,
+    "save": {
+     "activeMachine": 3,
+     "autoTimer": 3.2499999999999933,
+     "bigCage": false,
+     "capsules": {
+      "sincePity": 0
+     },
+     "casino": {
+      "bestIncome": "0",
+      "boosts": {},
+      "chips": "0",
+      "hand": null,
+      "spinsToChip": 0
+     },
+     "coins": "67666189225780.42",
+     "delivery": {
+      "active": false,
+      "duration": 0,
+      "timer": 0
+     },
+     "diary": {
+      "billionaire": true,
+      "cardShark": true,
+      "firstSpin": true,
+      "firstWin": true,
+      "fullCage": true,
+      "highRoller": true,
+      "luck50": true,
+      "millionaire": true,
+      "newSeed": true,
+      "onFire": true,
+      "secondMachine": true,
+      "seeingDouble": true,
+      "spins100": true,
+      "threeLines": true,
+      "wheelMax": true,
+      "wheelTraining": true,
+      "wildThing": true
+     },
+     "generation": 1,
+     "helper": true,
+     "machines": [
+      {
+       "bet": 0,
+       "bonus": null,
+       "freeSpins": null,
+       "hold": null,
+       "pots": {},
+       "result": null,
+       "spinBet": 1,
+       "spinFree": false,
+       "spinSource": "manual",
+       "spinTimer": 0,
+       "spinning": false,
+       "streak": 0,
+       "typeId": "clunky",
+       "upgrades": {}
+      },
+      {
+       "bet": 4,
+       "bonus": null,
+       "freeSpins": null,
+       "hold": null,
+       "pots": {},
+       "result": [
+        [
+         "carrot",
+         "blueberry",
+         "corn"
+        ],
+        [
+         "carrot",
+         "blueberry",
+         "strawberry"
+        ],
+        [
+         "wild",
+         "blueberry",
+         "corn"
+        ],
+        [
+         "corn",
+         "seed",
+         "golden"
+        ],
+        [
+         "strawberry",
+         "strawberry",
+         "blueberry"
+        ]
+       ],
+       "spinBet": 10,
+       "spinFree": false,
+       "spinSource": "manual",
+       "spinTimer": 0,
+       "spinning": false,
+       "streak": 1,
+       "typeId": "maze",
+       "upgrades": {
+        "hiddenSnacks": 2,
+        "longerMaze": 2,
+        "luckyTurns": 5,
+        "mazeMap": 8,
+        "mazeRunner": 3
+       }
+      },
+      {
+       "bet": 4,
+       "bonus": null,
+       "freeSpins": null,
+       "hold": null,
+       "pots": {},
+       "result": [
+        [
+         "wild",
+         "blank",
+         "carrot"
+        ],
+        [
+         "carrot",
+         "blank",
+         "blank"
+        ],
+        [
+         "blank",
+         "blank",
+         "seed"
+        ],
+        [
+         "carrot",
+         "apple",
+         "seed"
+        ],
+        [
+         "goldAcorn",
+         "seed",
+         "golden"
+        ]
+       ],
+       "spinBet": 10,
+       "spinFree": false,
+       "spinSource": "manual",
+       "spinTimer": 0,
+       "spinning": false,
+       "streak": 35,
+       "typeId": "vault",
+       "upgrades": {
+        "luckyCombination": 5,
+        "oiledHinges": 8,
+        "stickyPaws": 2,
+        "vaultBothWays": 1,
+        "vaultPantry": 2,
+        "widerVault": 5
+       }
+      },
+      {
+       "bet": 4,
+       "bonus": null,
+       "freeSpins": null,
+       "hold": null,
+       "pots": {},
+       "result": [
+        [
+         "blank",
+         "wild",
+         "blueberry"
+        ],
+        [
+         "blank",
+         "blank",
+         "strawberry"
+        ],
+        [
+         "blank",
+         "blank",
+         "apple"
+        ],
+        [
+         "wild",
+         "wild",
+         "blank"
+        ],
+        [
+         "seed",
+         "cheese",
+         "apple"
+        ]
+       ],
+       "spinBet": 10,
+       "spinFree": false,
+       "spinSource": "auto",
+       "spinTimer": 0.36666666666667447,
+       "spinning": true,
+       "streak": 7,
+       "typeId": "cheese",
+       "upgrades": {
+        "agedCheese": 3,
+        "biggerBoard": 5,
+        "cheeseBoard": 2,
+        "cheeseBothWays": 1,
+        "cheeseSlicer": 8,
+        "luckyRind": 5
+       }
+      }
+     ],
+     "run": {
+      "coinsEarned": "3028004780250",
+      "playTime": 719.9999999996738
+     },
+     "saveVersion": 12,
+     "seeds": "0",
+     "seedsEarned": "0",
+     "skins": {
+      "equipped": {},
+      "owned": {}
+     },
+     "stars": {},
+     "stats": {
+      "autoSpins": 80,
+      "bestGambleRun": 1,
+      "bestLuck": 120,
+      "bestStars": 0,
+      "bestStreak": 35,
+      "bestWays": 6,
+      "bestWheel": 8,
+      "biggestBet": 10,
+      "biggestCasinoWin": "0",
+      "biggestWin": "445602937500",
+      "blackjacks": 0,
+      "capsulesOpened": 0,
+      "casinoGames": 0,
+      "chipsBought": "0",
+      "chipsEarned": "0",
+      "coinsEarned": "3028004780250",
+      "coinsSpent": "92582734.3",
+      "coinsWon": "3028004780250",
+      "deliveries": 0,
+      "deliveryCoins": "0",
+      "derbyLongshots": 0,
+      "doubleWins": 11,
+      "freeSpinCoins": "0",
+      "freeSpinTriggers": 0,
+      "freeSpins": 0,
+      "gambleLosses": 35,
+      "gambleWins": 25,
+      "goldenJackpots": 0,
+      "grandJackpots": 0,
+      "helperBuys": 0,
+      "holdBonuses": 0,
+      "holdGrands": 0,
+      "jackpotsWon": 0,
+      "machinesBought": 3,
+      "manualSpins": 105,
+      "mostLinesWon": 18,
+      "mostSeedsHeld": 0,
+      "offlineCoins": "0",
+      "playTime": 719.9999999996738,
+      "prizesBought": 0,
+      "rebuilds": 0,
+      "rouletteNumbers": 0,
+      "seedDropEdges": 0,
+      "spins": 185,
+      "suitWins": 8,
+      "symbolsUnlocked": 6,
+      "tokensEarned": "45",
+      "upgradesBought": 303,
+      "wildWins": 59,
+      "wins": 140
+     },
+     "tokens": "45",
+     "tree": {},
+     "upgrades": {
+      "cheeks": 200,
+      "clover": 5,
+      "cosyNest": 4,
+      "highRoller": 4,
+      "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
+      "wheel": 4
+     }
+    },
+    "t": 720
+   },
+   {
+    "events": {
+     "betChanged": 1,
+     "coinsChanged": 416,
+     "gambleEnded": 78,
+     "gambleOffered": 78,
+     "gambleResolved": 60,
+     "holdStarted": 1,
+     "machineBought": 3,
+     "machineSwitched": 7,
+     "spinResolved": 185,
+     "spinStarted": 185,
+     "stickerEarned": 17,
+     "tokensChanged": 17,
+     "upgradeBought": 26
+    },
+    "label": "hold & spin, saved halfway",
+    "paid": 3339639158250,
+    "rng": 3322198170,
     "save": {
      "activeMachine": 2,
      "autoTimer": 3.2499999999999933,
@@ -6270,13 +6973,14 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "65020855855859.3",
+     "coins": "67977823603780.42",
      "delivery": {
       "active": false,
       "duration": 0,
       "timer": 0
      },
      "diary": {
+      "billionaire": true,
       "cardShark": true,
       "firstSpin": true,
       "firstWin": true,
@@ -6287,6 +6991,7 @@
       "newSeed": true,
       "onFire": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "threeLines": true,
       "wheelMax": true,
@@ -6294,6 +6999,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -6319,592 +7025,29 @@
        "pots": {},
        "result": [
         [
-         "golden",
-         "blank",
-         "blank"
-        ],
-        [
-         "blank",
-         "seed",
-         "carrot"
-        ],
-        [
-         "blank",
-         "blank",
-         "blank"
-        ],
-        [
-         "golden",
-         "seed",
-         "blueberry"
-        ],
-        [
-         "golden",
-         "strawberry",
-         "seed"
-        ]
-       ],
-       "spinBet": 10,
-       "spinFree": false,
-       "spinSource": "manual",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 0,
-       "typeId": "maze",
-       "upgrades": {
-        "hiddenSnacks": 2,
-        "longerMaze": 2,
-        "luckyTurns": 5,
-        "mazeMap": 8,
-        "mazeRunner": 3
-       }
-      },
-      {
-       "bet": 4,
-       "bonus": null,
-       "freeSpins": null,
-       "hold": null,
-       "pots": {},
-       "result": [
-        [
-         "seed",
-         "blank",
-         "carrot"
-        ],
-        [
          "carrot",
-         "goldAcorn",
-         "seed"
-        ],
-        [
-         "carrot",
-         "carrot",
-         "golden"
-        ],
-        [
-         "blank",
-         "seed",
-         "blueberry"
-        ],
-        [
-         "wild",
-         "carrot",
-         "golden"
-        ]
-       ],
-       "spinBet": 10,
-       "spinFree": false,
-       "spinSource": "auto",
-       "spinTimer": 0.36666666666667447,
-       "spinning": true,
-       "streak": 5,
-       "typeId": "vault",
-       "upgrades": {
-        "luckyCombination": 5,
-        "oiledHinges": 8,
-        "stickyPaws": 2,
-        "vaultBothWays": 1,
-        "vaultPantry": 2,
-        "widerVault": 5
-       }
-      },
-      {
-       "bet": 4,
-       "bonus": null,
-       "freeSpins": null,
-       "hold": null,
-       "pots": {},
-       "result": null,
-       "spinBet": 1,
-       "spinFree": false,
-       "spinSource": "manual",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 0,
-       "typeId": "cheese",
-       "upgrades": {
-        "agedCheese": 3,
-        "biggerBoard": 5,
-        "cheeseBoard": 2,
-        "cheeseBothWays": 1,
-        "cheeseSlicer": 8,
-        "luckyRind": 5
-       }
-      }
-     ],
-     "run": {
-      "coinsEarned": "613482187500",
-      "playTime": 479.9999999998921
-     },
-     "saveVersion": 11,
-     "seeds": "0",
-     "seedsEarned": "0",
-     "skins": {
-      "equipped": {},
-      "owned": {}
-     },
-     "stars": {},
-     "stats": {
-      "autoSpins": 45,
-      "bestGambleRun": 1,
-      "bestLuck": 100,
-      "bestStars": 0,
-      "bestStreak": 22,
-      "bestWays": 6,
-      "bestWheel": 0,
-      "biggestBet": 10,
-      "biggestCasinoWin": "0",
-      "biggestWin": "185895000000",
-      "blackjacks": 0,
-      "capsulesOpened": 0,
-      "casinoGames": 0,
-      "chipsBought": "0",
-      "chipsEarned": "0",
-      "coinsEarned": "613482187500",
-      "coinsSpent": "13817998.4",
-      "coinsWon": "613482187500",
-      "deliveries": 0,
-      "deliveryCoins": "0",
-      "derbyLongshots": 0,
-      "freeSpinCoins": "0",
-      "freeSpinTriggers": 0,
-      "freeSpins": 0,
-      "gambleLosses": 21,
-      "gambleWins": 13,
-      "goldenJackpots": 0,
-      "grandJackpots": 0,
-      "holdBonuses": 0,
-      "holdGrands": 0,
-      "jackpotsWon": 0,
-      "machinesBought": 3,
-      "manualSpins": 80,
-      "mostLinesWon": 20,
-      "mostSeedsHeld": 0,
-      "offlineCoins": "0",
-      "playTime": 479.9999999998921,
-      "prizesBought": 0,
-      "rebuilds": 0,
-      "rouletteNumbers": 0,
-      "seedDropEdges": 0,
-      "spins": 125,
-      "suitWins": 5,
-      "symbolsUnlocked": 6,
-      "tokensEarned": "38",
-      "upgradesBought": 285,
-      "wildWins": 30,
-      "wins": 74
-     },
-     "tokens": "38",
-     "tree": {},
-     "upgrades": {
-      "cheeks": 200,
-      "clover": 5,
-      "highRoller": 4,
-      "hotStreak": 5,
-      "wheel": 4
-     }
-    },
-    "t": 480
-   },
-   {
-    "events": {
-     "betChanged": 1,
-     "coinsChanged": 392,
-     "gambleEnded": 71,
-     "gambleOffered": 72,
-     "gambleResolved": 55,
-     "machineBought": 3,
-     "machineSwitched": 6,
-     "spinResolved": 186,
-     "spinStarted": 186,
-     "stickerEarned": 15,
-     "tokensChanged": 15,
-     "upgradeBought": 22
-    },
-    "label": "played the cheese",
-    "paid": 2278934655750,
-    "rng": 1009407981,
-    "save": {
-     "activeMachine": 3,
-     "autoTimer": 4.4,
-     "bigCage": false,
-     "capsules": {
-      "sincePity": 0
-     },
-     "casino": {
-      "bestIncome": "0",
-      "boosts": {},
-      "chips": "0",
-      "hand": null,
-      "spinsToChip": 0
-     },
-     "coins": "65905083611611.7",
-     "delivery": {
-      "active": false,
-      "duration": 0,
-      "timer": 0
-     },
-     "diary": {
-      "cardShark": true,
-      "firstSpin": true,
-      "firstWin": true,
-      "fullCage": true,
-      "highRoller": true,
-      "luck50": true,
-      "millionaire": true,
-      "newSeed": true,
-      "onFire": true,
-      "secondMachine": true,
-      "spins100": true,
-      "threeLines": true,
-      "wheelMax": true,
-      "wheelTraining": true,
-      "wildThing": true
-     },
-     "generation": 1,
-     "machines": [
-      {
-       "bet": 0,
-       "bonus": null,
-       "freeSpins": null,
-       "hold": null,
-       "pots": {},
-       "result": null,
-       "spinBet": 1,
-       "spinFree": false,
-       "spinSource": "manual",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 0,
-       "typeId": "clunky",
-       "upgrades": {}
-      },
-      {
-       "bet": 4,
-       "bonus": null,
-       "freeSpins": null,
-       "hold": null,
-       "pots": {},
-       "result": [
-        [
-         "golden",
-         "blank",
-         "blank"
-        ],
-        [
-         "blank",
-         "seed",
-         "carrot"
-        ],
-        [
-         "blank",
-         "blank",
-         "blank"
-        ],
-        [
-         "golden",
-         "seed",
-         "blueberry"
-        ],
-        [
-         "golden",
-         "strawberry",
-         "seed"
-        ]
-       ],
-       "spinBet": 10,
-       "spinFree": false,
-       "spinSource": "manual",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 0,
-       "typeId": "maze",
-       "upgrades": {
-        "hiddenSnacks": 2,
-        "longerMaze": 2,
-        "luckyTurns": 5,
-        "mazeMap": 8,
-        "mazeRunner": 3
-       }
-      },
-      {
-       "bet": 4,
-       "bonus": null,
-       "freeSpins": null,
-       "hold": null,
-       "pots": {},
-       "result": [
-        [
-         "seed",
-         "blank",
-         "carrot"
-        ],
-        [
-         "carrot",
-         "goldAcorn",
-         "seed"
-        ],
-        [
-         "carrot",
-         "carrot",
-         "golden"
-        ],
-        [
-         "blank",
-         "seed",
-         "blueberry"
-        ],
-        [
-         "wild",
-         "carrot",
-         "golden"
-        ]
-       ],
-       "spinBet": 10,
-       "spinFree": false,
-       "spinSource": "auto",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 6,
-       "typeId": "vault",
-       "upgrades": {
-        "luckyCombination": 5,
-        "oiledHinges": 8,
-        "stickyPaws": 2,
-        "vaultBothWays": 1,
-        "vaultPantry": 2,
-        "widerVault": 5
-       }
-      },
-      {
-       "bet": 4,
-       "bonus": null,
-       "freeSpins": null,
-       "hold": null,
-       "pots": {},
-       "result": [
-        [
-         "seed",
-         "blank",
-         "cheese"
-        ],
-        [
          "blueberry",
-         "golden",
-         "blank"
+         "corn"
         ],
         [
+         "carrot",
+         "blueberry",
+         "strawberry"
+        ],
+        [
+         "wild",
+         "blueberry",
+         "corn"
+        ],
+        [
+         "corn",
          "seed",
-         "blank",
-         "blank"
+         "golden"
         ],
         [
-         "apple",
-         "seed",
-         "seed"
-        ],
-        [
-         "seed",
-         "blank",
-         "apple"
-        ]
-       ],
-       "spinBet": 10,
-       "spinFree": false,
-       "spinSource": "manual",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 5,
-       "typeId": "cheese",
-       "upgrades": {
-        "agedCheese": 3,
-        "biggerBoard": 5,
-        "cheeseBoard": 2,
-        "cheeseBothWays": 1,
-        "cheeseSlicer": 8,
-        "luckyRind": 5
-       }
-      }
-     ],
-     "run": {
-      "coinsEarned": "2278934655750",
-      "playTime": 719.9999999996738
-     },
-     "saveVersion": 11,
-     "seeds": "0",
-     "seedsEarned": "0",
-     "skins": {
-      "equipped": {},
-      "owned": {}
-     },
-     "stars": {},
-     "stats": {
-      "autoSpins": 72,
-      "bestGambleRun": 1,
-      "bestLuck": 100,
-      "bestStars": 0,
-      "bestStreak": 22,
-      "bestWays": 6,
-      "bestWheel": 0,
-      "biggestBet": 10,
-      "biggestCasinoWin": "0",
-      "biggestWin": "472828752000",
-      "blackjacks": 0,
-      "capsulesOpened": 0,
-      "casinoGames": 0,
-      "chipsBought": "0",
-      "chipsEarned": "0",
-      "coinsEarned": "2278934655750",
-      "coinsSpent": "92593496",
-      "coinsWon": "2278934655750",
-      "deliveries": 0,
-      "deliveryCoins": "0",
-      "derbyLongshots": 0,
-      "freeSpinCoins": "0",
-      "freeSpinTriggers": 0,
-      "freeSpins": 0,
-      "gambleLosses": 35,
-      "gambleWins": 20,
-      "goldenJackpots": 0,
-      "grandJackpots": 0,
-      "holdBonuses": 0,
-      "holdGrands": 0,
-      "jackpotsWon": 0,
-      "machinesBought": 3,
-      "manualSpins": 114,
-      "mostLinesWon": 20,
-      "mostSeedsHeld": 0,
-      "offlineCoins": "0",
-      "playTime": 719.9999999996738,
-      "prizesBought": 0,
-      "rebuilds": 0,
-      "rouletteNumbers": 0,
-      "seedDropEdges": 0,
-      "spins": 186,
-      "suitWins": 7,
-      "symbolsUnlocked": 6,
-      "tokensEarned": "38",
-      "upgradesBought": 285,
-      "wildWins": 47,
-      "wins": 125
-     },
-     "tokens": "38",
-     "tree": {},
-     "upgrades": {
-      "cheeks": 200,
-      "clover": 5,
-      "highRoller": 4,
-      "hotStreak": 5,
-      "wheel": 4
-     }
-    },
-    "t": 720
-   },
-   {
-    "events": {
-     "betChanged": 1,
-     "coinsChanged": 392,
-     "gambleEnded": 72,
-     "gambleOffered": 72,
-     "gambleResolved": 55,
-     "holdStarted": 1,
-     "machineBought": 3,
-     "machineSwitched": 7,
-     "spinResolved": 186,
-     "spinStarted": 186,
-     "stickerEarned": 15,
-     "tokensChanged": 15,
-     "upgradeBought": 22
-    },
-    "label": "hold & spin, saved halfway",
-    "paid": 2278934655750,
-    "rng": 3401291967,
-    "save": {
-     "activeMachine": 2,
-     "autoTimer": 4.4,
-     "bigCage": false,
-     "capsules": {
-      "sincePity": 0
-     },
-     "casino": {
-      "bestIncome": "0",
-      "boosts": {},
-      "chips": "0",
-      "hand": null,
-      "spinsToChip": 0
-     },
-     "coins": "65905083611611.7",
-     "delivery": {
-      "active": false,
-      "duration": 0,
-      "timer": 0
-     },
-     "diary": {
-      "cardShark": true,
-      "firstSpin": true,
-      "firstWin": true,
-      "fullCage": true,
-      "highRoller": true,
-      "luck50": true,
-      "millionaire": true,
-      "newSeed": true,
-      "onFire": true,
-      "secondMachine": true,
-      "spins100": true,
-      "threeLines": true,
-      "wheelMax": true,
-      "wheelTraining": true,
-      "wildThing": true
-     },
-     "generation": 1,
-     "machines": [
-      {
-       "bet": 0,
-       "bonus": null,
-       "freeSpins": null,
-       "hold": null,
-       "pots": {},
-       "result": null,
-       "spinBet": 1,
-       "spinFree": false,
-       "spinSource": "manual",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 0,
-       "typeId": "clunky",
-       "upgrades": {}
-      },
-      {
-       "bet": 4,
-       "bonus": null,
-       "freeSpins": null,
-       "hold": null,
-       "pots": {},
-       "result": [
-        [
-         "golden",
-         "blank",
-         "blank"
-        ],
-        [
-         "blank",
-         "seed",
-         "carrot"
-        ],
-        [
-         "blank",
-         "blank",
-         "blank"
-        ],
-        [
-         "golden",
-         "seed",
-         "blueberry"
-        ],
-        [
-         "golden",
          "strawberry",
-         "seed"
+         "strawberry",
+         "blueberry"
         ]
        ],
        "spinBet": 1,
@@ -6912,7 +7055,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 1,
        "typeId": "maze",
        "upgrades": {
         "hiddenSnacks": 2,
@@ -6928,7 +7071,7 @@
        "freeSpins": null,
        "hold": {
         "bet": 10,
-        "duration": 18.4,
+        "duration": 19.4,
         "respins": 5,
         "start": [
          0,
@@ -6941,13 +7084,19 @@
         ],
         "steps": [
          [],
-         [],
          [
-          12,
+          7,
           13
          ],
+         [],
          [
-          8
+          14
+         ],
+         [],
+         [],
+         [],
+         [
+          10
          ],
          [
           11
@@ -6955,14 +7104,7 @@
          [],
          [],
          [
-          10
-         ],
-         [],
-         [
-          9
-         ],
-         [
-          14
+          8
          ],
          [],
          [],
@@ -6970,23 +7112,23 @@
          [],
          []
         ],
-        "timer": 13.400000000000006,
+        "timer": 14.400000000000112,
         "values": [
-         350000,
-         175000,
-         175000,
-         350000,
          875000,
+         175000,
+         350000,
+         1750000,
+         875000,
+         175000,
+         4375000,
+         875000,
+         175000,
+         0,
          350000,
          875000,
          0,
-         875000,
-         175000,
-         875000,
-         175000,
-         175000,
-         1750000,
-         175000
+         350000,
+         350000
         ]
        },
        "pots": {},
@@ -7003,17 +7145,17 @@
         ],
         [
          "goldAcorn",
-         "carrot",
-         "golden"
-        ],
-        [
          "blank",
-         "seed",
-         "blueberry"
+         "seed"
         ],
         [
-         "wild",
          "carrot",
+         "apple",
+         "seed"
+        ],
+        [
+         "goldAcorn",
+         "seed",
          "golden"
         ]
        ],
@@ -7022,7 +7164,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 6,
+       "streak": 35,
        "typeId": "vault",
        "upgrades": {
         "luckyCombination": 5,
@@ -7041,28 +7183,28 @@
        "pots": {},
        "result": [
         [
-         "seed",
          "blank",
-         "cheese"
+         "wild",
+         "blueberry"
         ],
         [
-         "blueberry",
-         "golden",
+         "blank",
+         "blank",
+         "strawberry"
+        ],
+        [
+         "blank",
+         "blank",
+         "apple"
+        ],
+        [
+         "wild",
+         "wild",
          "blank"
         ],
         [
          "seed",
-         "blank",
-         "blank"
-        ],
-        [
-         "apple",
-         "seed",
-         "seed"
-        ],
-        [
-         "seed",
-         "blank",
+         "cheese",
          "apple"
         ]
        ],
@@ -7071,7 +7213,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 5,
+       "streak": 8,
        "typeId": "cheese",
        "upgrades": {
         "agedCheese": 3,
@@ -7084,10 +7226,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "2278934655750",
+      "coinsEarned": "3339639158250",
       "playTime": 724.9999999996693
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7096,40 +7238,42 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 72,
+      "autoSpins": 80,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 22,
+      "bestStreak": 35,
       "bestWays": 6,
-      "bestWheel": 0,
+      "bestWheel": 8,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "472828752000",
+      "biggestWin": "445602937500",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "2278934655750",
-      "coinsSpent": "92593496",
-      "coinsWon": "2278934655750",
+      "coinsEarned": "3339639158250",
+      "coinsSpent": "92582734.3",
+      "coinsWon": "3339639158250",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 11,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
       "gambleLosses": 35,
-      "gambleWins": 20,
+      "gambleWins": 25,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 1,
       "holdGrands": 0,
       "jackpotsWon": 0,
       "machinesBought": 3,
-      "manualSpins": 114,
-      "mostLinesWon": 20,
+      "manualSpins": 105,
+      "mostLinesWon": 18,
       "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 724.9999999996693,
@@ -7137,21 +7281,25 @@
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 186,
-      "suitWins": 7,
+      "spins": 185,
+      "suitWins": 8,
       "symbolsUnlocked": 6,
-      "tokensEarned": "38",
-      "upgradesBought": 285,
-      "wildWins": 47,
-      "wins": 125
+      "tokensEarned": "45",
+      "upgradesBought": 303,
+      "wildWins": 60,
+      "wins": 141
      },
-     "tokens": "38",
+     "tokens": "45",
      "tree": {},
      "upgrades": {
       "cheeks": 200,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
@@ -7160,27 +7308,27 @@
    {
     "events": {
      "betChanged": 1,
-     "coinsChanged": 412,
-     "gambleEnded": 75,
-     "gambleOffered": 75,
-     "gambleResolved": 57,
-     "holdEnded": 2,
-     "holdStarted": 2,
+     "coinsChanged": 440,
+     "gambleEnded": 83,
+     "gambleOffered": 83,
+     "gambleResolved": 64,
+     "holdEnded": 1,
+     "holdStarted": 1,
      "machineBought": 3,
      "machineSwitched": 7,
-     "spinBlocked": 28,
-     "spinResolved": 194,
-     "spinStarted": 195,
-     "stickerEarned": 15,
-     "tokensChanged": 15,
-     "upgradeBought": 22
+     "spinBlocked": 14,
+     "spinResolved": 196,
+     "spinStarted": 197,
+     "stickerEarned": 17,
+     "tokensChanged": 17,
+     "upgradeBought": 26
     },
     "label": "hold & spin played out",
-    "paid": 2320040974500,
-    "rng": 851220387,
+    "paid": 3350947133250,
+    "rng": 963950181,
     "save": {
      "activeMachine": 2,
-     "autoTimer": 1.649999999999999,
+     "autoTimer": 2.249999999999997,
      "bigCage": false,
      "capsules": {
       "sincePity": 0
@@ -7192,13 +7340,14 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "65958520112009.3",
+     "coins": "67992835102227.22",
      "delivery": {
       "active": false,
       "duration": 0,
       "timer": 0
      },
      "diary": {
+      "billionaire": true,
       "cardShark": true,
       "firstSpin": true,
       "firstWin": true,
@@ -7209,6 +7358,7 @@
       "newSeed": true,
       "onFire": true,
       "secondMachine": true,
+      "seeingDouble": true,
       "spins100": true,
       "threeLines": true,
       "wheelMax": true,
@@ -7216,6 +7366,7 @@
       "wildThing": true
      },
      "generation": 1,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -7241,29 +7392,29 @@
        "pots": {},
        "result": [
         [
-         "golden",
-         "blank",
-         "blank"
+         "carrot",
+         "blueberry",
+         "corn"
         ],
         [
-         "blank",
+         "carrot",
+         "blueberry",
+         "strawberry"
+        ],
+        [
+         "wild",
+         "blueberry",
+         "corn"
+        ],
+        [
+         "corn",
          "seed",
-         "carrot"
+         "golden"
         ],
         [
-         "blank",
-         "blank",
-         "blank"
-        ],
-        [
-         "golden",
-         "seed",
-         "blueberry"
-        ],
-        [
-         "golden",
          "strawberry",
-         "seed"
+         "strawberry",
+         "blueberry"
         ]
        ],
        "spinBet": 1,
@@ -7271,7 +7422,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 1,
        "typeId": "maze",
        "upgrades": {
         "hiddenSnacks": 2,
@@ -7289,37 +7440,37 @@
        "pots": {},
        "result": [
         [
-         "seed",
          "blank",
-         "apple"
+         "seed",
+         "blank"
+        ],
+        [
+         "golden",
+         "apple",
+         "blueberry"
+        ],
+        [
+         "blueberry",
+         "wild",
+         "seed"
+        ],
+        [
+         "blueberry",
+         "seed",
+         "blueberry"
         ],
         [
          "apple",
-         "goldAcorn",
-         "carrot"
-        ],
-        [
-         "blank",
          "blueberry",
-         "blueberry"
-        ],
-        [
-         "carrot",
-         "blank",
-         "blueberry"
-        ],
-        [
-         "carrot",
-         "blank",
-         "apple"
+         "goldAcorn"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
        "spinSource": "auto",
-       "spinTimer": 1.9666666666666726,
+       "spinTimer": 1.3666666666666747,
        "spinning": true,
-       "streak": 0,
+       "streak": 3,
        "typeId": "vault",
        "upgrades": {
         "luckyCombination": 5,
@@ -7338,28 +7489,28 @@
        "pots": {},
        "result": [
         [
-         "seed",
          "blank",
-         "cheese"
+         "wild",
+         "blueberry"
         ],
         [
-         "blueberry",
-         "golden",
+         "blank",
+         "blank",
+         "strawberry"
+        ],
+        [
+         "blank",
+         "blank",
+         "apple"
+        ],
+        [
+         "wild",
+         "wild",
          "blank"
         ],
         [
          "seed",
-         "blank",
-         "blank"
-        ],
-        [
-         "apple",
-         "seed",
-         "seed"
-        ],
-        [
-         "seed",
-         "blank",
+         "cheese",
          "apple"
         ]
        ],
@@ -7368,7 +7519,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 5,
+       "streak": 8,
        "typeId": "cheese",
        "upgrades": {
         "agedCheese": 3,
@@ -7381,10 +7532,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "2336730724500",
+      "coinsEarned": "3356837633250",
       "playTime": 784.9999999996147
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7393,40 +7544,42 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 77,
+      "autoSpins": 85,
       "bestGambleRun": 1,
-      "bestLuck": 100,
+      "bestLuck": 120,
       "bestStars": 0,
-      "bestStreak": 22,
+      "bestStreak": 36,
       "bestWays": 6,
-      "bestWheel": 0,
+      "bestWheel": 8,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "472828752000",
+      "biggestWin": "445602937500",
       "blackjacks": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "2336730724500",
-      "coinsSpent": "94530598.4",
-      "coinsWon": "2320040974500",
+      "coinsEarned": "3356837633250",
+      "coinsSpent": "95165537.5",
+      "coinsWon": "3350947133250",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
+      "doubleWins": 11,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
-      "gambleLosses": 36,
-      "gambleWins": 21,
+      "gambleLosses": 38,
+      "gambleWins": 26,
       "goldenJackpots": 0,
       "grandJackpots": 0,
-      "holdBonuses": 2,
+      "helperBuys": 0,
+      "holdBonuses": 1,
       "holdGrands": 0,
       "jackpotsWon": 0,
       "machinesBought": 3,
-      "manualSpins": 118,
-      "mostLinesWon": 20,
+      "manualSpins": 112,
+      "mostLinesWon": 18,
       "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 784.9999999996147,
@@ -7434,21 +7587,25 @@
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 195,
-      "suitWins": 7,
+      "spins": 197,
+      "suitWins": 8,
       "symbolsUnlocked": 6,
-      "tokensEarned": "38",
-      "upgradesBought": 285,
-      "wildWins": 53,
-      "wins": 132
+      "tokensEarned": "45",
+      "upgradesBought": 303,
+      "wildWins": 63,
+      "wins": 148
      },
-     "tokens": "38",
+     "tokens": "45",
      "tree": {},
      "upgrades": {
       "cheeks": 200,
       "clover": 5,
+      "cosyNest": 4,
       "highRoller": 4,
       "hotStreak": 5,
+      "luckyPennies": 5,
+      "nightShift": 5,
+      "rabbitsFoot": 4,
       "wheel": 4
      }
     },
@@ -7507,6 +7664,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -7538,7 +7696,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -7568,6 +7726,7 @@
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 0,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -7575,6 +7734,7 @@
       "gambleWins": 5,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -7667,6 +7827,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -7698,7 +7859,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -7728,6 +7889,7 @@
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 1,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -7735,6 +7897,7 @@
       "gambleWins": 5,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -7834,6 +7997,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -7865,7 +8029,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -7899,6 +8063,7 @@
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 1,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -7906,6 +8071,7 @@
       "gambleWins": 5,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -7988,7 +8154,7 @@
       "hand": null,
       "spinsToChip": 1
      },
-     "coins": "987556.32",
+     "coins": "987579.32",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -8008,6 +8174,7 @@
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -8041,7 +8208,7 @@
       "coinsEarned": "2448.88",
       "playTime": 399.99999999996487
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8075,6 +8242,7 @@
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 1,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -8082,6 +8250,7 @@
       "gambleWins": 7,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -8111,8 +8280,9 @@
       "warmUpLaps": 1
      },
      "upgrades": {
-      "cheeks": 12,
+      "cheeks": 11,
       "clover": 2,
+      "nightShift": 1,
       "wheel": 2
      }
     },
@@ -8141,13 +8311,13 @@
      "skinEquipped": 1,
      "spinResolved": 124,
      "spinStarted": 125,
-     "stickerEarned": 11,
-     "tokensChanged": 13,
+     "stickerEarned": 12,
+     "tokensChanged": 14,
      "treeNodeBought": 4,
      "upgradeBought": 24
     },
     "label": "time away, then boosts ran out",
-    "paid": 2662.12,
+    "paid": 2645.04,
     "rng": 3594944981,
     "save": {
      "activeMachine": 0,
@@ -8165,7 +8335,7 @@
       "hand": null,
       "spinsToChip": 1
      },
-     "coins": "999293.54",
+     "coins": "999620.4",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -8179,12 +8349,14 @@
       "firstWin": true,
       "luck50": true,
       "newSeed": true,
+      "nightOwl": true,
       "photoFinish": true,
       "prizeWinner": true,
       "spins100": true,
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -8215,10 +8387,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "14223.34",
+      "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8246,12 +8418,13 @@
       "casinoGames": 62,
       "chipsBought": "1000",
       "chipsEarned": "312",
-      "coinsEarned": "64223.34",
+      "coinsEarned": "64527.2",
       "coinsSpent": "505.65",
-      "coinsWon": "2662.12",
+      "coinsWon": "2645.04",
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 1,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -8259,6 +8432,7 @@
       "gambleWins": 7,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -8266,7 +8440,7 @@
       "manualSpins": 87,
       "mostLinesWon": 1,
       "mostSeedsHeld": 6,
-      "offlineCoins": "11501.22",
+      "offlineCoins": "11822.16",
       "playTime": 459.9999999999103,
       "prizesBought": 6,
       "rebuilds": 0,
@@ -8275,12 +8449,12 @@
       "spins": 125,
       "suitWins": 4,
       "symbolsUnlocked": 1,
-      "tokensEarned": "29",
+      "tokensEarned": "31",
       "upgradesBought": 24,
       "wildWins": 0,
       "wins": 33
      },
-     "tokens": "29",
+     "tokens": "31",
      "tree": {
       "familyPride": 1,
       "luckyWhiskers": 1,
@@ -8288,8 +8462,9 @@
       "warmUpLaps": 1
      },
      "upgrades": {
-      "cheeks": 12,
+      "cheeks": 11,
       "clover": 2,
+      "nightShift": 1,
       "wheel": 2
      }
     },
@@ -8318,13 +8493,13 @@
      "skinEquipped": 1,
      "spinResolved": 124,
      "spinStarted": 125,
-     "stickerEarned": 11,
-     "tokensChanged": 13,
+     "stickerEarned": 12,
+     "tokensChanged": 14,
      "treeNodeBought": 4,
      "upgradeBought": 24
     },
     "label": "a hand saved halfway",
-    "paid": 2662.12,
+    "paid": 2645.04,
     "rng": 1067602301,
     "save": {
      "activeMachine": 0,
@@ -8367,7 +8542,7 @@
       },
       "spinsToChip": 1
      },
-     "coins": "999293.54",
+     "coins": "999620.4",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -8381,12 +8556,14 @@
       "firstWin": true,
       "luck50": true,
       "newSeed": true,
+      "nightOwl": true,
       "photoFinish": true,
       "prizeWinner": true,
       "spins100": true,
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -8417,10 +8594,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "14223.34",
+      "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8448,12 +8625,13 @@
       "casinoGames": 62,
       "chipsBought": "1000",
       "chipsEarned": "312",
-      "coinsEarned": "64223.34",
+      "coinsEarned": "64527.2",
       "coinsSpent": "505.65",
-      "coinsWon": "2662.12",
+      "coinsWon": "2645.04",
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 1,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -8461,6 +8639,7 @@
       "gambleWins": 7,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -8468,7 +8647,7 @@
       "manualSpins": 87,
       "mostLinesWon": 1,
       "mostSeedsHeld": 6,
-      "offlineCoins": "11501.22",
+      "offlineCoins": "11822.16",
       "playTime": 459.9999999999103,
       "prizesBought": 6,
       "rebuilds": 0,
@@ -8477,12 +8656,12 @@
       "spins": 125,
       "suitWins": 4,
       "symbolsUnlocked": 1,
-      "tokensEarned": "29",
+      "tokensEarned": "31",
       "upgradesBought": 24,
       "wildWins": 0,
       "wins": 33
      },
-     "tokens": "29",
+     "tokens": "31",
      "tree": {
       "familyPride": 1,
       "luckyWhiskers": 1,
@@ -8490,8 +8669,9 @@
       "warmUpLaps": 1
      },
      "upgrades": {
-      "cheeks": 12,
+      "cheeks": 11,
       "clover": 2,
+      "nightShift": 1,
       "wheel": 2
      }
     },
@@ -8520,13 +8700,13 @@
      "skinEquipped": 1,
      "spinResolved": 134,
      "spinStarted": 135,
-     "stickerEarned": 11,
-     "tokensChanged": 13,
+     "stickerEarned": 12,
+     "tokensChanged": 14,
      "treeNodeBought": 4,
      "upgradeBought": 24
     },
     "label": "the hand played out",
-    "paid": 2798.74,
+    "paid": 2773.12,
     "rng": 3339180193,
     "save": {
      "activeMachine": 0,
@@ -8544,7 +8724,7 @@
       "hand": null,
       "spinsToChip": 1
      },
-     "coins": "999403.56",
+     "coins": "999721.88",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -8558,12 +8738,14 @@
       "firstWin": true,
       "luck50": true,
       "newSeed": true,
+      "nightOwl": true,
       "photoFinish": true,
       "prizeWinner": true,
       "spins100": true,
       "wheelTraining": true
      },
      "generation": 2,
+     "helper": true,
      "machines": [
       {
        "bet": 0,
@@ -8594,10 +8776,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "14359.96",
+      "coinsEarned": "14655.28",
       "playTime": 489.999999999883
      },
-     "saveVersion": 11,
+     "saveVersion": 12,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8625,12 +8807,13 @@
       "casinoGames": 63,
       "chipsBought": "1000",
       "chipsEarned": "317",
-      "coinsEarned": "64359.96",
+      "coinsEarned": "64655.28",
       "coinsSpent": "532.25",
-      "coinsWon": "2798.74",
+      "coinsWon": "2773.12",
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 1,
+      "doubleWins": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -8638,6 +8821,7 @@
       "gambleWins": 7,
       "goldenJackpots": 0,
       "grandJackpots": 0,
+      "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
@@ -8645,7 +8829,7 @@
       "manualSpins": 96,
       "mostLinesWon": 1,
       "mostSeedsHeld": 6,
-      "offlineCoins": "11501.22",
+      "offlineCoins": "11822.16",
       "playTime": 489.999999999883,
       "prizesBought": 6,
       "rebuilds": 0,
@@ -8654,12 +8838,12 @@
       "spins": 135,
       "suitWins": 4,
       "symbolsUnlocked": 1,
-      "tokensEarned": "29",
+      "tokensEarned": "31",
       "upgradesBought": 24,
       "wildWins": 0,
       "wins": 34
      },
-     "tokens": "29",
+     "tokens": "31",
      "tree": {
       "familyPride": 1,
       "luckyWhiskers": 1,
@@ -8667,8 +8851,9 @@
       "warmUpLaps": 1
      },
      "upgrades": {
-      "cheeks": 12,
+      "cheeks": 11,
       "clover": 2,
+      "nightShift": 1,
       "wheel": 2
      }
     },

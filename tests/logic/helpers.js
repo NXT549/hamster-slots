@@ -30,7 +30,14 @@ function deepEqual(a, b) {
   return keysA.length === keysB.length && keysA.every((k) => deepEqual(a[k], b[k]));
 }
 // Every test gets its own copy of the data, so nothing leaks between tests.
-const newGame = (seed = 1) => createGame(structuredClone(data), createRng(seed));
+// 1.3.1: every rebirth and sticker upgrade is on sale in a test game (the debug
+// unlock), so "every upgrade maxed" really is every upgrade. workshop.test.js
+// checks the locks themselves on games made with createGame.
+function newGame(seed = 1) {
+  const g = createGame(structuredClone(data), createRng(seed));
+  g.unlockAllUpgrades();
+  return g;
+}
 const clunky = data.machines[0];
 const stacker = data.machines.find((m) => m.id === 'stacker');
 const bonanza = data.machines.find((m) => m.id === 'bonanza');

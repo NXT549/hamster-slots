@@ -328,7 +328,13 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     // Machine Stars (M8)
     const st = game.data.stars;
     cards.push(card('star', `Machine Stars ${info.stars}/${info.maxStars}`,
-      `Max every upgrade on ${md.name} and you can rebuild it: its upgrades start again from nothing, and it gets a star it keeps forever (retiring too). Every star: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck on this machine.${info.stars > 0 ? ` Now: ×${game.getStarMultiplier().toFixed(2)} payouts and +${info.stars * st.luckPerStar} Luck.` : ''}`));
+      `Max every upgrade on ${md.name} and you can rebuild it: its upgrades start again from nothing, and it gets a star it keeps forever (retiring too). Every star: +${Math.round(game.getStarPayout() * 100)}% payouts${game.getStarPayout() > st.payoutPerStar ? ' (with Star Polish)' : ''} and +${st.luckPerStar} Luck on this machine.${info.stars > 0 ? ` Now: ×${game.getStarMultiplier().toFixed(2)} payouts and +${info.stars * st.luckPerStar} Luck.` : ''}`));
+    // 1.3.1: Lucky Pennies and the Penny Jar.
+    const double = game.getDoubleChance();
+    if (double > 0) {
+      cards.push(card('pennies', `Lucky Pennies: ${Math.round(double * 100)}%`,
+        `A win you pay for has a ${Math.round(double * 100)}% chance to pay double (every line of it). The coin toss doesn't care what the reels show, so on average paid wins pay ×${(1 + double).toFixed(2)}. Free spins don't double.`));
+    }
     cards.push(card('coin', odds.ways ? 'Hit rate' : 'Line hit rate', `A paid spin wins ${odds.ways ? 'some ways' : 'on a payline'} ${Math.round(odds.hitRate * 100)}% of the time on this machine.`));
     setHTML(el.features, cards.join(''));
   }
