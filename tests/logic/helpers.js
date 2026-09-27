@@ -106,22 +106,26 @@ const probe = newGame(999);
 probe.addCoins(1e15);
 for (const m of data.machines.slice(1)) probe.buyMachine(m.id);
 const probeMachine = (m) => probe.state.machines.find((x) => x.typeId === m.id);
-// Every setup of a machine: reels × paylines × wild level × symbols unlocked, at Luck 0 or max Luck.
+// Every setup of a machine: reels × paylines × wild level × pays both ways (on 3+
+// reels, when the machine sells it) × symbols unlocked, at Luck 0 or max Luck.
 function setups(m, luck) {
   const out = [];
   const wildUp = soldOn(m, 'symbolWeight')[0];
   const unlock = soldOn(m, 'unlockSymbol')[0];
+  const sellsBothWays = soldOn(m, 'bothWays').length > 0;
   for (let reels = m.startReels; reels <= m.maxReels; reels++) {
     for (const lines of reachableLines(m)) {
       for (let wild = 0; wild <= (wildUp ? wildUp.maxLevel : 0); wild++) {
-        const ladder = unlockLevels(m).map((level) => {
-          const o = { ...(luck === 'max' ? maxLuckLevels(m) : {}) };
-          if (wildUp) o[wildUp.id] = wild;
-          if (unlock) o[unlock.id] = level;
-          const md = { ...m, symbols: probe.getSymbols(o, probeMachine(m)) };
-          return { level, md, value: spinExpectation(md, reels, { lines }) };
-        });
-        out.push({ reels, lines, wild, ladder, label: `${m.name}, ${reels} reels, ${lines} line${lines === 1 ? '' : 's'}${wildUp ? `, wild Lv ${wild}` : ''}${luck === 'max' ? ', max Luck' : ''}` });
+        for (const bothWays of sellsBothWays && reels > 2 ? [false, true] : [false]) {
+          const ladder = unlockLevels(m).map((level) => {
+            const o = { ...(luck === 'max' ? maxLuckLevels(m) : {}) };
+            if (wildUp) o[wildUp.id] = wild;
+            if (unlock) o[unlock.id] = level;
+            const md = { ...m, symbols: probe.getSymbols(o, probeMachine(m)) };
+            return { level, md, value: spinExpectation(md, reels, { lines, bothWays }) };
+          });
+          out.push({ reels, lines, wild, bothWays, ladder, label: `${m.name}, ${reels} reels, ${lines} line${lines === 1 ? '' : 's'}${wildUp ? `, wild Lv ${wild}` : ''}${bothWays ? ', both ways' : ''}${luck === 'max' ? ', max Luck' : ''}` });
+        }
       }
     }
   }

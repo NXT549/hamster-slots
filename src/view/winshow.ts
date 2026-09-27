@@ -67,7 +67,8 @@ export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, 
   function lineText(w: PaidWin): string {
     const many = game.getLineCount() > 1;
     const wild = w.usedWild && w.symbolId !== 'wild' ? ' (with a wild)' : '';
-    return `${many ? `Line ${w.line + 1} · ` : ''}${symbolName(w.symbolId)} ×${w.count}${wild} · ${num(w.payout)}`;
+    const side = w.fromRight ? ' from the right' : ''; // Pays Both Ways
+    return `${many ? `Line ${w.line + 1} · ` : ''}${symbolName(w.symbolId)} ×${w.count}${side}${wild} · ${num(w.payout)}`;
   }
 
   // The label takes the colour of the line it names (line-N classes set --lc).

@@ -733,6 +733,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .chip-luck { background: color-mix(in srgb, var(--luck) 40%, var(--paper)); }
 .chip-seeds { background: color-mix(in srgb, var(--heirloom) 40%, var(--paper)); }
 .chip-blank { background: var(--paper-2); }
+.chip-both { background: color-mix(in srgb, var(--buy) 40%, var(--paper)); }
 /* Paytable rows for symbols you haven't unlocked yet: faded (never recoloured: a
    grey Golden Seed would read as a Sunflower Seed, see rule 11), with how to unlock them */
 .paytable tr.locked-symbol td { opacity: 0.55; }

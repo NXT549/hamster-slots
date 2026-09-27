@@ -315,6 +315,8 @@ const MARKS = [
   [`Wheel ${wheelMax}`, (l) => l.marks[`wheel${wheelMax}`]],
   ...data.machines.slice(1).map((md) => [md.name, (l) => l.marks[`machine:${md.id}`]]),
   ...(data.upgrades.some((u) => u.id === 'highRoller') ? [['Bet ×2', (l) => l.marks.highRoller1], ['Bet ×10', (l) => l.marks.highRoller4]] : []),
+  // "Pays Both Ways" on each machine that sells it.
+  ...data.upgrades.filter((u) => u.effect.type === 'bothWays').map((u) => [`Both Ways ${(data.machines.find((m) => u.machines && u.machines.includes(m.id)) || { name: u.id }).name}`, (l) => l.marks[`${u.id}1`]]),
 ];
 
 const maxLives = Math.max(...runs.map((r) => r.length));

@@ -34,10 +34,12 @@ interface Reel {
   tease?: boolean;
 }
 
-// A winning line as the reels need it: which payline, and how many cells.
+// A winning line as the reels need it: which payline, how many cells, and from
+// which end (a "Pays Both Ways" win counts from the right-hand reel).
 interface LineHit {
   line: number;
   count: number;
+  fromRight?: boolean;
 }
 
 export const CELL = 72; // height in px of one symbol cell (keep in sync with --cell in style.css)
@@ -244,15 +246,22 @@ export function createReels(
   const windowRow = (row: number) => (realRows() >= VISIBLE ? row : 1);
   const cellAt = (reel: number, row: number) => reels[reel] && reels[reel].strip.children[1 + windowRow(row)];
 
+  // The reels a win covers: the first `count` from the left, or the last ones
+  // for a win read from the right.
+  const winReels = (w: LineHit) => {
+    const n = Math.min(w.count, reels.length);
+    return Array.from({ length: n }, (_, i) => (w.fromRight ? reels.length - n + i : i));
+  };
+
   // Light up the winning cells, and draw each winning line across the reels.
-  // wins: [{ line, count }] from the spinResolved event.
+  // wins: [{ line, count, fromRight }] from the spinResolved event.
   function showWin(wins: LineHit[]): void {
     clearWin();
     const lines = game.getPaylines();
     for (const w of wins) {
       const line = lines[w.line];
       if (!line) continue;
-      for (let i = 0; i < w.count && i < reels.length; i++) {
+      for (const i of winReels(w)) {
         const cell = cellAt(i, line[i]);
         if (cell) cell.classList.add('win', lineClass(w.line));
       }
@@ -302,11 +311,11 @@ export function createReels(
     return [...container.querySelectorAll('.cell.win, .cell.feature')];
   }
 
-  // The cells one winning line covers ({ line, count } from spinResolved), for the win show.
+  // The cells one winning line covers ({ line, count, fromRight } from spinResolved), for the win show.
   function cellsFor(win: LineHit): Element[] {
     const line = game.getPaylines()[win.line];
     if (!line) return [];
-    return Array.from({ length: Math.min(win.count, reels.length) }, (_, i) => cellAt(i, line[i])).filter(Boolean) as Element[];
+    return winReels(win).map((i) => cellAt(i, line[i])).filter(Boolean) as Element[];
   }
 
   // The on-screen box of one reel (for the dust puff when it lands).

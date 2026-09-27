@@ -203,25 +203,30 @@ describe('balance rules (DESIGN.md section 9)', () => {
 
   // Luck: every Luck level raises BOTH the hit rate and the EV, on every machine
   // (the blank is what it works against). Checked level by level, with nothing and
-  // with everything unlocked.
+  // with everything unlocked, and (on machines that sell it) paying both ways on
+  // every reel.
   for (const m of data.machines) {
     const machine = probeMachine(m);
     const unlock = soldOn(m, 'unlockSymbol')[0];
     const bad = [];
     let steps = 0;
-    for (const unlocked of [0, unlockLevels(m).at(-1)]) {
-      let prev = null;
-      const lucks = soldOn(m, 'luck');
-      const levels = {};
-      for (const u of lucks) {
-        for (let l = 0; l <= u.maxLevel; l++) {
-          levels[u.id] = l;
-          const o = { ...levels, ...(unlock ? { [unlock.id]: unlocked } : {}) };
-          const md = { ...m, symbols: probe.getSymbols(o, machine) };
-          const v = spinExpectation(md, m.startReels, { lines: m.startLines || 1 });
-          if (prev && (l > 0) && !(v.ev > prev.ev && v.hitRate > prev.hitRate)) bad.push(`${u.id} Lv ${l}`);
-          if (l > 0) steps++;
-          prev = v;
+    for (const bothWays of soldOn(m, 'bothWays').length > 0 ? [false, true] : [false]) {
+      for (const unlocked of [0, unlockLevels(m).at(-1)]) {
+        let prev = null;
+        const lucks = soldOn(m, 'luck');
+        const levels = {};
+        for (const u of lucks) {
+          for (let l = 0; l <= u.maxLevel; l++) {
+            levels[u.id] = l;
+            const o = { ...levels, ...(unlock ? { [unlock.id]: unlocked } : {}) };
+            const md = { ...m, symbols: probe.getSymbols(o, machine) };
+            const v = bothWays
+              ? spinExpectation(md, m.maxReels, { lines: allPaylines(m).length, bothWays })
+              : spinExpectation(md, m.startReels, { lines: m.startLines || 1 });
+            if (prev && (l > 0) && !(v.ev > prev.ev && v.hitRate > prev.hitRate)) bad.push(`${u.id} Lv ${l}${bothWays ? ' (both ways)' : ''}`);
+            if (l > 0) steps++;
+            prev = v;
+          }
         }
       }
     }

@@ -98,7 +98,7 @@ export function effectAs<T extends EffectType>(def: { effect: Effect }, _type: T
 }
 
 // What the shop's "now → next" shows for an upgrade or tree node.
-type PreviewValue = number | Money | boolean | null | { luck: number; hitRate: number } | { open: number; hitRate: number; win: Money };
+type PreviewValue = number | Money | boolean | null | { luck: number; hitRate: number } | { open: number; hitRate: number; win: Money } | { on: boolean; hitRate: number; win: Money };
 
 // Anything read from a save (or a state being cleaned up) could hold anything at
 // all, so it's typed "any", and every value is checked before it's used.
@@ -158,6 +158,15 @@ export function createGame(initialData: GameData, rng: Rng) {
     return isUpgradeAvailable(def, machine) ? levelStore(def, machine)[id] || 0 : 0;
   }
 
+  // The upgrades (by name) this one still needs before it can be bought: its
+  // "requires" in data.json, each needs level 1+ on the same machine. e.g. Old
+  // Clunky's Both Ways needs the Third Reel (with 2 reels every pair is a full line).
+  function getUpgradeNeeds(id: string, machine: MachineState = activeMachine()): string[] {
+    const def = getUpgradeDef(id);
+    if (!def || !def.requires) return [];
+    return def.requires.filter((r) => getUpgradeLevel(r, machine) <= 0).map((r) => (getUpgradeDef(r) || { name: r }).name);
+  }
+
   // The highest level on any machine (for diary goals like "get the Third Reel").
   function getBestUpgradeLevel(id: string): number {
     const def = getUpgradeDef(id);
@@ -189,7 +198,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   function canBuyUpgrade(id: string): boolean {
     const def = getUpgradeDef(id);
-    return isUpgradeAvailable(def) && !isMaxed(id) && canAfford(getUpgradeCost(id));
+    return isUpgradeAvailable(def) && !isMaxed(id) && getUpgradeNeeds(id).length === 0 && canAfford(getUpgradeCost(id));
   }
 
   // ───────────────────── Effects ─────────────────────
@@ -498,6 +507,12 @@ export function createGame(initialData: GameData, rng: Rng) {
     return growth;
   }
 
+  // Does this machine pay both ways (a "Pays Both Ways" upgrade)? Every line is
+  // then also read from the right-hand reel (machine.ts evaluateGrid).
+  function hasBothWays(overrides?: Overrides, machine: MachineState = activeMachine()): boolean {
+    return effectsOfType('bothWays', overrides, machine).some((x) => x.level > 0);
+  }
+
   // For the shop cards: which stat an effect type changes.
   const STAT_FOR_EFFECT: { [K in EffectType]: (def: UpgradeDef | TreeNodeDef, o?: Overrides) => PreviewValue } = {
     payoutMultiplier: (def, o) => getPayoutMultiplier(o),
@@ -517,6 +532,11 @@ export function createGame(initialData: GameData, rng: Rng) {
     symbolWeight: (def, o) => getSymbolChance(effectAs(def, 'symbolWeight').symbol, o),
     extraFreeSpins: (def, o) => getFreeSpinAward(o),
     jackpotGrowth: (def, o) => getJackpotGrowth(o),
+    // Both Ways: like a symbol unlock, it shows what it does to the hit rate and the average win.
+    bothWays: (def, o) => {
+      const v = spinValue(activeMachine(), o);
+      return { on: hasBothWays(o), hitRate: v.hitRate, win: getPayoutMultiplier(o).mul(v.ev) };
+    },
     // Milestone 7: these show what they do in plain numbers ("hit rate 24% → 27%").
     luck: (def, o) => ({ luck: getLuck(o).total, hitRate: spinValue(activeMachine(), o).hitRate }),
     // "win" = the average win per paid spin at ×1, with every payout bonus.
@@ -558,6 +578,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       extraFreeSpins: getExtraFreeSpins(overrides, machine),
       jackpotGrowth: getJackpotGrowth(overrides, machine),
       spinDuration: getSpinDuration(overrides, machine),
+      bothWays: hasBothWays(overrides, machine),
     });
   }
 
@@ -720,7 +741,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Then the scatters are counted: free spins, or the jackpot wheel.
   function resolveSpin(machine: MachineState): void {
     const md = getMachineData(machine);
-    const { wins, basePayout } = evaluateGrid(machine.result!, getPaylines(undefined, machine), md.payouts, symbolRules(md));
+    const { wins, basePayout } = evaluateGrid(machine.result!, getPaylines(undefined, machine), md.payouts, symbolRules(md), hasBothWays(undefined, machine));
     const bet = machine.spinBet || 1;
     const free = !!machine.spinFree;
     const manual = machine.spinSource === 'manual';
@@ -747,7 +768,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       state.stats.wins++;
       state.stats.coinsWon = roundMoney(state.stats.coinsWon.add(payout));
       state.stats.biggestWin = state.stats.biggestWin.max(payout);
-      state.stats.mostLinesWon = Math.max(state.stats.mostLinesWon, paid.length);
+      state.stats.mostLinesWon = Math.max(state.stats.mostLinesWon, new Set(paid.map((w) => w.line)).size); // a line that pays both ways is still one line
       if (paid.some((w) => w.usedWild)) state.stats.wildWins++;
       if (free && machine.freeSpins) {
         machine.freeSpins.won = roundMoney(machine.freeSpins.won.add(payout));
@@ -1057,7 +1078,8 @@ export function createGame(initialData: GameData, rng: Rng) {
       count++;
       if (want === Infinity && !canAfford(cost)) break; // not even one level: keep it as the price to show
     }
-    return { count, cost, affordable: count > 0 && canAfford(cost) };
+    // Still the price to show when it needs another upgrade first, but not buyable yet.
+    return { count, cost, affordable: count > 0 && canAfford(cost) && getUpgradeNeeds(id).length === 0 };
   }
 
   function buyUpgrade(id: string, want = 1): boolean {
@@ -1159,6 +1181,7 @@ export function createGame(initialData: GameData, rng: Rng) {
         wildNow: !!wild && getSymbols(undefined, m).some((s) => s.wild && s.weight > 0),
         freeSpins: !!md.freeSpins,
         jackpot: !!md.jackpot,
+        bothWays: hasBothWays(undefined, m), // lines pay from the right too
       },
       freeSpinsLeft: owned && owned.freeSpins ? owned.freeSpins.left : 0,
       bonus: !!(owned && owned.bonus),
@@ -1644,13 +1667,13 @@ export function createGame(initialData: GameData, rng: Rng) {
     applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, setData,
 
     // queries: coins, upgrades
-    getUpgradeDef, getAvailableUpgrades, getUpgradeLevel, getUpgradeCost, getUpgradeBulk, isMaxed, canAfford, canBuyUpgrade,
+    getUpgradeDef, getAvailableUpgrades, getUpgradeLevel, getUpgradeCost, getUpgradeBulk, getUpgradeNeeds, isMaxed, canAfford, canBuyUpgrade,
     previewUpgrade,
 
     // queries: machines, symbols, Luck
     getMachineData, getMachineInfo, getMachineCost, ownsMachine, canBuyMachine,
     getReelCount, getLineCount, getPaylines, getRowCount, getSymbols, getSymbolChance, getSpinCost, getSpinDuration,
-    isSymbolLocked, getSymbolUnlock, getLuck,
+    isSymbolLocked, getSymbolUnlock, getLuck, hasBothWays,
     getPayoutMultiplier, getHeirloomBonus, getFullLineMultiplier, getAutoInterval,
     getDeliveryDuration, getDeliveryReward, hasAutoDelivery,
     getSpinProgress, getDeliveryProgress, getEconomy, getWinTier, getOfflineEarnings,

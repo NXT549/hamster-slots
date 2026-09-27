@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 7,
+  "schemaVersion": 8,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -237,6 +237,18 @@
       "effect": { "type": "extraReel", "reelsPerLevel": 1 }
     },
     {
+      "id": "clunkyBothWays",
+      "name": "Pays Both Ways",
+      "description": "Old Clunky reads its line from the right-hand reel too, so a pair on reels 2 and 3 pays. A full line still pays once.",
+      "scope": "machine",
+      "machines": ["clunky"],
+      "requires": ["thirdReel"],
+      "baseCost": 5000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "bothWays" }
+    },
+    {
       "id": "gears",
       "name": "Smooth Gears",
       "description": "Greased gears inside the Snack Stacker. Fewer coins per spin.",
@@ -303,6 +315,17 @@
       "effect": { "type": "luck", "perLevel": 10 }
     },
     {
+      "id": "stackerBothWays",
+      "name": "Pays Both Ways",
+      "description": "Every Snack Stacker payline pays from the right-hand reel too, as well as from the left. A full line still pays once.",
+      "scope": "machine",
+      "machines": ["stacker"],
+      "baseCost": 100000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "bothWays" }
+    },
+    {
       "id": "tunnelGrease",
       "name": "Tunnel Grease",
       "description": "Slippery tunnels. The Burrow Bonanza takes fewer coins per spin.",
@@ -358,6 +381,17 @@
       "effect": { "type": "luck", "perLevel": 10 }
     },
     {
+      "id": "bonanzaBothWays",
+      "name": "Pays Both Ways",
+      "description": "Every payline through the burrow pays from the right-hand reel too, as well as from the left. A full line still pays once.",
+      "scope": "machine",
+      "machines": ["bonanza"],
+      "baseCost": 5000000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "bothWays" }
+    },
+    {
       "id": "velvetGears",
       "name": "Velvet Gears",
       "description": "Plush-lined gears. The Pouch Palace takes fewer coins per spin.",
@@ -411,6 +445,17 @@
       "growthRate": 2,
       "maxLevel": 5,
       "effect": { "type": "luck", "perLevel": 10 }
+    },
+    {
+      "id": "palaceBothWays",
+      "name": "Pays Both Ways",
+      "description": "Every Pouch Palace payline pays from the right-hand reel too, as well as from the left. A full line still pays once.",
+      "scope": "machine",
+      "machines": ["palace"],
+      "baseCost": 200000000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "bothWays" }
     }
   ],
   "winTiers": [

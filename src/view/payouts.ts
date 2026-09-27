@@ -204,14 +204,20 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
         box.append(grid, label);
         return box;
       }));
-      el.linesNote.textContent = `${active} of ${all.length} paylines are active. Every payline is read on its own, left to right, and wins on several lines add up. A spin costs the same however many lines you have.`;
+      el.linesNote.textContent = `${active} of ${all.length} paylines are active. Every payline is read on its own, ${game.hasBothWays() ? 'from the left and from the right (Pays Both Ways)' : 'left to right'}, and wins on several lines add up. A spin costs the same however many lines you have.`;
     }
 
     const wild = md.symbols.some((s) => s.wild);
     const luck = game.getLuck().total;
-    el.note.textContent = (all
-      ? 'Every payline is read on its own, left to right: reel 1 and reel 2 must match to win. Wins on several lines add up.'
-      : 'Matches count from the left: reel 1 and reel 2 must match to win. Only the middle row (the payline) counts.')
+    // Pays Both Ways (an upgrade) also reads every line from the right-hand reel.
+    const both = game.hasBothWays();
+    const sellsBoth = game.getAvailableUpgrades().some((u) => u.effect.type === 'bothWays');
+    el.note.textContent = (both
+      ? `${all ? 'Every payline is read on its own, from the left AND from the right (Pays Both Ways)' : 'Matches count from the left AND from the right (Pays Both Ways)'}: reels 1 and 2 match, or the last two reels do. A full line still pays once.${all ? ' Wins on several lines add up.' : ' Only the middle row (the payline) counts.'}`
+      : (all
+        ? 'Every payline is read on its own, left to right: reel 1 and reel 2 must match to win. Wins on several lines add up.'
+        : 'Matches count from the left: reel 1 and reel 2 must match to win. Only the middle row (the payline) counts.')
+        + (sellsBoth ? ' (The Pays Both Ways upgrade makes matches from the right pay too.)' : ''))
       + ' A Wood Shaving never pays and ends a run.'
       + (wild ? ' The Hamster Wild stands in for any symbol on a line (not scatters or Wood Shavings); a line pays whichever reading is worth more.' : '')
       + ` Prices include your payout bonuses and your bet (×${game.getBet()}). "Chance" is how often one cell lands on that symbol${luck > 0 ? `, with your Luck (${luck})` : ''}.`;
@@ -268,6 +274,13 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     } else {
       cards.push(card('flame', 'Hot Streak', 'Buy Hot Streak (a hamster upgrade) and wins in a row pay more and more.'));
     }
+    const bothWays = game.getAvailableUpgrades().find((u) => u.effect.type === 'bothWays');
+    if (bothWays) {
+      const needs = game.getUpgradeNeeds(bothWays.id);
+      cards.push(card('bothWaysIcon', game.hasBothWays() ? 'Pays Both Ways' : 'Pays Both Ways (upgrade)', game.hasBothWays()
+        ? 'Every payline is read from the left AND from the right, so a match on the last reels pays too. A full line still pays once.'
+        : `Wins count from the left: a match on the last reels doesn't pay yet. The ${bothWays.name} upgrade makes them pay too${needs.length > 0 ? ` (it needs the ${needs.join(' and the ')} first)` : ''}.`));
+    }
     cards.push(card('coin', 'Line hit rate', `A paid spin wins on a payline ${Math.round(odds.hitRate * 100)}% of the time on this machine.`));
     setHTML(el.features, cards.join(''));
   }
@@ -275,7 +288,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
   function render(now: number): void {
     // Rebuild the table only when something it shows changed.
     const weights = game.getSymbols().map((s) => s.weight).join(',');
-    const key = `${game.getMachineData().id}|${game.getReelCount()}|${game.getLineCount()}|${game.getPayoutMultiplier()}|${game.getFullLineMultiplier()}|${weights}|${game.getBet()}`;
+    const key = `${game.getMachineData().id}|${game.getReelCount()}|${game.getLineCount()}|${game.getPayoutMultiplier()}|${game.getFullLineMultiplier()}|${weights}|${game.getBet()}|${game.hasBothWays()}`;
     if (key !== tableKey) {
       tableKey = key;
       buildTable();

@@ -88,6 +88,7 @@ export type Effect =
   | { type: 'symbolWeight'; symbol: string; perLevel: number }
   | { type: 'extraFreeSpins'; perLevel: number }
   | { type: 'jackpotGrowth'; perLevel: number }
+  | { type: 'bothWays' }
   | { type: 'shiftWeight'; from: string; to: string; amount: number }
   | { type: 'fullLineMultiplier'; multiplier: number }
   | { type: 'startingLevel'; upgrade: string; levels: number }
@@ -113,6 +114,7 @@ export interface UpgradeDef extends Priced {
   description: string;
   scope: 'global' | 'machine'; // the hamster's, or one machine's
   machines?: string[]; // machine upgrades: which machines sell it (missing = all)
+  requires?: string[]; // upgrade ids that must be bought first (e.g. Old Clunky's Both Ways needs the Third Reel)
   effect: Effect;
 }
 
@@ -221,6 +223,7 @@ export interface LineResult {
 export interface LineWin extends LineResult {
   line: number;
   fullLine: boolean; // every reel matched
+  fromRight: boolean; // read from the right-hand reel (only with "pays both ways")
 }
 
 // A winning line after every multiplier (game.ts resolveSpin).

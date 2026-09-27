@@ -482,6 +482,14 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - Pushing needs the user: they created the repo on github.com (`NXT549/hamster-slots`, public: free Pages needs that, and the history holds no personal email or paths) and set Settings → Pages → Source = GitHub Actions; git's credential manager asks them to sign in on the first push (`gh` isn't installed).
 - **Live since 2026-09-26.** The CHANGELOG's version headings link to GitHub's comparisons of the pushed tags.
 
+
+**D119 — Pays Both Ways, as an upgrade** (the first M7 feedback, 2026-09-27). The user: "issue with 3 slots its based left to right meaning if you get 2 on the right it doesnt count". Left to right is on purpose (D3, like a real pokie's payline), so they were asked, with the numbers: always paying both ways would take Old Clunky's hit rate from 27.7% to 40.8% and roughly double the 5-reel machines' pay, undoing M7's slog. They picked **an upgrade per machine** over *both ways always* (a full rebalance of every paytable), *keep left to right and explain it better* (a hint when a pair lands on the right) and *both ways on Old Clunky only*.
+- **The rule:** each line is also scored backwards with the same `evaluate()` (wilds, blanks, scatters all as before) and that win pays on its own (`fromRight: true` in `spinResolved`). A **full line pays once** (`isFullLine`: every cell the same line symbol or a wild). The two ends may share cells: seed + 3 wilds + carrot on 5 reels pays a 4-seed run and a 4-carrot run, as "pays both ways" pokies do. *Rejected: only count a right-hand run that doesn't touch the left one* (fiddlier to explain and to make exact, for a rare case).
+- **Exact maths, no simulation:** cells are independent, so a line read backwards has the same odds as one read forwards, and "full" is the same both ways. So EV both ways = EV + (EV − what full lines pay), which `expectedValue` already adds up (`fullEv`). The hit rate: a line wins when reels 1 + 2 pair or the last two do. With 4+ reels the two ends share no reel, so P(no win) = P(no left pair) × P(no right pair), each from the existing `gridHitRate` (the right end is the left-end sum on the lines backwards). With 3 reels both ends share reel 2, so `bothWaysHitRate` tries every way reel 2 can land. Tested against every line, and every grid of small toy machines (bothways.test.js).
+- **`requires`** (a new, optional upgrade field): upgrade ids that must be bought first (level 1+ on the same machine). Old Clunky's needs the Third Reel, because with 2 reels every pair is already a full line. The shop shows the tile with "Needs Third Reel" and no buy; `getUpgradeNeeds(id)` names what's missing, and `canBuyUpgrade`/`getUpgradeBulk().affordable` say no until then. *Rejected: hiding it until the Third Reel* (the tile tells you it exists and what it needs, like a locked symbol).
+- **Prices from the simulator** (Balance log, Playtest notes 2026-09-27): cheap versions made the bot skip the Snack Stacker and never buy the Pouch Palace (a both-ways Old Clunky or Bonanza out-earned the next machine), so each costs about the next machine's price or more.
+- The save doesn't change (machine upgrade levels are saved by id, and a missing id is level 0), so no save version; `schemaVersion` 7 → 8 for the effect type and `requires`. The golden run was re-recorded: only the `allMachines` session plays differently (it buys every upgrade); `firstLife` and `family` are unchanged apart from the v8 save format.
+
 ---
 
 ## Balance log
@@ -546,6 +554,8 @@ Every `data.json` change: date · value · old → new · why.
 | 2026-09-25 | `retirement` | seedDivisor 1,667 → **1,300** · seedExponent 1/3 → **0.5** · payoutBonusPerSeedEarned 0.03 → **0.015** | 3 seeds = 11,700 coins ≈ a 60-min first life; later lives 30–45 min then shorter (D102). |
 | 2026-09-25 | Warm-up Laps (tree) | 2 → **1** seed | The first retirement (3 seeds) buys Family Pride + Warm-up Laps + Speedy Scooter: gen 2 starts with auto-spin (D102). Whole tree 38 → 37 seeds. |
 | 2026-09-25 | Diary | 28 stickers / 83 tokens → 31 / 91 · Top Athlete Wheel Lv 8 → 4 · Double Trouble "win the card gamble 3 times in a row" | + Fresh Seeds (unlock a symbol, 2), Card Shark (guess a suit, 3), Four-Leaf Hamster (Luck 50, 3). The first pull still comes from the first five stickers (10 tokens). |
+| 2026-09-27 | Pays Both Ways (new, one per machine, `bothWays`) | — → Old Clunky **5,000** (needs the Third Reel) · Snack Stacker **100,000** · Burrow Bonanza **5,000,000** · Pouch Palace **200,000,000**; each max 1 | The user's first M7 feedback (D119). It makes a machine's lines pay ×1.35–1.5 (Old Clunky) to ×1.9 (5 reels), so it must not make a machine better than the next one. First draft 2,500 / 40,000 / 250,000 / 12M: the idle bot skipped the Snack Stacker in most late lives and never bought the Pouch Palace (in 12 lives). 3,500 / 60,000 / 1.5M / 60M: still no Palace. 5,000 / 100,000 / 5M / 200M: machines arrive as before; lives within the old ranges (Playtest notes 2026-09-27). 8,000 / 150,000 / 8M / 400M also kept the order, but the bot almost never bought Old Clunky's. |
+| 2026-09-27 | `schemaVersion` | 7 → 8 | The effect type `bothWays` and the upgrade field `requires`. |
 
 ---
 
@@ -556,6 +566,19 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-09-27 · M7 · the user's first M7 feedback: pairs on the right**
+- The user: "issue with 3 slots its based left to right meaning if you get 2 on the right it doesnt count". On Old Clunky with the Third Reel, 🌻 🥕 🥕 pays nothing: wins count from reel 1 (D3, DESIGN §3), and the only hints were the first speech bubble and the Info tab. The user picked **Pays Both Ways as an upgrade** (D119).
+- **Simulator** (`node tools/sim.mjs --lives 12 --seeds 5`, idle and active), before → after, life lengths in minutes for gens 1–12:
+  - idle before: 46–77 · 35–43 · 32–50 · 39–65 · 33–46 · 31–40 · 16–31 · 10–18 · 9–14 · 8–18 · 4–9 · 2–8 (5.3–5.9 h in all)
+  - idle after: 46–77 · 35–40 · 41–47 · 47–49 · 34–48 · 21–37 · 19–33 · 10–17 · 7–11 · 4–14 · 3–9 · 3–9 (4.8–5.8 h)
+  - active before: 28–45 · 24–31 · 27–39 · 28–37 · 22–35 · 22–28 · 12–21 · 7–14 · 7–11 · 5–9 · 3–6 · 2–7 (3.4–4.1 h)
+  - active after: 28–45 · 25–31 · 24–32 · 25–33 · 21–35 · 18–25 · 13–18 · 6–19 · 7–10 · 5–6 · 5–9 · 4–8 (3.6–3.7 h)
+  - The first life doesn't change (the bot can't afford 5,000 on Old Clunky before it retires). Old Clunky's Both Ways is bought from gen 3, ~40 min in (idle) or ~23–31 min (active). The Snack Stacker still comes in gen 2, the Bonanza in gens 4–5, the Palace from gen 8, as before. The bot rarely buys the Stacker's or the Bonanza's (the next machine pays back faster); the Palace's from gen ~10.
+  - Rejected prices (idle): 2,500 / 40K / 250K / 12M → the Stacker skipped in most lives from gen 6 and **no Palace in 12 lives**; 3,500 / 60K / 1.5M / 60M → still no Palace; 8,000 / 150K / 8M / 400M → fine, but Old Clunky's was almost never bought.
+- **Economy** (`npm run economy`, no Luck, both unlocks): Old Clunky 3 reels RTP 285% / 18.8% hits → 430% / 31.3%; a full Stacker 784% / 57.5% → 1,344% / 82.0%; the Bonanza (10 lines) 1,223% / 45.2% → 2,370% / 70.0%; the Palace (20 lines) 3,139% / 49.8% → 5,978% / 74.8%. Every balance rule still holds with it (DESIGN §9: each unlock raises EV and lowers the hit rate, each Luck level raises both, RTP > 100%).
+- **Browser check** (Chromium, `npm run dev` on port 8766): before the Third Reel the tile says "Needs the Third Reel first" and its button "Needs Third Reel"; after it, "Avg win 10.1 → 13.65 · hit rate 28% → 41%" for 5K; bought, the machine card gets a "Pays both ways" chip. A natural spin (Golden, Seed, Seed) paid 27, lit reels 2 and 3 only, with the label "Sunflower Seed ×2 from the right · 27". The Info tab's note and Features card explain it. No errors (the only 404 is the browser asking for a `favicon.ico` the game has never had).
+- **Watch in the playtest:** does 5,000 feel reachable on Old Clunky (end of the first life or early in the second)? Does "from the right" read clearly in the win show?
 
 **2026-09-25 · M7 · balance simulator (automated, not a real playtest)**
 - `node tools/sim.mjs --lives 12 --seeds 5` (idle and `--player active`), retiring at max(3, +50% of seeds earned), 120 min max per life. The bot now buys by time to afford + time to pay back (D100), so these tables can't be compared with M6's.

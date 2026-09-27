@@ -11,12 +11,19 @@ import {
 // ─────────────────────────────────────────────────────────────
 describe('data.json sanity', () => {
   const knownTypes = ['payoutMultiplier', 'autoSpin', 'spinCostMultiplier', 'extraReel', 'extraPayline',
-    'betSteps', 'winStreak', 'symbolWeight', 'extraFreeSpins', 'jackpotGrowth', 'luck', 'unlockSymbol'];
+    'betSteps', 'winStreak', 'symbolWeight', 'extraFreeSpins', 'jackpotGrowth', 'luck', 'unlockSymbol', 'bothWays'];
   const treeTypes = ['payoutMultiplier', 'shiftWeight', 'fullLineMultiplier', 'startingLevel', 'spinSpeed',
     'deliveryTime', 'deliveryPayoutBonus', 'autoDelivery'];
   check('every upgrade has a known effect type', data.upgrades.every((u) => knownTypes.includes(u.effect.type)));
   check('every tree node has a known effect type', nodes.every((n) => treeTypes.includes(n.effect.type)),
     nodes.filter((n) => !treeTypes.includes(n.effect.type)).map((n) => n.id).join(', '));
+  // "requires" names upgrades sold on the same machine (the shop says "Needs …" until they're bought).
+  const upgradeById = Object.fromEntries(data.upgrades.map((u) => [u.id, u]));
+  const badRequires = data.upgrades.filter((u) => (u.requires || []).some((r) => {
+    const need = upgradeById[r];
+    return !need || need.scope !== u.scope || (u.machines || []).some((m) => need.machines && !need.machines.includes(m));
+  }));
+  check('every upgrade "requires" names an upgrade sold alongside it', badRequires.length === 0, badRequires.map((u) => u.id).join(', '));
   const allIds = [...data.upgrades.map((u) => u.id), ...nodeIds];
   check('upgrade and tree ids are all unique', new Set(allIds).size === allIds.length);
   const branchIds = data.familyTree.branches.map((b) => b.id);

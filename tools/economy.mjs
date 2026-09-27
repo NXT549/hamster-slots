@@ -17,8 +17,11 @@ for (const m of data.machines) {
   for (const luck of ['zero', 'max']) {
     for (const s of setups(m, luck)) console.log(`${s.label}: ${s.ladder.map((step) => fmtStep(m, step)).join(' | ')}`);
   }
-  // Where a paid spin's value comes from on the fresh and the fully unlocked machine (no Luck).
-  for (const s of [setups(m, 'zero')[0], setups(m, 'zero').at(-1)]) {
+  // Where a paid spin's value comes from on the fresh and the fully unlocked machine (no Luck),
+  // and the fully unlocked machine paying both ways (when it sells Pays Both Ways).
+  const all = setups(m, 'zero');
+  const plain = all.filter((s) => !s.bothWays);
+  for (const s of [plain[0], plain.at(-1), ...(all.at(-1).bothWays ? [all.at(-1)] : [])]) {
     for (const step of [s.ladder[0], s.ladder.at(-1)]) {
       const r = step.value;
       const parts = [`lines ${r.lineEv.toFixed(2)}`];

@@ -56,6 +56,7 @@ const UPGRADE_LINES: Record<string, (level: number, game: Game, def: UpgradeDef)
   symbolWeight: () => 'My face is on the reels now! Wilds stand in for any snack.',
   extraFreeSpins: () => 'Bouncier balls: more free spins every time!',
   jackpotGrowth: () => 'Shiny pouches! The jackpot pots grow faster.',
+  bothWays: () => 'Pays both ways! Matches on the right-hand reels count now too.',
   luck: (level, game) => `Luck ${game.getLuck().total}! Fewer Wood Shavings, more wins.`,
   unlockSymbol: (level, game, def) => {
     const id = effectAs(def, 'unlockSymbol').symbols[level - 1];

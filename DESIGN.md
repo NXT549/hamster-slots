@@ -74,9 +74,26 @@ Count how many identical symbols appear in a row **starting from reel 1**. If th
 | 2 | 🌻 🥕 | no win |
 | 3 | 🥕 🥕 🥕 | 3-match, pays the Carrot "3" amount only (not the 2 as well) |
 | 3 | 🥕 🥕 🌻 | 2-match, pays the Carrot "2" amount |
-| 3 | 🌻 🥕 🥕 | no win (the match doesn't start at reel 1) |
+| 3 | 🌻 🥕 🥕 | no win (the match doesn't start at reel 1), unless the machine **pays both ways** (below) |
 
 This rule works unchanged for 4, 5 or more reels later.
+
+### Pays Both Ways (an upgrade; after the first M7 playtest)
+
+*"Issue with 3 slots: it's based left to right, meaning if you get 2 on the right it doesn't count."* (the user, 2026-09-27). Left to right stays the rule at the start, like a real pokie; the user picked making "both ways" **an upgrade you buy** (PORTING_NOTES D119). Every machine sells one, **Pays Both Ways** (§5, §16):
+
+- Every line is **also read from the right-hand reel**, with the same rule (matches in a row, wilds fill in, a Wood Shaving or a scatter ends the run). That win pays too, on its own: 🌻 🥕 🥕 pays the Baby Carrot pair; Sunflower, Sunflower, Wood Shaving, Carrot, Carrot on 5 reels pays both pairs.
+- **A full line pays once**, not once from each side (🥕 🥕 🥕 is one Carrot line).
+- With 2 reels every pair is a full line, so it would change nothing: Old Clunky's needs the **Third Reel** first (data: `"requires": ["thirdReel"]`; the shop says "Needs Third Reel").
+- The win show says "from the right" and lights the cells on the right. It's a coin upgrade, so it resets when the hamster retires.
+- The maths stays exact (machine.ts `expectedValue`): a line read backwards has the same odds as one read forwards, so both ways adds exactly the EV of every line that isn't full. The hit rate is counted exactly too (a win needs reels 1 + 2 or the last two to pair).
+
+| Old Clunky, 3 reels, no Luck | EV | RTP | Hit rate |
+|---|---:|---:|---:|
+| Fresh | 10.10 → **13.65** | 202% → **273%** | 27.7% → **40.8%** |
+| Both symbols unlocked | 14.24 → **21.51** | 285% → **430%** | 18.8% → **31.3%** |
+
+On the bigger machines it's worth more (a 5-reel line has room for a run at each end): about ×1.7 on a full Snack Stacker and ×1.9 on the Burrow Bonanza and the Pouch Palace.
 
 ### Symbols
 
@@ -240,6 +257,9 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 ### 🧲 Lucky Horseshoe (machine, Machine Luck; milestone 7)
 *"A horseshoe nailed above Old Clunky's reels."* **+10 Luck on this machine** per level. Cost 300 × 2ⁿ, **max level 5** (300 … 4,800): up to 50 Machine Luck. Every machine has one (§16).
 
+### ⇄ Pays Both Ways (machine, one-time; after the M7 playtest)
+*"Old Clunky reads its line from the right-hand reel too, so a pair on reels 2 and 3 pays."* Effect `bothWays` (§3). Cost **5,000**, once only (the same as the Snack Stacker), and it **needs the Third Reel** (`requires`). Fresh: RTP 202% → 273%, hit rate 27.7% → 40.8%; both symbols unlocked: 285% → 430%, 18.8% → 31.3%. Every machine has one (§16).
+
 ---
 
 ## 6. Currencies
@@ -295,13 +315,13 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's
 
 ## 9. Balance rules (the tests check these)
 
-1. Every machine setup (each reel count, **each payline count**, each Hamster Wild level and **each step of its symbol unlocks, locked symbols included**) has a base **RTP above 100%**, counting its features (free spins, jackpot pots) without feature upgrades and with no Luck (Luck only raises it). The lowest is Old Clunky fresh on 2 reels (150%); the Snack Stacker starts at 151%, the Burrow Bonanza at 400%, the Pouch Palace at 784%. **The bet never changes the RTP** (a test checks it at every bet).
+1. Every machine setup (each reel count, **each payline count**, each Hamster Wild level, with and without **Pays Both Ways**, and **each step of its symbol unlocks, locked symbols included**) has a base **RTP above 100%**, counting its features (free spins, jackpot pots) without feature upgrades and with no Luck (Luck only raises it). The lowest is Old Clunky fresh on 2 reels (150%); the Snack Stacker starts at 151%, the Burrow Bonanza at 400%, the Pouch Palace at 784%. **The bet never changes the RTP** (a test checks it at every bet).
 2. **Delivery coins/s must be lower than auto-spin profit/s at Wheel Training level 1** on the starting machine. Currently 0.44 vs 0.54. **This must also hold with the whole Family Tree** (faster, bigger deliveries), on 2 reels and on 3 reels. Currently 1.00 vs 2.76 (2 reels) and 1.00 vs 3.55 (3 reels), with no Chubby Cheeks and no heirloom bonus. (The Snack Stacker earns far more per second than a delivery, so it's never the problem.)
 3. **One delivery always covers at least one spin** at base spin cost **on the free first machine**, so 0 coins is never a dead end. Currently 20 vs 5. A Snack Stacker spin (25) costs more than a delivery, but you can always switch back to Old Clunky, and the free machine can never be lost. (Bets don't break this: a spin you can't afford at your bet steps down to one you can, down to ×1.)
 4. **The gamble is fair and can't farm seeds** (milestone 6; the card gamble since M7): a colour wins 50% for ×2 and a suit 25% for ×4 (a test checks 20,000 picks of each, the win rates AND the average pay-back of 0), and gamble wins and losses never count as coins *earned*, so gambling can't raise Heirloom Seeds.
 5. **Free spins always end**: every free spin retriggers less than once on average (Burrow Bonanza with every Bouncy Ball and max Luck: 0.13), so the expected number of free spins per trigger is finite (26.8).
-6. **Every symbol unlock raises the EV and lowers the hit rate** (milestone 7), in every setup of every machine, at no Luck and at max Luck: bigger prizes, fewer wins, never a trap (§21).
-7. **Every level of Luck raises both the hit rate and the EV** (milestone 7), on every machine, with nothing and with everything unlocked.
+6. **Every symbol unlock raises the EV and lowers the hit rate** (milestone 7), in every setup of every machine (Pays Both Ways included), at no Luck and at max Luck: bigger prizes, fewer wins, never a trap (§21).
+7. **Every level of Luck raises both the hit rate and the EV** (milestone 7), on every machine, with nothing and with everything unlocked, and paying both ways.
 8. **The auto-spin interval is never shorter than the spin time + the rest** (0.8 s; milestone 7), on every machine and Wheel Training level, with or without Quick Paws.
 
 ## 10. Balance targets (what "good" looks like)
@@ -377,7 +397,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | 4 | Polish & feel *(done)* | The user asked for "refining the game and adding new and fun features" and said the assets were "almost too clunky". So: **an art cleanup** (every sprite redrawn at a finer resolution with colour ramps and matching outlines, a lighter stage with a wall and floor, thinner outlines), **win tiers** with banners, flying coins, a hamster hop and a jackpot shake, **synthesized sound effects** with volume and mute, **offline earnings** with a welcome-back dialog, a **stats screen**, a sleepy hint, save v4. See §12 and §15. |
 | 5 | New look, QoL & a second machine *(done)* | The user asked to "start on qol features and begin adding new slot machine" and for "a full redesign of the ascetic", and picked: the **hamster cage** look, **collect & switch** machines, and the QoL sets **Buy ×10 / Max** and **Settings & info**. So: the **cage redesign** with pixel cardboard/paper UI frames (§12), reels as a **grid with paylines** and the **Snack Stacker** (§16, this pulls in most of the old "Machine types I"), buying and switching machines, ×1/×10/Max with "ready in" hints, Menu settings (Motion, Quick reels, Numbers), coins in the tab title, a recent-wins log (§17), save v5. ("1.2K" numbers are now the default.) |
 | 6 | Pokies night *(done)* | The user gave ten goals and picked, in a question round: two milestones with the pokies part first, **all four bonus features**, bets unlocked by an upgrade. So: **bets** ×1 … ×10 with **High Roller** (§18); the **Hamster Wild**, **free spins** (Hamster Ball scatter), the **jackpot wheel with four pots**, the **gamble** and **Hot Streak** (§19); two new machines, the **Burrow Bonanza** and the **Pouch Palace** (§16); new upgrades (High Roller, Hot Streak, Hamster Wild, Bouncy Ball, Pouch Polish, and spin-cost and payline upgrades for the new machines); the **balance simulator** `tools/sim.mjs` and a tuning pass (the old roadmap's "Balance simulator"); **sub-tabs** in the tray and the Info tab (§12, §17); **pixel particles and animations** (§20); save v6; 8 diary stickers. (This absorbs the old "Machine types II": a third machine and the wild.) |
-| 7 | Real pokies *(done; §21)* | The user's "slow down spin speed… early game to feel like a slog", "make it more like slot machines… make them go one by one", luck you can see, symbols to unlock, and a new double-or-nothing. So: **slower spins and auto-spin** with reels that stop one at a time; a **win show** that lights each winning line **one by one** while a **WIN meter** counts up; a **blank symbol** (Wood Shaving); **unlockable symbols** (the user's "new seeds": machines start with fewer symbols); **Hamster Luck + Machine Luck** with a visible Luck number; the **pokies card gamble** (red/black ×2, suit ×4); a full **rebalance to the "real slog"** with `tools/sim.mjs` (§10); save v7; particles for all of it. Built with one change to the plan: each machine's unlocks are ONE upgrade that opens its symbols in a fixed order (PORTING_NOTES D96). |
+| 7 | Real pokies *(done; §21; + Pays Both Ways after the first feedback, §3)* | The user's "slow down spin speed… early game to feel like a slog", "make it more like slot machines… make them go one by one", luck you can see, symbols to unlock, and a new double-or-nothing. So: **slower spins and auto-spin** with reels that stop one at a time; a **win show** that lights each winning line **one by one** while a **WIN meter** counts up; a **blank symbol** (Wood Shaving); **unlockable symbols** (the user's "new seeds": machines start with fewer symbols); **Hamster Luck + Machine Luck** with a visible Luck number; the **pokies card gamble** (red/black ×2, suit ×4); a full **rebalance to the "real slog"** with `tools/sim.mjs` (§10); save v7; particles for all of it. Built with one change to the plan: each machine's unlocks are ONE upgrade that opens its symbols in a fixed order (PORTING_NOTES D96). |
 | **8** | **The Big Cage (rebirth rework)** *(next, after the M7 playtest)* | The user's "use the rebirth system more… a reason to both rebirth and hold heirloom seeds" and "when you rebirth it takes you to a fully in-depth page of just the upgrades". So: retiring opens a **full-screen Big Cage page** between lives, and it's the **only place to plant** (the Family tab keeps the retire card and a read-only tree). **Held seeds give +X% income each** (planting spends them, so plant-or-hold is a real choice); a "Retire now: +N seeds → +X%" preview. A **bigger tree**: start with High Roller steps, keep symbol unlocks / Machine Luck / a machine, free-spin luck, bigger pot seeds. **Machine rebirths ("Rebuild")**: a fully upgraded machine can be rebuilt for a permanent **Machine Star** (+payouts and +Machine Luck on that machine, a gold trim), kept through retirement. Numbers from the simulator. Save v8. It should also fix M7's known issue: lives from generation ~9 get short again (§10). |
 | 9 | More machines | The user's "more slot machines". 2–3 machines, each with a new pokie mechanic and exact EV: an **early machine** in the gap between Old Clunky and the Snack Stacker, **243 ways** (wins on any row, reel to reel), **hold & spin** (coin symbols lock in place with 3 respins), maybe a multiplier wheel past the Pouch Palace. Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers. |
 | 10 | Wardrobe buffs | The user's "hats & skins which both give unique changes and improvements" (was M7): **every skin gives a buff while worn** (fur → payouts, wheel → speed, machine → spin cost, room → offline/delivery; rarer = stronger), **hats** as a 5th capsule category (a layered sprite on the hamster), some pieces with **unique changes**, not just a % (e.g. one more card in the gamble history, a free spin more), the Wardrobe as a loadout. The user chose "what you wear gives the buff" and "hats come from capsules"; this reverses D39 (tokens were cosmetic only). |
@@ -397,6 +417,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 - **Art & UI direction:** the user picked **the hamster cage** (milestone 5, §12): the stage is the inside of a cage, the UI is cardboard and paper. Still a prototype look; the playtest decides whether it's the final direction.
 - **QoL:** the user picked *Buy ×10 / Max* and *Settings & info* first (§17). Not picked yet: keyboard shortcuts for buying and tabs. The save backup (export/import code) was built in 3.8: the user asked for it with the web-first plan (2026-09-25, §7).
 - **Milestone 6 goals (user):** "different denoms like actual pokies", "features where you can win more", "more slot machines", "better game balances", "new and unique upgrade", "different tabs for upgrades and stuff", "cool particle effects and animations" → milestone 6. "Hats that give different buffs", "skins give different buffs", "new Heirloom Seed upgrades" → planned as milestone 7, now M10 (hats, skins) and M8 (tree traits).
+- **First M7 feedback (user, 2026-09-27):** "issue with 3 slots its based left to right meaning if you get 2 on the right it doesnt count" → the user picked **Pays Both Ways as an upgrade** (§3, D119), over "both ways always", "keep left to right, explain it better" and "both ways on Old Clunky only".
 - **After M6 (user, 2026-09-25):** new: "more slot machines" → M9 · "rebirths for slot machines" → M8 · "unlock/buy new seeds (carrot, sunflower, golden)", which the user explained as *unlockable symbols you don't start with, kept balanced* → M7 · "more new fun upgrades" → every milestone (luck M7, stars M8, casino M11) · "roulette, blackjack etc in a hamster casino" → M11 · "late game you can eventually start your own casino" → M12 · "hats & skins which both give unique changes and improvements" → M10 · "fun particle effects and animations" → every milestone. Balancing: "slow down spin speed… early game to feel like a slog" → M7 (the user picked "real slog") · "with new symbols added change how likely you are to actually get wins therefore making players buy the luck upgrade" → M7 · "a reason to both rebirth and hold heirloom seeds" → M8. Changes: "change how the double or nothing system works" → M7 (the user picked the pokies card gamble) · "make it more like slot machines… make them go one by one" → M7 · "luck upgrades so you can see how much luck you have… hamster luck and machine luck" → M7 · "when you rebirth it takes you to a fully in-depth page of just the upgrades" → M8.
 
 ### Things to keep in mind for release (itch.io, Steam, mobile)
@@ -766,6 +787,7 @@ When bought, a fresh Stacker's EV is ~2.6× a finished Old Clunky's (14.24); ful
 | 🐹 **Hamster Wild** *(M6)* | 60,000 × 3ⁿ (60K, 180K, 540K) | 3 | The wild's weight +2 per level (0 → 6) |
 | 🌱 **Snack Restock** *(M7)* | 10,000 × 6ⁿ (10K, 60K) | 2 | Unlocks the Strawberry, then the Golden Seed |
 | 🧲 **Lucky Sprinkles** *(M7)* | 8,000 × 2ⁿ | 5 | +10 Machine Luck per level |
+| ⇄ **Pays Both Ways** *(after M7)* | 100,000 | 1 | Every line also pays from the right (§3). Full (4 reels, 5 lines, wild Lv 3, both unlocks): RTP 784% → 1,344%, hit rate 57.5% → 82.0% |
 
 New effect type: `extraPayline` (`linesPerLevel`). The Fourth Reel reuses `extraReel`, and Smooth Gears reuses `spinCostMultiplier`; each is sold only on the Stacker (`"machines": ["stacker"]`).
 
@@ -820,6 +842,7 @@ Free spins start about 1 in 255 paid spins on a fresh machine (1 in 354 with bot
 | ⚽ **Bouncy Ball** | 20,000 × 2.2ⁿ | 5 | +3 free spins every time they start (new effect `extraFreeSpins`) |
 | 🌱 **Deeper Digging** *(M7)* | 30,000 × 6ⁿ | 2 | Unlocks the Red Apple, then the Golden Seed |
 | 🧲 **Lucky Acorn** *(M7)* | 25,000 × 2ⁿ | 5 | +10 Machine Luck per level |
+| ⇄ **Pays Both Ways** *(after M7)* | 5,000,000 | 1 | Every line also pays from the right (§3). 10 lines + both unlocks: RTP 1,223% → 2,370%, hit rate 45.2% → 70.0% |
 
 ### The Pouch Palace (milestone 6)
 
@@ -870,6 +893,7 @@ The wheel starts about 1 in 341 paid spins on a fresh machine (1 in 487 with bot
 | ✨ **Pouch Polish** | 1,200,000 × 3ⁿ | 4 | Every pot grows +50% faster per level (new effect `jackpotGrowth`) |
 | 🌱 **Royal Pantry** *(M7)* | 1,200,000 × 6ⁿ | 2 | Unlocks the Red Apple, then the Golden Seed |
 | 🧲 **Lucky Charm** *(M7)* | 800,000 × 2ⁿ | 5 | +10 Machine Luck per level |
+| ⇄ **Pays Both Ways** *(after M7)* | 200,000,000 | 1 | Every line also pays from the right (§3). 20 lines + both unlocks: RTP 3,139% → 5,978%, hit rate 49.8% → 74.8% |
 
 ### Questions for the new machines
 
@@ -1002,7 +1026,7 @@ A hamster upgrade (§5): every machine counts its winning paid spins in a row, a
 
 ## 21. Real pokies (milestone 7)
 
-> **Status: built** (2026-09-25), waiting for the user's playtest. It came from the user's M6 feedback and their answers in a question round (PORTING_NOTES D88–D93); how it was built and tuned is in D95–D105. One change from the plan: each machine's symbol unlocks are one upgrade that opens its symbols in a fixed order (D96).
+> **Status: built** (2026-09-25), waiting for the user's playtest. **First feedback (2026-09-27):** a pair on the right-hand reels didn't count → **Pays Both Ways** upgrades (§3, D119). It came from the user's M6 feedback and their answers in a question round (PORTING_NOTES D88–D93); how it was built and tuned is in D95–D105. One change from the plan: each machine's symbol unlocks are one upgrade that opens its symbols in a fixed order (D96).
 
 *"Slow down spin speed, I want early game to feel like a slog." "Make it more like slot machines… make them go one by one like actual slot machines."* (the user)
 

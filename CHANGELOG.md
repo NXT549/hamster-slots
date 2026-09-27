@@ -8,6 +8,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Added
+
+- **Pays Both Ways**, a new upgrade for every machine. Wins can now start from the right-hand reel too, so a pair on the last two reels pays (on Old Clunky: a pair on reels 2 and 3). A line that matches all the way across still pays once. Old Clunky's needs the Third Reel first. The win show says "from the right" when a win reads that way.
+
 ## [0.2.0] - 2026-09-26
 
 Behind the scenes, the game moved to a new foundation (TypeScript and Vite), ready to be played from a link. It plays exactly the same as 0.1.0.

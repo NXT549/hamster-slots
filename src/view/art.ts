@@ -1367,12 +1367,32 @@ const bubbleTail = [
   '............',
 ];
 
+// Pays Both Ways (16×16): a gold arrow to the right over a mint one to the left.
+const bothWaysIcon = [
+  '...........V....',
+  '...........VV...',
+  '...VVVVVVVVVyV..',
+  '...VhhhhhhhhhyV.',
+  '...VyyyyyyyyyYV.',
+  '...VVVVVVVVVYV..',
+  '...........VV...',
+  '...........V....',
+  '....E...........',
+  '...EE...........',
+  '..EmEEEEEEEEE...',
+  '.EmfffffffffE...',
+  '.EMmmmmmmmmmE...',
+  '..EMEEEEEEEEE...',
+  '...EE...........',
+  '....E...........',
+];
+
 export const SPRITES: Record<string, string[]> = {
   seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple, hamster, hamster2, coin, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
   cheeks, wheel, oilcan, gear, reel, paylinesIcon, heart, star, bolt, scooter, backpack, parcel, pouch, goldenIcon, carrotIcon,
   machineClunky, machineStacker, machineBonanza, machinePalace, bottle, bowl, bedding,
   highRollerIcon, flame, wildIcon, ballIcon, pouchPolish,
-  shaving, clover, horseshoe, seedPacket, cardBack, suitHearts, suitDiamonds, suitClubs, suitSpades,
+  shaving, clover, horseshoe, seedPacket, cardBack, suitHearts, suitDiamonds, suitClubs, suitSpades, bothWaysIcon,
   frameCard, framePaper, frameTab, frameButton, bubbleTail,
 };
 
@@ -1402,7 +1422,7 @@ const UPGRADE_ICONS_BY_ID: Record<string, string> = {
 const UPGRADE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'cheeks', autoSpin: 'wheel', spinCostMultiplier: 'oilcan', extraReel: 'reel', extraPayline: 'paylinesIcon',
   betSteps: 'highRollerIcon', winStreak: 'flame', symbolWeight: 'wildIcon', extraFreeSpins: 'ballIcon', jackpotGrowth: 'pouchPolish',
-  luck: 'horseshoe', unlockSymbol: 'seedPacket',
+  luck: 'horseshoe', unlockSymbol: 'seedPacket', bothWays: 'bothWaysIcon',
 };
 export function upgradeIcon(def: { id: string; effect: { type: string } }): string | null {
   return UPGRADE_ICONS_BY_ID[def.id] || UPGRADE_ICONS_BY_TYPE[def.effect.type] || null;

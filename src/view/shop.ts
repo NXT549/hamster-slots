@@ -73,9 +73,16 @@ function describeTwoWay(game: Game, def: Def, { now, next }: Preview): string {
   return `New: <b>${names}</b> · avg win ${arrow(formatCoins(now.win), formatCoins(next.win))} · hit rate ${arrow(pct(now.hitRate), pct(next.hitRate))}`;
 }
 
+// Pays Both Ways: what it does to wins, like a symbol unlock (without the new symbol).
+function describeBothWays({ now, next }: Preview): string {
+  if (next === null) return `Pays both ways · avg win ${formatCoins(now.win)} <span class="note">(max)</span>`;
+  return `Avg win ${arrow(formatCoins(now.win), formatCoins(next.win))} · hit rate ${arrow(pct(now.hitRate), pct(next.hitRate))}`;
+}
+
 // The "now → next" line, as HTML with the next value highlighted.
 export function describeEffect(game: Game, def: Def, { now, next }: Preview): string {
   if (def.effect.type === 'luck' || def.effect.type === 'unlockSymbol') return describeTwoWay(game, def, { now, next });
+  if (def.effect.type === 'bothWays') return describeBothWays({ now, next });
   const format = effectFormats(game)[def.effect.type] || ((): [string, Format] => ['', String]);
   const [label, fmt] = format(def);
   const tail = next === null ? ' <span class="note">(max)</span>' : ` → <span class="next">${fmt(next)}</span>`;
@@ -92,6 +99,7 @@ export function featureChips(info: MachineInfo): string {
   if (f.wild) chips.push(`<span class="feature-chip chip-wild">${iconHTML('wildIcon', 16)}Wild${f.wildNow ? '' : ' (upgrade)'}</span>`);
   if (f.freeSpins) chips.push(`<span class="feature-chip chip-free">${iconHTML('ballIcon', 16)}Free spins</span>`);
   if (f.jackpot) chips.push(`<span class="feature-chip chip-pots">${iconHTML('pouchPolish', 16)}Jackpot pots</span>`);
+  if (f.bothWays) chips.push(`<span class="feature-chip chip-both">${iconHTML('bothWaysIcon', 16)}Pays both ways</span>`);
   return chips.join('');
 }
 
@@ -324,14 +332,16 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       const level = game.getUpgradeLevel(t.id);
       const maxed = game.isMaxed(t.id);
       const bulk = game.getUpgradeBulk(t.id, want());
+      // An upgrade that needs another one first (Old Clunky's Both Ways needs the Third Reel).
+      const needs = game.getUpgradeNeeds(t.id);
       setText(t.level, maxed ? 'MAX' : `Lv ${level}`);
-      setHTML(t.effect, describeEffect(game, t.def, game.previewUpgrade(t.id, bulk.count)));
+      setHTML(t.effect, needs.length > 0 ? `<span class="note">Needs the ${needs.join(' and the ')} first</span>` : describeEffect(game, t.def, game.previewUpgrade(t.id, bulk.count)));
       t.pips.forEach((pip, i) => pip.classList.toggle('on', i < level));
       const times = bulk.count > 1 ? `×${bulk.count} · ` : '';
-      setHTML(t.label, maxed ? 'Maxed out' : coinLabel(`${times}${formatCoins(bulk.cost)}`));
-      paintBuy(t.button, t.fill, { maxed, affordable: bulk.affordable, progress: divide(s.coins, bulk.cost).toNumber() });
+      setHTML(t.label, maxed ? 'Maxed out' : needs.length > 0 ? `Needs ${needs.join(' + ')}` : coinLabel(`${times}${formatCoins(bulk.cost)}`));
+      paintBuy(t.button, t.fill, { maxed, affordable: bulk.affordable, progress: needs.length > 0 ? 0 : divide(s.coins, bulk.cost).toNumber() });
       t.tile.classList.toggle('ready', bulk.affordable);
-      setText(t.wait, maxed || bulk.affordable ? '' : waitText(bulk.cost, rate));
+      setText(t.wait, maxed || bulk.affordable || needs.length > 0 ? '' : waitText(bulk.cost, rate));
       if (bulk.affordable) ready[t.def.scope === 'machine' ? 'machine' : 'hamster'] = true;
     }
     subtabs.setDot('hamster', ready.hamster);
