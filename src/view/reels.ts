@@ -40,6 +40,7 @@ interface LineHit {
   line: number;
   count: number;
   fromRight?: boolean;
+  cells?: Cell[]; // M9: a ways win lights exactly these cells (it has no line to draw)
 }
 
 export const CELL = 72; // height in px of one symbol cell (keep in sync with --cell in style.css)
@@ -260,6 +261,14 @@ export function createReels(
     clearWin();
     const lines = game.getPaylines();
     for (const w of wins) {
+      if (w.cells) {
+        // A ways win (M9): every cell of the win lights up in its colour; no line to draw.
+        for (const [reel, row] of w.cells) {
+          const cell = cellAt(reel, row);
+          if (cell) cell.classList.add('win', lineClass(w.line));
+        }
+        continue;
+      }
       const line = lines[w.line];
       if (!line) continue;
       for (const i of winReels(w)) {
@@ -318,6 +327,7 @@ export function createReels(
 
   // The cells one winning line covers ({ line, count, fromRight } from spinResolved), for the win show.
   function cellsFor(win: LineHit): Element[] {
+    if (win.cells) return win.cells.map(([reel, row]) => cellAt(reel, row)).filter(Boolean) as Element[];
     const line = game.getPaylines()[win.line];
     if (!line) return [];
     return winReels(win).map((i) => cellAt(i, line[i])).filter(Boolean) as Element[];

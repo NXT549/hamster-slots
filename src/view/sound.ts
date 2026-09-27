@@ -141,6 +141,9 @@ export function createSound({ volume = 0.6, muted = false }: { volume?: number; 
       [NOTE.E6, NOTE.G6].forEach((f, i) => note(f, 0.12 + i * 0.07, 0.2, { gain: 0.1 }));
     },
     whoosh: () => note(900, 0, 0.45, { type: 'triangle', gain: 0.08, to: 110 }), // the iris closing on the old life
+    // M9: hold & spin.
+    acorn: (n = 1) => [0, 0.05, 0.1].slice(0, Math.min(3, n)).forEach((at, i) => note(NOTE.G6 * (1 + i * 0.12), at, 0.09, { type: 'square', gain: 0.05 })), // acorns clinking into place
+    respin: () => note(420, 0, 0.18, { type: 'triangle', gain: 0.06, to: 300 }), // a respin that lands nothing
   };
 
   function play(name: string, ...args: unknown[]): void {

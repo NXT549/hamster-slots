@@ -161,7 +161,7 @@ describe('pays both ways: the exact EV and hit rate', () => {
 // ─────────────────────────────────────────────────────────────
 describe('pays both ways: the upgrade in the game', () => {
   const ids = Object.fromEntries(data.upgrades.filter((u) => u.effect.type === 'bothWays').map((u) => [u.machines[0], u.id]));
-  check('every machine sells a Pays Both Ways upgrade', data.machines.every((m) => ids[m.id]));
+  check('every payline machine sells a Pays Both Ways upgrade (a ways machine has no lines to read backwards)', data.machines.filter((m) => !m.ways).every((m) => ids[m.id]));
 
   // Old Clunky's needs the Third Reel: with 2 reels every pair already fills the line.
   const g = newGame(3);

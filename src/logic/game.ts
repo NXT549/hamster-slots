@@ -20,7 +20,7 @@
 //   game.state                                                      ← read-only snapshot for drawing
 
 import { createEmitter } from './events.ts';
-import { rollGrid, evaluateGrid, rowCount, allPaylines, symbolRules, findSymbol, freeSpinAward, spinExpectation } from './machine.ts';
+import { rollGrid, evaluateGrid, evaluateWays, rowCount, allPaylines, symbolRules, findSymbol, freeSpinAward, spinExpectation, wheelAverage } from './machine.ts';
 import type { SpinValue } from './machine.ts';
 import type { Rng } from './rng.ts';
 import { money, roundMoney, divide, power, moneyFrom, isMoney } from './money.ts';
@@ -28,6 +28,7 @@ import type { Money, MoneyLike } from './money.ts';
 import type {
   GameData, GameState, GameEvents, MachineDef, MachineState, SymbolDef, UpgradeDef, TreeNodeDef, Priced, Effect, EffectType,
   EffectOf, Levels, Overrides, Stats, SaveData, Goal, Grid, SpinSource, Suit, CardColor, Card, GambleEndReason, TokenSource, PotDef,
+  Cell, HoldState,
 } from './types.ts';
 
 // v2 added retirement: generation, Heirloom Seeds, the family tree, per-run
@@ -42,8 +43,10 @@ import type {
 // v8 saves money as text, so it can grow past 1.8e308 (big numbers, money.ts).
 // v9 (M8, The Big Cage) added Machine Stars, the Big Cage flag (between lives)
 // and the stats rebuilds, bestStars and mostSeedsHeld.
+// v10 (M9, More machines) added hold & spin in progress (machine.hold) and the
+// stats bestWays, holdBonuses, holdGrands and bestWheel.
 // See migrateSave() below.
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -523,6 +526,35 @@ export function createGame(initialData: GameData, rng: Rng) {
     return growth;
   }
 
+  // ── M9: hold & spin and the cheese wheel ──
+  // Sticky Paws (the Acorn Vault): more respins, to start with and after every new acorn.
+  function getHoldRespins(overrides?: Overrides, machine: MachineState = activeMachine()): number {
+    const hs = getMachineData(machine).holdSpin;
+    if (!hs) return 0;
+    let extra = 0;
+    for (const { effect, level } of effectsOfType('extraRespins', overrides, machine)) extra += effect.perLevel * level;
+    return hs.respins + extra;
+  }
+
+  // Aged Cheese (the Big Cheese): + this on every wedge of the wheel.
+  function getWheelBonus(overrides?: Overrides, machine: MachineState = activeMachine()): number {
+    let bonus = 0;
+    for (const { effect, level } of effectsOfType('wheelBonus', overrides, machine)) bonus += effect.perLevel * level;
+    return bonus;
+  }
+
+  // The cheese wheel's average multiplier (1 = no wheel on this machine).
+  function getWheelAverage(overrides?: Overrides, machine: MachineState = activeMachine()): number {
+    const wheel = getMachineData(machine).wheel;
+    return wheel ? wheelAverage(wheel, getWheelBonus(overrides, machine)) : 1;
+  }
+
+  // How many ways a ways machine has now (rows ^ reels), or 0 on a payline machine.
+  function getWays(overrides?: Overrides, machine: MachineState = activeMachine()): number {
+    const md = getMachineData(machine);
+    return md.ways ? Math.pow(rowCount(md), getReelCount(overrides, machine)) : 0;
+  }
+
   // ── Machine Stars (M8) ──
   // A machine with every one of its upgrades maxed can be REBUILT: its upgrades
   // start again from nothing (the family's free levels come back) and it gets a
@@ -552,7 +584,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function canRebuild(id: string): boolean {
     const m = findMachine(id);
     if (!m || state.bigCage || getStars(id) >= starData().max) return false;
-    if (m.spinning || m.bonus || (m.freeSpins && m.freeSpins.left > 0) || (state.gamble && state.gamble.machineId === id)) return false;
+    if (m.spinning || m.bonus || m.hold || (m.freeSpins && m.freeSpins.left > 0) || (state.gamble && state.gamble.machineId === id)) return false;
     return isFullyUpgraded(m);
   }
 
@@ -617,6 +649,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     },
     startingMachine: (def, o) => effectsOfType('startingMachine', o).some((x) => x.effect.machine === effectAs(def, 'startingMachine').machine && x.level > 0),
     potSeedBonus: (def, o) => getPotSeedMultiplier(o),
+    // M9
+    extraRespins: (def, o) => getHoldRespins(o),
+    wheelBonus: (def, o) => getWheelAverage(o),
   };
 
   // The affected stat now, and after `levels` more levels (next = null when maxed).
@@ -653,6 +688,8 @@ export function createGame(initialData: GameData, rng: Rng) {
       spinDuration: getSpinDuration(overrides, machine),
       bothWays: hasBothWays(overrides, machine),
       potSeedMultiplier: getPotSeedMultiplier(overrides),
+      extraRespins: getHoldRespins(overrides, machine) - (getMachineData(machine).holdSpin?.respins || 0),
+      wheelBonus: getWheelBonus(overrides, machine),
     });
   }
 
@@ -677,6 +714,9 @@ export function createGame(initialData: GameData, rng: Rng) {
       streakFactor: value.streakFactor,
       freeSpins: value.freeSpins,
       jackpot: value.jackpot,
+      hold: value.hold, // M9: hold & spin
+      wheel: value.wheel, // M9: the cheese wheel
+      ways: getWays(undefined, machine), // M9: ways machines
       payoutMultiplier,
       starMultiplier,
       spinCost, // at ×1
@@ -702,6 +742,9 @@ export function createGame(initialData: GameData, rng: Rng) {
       wild: md.symbols.some((s) => s.wild) ? getSymbolChance(md.symbols.find((s) => s.wild)!.id) : 0,
       freeSpins: md.freeSpins ? { ...value.freeSpins, multiplier: md.freeSpins.multiplier } : null,
       jackpot: md.jackpot ? value.jackpot : null,
+      hold: md.holdSpin ? { ...value.hold, trigger: md.holdSpin.trigger, respins: getHoldRespins(undefined, machine), averageRespins: value.hold.respins } : null,
+      wheel: md.wheel ? { average: value.wheel.average, bonus: getWheelBonus(undefined, machine) } : null,
+      ways: getWays(undefined, machine),
       hitRate: value.hitRate,
       luck: getLuck(undefined, machine),
       streak: { perStack: getStreakPerStack(), cap: getStreakCap(), factor: value.streakFactor },
@@ -762,7 +805,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       if (source === 'manual') queuedManual = true;
       return false;
     }
-    if (machine.bonus) {
+    if (machine.bonus || machine.hold) {
       events.emit('spinBlocked', { reason: 'bonus', source });
       return false;
     }
@@ -823,7 +866,11 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Then the scatters are counted: free spins, or the jackpot wheel.
   function resolveSpin(machine: MachineState): void {
     const md = getMachineData(machine);
-    const { wins, basePayout } = evaluateGrid(machine.result!, getPaylines(undefined, machine), md.payouts, symbolRules(md), hasBothWays(undefined, machine));
+    const rules = symbolRules(md);
+    // Paylines, or ways (M9: the Hamster Maze).
+    const { wins } = md.ways
+      ? evaluateWays(machine.result!, md.payouts, rules, md.symbols.map((s) => s.id))
+      : evaluateGrid(machine.result!, getPaylines(undefined, machine), md.payouts, rules, hasBothWays(undefined, machine));
     const bet = machine.spinBet || 1;
     const free = !!machine.spinFree;
     const manual = machine.spinSource === 'manual';
@@ -831,10 +878,22 @@ export function createGame(initialData: GameData, rng: Rng) {
     const fullLineBonus = getFullLineMultiplier();
     const featureMultiplier = free && md.freeSpins ? md.freeSpins.multiplier : 1;
     const streakMultiplier = free ? 1 : getStreakMultiplier(machine); // the streak BEFORE this spin
+    // The cheese wheel (M9): every full line spins it, and lands on its own wedge now.
+    if (md.wheel) {
+      const bonus = getWheelBonus(undefined, machine);
+      for (const w of wins) {
+        if (!w.fullLine) continue;
+        w.wheel = rng.pickWeighted(md.wheel.wedges).multiplier + bonus;
+        state.stats.bestWheel = Math.max(state.stats.bestWheel, w.wheel);
+      }
+    }
     let payout = money(0);
+    let basePayout = 0; // for the win tier: every line's base pay, × its wheel
     const paid = wins.map((w) => {
-      const linePayout = roundMoney(multiplier.mul(w.basePayout * (w.fullLine ? fullLineBonus : 1)).mul(featureMultiplier).mul(streakMultiplier));
+      const linePayout = roundMoney(multiplier.mul(w.basePayout * (w.fullLine ? fullLineBonus : 1) * (w.wheel || 1)).mul(featureMultiplier).mul(streakMultiplier));
       payout = payout.add(linePayout);
+      basePayout += w.basePayout * (w.wheel || 1);
+      if (w.ways) state.stats.bestWays = Math.max(state.stats.bestWays, w.ways);
       return { ...w, payout: linePayout };
     });
     payout = roundMoney(payout);
@@ -850,7 +909,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       state.stats.wins++;
       state.stats.coinsWon = roundMoney(state.stats.coinsWon.add(payout));
       state.stats.biggestWin = state.stats.biggestWin.max(payout);
-      state.stats.mostLinesWon = Math.max(state.stats.mostLinesWon, new Set(paid.map((w) => w.line)).size); // a line that pays both ways is still one line
+      state.stats.mostLinesWon = Math.max(state.stats.mostLinesWon, new Set(paid.filter((w) => !w.ways).map((w) => w.line)).size); // a line that pays both ways is still one line (ways wins aren't lines)
       if (paid.some((w) => w.usedWild)) state.stats.wildWins++;
       if (free && machine.freeSpins) {
         machine.freeSpins.won = roundMoney(machine.freeSpins.won.add(payout));
@@ -864,12 +923,14 @@ export function createGame(initialData: GameData, rng: Rng) {
     const pouchCells = md.jackpot ? findSymbol(machine.result!, md.jackpot.symbol) : [];
     const award = md.freeSpins ? freeSpinAward(md.freeSpins, scatterCells.length, getExtraFreeSpins(undefined, machine)) : 0;
     const wheel = !free && !!md.jackpot && pouchCells.length >= md.jackpot.min; // the jackpot wheel only starts on paid spins
+    const coinCells = md.holdSpin ? findSymbol(machine.result!, md.holdSpin.symbol) : [];
+    const hold = !free && !!md.holdSpin && coinCells.length >= md.holdSpin.trigger; // hold & spin: paid spins too
 
     const tier = getWinTier(basePayout * featureMultiplier, md);
     events.emit('spinResolved', {
       machineId: machine.typeId, result: copyGrid(machine.result!), wins: paid, payout, fullLine: paid.some((w) => w.fullLine), tier,
       bet, free, streak: machine.streak || 0,
-      featureCells: award > 0 ? scatterCells : wheel ? pouchCells : [],
+      featureCells: award > 0 ? scatterCells : wheel ? pouchCells : hold ? coinCells : [],
     });
 
     // Golden jackpot (the jackpot symbol on every reel of a line, 3+ reels): a
@@ -885,11 +946,12 @@ export function createGame(initialData: GameData, rng: Rng) {
 
     if (award > 0) startFreeSpins(machine, award, bet);
     if (wheel) startJackpotWheel(machine, bet);
+    if (hold) startHold(machine, bet, coinCells);
     if (free && machine.freeSpins && machine.freeSpins.left <= 0 && award === 0) endFreeSpins(machine);
 
     // The gamble is offered after a win you pulled yourself, when nothing else is
     // about to happen on the machine.
-    if (payout.gt(0) && manual && !free && award === 0 && !wheel && machine === activeMachine()) offerGamble(machine, payout);
+    if (payout.gt(0) && manual && !free && award === 0 && !wheel && !hold && machine === activeMachine()) offerGamble(machine, payout);
     checkDiary();
   }
 
@@ -1014,6 +1076,111 @@ export function createGame(initialData: GameData, rng: Rng) {
       const base = potBase(machine, p);
       return { id: p.id, name: p.name, base, value: roundMoney(base.mul(scale)) };
     });
+  }
+
+  // ── Hold & spin (M9: the Acorn Vault) ──
+  // `trigger`+ Golden Acorns on a paid spin: they lock in place with a coin value
+  // each, and the empty cells respin. Every respin, each empty cell lands an acorn
+  // with chance respinChance; a new acorn locks too and sets the respins back to
+  // the start. It ends when the respins run out, or when every cell holds an acorn
+  // (the Grand pays on top). Like a spin's result, the WHOLE bonus is decided the
+  // moment it starts (the same random numbers in the same order every time); the
+  // timer only lets it play out, and it pays when it's over.
+  function startHold(machine: MachineState, bet: number, coinCells: Cell[]): void {
+    const md = getMachineData(machine);
+    const hs = md.holdSpin!;
+    const rows = rowCount(md);
+    const cells = machine.result!.length * rows;
+    const values: number[] = new Array(cells).fill(0);
+    const pickValue = () => rng.pickWeighted(hs.values).value;
+    const start = coinCells.map(([reel, row]) => reel * rows + row);
+    for (const i of start) values[i] = pickValue();
+    const respins = getHoldRespins(undefined, machine);
+    const steps: number[][] = [];
+    let left = respins;
+    let filled = start.length;
+    while (left > 0 && filled < cells) {
+      const landed: number[] = [];
+      for (let i = 0; i < cells; i++) {
+        if (values[i] > 0) continue;
+        if (rng.next() < hs.respinChance) {
+          values[i] = pickValue();
+          landed.push(i);
+        }
+      }
+      filled += landed.length;
+      steps.push(landed);
+      left = landed.length > 0 ? respins : left - 1;
+    }
+    const duration = 2 * hs.pause + steps.length * hs.respinSeconds;
+    machine.hold = { start, values, steps, respins, bet, timer: duration, duration };
+    state.stats.holdBonuses++;
+    events.emit('holdStarted', { machineId: machine.typeId, cells: coinCells, respins, bet, duration });
+  }
+
+  // Every acorn's value, + the Grand if the grid filled, × the bet and the bonuses.
+  function holdAmount(machine: MachineState): Money {
+    const md = getMachineData(machine);
+    const h = machine.hold!;
+    const full = h.values.every((v) => v > 0);
+    const base = h.values.reduce((sum, v) => sum + v, 0) + (full ? md.holdSpin!.grand : 0);
+    return roundMoney(money(base).mul(h.bet).mul(getPayoutMultiplier()).mul(getStarMultiplier(machine)));
+  }
+
+  function payHold(machine: MachineState): void {
+    const h = machine.hold!;
+    const amount = holdAmount(machine);
+    const full = h.values.every((v) => v > 0);
+    const coins = h.values.filter((v) => v > 0).length;
+    machine.hold = null;
+    if (full) state.stats.holdGrands++;
+    state.stats.biggestWin = state.stats.biggestWin.max(amount);
+    earn(amount);
+    events.emit('holdEnded', { machineId: machine.typeId, amount, coins, full });
+    checkDiary();
+  }
+
+  // What the hold & spin board shows right now (for the view), or null:
+  //   cells: every cell's coin value in coins at the bet (0 = empty), as far as it has played,
+  //   landed: the cells the latest respin filled, respinsLeft, played/total respins,
+  //   total: the coins shown so far (+ the Grand once it's full), progress 0 → 1.
+  function getHold(machine: MachineState = activeMachine()) {
+    const h = machine.hold;
+    if (!h) return null;
+    const md = getMachineData(machine);
+    const hs = md.holdSpin!;
+    const elapsed = h.duration - h.timer;
+    const played = elapsed < hs.pause ? 0 : Math.min(h.steps.length, Math.floor((elapsed - hs.pause) / hs.respinSeconds) + 1);
+    const shown = new Set(h.start);
+    let left = h.respins;
+    for (let i = 0; i < played; i++) {
+      for (const c of h.steps[i]) shown.add(c);
+      left = h.steps[i].length > 0 ? h.respins : left - 1;
+    }
+    const scale = money(h.bet).mul(getPayoutMultiplier()).mul(getStarMultiplier(machine));
+    const cells = h.values.map((v, i) => (shown.has(i) && v > 0 ? roundMoney(scale.mul(v)) : money(0)));
+    const full = shown.size === h.values.length;
+    let total = cells.reduce((sum, c) => sum.add(c), money(0));
+    if (full) total = total.add(roundMoney(scale.mul(hs.grand)));
+    return {
+      cells, rows: rowCount(md), full, total,
+      landed: played > 0 ? h.steps[played - 1] : h.start,
+      respinsLeft: left, played, respins: h.steps.length, maxRespins: h.respins,
+      progress: Math.min(1, Math.max(0, elapsed / h.duration)),
+    };
+  }
+
+  // Debug only: start hold & spin now with `coins` acorns (on a machine that has it).
+  function triggerHold(coins = 6): boolean {
+    const machine = activeMachine();
+    const md = getMachineData(machine);
+    if (!md.holdSpin || machine.hold || machine.bonus || machine.spinning || !machine.result) return false;
+    const rows = rowCount(md);
+    const cells: Cell[] = [];
+    for (let i = 0; i < Math.min(coins, machine.result.length * rows); i++) cells.push([Math.floor(i / rows), i % rows]);
+    for (const [reel, row] of cells) machine.result[reel][row] = md.holdSpin.symbol;
+    startHold(machine, getBet(machine), cells);
+    return true;
   }
 
   // 0 → 1 while the jackpot wheel turns (null when it isn't).
@@ -1277,9 +1444,12 @@ export function createGame(initialData: GameData, rng: Rng) {
         freeSpins: !!md.freeSpins,
         jackpot: !!md.jackpot,
         bothWays: hasBothWays(undefined, m), // lines pay from the right too
+        ways: getWays(undefined, m), // M9: ways (0 = paylines)
+        holdSpin: !!md.holdSpin, // M9
+        wheel: !!md.wheel, // M9
       },
       freeSpinsLeft: owned && owned.freeSpins ? owned.freeSpins.left : 0,
-      bonus: !!(owned && owned.bonus),
+      bonus: !!(owned && (owned.bonus || owned.hold)),
       // Machine Stars (M8): kept forever, even for a machine you don't own this life.
       stars: getStars(id),
       maxStars: starData().max,
@@ -1338,7 +1508,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Not while the jackpot wheel is turning or a gamble is under way (their coins
   // would vanish with the old life).
   function canRetire(): boolean {
-    return !state.bigCage && getPendingSeeds().gte(1) && !state.machines.some((m) => m.bonus) && !(state.gamble && state.gamble.started);
+    return !state.bigCage && getPendingSeeds().gte(1) && !state.machines.some((m) => m.bonus || m.hold) && !(state.gamble && state.gamble.started);
   }
 
   // For the progress bar: how far lifetime coins are towards the next seed.
@@ -1690,6 +1860,12 @@ export function createGame(initialData: GameData, rng: Rng) {
       m.bonus.timer -= dt;
       if (m.bonus.timer <= EPS) payJackpot(m);
     }
+    // 2b) Hold & spin (M9) plays out the same way, and pays when it's over.
+    for (const m of state.machines) {
+      if (!m.hold) continue;
+      m.hold.timer -= dt;
+      if (m.hold.timer <= EPS) payHold(m);
+    }
 
     // 3) Spin timers. Every spinning machine counts down, not just the active
     //    one: after a switch, the old machine's last spin still lands and pays.
@@ -1720,7 +1896,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     //    between them. Like any spin, they wait while the hamster is delivering.
     const fs = machine.freeSpins;
     const gambling = !!state.gamble && state.gamble.started;
-    if (fs && fs.left > 0 && !state.delivery.active && !machine.spinning && !machine.bonus && !gambling) {
+    if (fs && fs.left > 0 && !state.delivery.active && !machine.spinning && !machine.bonus && !machine.hold && !gambling) {
       fs.timer -= dt;
       if (fs.timer <= EPS && spin('free')) fs.timer = getMachineData(machine).freeSpins!.pause;
     }
@@ -1729,7 +1905,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     //    hamster is delivering, and its timer stands still while free spins, the
     //    jackpot wheel or a gamble have the machine (so they don't cost auto-spins).
     const interval = getAutoInterval();
-    const held = hasFreeSpins(machine) || !!machine.bonus || (!!state.gamble && state.gamble.machineId === machine.typeId);
+    const held = hasFreeSpins(machine) || !!machine.bonus || !!machine.hold || (!!state.gamble && state.gamble.machineId === machine.typeId);
     if (interval !== null && !state.delivery.active && !held) {
       state.autoTimer += dt;
       if (state.autoTimer >= interval - EPS) {
@@ -1815,7 +1991,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     // actions
     update, spin, startDelivery, buyUpgrade, buyMachine, switchMachine, retire, leaveBigCage, buyTreeNode, rebuild, pullCapsule, equipSkin,
     setBet, gamble, collectGamble,
-    applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, openBigCage, setData,
+    applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, triggerHold, openBigCage, setData,
 
     // queries: coins, upgrades
     getUpgradeDef, getAvailableUpgrades, getUpgradeLevel, getUpgradeCost, getUpgradeBulk, getUpgradeNeeds, isMaxed, canAfford, canBuyUpgrade,
@@ -1832,6 +2008,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     // queries: bets and bonus features
     getBetSteps, getMaxBetIndex, getBetIndex, getBet, getBetCost, getSpinBet,
     getFreeSpins, hasFreeSpins, getJackpotPots, getBonusProgress, getStreakMultiplier, getMaxStreakMultiplier,
+    getHold, getHoldRespins, getWheelBonus, getWheelAverage, getWays,
     getFeatureOdds, canGamble, getGambleInfo, getCardHistory,
 
     // queries: retirement + family tree
@@ -1870,6 +2047,7 @@ function newMachineState(md: MachineDef): MachineState {
     freeSpins: null, // { left, total, bet, won, timer } while free spins are waiting or playing
     pots, // jackpot pots in base units, e.g. { mini: 812.5, … } (machines with a jackpot wheel)
     bonus: null, // { pot, timer, bet } while the jackpot wheel turns
+    hold: null, // M9: { start, values, steps, respins, bet, timer, duration } while hold & spin plays
   };
 }
 
@@ -1904,6 +2082,10 @@ function newStats(): Stats {
     rebuilds: 0, // machines rebuilt for a Machine Star
     bestStars: 0, // the most stars one machine has had
     mostSeedsHeld: 0, // the most Heirloom Seeds held at once
+    // v10 (M9): more machines
+    bestWays: 0, // the most ways one symbol has won in a spin
+    holdBonuses: 0, holdGrands: 0, // hold & spin bonuses played, and grids filled
+    bestWheel: 0, // the biggest cheese-wheel multiplier landed
   };
 }
 
@@ -2032,6 +2214,13 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
     save.saveVersion = 9;
   }
 
+  // v9 → v10: M9, more machines. A machine can be in the middle of hold & spin
+  // now (machine.hold); an older save has none going, and the new stats start at
+  // 0 (sanitizeState fills both in), so only the version changes here.
+  if (save.saveVersion === 9) {
+    save.saveVersion = 10;
+  }
+
   if (save.saveVersion !== SAVE_VERSION) return null;
   return save;
 }
@@ -2064,6 +2253,28 @@ function isValidGrid(grid: Untrusted, md: MachineDef): grid is Grid {
   const ids = md.symbols.map((s) => s.id);
   return Array.isArray(grid) && grid.length >= 1 && grid.length <= md.maxReels
     && grid.every((column) => Array.isArray(column) && column.length === rows && column.every((id) => ids.includes(id)));
+}
+
+// A saved hold & spin bonus, checked: every list the right size, every cell
+// number on the grid, every value one the machine's acorns can hold. Anything
+// off and it's dropped (null).
+function cleanHold(h: Untrusted, md: MachineDef, validBet: (x: Untrusted) => number): HoldState | null {
+  const hs = md.holdSpin!;
+  const cells = md.maxReels * rowCount(md);
+  const values = Array.isArray(h.values) ? h.values : null;
+  if (!values || values.length > cells || values.length % rowCount(md) !== 0) return null;
+  const okValue = (v: Untrusted) => v === 0 || hs.values.some((x) => x.value === v);
+  const okCell = (c: Untrusted) => Number.isInteger(c) && c >= 0 && c < values.length;
+  if (!values.every(okValue)) return null;
+  if (!Array.isArray(h.start) || !h.start.every(okCell)) return null;
+  if (!Array.isArray(h.steps) || !h.steps.every((st: Untrusted) => Array.isArray(st) && st.every(okCell))) return null;
+  const respins = Math.floor(num(h.respins, hs.respins));
+  const duration = num(h.duration, 0);
+  if (respins < 1 || !(duration > 0)) return null;
+  return {
+    start: [...h.start], values: [...values], steps: h.steps.map((st: number[]) => [...st]), respins, bet: validBet(h.bet),
+    timer: clamp(num(h.timer, 0), 0, duration), duration,
+  };
 }
 
 // Build a clean, valid state from a save (or a live state after a data reload).
@@ -2118,6 +2329,8 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
         clean.bonus = { pot: b.pot, timer: clamp(num(b.timer, 0), 0, md.jackpot.duration), bet: validBet(b.bet) };
       }
     }
+    // Hold & spin (M9) keeps playing where it was, if it all still fits the machine.
+    if (md.holdSpin && m.hold && typeof m.hold === 'object') clean.hold = cleanHold(m.hold, md, validBet);
     kept.push(clean);
   }
   if (!kept.some((m) => m.typeId === data.machines[0].id)) kept.unshift(newMachineState(data.machines[0]));

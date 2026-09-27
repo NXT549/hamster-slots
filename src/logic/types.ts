@@ -55,6 +55,27 @@ export interface JackpotDef {
   pots: PotDef[]; // the last one is the top pot (the Grand)
 }
 
+// M9: hold & spin (the Acorn Vault). `trigger`+ coin symbols on a paid spin start
+// it: they lock in place, and the empty cells respin; a new coin locks too and
+// sets the respins back to `respins`. It ends when the respins run out or every
+// cell holds a coin (then the Grand pays too).
+export interface HoldSpinDef {
+  symbol: string; // the coin symbol (a scatter: the Golden Acorn)
+  trigger: number; // how many coins start it
+  respins: number; // respins to start with, and after every new coin
+  respinChance: number; // the chance an empty cell lands a coin on a respin
+  values: { value: number; weight: number }[]; // what a coin holds (base units), by weight
+  grand: number; // paid on top when every cell holds a coin (base units)
+  respinSeconds: number; // how long one respin shows (time: the machine waits)
+  pause: number; // seconds before the first respin and after the last
+}
+
+// M9: the multiplier wheel (the Big Cheese). Every full line (every reel matched)
+// spins it, and that line's win is multiplied by the wedge it lands on.
+export interface WheelDef {
+  wedges: { multiplier: number; weight: number }[];
+}
+
 export interface MachineDef {
   id: string;
   name: string;
@@ -71,6 +92,10 @@ export interface MachineDef {
   startLines?: number;
   freeSpins?: FreeSpinsDef;
   jackpot?: JackpotDef;
+  // M9
+  ways?: boolean; // "243 ways": no paylines; matching symbols on neighbouring reels win on any row (machine.ts evaluateWays)
+  holdSpin?: HoldSpinDef;
+  wheel?: WheelDef;
 }
 
 // Every upgrade and Family Tree node has an effect. The "type" says which small
@@ -94,6 +119,9 @@ export type Effect =
   | { type: 'startingMachineLevel'; upgradeType: string; levels: number } // every machine starts with levels of its upgrade of this effect type
   | { type: 'startingMachine'; machine: string } // every pup starts owning this machine
   | { type: 'potSeedBonus'; perLevel: number } // jackpot pots start (and restart) bigger
+  // M9 (More machines): machine upgrades for the new features
+  | { type: 'extraRespins'; perLevel: number } // hold & spin: more respins (to start with, and after every new coin)
+  | { type: 'wheelBonus'; perLevel: number } // the cheese wheel: + this on every wedge
   | { type: 'shiftWeight'; from: string; to: string; amount: number }
   | { type: 'fullLineMultiplier'; multiplier: number }
   | { type: 'startingLevel'; upgrade: string; levels: number }
@@ -228,9 +256,12 @@ export interface LineResult {
 
 // A winning line of a grid (machine.ts evaluateGrid); `line` = its index in the paylines.
 export interface LineWin extends LineResult {
-  line: number;
+  line: number; // (on a ways machine: the symbol's place in the machine's symbol list)
   fullLine: boolean; // every reel matched
   fromRight: boolean; // read from the right-hand reel (only with "pays both ways")
+  ways?: number; // M9, ways machines: how many ways this symbol won (basePayout = pay × ways)
+  cells?: Cell[]; // M9, ways machines: every cell of the win ([reel, row])
+  wheel?: number; // M9, the Big Cheese: the multiplier wedge this full line landed on
 }
 
 // A winning line after every multiplier (game.ts resolveSpin).
@@ -254,6 +285,19 @@ export interface BonusState {
   bet: number;
 }
 
+// M9: a hold & spin bonus while it plays. Like a spin's result, it's all decided
+// when it starts (game.ts startHold); the timer only lets it play out, and it pays
+// when the timer runs out. Cells are numbered reel by reel: index = reel × rows + row.
+export interface HoldState {
+  start: number[]; // the cells that held a coin when it started
+  values: number[]; // every cell's coin value at the END (base units; 0 = never filled)
+  steps: number[][]; // the cells each respin filled ([] = a respin with no new coin)
+  respins: number; // respins to start with (and after every new coin)
+  bet: number;
+  timer: number; // seconds left
+  duration: number; // seconds in all
+}
+
 export interface MachineState {
   typeId: string; // which machine in data.json
   upgrades: Levels; // machine-scoped upgrade levels
@@ -268,6 +312,7 @@ export interface MachineState {
   freeSpins: FreeSpinsState | null;
   pots: Record<string, Money>; // jackpot pots in base units
   bonus: BonusState | null; // the jackpot wheel while it turns
+  hold: HoldState | null; // M9: hold & spin while it plays
 }
 
 export interface GambleState {
@@ -317,6 +362,10 @@ export interface Stats {
   rebuilds: number; // M8: machines rebuilt for a Machine Star
   bestStars: number; // M8: the most stars one machine has had
   mostSeedsHeld: number; // M8: the most Heirloom Seeds held at once
+  bestWays: number; // M9: the most ways one symbol has won in a spin (ways machines)
+  holdBonuses: number; // M9: hold & spin bonuses played
+  holdGrands: number; // M9: hold & spin grids filled (the Grand)
+  bestWheel: number; // M9: the biggest cheese-wheel multiplier landed
 }
 
 export interface GameState {
@@ -386,6 +435,8 @@ export interface GameEvents {
   freeSpinsEnded: { machineId: string; spins: number; won: Money };
   jackpotStarted: { machineId: string; pot: string; duration: number; bet: number };
   jackpotWon: { machineId: string; pot: string; amount: Money };
+  holdStarted: { machineId: string; cells: Cell[]; respins: number; bet: number; duration: number };
+  holdEnded: { machineId: string; amount: Money; coins: number; full: boolean };
   gambleOffered: { machineId: string; stake: Money };
   gambleResolved: {
     machineId: string; win: boolean; pick: string; card: Card; multiplier: number; stake: Money; round: number; next: Money;

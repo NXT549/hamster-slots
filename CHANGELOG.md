@@ -8,6 +8,25 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Added
+
+- **Three new slot machines** for the late game, each with a new way to win:
+  - **The Hamster Maze** (500M): no paylines at all. Matching snacks on neighbouring reels win on **any row**, from the first reel on: 27 ways on 3 reels, then 81, then **243 ways** with Longer Maze. Two Carrots on reel 2 count twice. The hamster runs the maze as a wild (Maze Runner) on reels 2 to 5.
+  - **The Acorn Vault** (25B): land **six or more Golden Acorns** and they lock in place for **hold & spin**. The other cells respin 3 times, and every new acorn that lands sticks and resets the respins to 3. Every acorn shows its prize, and when the respins run out you win them all. **Fill all 15 cells for the Grand.** Sticky Paws gives more respins.
+  - **The Big Cheese** (2.5T): every line that matches **all five reels** spins the **cheese wheel** for ×2, ×3, ×5 or ×10 on that line. Aged Cheese makes every wedge bigger.
+- Each new machine has its own look, new symbols to unlock, Machine Luck, cheaper spins, and Machine Stars. The Vault and the Big Cheese also sell Pays Both Ways.
+- The Info tab explains ways, hold & spin and the cheese wheel with each machine's real odds.
+- Four new diary stickers: A-maze-ing, Nut Hoarder, The Big Cheese and Whole Arcade.
+- New stats: the most ways won at once, hold & spin bonuses and Grands, and the best cheese wedge.
+
+### Changed
+
+- Once you own more than four machines, the machine tags on the cage show just each machine's picture, so they fit in one row.
+
+### Fixed
+
+- On a phone, the Info tab's paytable no longer makes the whole page slide sideways: the table scrolls on its own, and its cells are a little tighter.
+
 ## [1.0.0] - 2026-09-27
 
 **The full release!** Everything so far, plus the Big Cage, polished with a lot of new animations and effects.

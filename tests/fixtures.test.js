@@ -53,10 +53,10 @@ describe('save v7 → v8: money is saved as text (big numbers)', () => {
       expect(fields.length).toBeGreaterThan(10);
       for (const [obj, key] of fields) expect(typeof obj[key]).toBe('string');
       // Turn the text back into numbers (and the version back to 7), and leave out
-      // what v9 added: then it's the old save again.
+      // what v9 and v10 added: then it's the old save again.
       for (const [obj, key] of fields) obj[key] = Number(obj[key]);
       now.saveVersion = 7;
-      expect(withoutV9(now)).toEqual(canonical(old));
+      expect(withoutV9(withoutV10(now))).toEqual(canonical(old));
     });
   }
 });
@@ -79,7 +79,28 @@ describe('save v8 → v9: M8 adds Machine Stars and the Big Cage', () => {
       expect(now.bigCage).toBe(false);
       expect([now.stats.rebuilds, now.stats.bestStars, now.stats.mostSeedsHeld]).toEqual([0, 0, 0]);
       now.saveVersion = 8;
-      expect(withoutV9(now)).toEqual(canonical(old));
+      expect(withoutV9(withoutV10(now))).toEqual(canonical(old));
+    });
+  }
+});
+
+// What save v10 (M9, more machines) added, taken out again.
+function withoutV10(save) {
+  const out = structuredClone(save);
+  for (const m of out.machines) delete m.hold;
+  for (const key of ['bestWays', 'holdBonuses', 'holdGrands', 'bestWheel']) delete out.stats[key];
+  return out;
+}
+
+describe('save v9 → v10: M9 adds hold & spin and four stats', () => {
+  for (const [, , name] of FIXTURES) {
+    test(`save-v9-${name}.json: no hold & spin going, the new stats at 0; nothing else changes`, () => {
+      const old = read(`save-v9-${name}.json`);
+      const now = canonical(loadAndSave(old));
+      expect(now.machines.every((m) => m.hold === null)).toBe(true);
+      expect([now.stats.bestWays, now.stats.holdBonuses, now.stats.holdGrands, now.stats.bestWheel]).toEqual([0, 0, 0, 0]);
+      now.saveVersion = 9;
+      expect(withoutV10(now)).toEqual(canonical(old));
     });
   }
 });

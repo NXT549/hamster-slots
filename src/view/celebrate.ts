@@ -136,7 +136,8 @@ export function createCelebration({ host, fx, sound, lessMotion }: { host: HTMLE
       }
       return;
     }
-    const t = show.countFor > 0 ? Math.min(1, (now - show.start) / show.countFor) : 1;
+    // (Clamped at 0 too: a celebration started during this frame's drawing began a moment after `now`.)
+    const t = show.countFor > 0 ? Math.min(1, Math.max(0, (now - show.start) / show.countFor)) : 1;
     // The title climbs: the next one slams in at each equal part of the count.
     const index = t >= 1 ? opts.titles.length - 1 : Math.min(opts.titles.length - 1, Math.floor(t * opts.titles.length));
     if (index !== show.titleIndex) {

@@ -24,7 +24,7 @@ const EVENTS = [
   'spinStarted', 'spinResolved', 'spinBlocked', 'betChanged', 'freeSpinsStarted', 'freeSpinsEnded',
   'jackpotStarted', 'jackpotWon', 'gambleOffered', 'gambleResolved', 'gambleEnded', 'coinsChanged',
   'seedsChanged', 'upgradeBought', 'machineBought', 'machineSwitched', 'treeNodeBought', 'retired',
-  'bigCageLeft', 'machineRebuilt',
+  'bigCageLeft', 'machineRebuilt', 'holdStarted', 'holdEnded',
   'deliveryStarted', 'deliveryFinished', 'tokensChanged', 'stickerEarned', 'capsuleOpened',
   'skinEquipped', 'offlineEarned', 'dataReloaded', 'stateLoaded',
 ];
@@ -271,7 +271,42 @@ function family() {
   return s.checkpoints;
 }
 
-export const SESSIONS = { firstLife, allMachines, family };
+// M9: the three late-game machines. The Hamster Maze (243 ways), the Acorn Vault
+// (hold & spin, natural and by hand, saved and loaded halfway) and the Big Cheese
+// (the cheese wheel), every upgrade bought, at the biggest bet.
+function moreMachines() {
+  const s = newSession(44);
+  const g = () => s.g;
+  g().addCoins('1e16');
+  for (const id of ['maze', 'vault', 'cheese']) {
+    g().buyMachine(id);
+    for (const def of g().getAvailableUpgrades()) g().buyUpgrade(def.id, Infinity);
+    g().setBet(g().getMaxBetIndex());
+  }
+  checkpoint(s, 'bought the new machines');
+  for (const id of ['maze', 'vault', 'cheese']) {
+    g().switchMachine(id);
+    play(s, 4 * 60);
+    checkpoint(s, `played the ${id}`);
+  }
+  // Hold & spin by hand, saved and loaded halfway through, then played out.
+  g().switchMachine('vault');
+  waitIdle(s);
+  if (g().getGambleInfo()) g().collectGamble();
+  g().triggerHold(7);
+  play(s, 5, { clicks: false });
+  const save = g().toSaveData();
+  const next = newGame(44);
+  next.rng.setState(g().rng.getState());
+  next.loadSaveData(save);
+  attach(s, next);
+  checkpoint(s, 'hold & spin, saved halfway');
+  play(s, 60);
+  checkpoint(s, 'hold & spin played out');
+  return s.checkpoints;
+}
+
+export const SESSIONS = { firstLife, allMachines, family, moreMachines };
 
 // Which checkpoints are also kept as real save files (tests/fixtures/), for
 // save-migration tests: [session, checkpoint label, name]. The files are called

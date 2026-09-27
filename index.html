@@ -76,6 +76,8 @@
             <div class="pots hidden" id="pots"></div>
             <div class="reel-window">
               <div class="reels" id="reels"></div>
+              <!-- M9: hold & spin, over the reels: the acorns lock in place and the empty cells respin -->
+              <div class="hold-board hidden" id="hold-board"></div>
               <span class="payline-arrow left"></span><span class="payline-arrow right"></span>
               <!-- The win show names the line it's showing ("Line 4 · Baby Carrot ×3 · 150") -->
               <div class="line-label hidden" id="line-label"></div>
@@ -269,7 +271,7 @@
           </nav>
         </div>
         <div class="subpanel" data-sub="paytable">
-          <table class="paytable" id="paytable"></table>
+          <div class="paytable-wrap"><table class="paytable" id="paytable"></table></div>
           <p class="note" id="paytable-note"></p>
         </div>
         <div class="subpanel" data-sub="paylines">

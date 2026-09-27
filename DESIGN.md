@@ -1,7 +1,7 @@
 # Hamster Slots — Design
 
 > Working title. A cute pixel-art idle/clicker game. A tiny hamster runs on a wheel, and the wheel powers a slot machine.
-> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates. The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
+> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates (M9, three more machines, is on a branch: §24). The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
 > All currency is fake in-game coins. There is no real money and nothing to buy with real money.
 
 Every number in this file comes from `data.json`. If you change one there, change it here too, and log it in `PORTING_NOTES.md` → Balance log.
@@ -287,6 +287,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 - **Save version 5** (milestone 5) made each machine's spin result a **grid** (`result[reel][row]`) and added the stats `machinesBought` and `mostLinesWon`. A v4 result (one symbol per reel) becomes a one-row grid; an old save with wins starts `mostLinesWon` at 1. The save can hold several machines; loading keeps each machine type once and always keeps the free first machine.
 - **Save version 6** (milestone 6) gave every machine its chosen **bet**, **free spins** (left, total, bet, won), its **jackpot pots**, a jackpot wheel in progress (`bonus`), its **win streak**, and the bet a running spin was paid with. New lifetime stats: `biggestBet`, `freeSpins`, `freeSpinTriggers`, `freeSpinCoins`, `wildWins`, `bestStreak`, `jackpotsWon`, `grandJackpots`, `gambleWins`, `gambleLosses`, `bestGambleRun`. A v5 save starts them all at their defaults (bet ×1, pots at their seeds, 0). An open **gamble is never saved** (dropping it = collecting: its coins are already in your pile).
 - **Save version 9** (milestone 8) added **Machine Stars** (`stars`, by machine type, kept through retiring), the **Big Cage** flag (`bigCage`: between lives, §22) and the stats `rebuilds`, `bestStars` and `mostSeedsHeld`. A v8 save has no stars and is mid-life. (Save version 8 wrote money as text, see above.)
+- **Save version 10** (milestone 9) added a hold & spin in progress on a machine (`hold`: the acorns, every respin, the bet and its timer; §24) and the stats `bestWays`, `holdBonuses`, `holdGrands` and `bestWheel`. A v9 save has no hold under way and starts them at 0. A saved hold that doesn't fit the machine any more (a data change) is dropped, like a broken spin.
 - **Save version 7** (milestone 7) added **symbols you unlock** and the stats `symbolsUnlocked`, `bestLuck` and `suitWins`. Machines now start with some symbols locked, so a v6 save gives every machine every unlock it sells (maxed): an older hamster had every symbol, and nobody loses one. Luck isn't stored (it comes from upgrade levels), and neither is the gamble's card history.
 - The save also keeps `savedAt` (real-world time), which pays **offline earnings** on the next visit (§15).
 - Settings (sound on/off and volume, Motion, Quick reels, Numbers, the ×1/×10/Max choice) are stored separately from the save, so **Reset progress** keeps them.
@@ -316,15 +317,16 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's
 
 ## 9. Balance rules (the tests check these)
 
-1. Every machine setup (each reel count, **each payline count**, each Hamster Wild level, with and without **Pays Both Ways**, and **each step of its symbol unlocks, locked symbols included**) has a base **RTP above 100%**, counting its features (free spins, jackpot pots) without feature upgrades and with no Luck (Luck only raises it). The lowest is Old Clunky fresh on 2 reels (150%); the Snack Stacker starts at 151%, the Burrow Bonanza at 400%, the Pouch Palace at 784%. **The bet never changes the RTP** (a test checks it at every bet).
+1. Every machine setup (each reel count, **each payline count**, each Hamster Wild level, with and without **Pays Both Ways**, and **each step of its symbol unlocks, locked symbols included**) has a base **RTP above 100%**, counting its features (free spins, jackpot pots) without feature upgrades and with no Luck (Luck only raises it). The lowest is Old Clunky fresh on 2 reels (150%); the Snack Stacker starts at 151%, the Burrow Bonanza at 400%, the Pouch Palace at 784%, and M9's Hamster Maze at 1,219%, the Acorn Vault at 1,246% (hold & spin included) and the Big Cheese at 1,322% (the cheese wheel included). **The bet never changes the RTP** (a test checks it at every bet).
 2. **Delivery coins/s must be lower than auto-spin profit/s at Wheel Training level 1** on the starting machine. Currently 0.44 vs 0.54. **This must also hold with the whole Family Tree** (faster, bigger deliveries), on 2 reels and on 3 reels. Currently 1.00 vs 2.76 (2 reels) and 1.00 vs 3.55 (3 reels), with no Chubby Cheeks and no heirloom bonus. (The Snack Stacker earns far more per second than a delivery, so it's never the problem.)
 3. **One delivery always covers at least one spin** at base spin cost **on the free first machine**, so 0 coins is never a dead end. Currently 20 vs 5. A Snack Stacker spin (25) costs more than a delivery, but you can always switch back to Old Clunky, and the free machine can never be lost. (Bets don't break this: a spin you can't afford at your bet steps down to one you can, down to ×1.)
 4. **The gamble is fair and can't farm seeds** (milestone 6; the card gamble since M7): a colour wins 50% for ×2 and a suit 25% for ×4 (a test checks 20,000 picks of each, the win rates AND the average pay-back of 0), and gamble wins and losses never count as coins *earned*, so gambling can't raise Heirloom Seeds.
 5. **Free spins always end**: every free spin retriggers less than once on average (Burrow Bonanza with every Bouncy Ball and max Luck: 0.13; with the whole Family Tree too, Ball Pit included, still well below 1), so the expected number of free spins per trigger is finite (26.8).
 6. **Every symbol unlock raises the EV and lowers the hit rate** (milestone 7), in every setup of every machine (Pays Both Ways included), at no Luck and at max Luck: bigger prizes, fewer wins, never a trap (§21).
-7. **Every level of Luck raises both the hit rate and the EV** (milestone 7), on every machine, with nothing and with everything unlocked, and paying both ways. (M8's Lucky Family trait and Machine Stars add Luck the same way.)
+7. **Every level of Luck raises both the hit rate and the EV** (milestone 7), on every machine, with nothing and with everything unlocked, and paying both ways. (M8's Lucky Family trait and Machine Stars add Luck the same way.) M9's machines are in every one of these checks: every reel count of the Hamster Maze and every Maze Runner level, every payline count of the Vault and the Big Cheese, both ways, every unlock step, Luck 0 to max.
 9. **Machine Stars and the M8 traits only ever add** (M8): a star multiplies a machine's payouts and adds Machine Luck; Golden Pouches raise the pots' seeds; the EV stays exact with them (the tests compare the game's EV with `spinExpectation` / `jackpotStats`).
 8. **The auto-spin interval is never shorter than the spin time + the rest** (0.8 s; milestone 7), on every machine and Wheel Training level, with or without Quick Paws.
+10. **Ways, hold & spin and the cheese wheel are exact** (M9): the ways EV and hit rate match every grid of a small test machine added up by brute force (to 1e-9) and sampled Maze spins; hold & spin's trigger is exactly the binomial tail and its average matches a Monte Carlo of the bonus; the wheel's EV matches sampling. The time a hold & spin takes is counted in the machine's coins per second.
 
 ## 10. Balance targets (what "good" looks like)
 
@@ -346,7 +348,7 @@ The user picked **"real slog"** for the first life (PORTING_NOTES D93). Measured
 | Snack Stacker / Burrow Bonanza / Pouch Palace | | ~30–37 min into gen 2 / gens 4–5 / from gen 8 | a little earlier |
 | Whole Family Tree | | 4.0–4.9 h | 2.7–3.4 h |
 
-**Known issue (M7, still open after M8):** from generation ~9 lives shrink again, to a few minutes: once bets ×10 and the Palace multiply income, a square-root seed curve hands out seeds easily. M8 kept generations 1–8 close to M7 (§22) but didn't fix the late lives: by then the family owns every machine, bet and trait, so a life is a quick re-run. Steeper seed curves and weaker held seeds were tried and didn't help (PORTING_NOTES D121); new content (M9's machines) is what's missing there.
+**Known issue (M7, still open after M8 and M9):** from generation ~9 lives shrink again, to a few minutes: once bets ×10 and the Palace multiply income, a square-root seed curve hands out seeds easily. M8 kept generations 1–8 close to M7 (§22) but didn't fix the late lives: by then the family owns every machine, bet and trait, so a life is a quick re-run. Steeper seed curves and weaker held seeds were tried and didn't help (PORTING_NOTES D121). **M9's machines didn't fix it either** (§24, D127): the seeds held grow faster every life (the simulated idle player's heirloom bonus is +1,000% by generation 11 and +7,600% by generation 13), so by the time a family can afford the new machines, a life lasts about a minute. It's a question for the user: the fix is a change to how held seeds pay, which is a balance-direction change.
 
 **A limit to keep in mind:** balance rules 2 and 3 together mean the base RTP must be at least **1 + auto-spin interval ÷ delivery time** (a delivery pays at least one spin, and must earn less per second than auto-spin at Wheel Training 1). So the slog comes from **time and prices** (slower spins, slower auto-spin, longer deliveries, higher prices), not from an RTP below that floor. RTP stays above 100% (Old Clunky starts at 150%).
 
@@ -401,7 +403,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | 6 | Pokies night *(done)* | The user gave ten goals and picked, in a question round: two milestones with the pokies part first, **all four bonus features**, bets unlocked by an upgrade. So: **bets** ×1 … ×10 with **High Roller** (§18); the **Hamster Wild**, **free spins** (Hamster Ball scatter), the **jackpot wheel with four pots**, the **gamble** and **Hot Streak** (§19); two new machines, the **Burrow Bonanza** and the **Pouch Palace** (§16); new upgrades (High Roller, Hot Streak, Hamster Wild, Bouncy Ball, Pouch Polish, and spin-cost and payline upgrades for the new machines); the **balance simulator** `tools/sim.mjs` and a tuning pass (the old roadmap's "Balance simulator"); **sub-tabs** in the tray and the Info tab (§12, §17); **pixel particles and animations** (§20); save v6; 8 diary stickers. (This absorbs the old "Machine types II": a third machine and the wild.) |
 | 7 | Real pokies *(done; §21; + Pays Both Ways after the first feedback, §3)* | The user's "slow down spin speed… early game to feel like a slog", "make it more like slot machines… make them go one by one", luck you can see, symbols to unlock, and a new double-or-nothing. So: **slower spins and auto-spin** with reels that stop one at a time; a **win show** that lights each winning line **one by one** while a **WIN meter** counts up; a **blank symbol** (Wood Shaving); **unlockable symbols** (the user's "new seeds": machines start with fewer symbols); **Hamster Luck + Machine Luck** with a visible Luck number; the **pokies card gamble** (red/black ×2, suit ×4); a full **rebalance to the "real slog"** with `tools/sim.mjs` (§10); save v7; particles for all of it. Built with one change to the plan: each machine's unlocks are ONE upgrade that opens its symbols in a fixed order (PORTING_NOTES D96). |
 | 8 | The Big Cage (rebirth rework) *(done; §22; released in 1.0.0)* | The user's "use the rebirth system more… a reason to both rebirth and hold heirloom seeds" and "when you rebirth it takes you to a fully in-depth page of just the upgrades". So: retiring opens a **full-screen Big Cage page** between lives, and it's the **only place to plant** (the Family tab keeps the retire card and a read-only tree). **Held seeds give +X% income each** (planting spends them, so plant-or-hold is a real choice); a "Retire now: +N seeds → +X%" preview. A **bigger tree**: start with High Roller steps, keep symbol unlocks / Machine Luck / a machine, free-spin luck, bigger pot seeds. **Machine rebirths ("Rebuild")**: a fully upgraded machine can be rebuilt for a permanent **Machine Star** (+payouts and +Machine Luck on that machine, a gold trim), kept through retirement. Numbers from the simulator. Save v8. It should also fix M7's known issue: lives from generation ~9 get short again (§10). |
-| **9** | **More machines** *(next)* | The user's "more slot machines". 2–3 machines, each with a new pokie mechanic and exact EV: an **early machine** in the gap between Old Clunky and the Snack Stacker, **243 ways** (wins on any row, reel to reel), **hold & spin** (coin symbols lock in place with 3 respins), maybe a multiplier wheel past the Pouch Palace. Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers. |
+| **9** | **More machines** *(built on the branch, waiting for the user's playtest; §24)* | The user's "more slot machines". The user picked (2026-09-27) three late-game machines, each with a new pokie mechanic and exact EV: the **Hamster Maze** (**243 ways**: wins on any row, reel to reel), the **Acorn Vault** (**hold & spin**: 6+ Golden Acorns lock in place with 3 respins; fill it for the Grand) and **The Big Cheese** (a **multiplier wheel** on every full line). Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers; save v10. (The early machine between Old Clunky and the Snack Stacker wasn't picked.) |
 | 10 | Wardrobe buffs | The user's "hats & skins which both give unique changes and improvements" (was M7): **every skin gives a buff while worn** (fur → payouts, wheel → speed, machine → spin cost, room → offline/delivery; rarer = stronger), **hats** as a 5th capsule category (a layered sprite on the hamster), some pieces with **unique changes**, not just a % (e.g. one more card in the gamble history, a free spin more), the Wardrobe as a loadout. The user chose "what you wear gives the buff" and "hats come from capsules"; this reverses D39 (tokens were cosmetic only). |
 | 11 | Hamster Casino | The user's "minigames or side games… roulette, blackjack etc in a hamster casino". A casino room (a new tab) with side games: **roulette** (the hamster in a ball on the wheel), **blackjack**, and hamster ones (a derby race, a seed drop). Played with **Casino Chips**, which never count as coins earned (they can't farm seeds, like rule 4). A **Prize Counter** for hats, timed boosts and luck charms. Honest odds on screen. Each game is its own headless logic module (rule 1), not more code in game.ts. |
 | 12 | Your own casino (late game) | The user's "late game you can eventually start your own casino". The family opens **its own casino**: put machines you own on the floor, hamster guests play them, and you earn the **house edge** while idle; decor, staff, more rooms, a new late-game currency/layer. Unlocked far into the game (e.g. every machine owned and several generations). Planned in detail when we get there. |
@@ -420,6 +422,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 - **QoL:** the user picked *Buy ×10 / Max* and *Settings & info* first (§17). Not picked yet: keyboard shortcuts for buying and tabs. The save backup (export/import code) was built in 3.8: the user asked for it with the web-first plan (2026-09-25, §7).
 - **Milestone 6 goals (user):** "different denoms like actual pokies", "features where you can win more", "more slot machines", "better game balances", "new and unique upgrade", "different tabs for upgrades and stuff", "cool particle effects and animations" → milestone 6. "Hats that give different buffs", "skins give different buffs", "new Heirloom Seed upgrades" → planned as milestone 7, now M10 (hats, skins) and M8 (tree traits).
 - **First M7 feedback (user, 2026-09-27):** "issue with 3 slots its based left to right meaning if you get 2 on the right it doesnt count" → the user picked **Pays Both Ways as an upgrade** (§3, D119), over "both ways always", "keep left to right, explain it better" and "both ways on Old Clunky only".
+- **M9 (user, 2026-09-27):** after 1.0 ("looks good keep going"), the user picked **all three** proposed machines (243 ways, hold & spin, a multiplier wheel) and placed them in the **late game**, "priced so lives from generation ~9 get longer again" (§24; that part didn't work out, §10).
 - **After M6 (user, 2026-09-25):** new: "more slot machines" → M9 · "rebirths for slot machines" → M8 · "unlock/buy new seeds (carrot, sunflower, golden)", which the user explained as *unlockable symbols you don't start with, kept balanced* → M7 · "more new fun upgrades" → every milestone (luck M7, stars M8, casino M11) · "roulette, blackjack etc in a hamster casino" → M11 · "late game you can eventually start your own casino" → M12 · "hats & skins which both give unique changes and improvements" → M10 · "fun particle effects and animations" → every milestone. Balancing: "slow down spin speed… early game to feel like a slog" → M7 (the user picked "real slog") · "with new symbols added change how likely you are to actually get wins therefore making players buy the luck upgrade" → M7 · "a reason to both rebirth and hold heirloom seeds" → M8. Changes: "change how the double or nothing system works" → M7 (the user picked the pokies card gamble) · "make it more like slot machines… make them go one by one" → M7 · "luck upgrades so you can see how much luck you have… hamster luck and machine luck" → M7 · "when you rebirth it takes you to a fully in-depth page of just the upgrades" → M8.
 
 ### Things to keep in mind for release (itch.io, Steam, mobile)
@@ -437,7 +440,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 |---|---|---|
 | **HUD** (top) | Name · coin **price tag** (big number + auto income/s) · seed tag · a cardboard Menu button | One glanceable number. Everything else stays out of the way. |
 | **Stage** (middle) | Three bands. The **back of the cage**: wire bars in front of the room's wall, with the hamster wheel joined to the slot machine by a **clear tube** (seeds roll along it), both standing in the bedding with a soft shadow; a water bottle hangs on the bars, and a food bowl and the capsule machine sit in the corners (wide screens). The **bedding**: a strip of wood shavings (a repeating pixel tile). The **front of the plastic base**: the Deliver and Spin buttons, and the **delivery tube** the hamster runs through. | Shows the core fantasy: the hamster *powers* the machine, in its own home. Every cage part has a hamster reason (pillar 1). |
-| **Machine tags** | Paper tags hanging on the bars (top left), one per machine you own; tap one to switch. Hidden until you own two. On phones they shrink to the machine icons. | Switching is one tap, right where you look. |
+| **Machine tags** | Paper tags hanging on the bars (top left), one per machine you own; tap one to switch. Hidden until you own two. On phones, and once you own more than four machines (M9), they shrink to the machine icons (one row). | Switching is one tap, right where you look. |
 | **Machines** | Each machine type has its own look (`data-machine` on the machine element): Old Clunky is a chunky mint toy machine with a pull lever; the Snack Stacker is a tall strawberry-milk snack machine with a push button and numbered payline tags down both sides of its window; the **Burrow Bonanza** is a wide wooden machine dug into the burrow, with grass on its roof and a round-cornered window; the **Pouch Palace** is velvet and gold, with its four **jackpot pots** on plaques above the reels. | New machines should *feel* new. |
 | **Bet box** (M6) | Next to Spin: − **BET ×3** + with a hint underneath ("up to ×10", "High Roller" before it's unlocked, or "spins ×2" in red when you're short and a spin will step down). Spin shows what the next spin really costs. Keys `-` and `=`. On phones it gets its own row. | The bet is the pokie "denom": always in reach, always showing what a spin costs. |
 | **Feature widgets** (M6) | **Free spins**: the marquee counts them ("Free spins 3/8 · +1.2K"), the machine glows gold, and Spin turns gold ("Free · 5 left · ×3"). **Jackpot wheel**: the hamster wheel's face becomes a 4-colour prize wheel (Mini, Minor, Major, Grand) with a pointer, ticking as it turns and landing on the pot the game picked. **Card gamble** (M7): a gold-edged paper panel over the reels: a face-down card that flips over when you pick, the last 5 cards as little chips, "Gamble your win? 27 · colour → 54 · suit → 108", **Red ×2** · **Black ×2**, the four suits **×4**, **Take win**, and a countdown bar while it's only an offer. **Hot Streak**: a flame badge ("×1.25") on the machine's top-right corner with embers that grow with the streak. **Luck** (M7): a clover badge with the Luck number on the top-left corner; it pops and sparkles when Luck goes up. **WIN meter** (M7): a little dark screen under the reels that counts up to what the last spin paid. | Every feature is visible on the machine itself, where you're already looking. |
@@ -449,7 +452,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | **Family tab** | A **retire card** (pup name, generation, "Retire now: +N seeds", progress bar to the next seed, what resets vs what's kept, two-tap Retire button), then the **Family Tree** drawn top-down like a real family tree (Roots on top, Luck / Speed / Delivery columns below, connected by lines), then a **detail panel** for the selected node with its "now → next" effect and a **Plant** button. | You tap a node to read it and then plant it, so a purchase can't happen by accident. The layout reads as "ancestors on top". |
 | **Info tab** (was Paytable) | Sub-tabs **Paytable** (Symbol · **Chance** after luck traits and Luck · payouts with every bonus **and your bet** applied; locked columns faded; wilds and scatters marked, and a scatter's row says what it starts; symbols you haven't unlocked are faded with "Unlock: New Seeds"; the Wood Shaving says it never pays) · **Paylines** (little grids, locked lines faded; hidden on one-line machines) · **Features** (a card per feature with its **real odds**: Luck, symbols unlocked, bet, Hamster Wild, free spins, jackpot pots with live values, the card gamble, Hot Streak, line hit rate) · **Recent wins** (§17). | Luck traits change the odds and paylines change how you win, so both are shown, and every feature explains itself honestly. |
 | **Menu** | Controls, saving info, **Sound** (volume + On/Off), **Motion**, **Reels**, **Numbers** (§17), **Stats**, debug toggle, two-tap Reset | No footer clutter and no browser pop-ups. |
-| **Stats** (Menu → Stats) | Time played, generation, spins, wins + hit rate, biggest win, biggest bet, most paylines won at once, best winning streak, wins with a wild, free spins, jackpot pots (and Grands), gambles, golden jackpots, coins earned (and how much came while away), deliveries, upgrades, machines bought, seeds, traits, stickers, capsules, skins | Players like seeing their history, and it helps playtests. |
+| **Stats** (Menu → Stats) | Time played, generation, spins, wins + hit rate, biggest win, biggest bet, most paylines won at once, best winning streak, wins with a wild, free spins, jackpot pots (and Grands), the most ways won at once, hold & spin (and Grands), the best cheese wedge (M9), gambles, golden jackpots, coins earned (and how much came while away), deliveries, upgrades, machines bought, seeds, traits, stickers, capsules, skins | Players like seeing their history, and it helps playtests. |
 | **Welcome back** | A paper dialog after time away: how long, what the hamster earned, and a "Yay!" that sends coins flying into the counter | Makes coming back feel good (§15). |
 
 **Style rules**
@@ -586,7 +589,7 @@ The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **
 
 | Source | Tokens | Notes |
 |---|---:|---|
-| **Hamster Diary stickers** (table below) | 1–5 each, 102 in total | One-time goals. They're checked after every spin (when it starts and when it lands), delivery, purchase, retirement and capsule, and on load, so an older save gets the stickers it already earned. |
+| **Hamster Diary stickers** (table below) | 1–5 each, 119 in total (38 stickers) | One-time goals. They're checked after every spin (when it starts and when it lands), delivery, purchase, retirement and capsule, and on load, so an older save gets the stickers it already earned. |
 | **Golden jackpot**: a Golden Seed on every reel of a payline, 3+ reels | 1 per golden line | Old Clunky (once the Golden Seed is unlocked, M7): 1 in 1,331 spins with no Luck, 1 in 760 with max Luck. A 2-reel golden pair doesn't count. On the Snack Stacker each payline counts on its own. Since M6, Hamster Wilds may fill in (golden, wild, golden counts); a line of wilds alone doesn't. |
 | **Every 5th delivery** ("a customer tipped me") | 1 | Counts lifetime deliveries. A counter, not luck. |
 | **Retiring** | 3 | Plus the "The Big Cage" sticker the first time |
@@ -624,13 +627,17 @@ The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **
 | Big Family | Generation 5 | 5 |
 | Full Bloom | Every Family Tree trait (18 since M8; 11 before) | 5 |
 | Fashion Hamster | 8 skins from capsules | 5 |
-| Full Cage *(M6)* | Own every machine at once | 5 |
+| Full Cage *(M6)* | Own four machines at once (every machine until M9) | 5 |
 | Grand Hamster *(M6)* | Win the Grand jackpot | 5 |
 | Nest Egg *(M8)* | Hold 25 Heirloom Seeds at once | 3 |
 | Shooting Star *(M8)* | Rebuild a machine for a Machine Star | 3 |
 | All-Star *(M8)* | Give one machine 5 Machine Stars | 5 |
+| A-maze-ing *(M9)* | Win on 50 ways at once with one symbol (the Hamster Maze) | 3 |
+| Nut Hoarder *(M9)* | Fill the Acorn Vault in hold & spin (the Grand) | 5 |
+| The Big Cheese *(M9)* | Land a ×10 wedge on the cheese wheel | 4 |
+| Whole Arcade *(M9)* | Own all seven machines at once | 5 |
 
-Goal types (data.json `goal.type`): `stat` (a lifetime stat ≥ target), `upgradeLevel` (the best level on any machine), `generation`, `treeNodes`, `skinsOwned`, `machinesOwned` (M6: how many machines you own right now). A new sticker of an existing type needs only data.json. The two M5 stickers use the new stats `machinesBought` and `mostLinesWon`; the M6 stickers use `bestStreak`, `biggestBet`, `bestGambleRun`, `wildWins`, `freeSpinTriggers`, `jackpotsWon` and `grandJackpots`; the M7 stickers `symbolsUnlocked`, `suitWins` and `bestLuck` (the most Luck any machine has had, noted just before the diary is checked); the M8 stickers `mostSeedsHeld`, `rebuilds` and `bestStars`.
+Goal types (data.json `goal.type`): `stat` (a lifetime stat ≥ target), `upgradeLevel` (the best level on any machine), `generation`, `treeNodes`, `skinsOwned`, `machinesOwned` (M6: how many machines you own right now). A new sticker of an existing type needs only data.json. The two M5 stickers use the new stats `machinesBought` and `mostLinesWon`; the M6 stickers use `bestStreak`, `biggestBet`, `bestGambleRun`, `wildWins`, `freeSpinTriggers`, `jackpotsWon` and `grandJackpots`; the M7 stickers `symbolsUnlocked`, `suitWins` and `bestLuck` (the most Luck any machine has had, noted just before the diary is checked); the M8 stickers `mostSeedsHeld`, `rebuilds` and `bestStars`; the M9 stickers `bestWays`, `holdGrands` and `bestWheel` (the biggest wedge, Aged Cheese included).
 
 The first five goals (First Spin, Beginner's Luck, Look No Paws!, Warming Up, Three's Company) pay exactly **10 tokens, the first pull** (a test checks this). So the **Capsules tab appears after ~3–6 minutes** of a first game in M6; with M7's slog it waits for Wheel Training and the Third Reel, so ~12–47 minutes into a first life (the simulator's range for an idle player).
 
@@ -1243,3 +1250,94 @@ Everything above respects Menu → Motion (and the system's "reduce motion"): no
 - Do the celebrations feel exciting, or too much? Is a BIG WIN every few minutes on auto-spin fun or noisy? Should the rays or the coin rain be bigger or smaller?
 - Is anything too busy on a phone? Does anything feel slow (the iris, the Big Cage arriving in parts)?
 - Is 1.0 ready: anything else that must be fixed or explained before friends play it as "the full game"?
+
+---
+
+## 24. More machines (milestone 9)
+
+> **Status: built on the branch `claude/serene-mayer-lgbgdp`, not merged into `main`**, waiting for the user's playtest (like M8, PORTING_NOTES D125–D127). The user's picks (2026-09-27): all three machines, in the late game.
+
+*"More slot machines."* (the user's M6 feedback)
+
+Three machines past the Pouch Palace, each with a pokie mechanic the game didn't have. All three have exact maths (§9, rule 10), their own unlockable symbols, Machine Luck, a cheaper-spins upgrade, Machine Stars and a look of their own, and they're bought like the others (Upgrades → Machines).
+
+| Machine | Price | Grid | Spin | Mechanic | Fresh: RTP · hits |
+|---|---:|---|---:|---|---|
+| 🌀 **Hamster Maze** | 500M | 3→5 reels × 3 rows, no paylines | 2,500 | **243 ways** | 1,219% · 20.5% |
+| 🌰 **Acorn Vault** | 25B | 5×3, 10→20 lines | 50,000 | **hold & spin** | 1,246% · 39.2% (a hold & spin 1 in 139) |
+| 🧀 **The Big Cheese** | 2.5T | 5×3, 10→20 lines | 300,000 | **the cheese wheel** | 1,322% · 46.4% |
+
+Every spin takes 3.6 s. The high RTPs are the same idea as the Palace's 784%: each machine is a step up in income, like the ladder before it (a fresh machine earns about as much per spin as the one before it, finished: the Maze 30K a spin fresh vs the Palace's 30–58K finished).
+
+### 🌀 The Hamster Maze: 243 ways
+
+- **No paylines.** A symbol wins when it's on **reel 1 and every reel next to it**, on **any row**: 3 reels in a row pay the 3 prize, 4 the 4 prize, 5 the 5 prize. The prize is paid **once per way**: two Carrots on reel 2 make two ways, so a win's "ways" = the matching cells on reel 1 × on reel 2 × … It starts on 3 reels (27 ways) and **Longer Maze** adds reels: 81 ways, then **243 ways**.
+- **Maze Runner** puts the hamster in the maze as a **wild on reels 2 to 5** (never reel 1, so every win starts with a real snack; the wild pays nothing by itself).
+- The win show lights every cell of a win (there's no line to draw) and says "Baby Carrot ×4 · 6 ways".
+- Symbols (weights): Sunflower Seed 30, Baby Carrot 24, Sweet Corn 18, Blueberry 14, Strawberry 9 🔒, Golden Seed 5 🔒, Wood Shaving 70. Pays (3/4/5 reels, per way): 60K/120K/240K · 90K/200K/440K · 140K/340K/900K · 220K/600K/1.8M · 2M/14M/100M · 8M/80M/1.2B.
+- **The maths:** the EV adds up, for each symbol and length, (its chance on a reel + the wild's) per row × 3 rows, reel by reel, times the chance the next reel has none; the hit rate follows which symbols are still "alive" from reel to reel. Both match brute force (every grid of a small test machine) and sampled spins.
+
+| Upgrade | Price | Max | Effect |
+|---|---:|---:|---|
+| Maze Map | 60M × 1.3ⁿ | 8 | Spins 10% cheaper per level |
+| Longer Maze | 800M × 5ⁿ | 2 | +1 reel (27 → 81 → 243 ways) |
+| Maze Runner | 300M × 3ⁿ | 3 | The wild, +2 weight per level (reels 2–5) |
+| Hidden Snacks | 200M × 6ⁿ | 2 | Unlocks the Strawberry, then the Golden Seed |
+| Lucky Turns | 140M × 2ⁿ | 5 | +10 Machine Luck |
+
+(Pays Both Ways doesn't exist on the Maze: ways already pay on any row, reel 1 onwards.)
+
+### 🌰 The Acorn Vault: hold & spin
+
+- **Six or more Golden Acorns** anywhere on a paid spin start **hold & spin**. The acorns **lock in place**, each showing a prize (175K ×40 · 350K ×25 · 875K ×18 · 1.75M ×10 · 4.375M ×5 · 17.5M ×2, weights; all × the bet). The other cells **respin 3 times**: each empty cell lands an acorn with a 10% chance, and **every new acorn locks too and sets the respins back to 3**. When the respins run out you win **every acorn on the board**. **Fill all 15 cells for the Grand** (+175M × the bet on top).
+- The whole bonus is decided the moment it starts (like a spin, D92), then plays out on the reels: about 1 s a respin. Spins wait while it plays (auto-spin too). A hold & spin can be saved and loaded halfway.
+- **Sticky Paws** (+1 respin per level, max 2) gives more respins to start with and after every new acorn. Luck brings more acorns (fewer blanks); unlocks bring fewer.
+- On average (10 lines, nothing unlocked): 1 in 139 spins, 11.1 acorns, the Grand 1 in 2,749 spins; it's about a quarter of the machine's EV. With every unlock: 1 in 245; with max Luck: 1 in 42.
+- Symbols: Sunflower Seed 28, Blueberry 20, Baby Carrot 16, Red Apple 12 🔒, Golden Seed 7 🔒, Hamster Wild 5, Golden Acorn 20 (scatter), Wood Shaving 70. Pays (2/3/4/5): Sunflower 315K/542.5K/945K/1.66M … Golden Seed 4.18M/52.4M/377M/2.09B, wild 3.15M/31.4M/251M/1.68B.
+- **The maths:** the trigger is the chance of 6+ acorns among 15 cells; the bonus is worked out exactly for every (acorns, respins left) state: the average final acorns, the chance of filling it, and the average number of respins (for the time it takes).
+
+| Upgrade | Price | Max | Effect |
+|---|---:|---:|---|
+| Oiled Hinges | 3B × 1.3ⁿ | 8 | Spins 10% cheaper per level |
+| Wider Vault | 6B × 2.5ⁿ | 5 | +2 paylines (10 → 20) |
+| Sticky Paws | 10B × 4ⁿ | 2 | +1 respin |
+| Vault Pantry | 10B × 6ⁿ | 2 | Unlocks the Red Apple, then the Golden Seed |
+| Lucky Combination | 6B × 2ⁿ | 5 | +10 Machine Luck |
+| Pays Both Ways | 1T | 1 | Lines pay from the right too (§3) |
+
+### 🧀 The Big Cheese: the cheese wheel
+
+- **Every line that matches all five reels spins the cheese wheel**: ×2 (45), ×3 (30), ×5 (17) or ×10 (8), on that line's prize (×3.45 on average). The wheel on the stage spins and lands, and the celebration comes when it stops; the coins are already yours (the view only animates it, D92). A full line both ways still spins once.
+- **Aged Cheese** (+1 on every wedge per level, max 3: ×2 becomes ×3, and so on) makes it stronger.
+- The win's tier counts the wedge, so a ×10 Cheese Wedge line is a JACKPOT!.
+- Symbols: Sunflower Seed 28, Blueberry 20, Strawberry 16, Red Apple 12, Golden Seed 7 🔒, Cheese Wedge 5 🔒, Hamster Wild 5, Wood Shaving 70. Pays (2/3/4/5): Sunflower 1.07M/1.84M/3.21M/5.64M … Cheese Wedge 35.6M/535M/4.16B/26.7B, wild 10.7M/107M/853M/5.69B.
+- **The maths:** EV = the lines' EV + the full lines' EV × (the average wedge − 1); the wheel is ~16% of the machine's EV.
+
+| Upgrade | Price | Max | Effect |
+|---|---:|---:|---|
+| Cheese Slicer | 300B × 1.3ⁿ | 8 | Spins 10% cheaper per level |
+| Bigger Board | 600B × 2.5ⁿ | 5 | +2 paylines (10 → 20) |
+| Aged Cheese | 1T × 4ⁿ | 3 | +1 on every wedge |
+| Cheese Board | 1T × 6ⁿ | 2 | Unlocks the Golden Seed, then the Cheese Wedge |
+| Lucky Rind | 600B × 2ⁿ | 5 | +10 Machine Luck |
+| Pays Both Ways | 100T | 1 | Lines pay from the right too (§3) |
+
+### Everything else
+
+- **New sprites:** the Golden Acorn and the Cheese Wedge symbols, the three machines' marquee icons, and upgrade icons for respins and the wheel; each machine has its own colours (the maze's hedge green, the vault's steel, the cheese's yellow and rind).
+- **The Info tab** explains each mechanic with the machine's real numbers (Features: ways, hold & spin with its odds and the Grand, the cheese wheel's wedges); the paytable says "per way" on the Maze; recent wins list ways, hold & spin and the wedge.
+- **Four new stickers** (§14): A-maze-ing, Nut Hoarder, The Big Cheese and Whole Arcade (Full Cage is now "own four machines"; it always needed four).
+- **Debug panel:** **Hold & spin** starts one on the Acorn Vault (6 acorns where the last spin landed).
+- **Save v10** (§7): a hold & spin under way, and four new stats.
+
+### Balance (from the simulator; PORTING_NOTES → Playtest notes, 2026-09-27 (M9))
+
+Generations 1–10 play as in M8 (the new machines are far out of reach). The simulated players reach them late: the idle one buys the Acorn Vault from generation 14–15 and never picks the Maze (its payback loses to finishing the Palace); the active one buys the Maze from generation 11 and the Big Cheese around generations 15–18. **By then a life lasts about a minute**, because the seeds held grow faster every life (the idle player's heirloom bonus: +1,000% at generation 11, +7,600% at 13, +800,000% at 18). So M9 adds the machines but **doesn't lengthen the late lives**, which is what the user hoped the late-game placement would do (§10, D127). Making them cheaper wouldn't help: any machine that earns more makes the retire goal come sooner.
+
+### Questions the playtest must answer
+
+- Are ways, hold & spin and the cheese wheel easy to follow the first time? Does the Info tab explain them well enough?
+- Is hold & spin exciting (the respins counting back to 3), or too long? Should it be commoner and smaller, or rarer and bigger?
+- Does the cheese wheel's wait (it lands after the reels) feel good, or should it be faster?
+- Do the machines feel different enough from the Pouch Palace, not just bigger?
+- The late lives: see §10. Which fix does the user want?

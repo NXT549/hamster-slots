@@ -15,8 +15,11 @@
 //   "blank": true    the Wood Shaving: the "empty stop" of a real reel strip. It
 //                    never pays, a wild can't stand in for it, and it ends a run.
 //                    Luck works against it (game.ts getSymbols).
+//
+// Most machines pay on PAYLINES. A "ways" machine (M9: "ways": true, the Hamster
+// Maze) has none: see evaluateWays below.
 
-import type { MachineDef, Payouts, SymbolRules, LineResult, LineWin, Grid, Cell, FreeSpinsDef } from './types.ts';
+import type { MachineDef, Payouts, SymbolRules, LineResult, LineWin, Grid, Cell, FreeSpinsDef, WheelDef } from './types.ts';
 import type { Rng } from './rng.ts';
 
 // How many rows count on a machine. Old Clunky has 1: the rows above and below
@@ -47,12 +50,15 @@ const endsRun = (rules: SymbolRules, id: string) => rules.scatters.has(id) || (!
 // Spin the reels: every cell independently picks a symbol by weight.
 // Cells are filled reel by reel, top to bottom. (The order matters: it decides
 // which random number goes where, so the same seed always gives the same grid.)
+// On a ways machine the wild never lands on reel 1 (like a real 243-ways pokie),
+// so every win starts with a real symbol.
 export function rollGrid(machineData: MachineDef, reelCount: number, rng: Rng): Grid {
   const rows = rowCount(machineData);
+  const firstReel = machineData.ways ? machineData.symbols.map((s) => (s.wild ? { ...s, weight: 0 } : s)) : machineData.symbols;
   const grid: Grid = [];
   for (let reel = 0; reel < reelCount; reel++) {
     const column: string[] = [];
-    for (let row = 0; row < rows; row++) column.push(rng.pickWeighted(machineData.symbols).id);
+    for (let row = 0; row < rows; row++) column.push(rng.pickWeighted(reel === 0 ? firstReel : machineData.symbols).id);
     grid.push(column);
   }
   return grid;
@@ -145,6 +151,145 @@ export function evaluateGrid(grid: Grid, lines: number[][], payouts: Payouts, ru
   return { wins, basePayout };
 }
 
+// ─────────────── Ways (M9: the Hamster Maze) ───────────────
+// No paylines: a symbol wins when it's on reel 1 AND on the reels right after
+// it, on ANY row. Every path through those reels (one cell per reel) is a "way",
+// and each way pays the paytable amount:
+//   reel 1: 1 carrot, reel 2: 2 carrots, reel 3: 1 carrot + 1 wild, reel 4: none
+//   → 3 reels in a row, 1 × 2 × 2 = 4 ways → 4 × payouts.carrot["3"]
+// The wild stands in on reels 2 onwards (it never lands on reel 1: rollGrid).
+// With 3 rows and 5 reels there are 3^5 = 243 ways; with 3 reels, 27.
+// Returns every symbol that won, with its ways and the cells to light up.
+export function evaluateWays(grid: Grid, payouts: Payouts, rules: SymbolRules, symbolIds: string[]): { wins: LineWin[]; basePayout: number } {
+  const wins: LineWin[] = [];
+  let basePayout = 0;
+  const R = grid.length;
+  symbolIds.forEach((id, index) => {
+    if (id === rules.wild || endsRun(rules, id) || !grid[0].includes(id)) return;
+    const cells: Cell[] = [];
+    let ways = 1;
+    let count = 0;
+    for (let reel = 0; reel < R; reel++) {
+      const here: Cell[] = [];
+      grid[reel].forEach((cell, row) => { if (cell === id || (reel > 0 && cell === rules.wild)) here.push([reel, row]); });
+      if (!here.length) break;
+      ways *= here.length;
+      cells.push(...here);
+      count++;
+    }
+    const pay = payFor(payouts, id, count);
+    if (!(pay > 0)) return;
+    wins.push({
+      line: index, symbolId: id, count, basePayout: pay * ways, fullLine: count === R,
+      usedWild: cells.some(([reel, row]) => grid[reel][row] === rules.wild), fromRight: false, ways, cells,
+    });
+    basePayout += pay * ways;
+  });
+  return { wins, basePayout };
+}
+
+// The exact EV of a ways machine. Every cell is its own random pick, so the
+// count of a symbol on each reel is independent of the other reels, and
+//   ways for EXACTLY k reels = c1 × c2 × … × ck × [reel k+1 has none]
+// averages to E[c1] × … × E[ck] × P(reel k+1 has none) (averages of independent
+// things multiply). E[c] = rows × p (reel 1: the symbol alone, without the wild's
+// weight; reels 2+: the symbol OR the wild). fullEv = the part paid by wins on
+// every reel (Jackpot Dance and the cheese wheel work on those).
+function waysExpected(machineData: MachineDef, R: number, fullLineMultiplier: number): { ev: number; fullEv: number; hitRate: number } {
+  const rows = rowCount(machineData);
+  const rules = symbolRules(machineData);
+  const all = chances(machineData);
+  const w = rules.wild ? all.find((s) => s.id === rules.wild)!.p : 0;
+  const first = chances({ ...machineData, symbols: machineData.symbols.map((s) => (s.wild ? { ...s, weight: 0 } : s)) });
+  let ev = 0;
+  let fullEv = 0;
+  all.forEach((s, i) => {
+    if (s.id === rules.wild || endsRun(rules, s.id) || !(s.p > 0)) return;
+    const e1 = rows * first[i].p;
+    const q = s.p + w;
+    const miss = Math.pow(1 - q, rows); // P(a later reel has none of it)
+    let product = e1;
+    for (let k = 1; k <= R; k++) {
+      if (k > 1) product *= rows * q;
+      const pay = payFor(machineData.payouts, s.id, k);
+      if (!(pay > 0)) continue;
+      const value = (k < R ? product * miss : product) * pay * (k === R ? fullLineMultiplier : 1);
+      ev += value;
+      if (k === R) fullEv += value;
+    }
+  });
+  return { ev, fullEv, hitRate: waysHitRate(machineData, R) };
+}
+
+// The chance a ways spin wins anything, counted exactly. A symbol wins once it's
+// on reel 1 and on every reel up to its shortest paying run (3 on the Maze). So
+// what matters is WHICH symbols each reel shows, not where. Reel by reel, keep
+// the chances of "these symbols are still alive" (on every reel so far; a wild
+// keeps them all alive). The chance a reel shows exactly the set A of symbols is
+// worked out by inclusion–exclusion:
+//   P(exactly A) = Σ over B ⊆ A of (−1)^(|A|−|B|) × P(every cell is in B or a non-paying symbol)
+// A reel of 3 cells shows at most 3 symbols, so only small sets are tried.
+function waysHitRate(machineData: MachineDef, R: number): number {
+  const rules = symbolRules(machineData);
+  const key = JSON.stringify(['ways', R, machineData.symbols.map((s) => [s.id, s.weight]), machineData.payouts]);
+  if (hitRateCache.has(key)) return hitRateCache.get(key)!;
+  const rows = rowCount(machineData);
+  const all = chances(machineData);
+  const first = chances({ ...machineData, symbols: machineData.symbols.map((s) => (s.wild ? { ...s, weight: 0 } : s)) });
+  // The paying symbols, and the shortest run each one pays for.
+  const paying = all.map((s, i) => ({ ...s, i })).filter((s) => s.id !== rules.wild && !endsRun(rules, s.id) && s.p > 0)
+    .map((s) => ({ ...s, min: Array.from({ length: R }, (_, k) => k + 1).find((k) => payFor(machineData.payouts, s.id, k) > 0) || 0 }))
+    .filter((s) => s.min > 0);
+  if (!paying.length) return 0;
+  const n = paying.length;
+  const wildP = rules.wild ? all.find((s) => s.id === rules.wild)!.p : 0;
+
+  // Every set of at most `rows` of the tracked things (paying symbols, then the wild as bit n), with its chance.
+  function patterns(p: number[]): { mask: number; chance: number }[] {
+    const other = 1 - p.reduce((a, b) => a + b, 0); // blanks, scatters: they never help
+    const items = p.map((x, i) => i).filter((i) => p[i] > 0);
+    const out: { mask: number; chance: number }[] = [];
+    (function pick(start: number, chosen: number[]): void {
+      let chance = 0; // inclusion–exclusion over the subsets of `chosen`
+      const m = chosen.length;
+      for (let sub = 0; sub < 1 << m; sub++) {
+        let sum = other;
+        let size = 0;
+        for (let b = 0; b < m; b++) if (sub & (1 << b)) { sum += p[chosen[b]]; size++; }
+        chance += ((m - size) % 2 ? -1 : 1) * Math.pow(Math.max(0, sum), rows);
+      }
+      if (chance > 1e-15) out.push({ mask: chosen.reduce((acc, b) => acc | (1 << b), 0), chance });
+      if (m === rows) return;
+      for (let j = start; j < items.length; j++) pick(j + 1, [...chosen, items[j]]);
+    })(0, []);
+    return out;
+  }
+  const reel1 = patterns(paying.map((s) => first[s.i].p));
+  const later = patterns([...paying.map((s) => s.p), wildP]);
+  const wildBit = 1 << n;
+  const reached = (k: number) => paying.reduce((acc, s, b) => (s.min === k ? acc | (1 << b) : acc), 0); // symbols that win at k reels
+
+  let hit = 0;
+  let alive = new Map<number, number>();
+  for (const { mask, chance } of reel1) if (mask) alive.set(mask, (alive.get(mask) || 0) + chance);
+  for (let k = 2; k <= R && alive.size; k++) {
+    const next = new Map<number, number>();
+    const wins = reached(k);
+    for (const [set, chance] of alive) {
+      for (const pat of later) {
+        const still = pat.mask & wildBit ? set : set & pat.mask;
+        if (!still) continue;
+        if (still & wins) hit += chance * pat.chance;
+        else next.set(still, (next.get(still) || 0) + chance * pat.chance);
+      }
+    }
+    alive = next;
+  }
+  if (hitRateCache.size > 256) hitRateCache.clear();
+  hitRateCache.set(key, hit);
+  return hit;
+}
+
 // Where a symbol landed anywhere on the grid (for scatters): [[reel, row], …].
 export function findSymbol(grid: Grid, symbolId: string): Cell[] {
   const cells: Cell[] = [];
@@ -186,7 +331,8 @@ function chances(machineData: MachineDef): { id: string; p: number }[] {
 // both ways). So the right-hand reading is worth what the left-hand one is worth
 // on lines that are NOT full:
 //   EV both ways = EV + (EV − the part of the EV that full lines pay)
-export function expectedValue(machineData: MachineDef, reelCount: number, fullLineMultiplier = 1, lineCount = 1, bothWays = false): { ev: number; hitRate: number } {
+export function expectedValue(machineData: MachineDef, reelCount: number, fullLineMultiplier = 1, lineCount = 1, bothWays = false): { ev: number; hitRate: number; fullEv: number } {
+  if (machineData.ways) return waysExpected(machineData, reelCount, fullLineMultiplier); // (no lines, and no both ways)
   const R = reelCount;
   const rules = symbolRules(machineData);
   const symbols = chances(machineData);
@@ -233,7 +379,7 @@ export function expectedValue(machineData: MachineDef, reelCount: number, fullLi
   } else if (lineCount > 1) {
     hitRate = gridHitRate(machineData, lines);
   }
-  return { ev: ev * lineCount, hitRate };
+  return { ev: ev * lineCount, hitRate, fullEv: fullEv * lineCount };
 }
 
 // The chance that at least one line wins, counted exactly.
@@ -420,6 +566,75 @@ export function jackpotStats(machineData: MachineDef, reelCount: number, growthM
   return { q, ev, pots };
 }
 
+// ─────────────── Hold & spin (M9: the Acorn Vault), exactly ───────────────
+// `trigger`+ coins on a paid spin start it (the coin count is binomial, like any
+// scatter). Then it's a little chain of chances: with n coins held and r respins
+// left, each of the N − n empty cells lands a coin with chance q on a respin, so
+// the number of new coins j is binomial too. j > 0 → (n + j coins, respins back
+// to R0); j = 0 → (n, r − 1). It stops at r = 0 or when every cell holds a coin.
+// Worked backwards from the full grid, for every (n, r):
+//   F = the average number of coins at the end, G = the chance the grid fills
+//   (the Grand), S = the average number of respins played.
+// Every coin's value is its own random pick, so the average bonus is
+//   F × (the average coin value) + G × grand.
+export function holdSpinStats(machineData: MachineDef, reelCount: number, extraRespins = 0): { q: number; ev: number; full: number; respins: number; coins: number } {
+  const hs = machineData.holdSpin;
+  if (!hs) return { q: 0, ev: 0, full: 0, respins: 0, coins: 0 };
+  const N = reelCount * rowCount(machineData);
+  const R0 = hs.respins + extraRespins;
+  const q = hs.respinChance;
+  // F[n][r], G[n][r], S[n][r] for n = 0 … N, r = 0 … R0.
+  const F: number[][] = [];
+  const G: number[][] = [];
+  const S: number[][] = [];
+  for (let n = N; n >= 0; n--) {
+    F[n] = [];
+    G[n] = [];
+    S[n] = [];
+    const b = n < N ? scatterDistribution(q, N - n) : [1]; // P(j new coins) on one respin
+    for (let r = 0; r <= R0; r++) {
+      if (n === N || r === 0) {
+        F[n][r] = n;
+        G[n][r] = n === N ? 1 : 0;
+        S[n][r] = 0;
+        continue;
+      }
+      F[n][r] = b[0] * F[n][r - 1];
+      G[n][r] = b[0] * G[n][r - 1];
+      S[n][r] = 1 + b[0] * S[n][r - 1];
+      for (let j = 1; j < b.length; j++) {
+        F[n][r] += b[j] * F[n + j][R0];
+        G[n][r] += b[j] * G[n + j][R0];
+        S[n][r] += b[j] * S[n + j][R0];
+      }
+    }
+  }
+  const totalWeight = hs.values.reduce((sum, v) => sum + v.weight, 0);
+  const meanValue = hs.values.reduce((sum, v) => sum + v.value * v.weight, 0) / totalWeight;
+  const dist = scatterDistribution(symbolChance(machineData, hs.symbol), N);
+  let chance = 0;
+  let ev = 0;
+  let full = 0;
+  let respins = 0;
+  let coins = 0;
+  dist.forEach((p, k) => {
+    if (k < hs.trigger) return;
+    chance += p;
+    ev += p * (F[k][R0] * meanValue + G[k][R0] * hs.grand);
+    full += p * G[k][R0];
+    respins += p * S[k][R0];
+    coins += p * F[k][R0];
+  });
+  // respins and coins: per trigger (the average bonus), not per spin
+  return { q: chance, ev, full, respins: chance > 0 ? respins / chance : 0, coins: chance > 0 ? coins / chance : 0 };
+}
+
+// The cheese wheel's average multiplier, with `bonus` added to every wedge (an upgrade).
+export function wheelAverage(wheel: WheelDef, bonus = 0): number {
+  const total = wheel.wedges.reduce((sum, w) => sum + w.weight, 0);
+  return wheel.wedges.reduce((sum, w) => sum + (w.multiplier + bonus) * w.weight, 0) / total;
+}
+
 // What spinExpectation can be told (all optional).
 export interface SpinOptions {
   lines?: number;
@@ -431,6 +646,8 @@ export interface SpinOptions {
   spinDuration?: number;
   bothWays?: boolean; // lines pay from the right too (the "Pays Both Ways" upgrades)
   potSeedMultiplier?: number; // jackpot pots start bigger (Golden Pouches, M8)
+  extraRespins?: number; // hold & spin starts (and resets) with this many more respins (M9)
+  wheelBonus?: number; // added to every wedge of the cheese wheel (M9)
 }
 
 // What a paid spin is worth, and where that comes from.
@@ -441,6 +658,8 @@ export interface SpinValue {
   streakFactor: number;
   freeSpins: { chance: number; perTrigger: number; perTriggerWithRetriggers: number; perSpin: number; ev: number };
   jackpot: { chance: number; ev: number; pots: { id: string; chance: number }[] };
+  hold: { chance: number; ev: number; full: number; respins: number; coins: number }; // M9: hold & spin (full = the Grand's chance per paid spin)
+  wheel: { average: number; ev: number }; // M9: the cheese wheel (its average multiplier, and what it adds)
   extraSeconds: number;
 }
 
@@ -453,13 +672,21 @@ export interface SpinValue {
 // The streak before a spin doesn't change that spin's odds, and in the long run
 // P(n ≥ k) = h^k (h = hit rate), so the average bonus is perStack × (h + h² + … + h^cap).
 // extraSeconds = how much time the features add per paid spin on average
-// (free spins and the jackpot wheel pause auto-spin while they play).
+// (free spins, the jackpot wheel and hold & spin pause auto-spin while they play).
+// M9: the cheese wheel multiplies full lines: + (what full lines pay) × (the
+// average multiplier − 1), part of the lines' EV (Hot Streak multiplies it too).
+// Hold & spin adds its average bonus (holdSpinStats), on paid spins.
 export function spinExpectation(machineData: MachineDef, reelCount: number, opts: SpinOptions = {}): SpinValue {
   const {
     lines = 1, fullLineMultiplier = 1, streakPerStack = 0, streakCap = 0,
     extraFreeSpins = 0, jackpotGrowth = 1, spinDuration = machineData.spinDuration, bothWays = false, potSeedMultiplier = 1,
+    extraRespins = 0, wheelBonus = 0,
   } = opts;
-  const { ev: lineEv, hitRate } = expectedValue(machineData, reelCount, fullLineMultiplier, lines, bothWays);
+  const lines0 = expectedValue(machineData, reelCount, fullLineMultiplier, lines, bothWays);
+  const hitRate = lines0.hitRate;
+  const average = machineData.wheel ? wheelAverage(machineData.wheel, wheelBonus) : 1;
+  const wheelEv = lines0.fullEv * (average - 1);
+  const lineEv = lines0.ev + wheelEv;
   let streakSum = 0;
   for (let k = 1; k <= streakCap; k++) streakSum += Math.pow(hitRate, k);
   const streakFactor = 1 + streakPerStack * streakSum;
@@ -470,14 +697,19 @@ export function spinExpectation(machineData: MachineDef, reelCount: number, opts
   const freeEv = fsData ? freeSpinsPerSpin * lineEv * fsData.multiplier : 0;
 
   const jp = jackpotStats(machineData, reelCount, jackpotGrowth, potSeedMultiplier);
+  const hold = holdSpinStats(machineData, reelCount, extraRespins);
+  const hs = machineData.holdSpin;
   const extraSeconds = (fsData ? freeSpinsPerSpin * (spinDuration + fsData.pause) : 0)
-    + (machineData.jackpot ? jp.q * machineData.jackpot.duration : 0);
+    + (machineData.jackpot ? jp.q * machineData.jackpot.duration : 0)
+    + (hs ? hold.q * (hold.respins * hs.respinSeconds + 2 * hs.pause) : 0);
 
   return {
-    ev: lineEv * streakFactor + freeEv + jp.ev,
+    ev: lineEv * streakFactor + freeEv + jp.ev + hold.ev,
     lineEv, hitRate, streakFactor,
     freeSpins: { chance: fs.q, perTrigger: fs.perTrigger, perTriggerWithRetriggers: fs.total, perSpin: freeSpinsPerSpin, ev: freeEv },
     jackpot: { chance: jp.q, ev: jp.ev, pots: jp.pots },
+    hold: { chance: hold.q, ev: hold.ev, full: hold.full, respins: hold.respins, coins: hold.coins },
+    wheel: { average, ev: wheelEv },
     extraSeconds,
   };
 }

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 9,
+  "schemaVersion": 10,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -131,6 +131,131 @@
           { "id": "minor", "name": "Minor", "weight": 27, "seed": 75000, "growth": 12 },
           { "id": "major", "name": "Major", "weight": 10, "seed": 300000, "growth": 24 },
           { "id": "grand", "name": "Grand", "weight": 1, "seed": 3000000, "growth": 60 }
+        ]
+      }
+    }
+,
+    {
+      "id": "maze",
+      "name": "Hamster Maze",
+      "description": "A maze of tunnels with no paylines: matching snacks on neighbouring reels win on any row. 243 ways to win.",
+      "unlockCost": 500000000,
+      "startReels": 3,
+      "maxReels": 5,
+      "rows": 3,
+      "ways": true,
+      "spinCost": 2500,
+      "spinDuration": 3.6,
+      "symbols": [
+        { "id": "seed", "name": "Sunflower Seed", "weight": 30 },
+        { "id": "carrot", "name": "Baby Carrot", "weight": 24 },
+        { "id": "corn", "name": "Sweet Corn", "weight": 18 },
+        { "id": "blueberry", "name": "Blueberry", "weight": 14 },
+        { "id": "strawberry", "name": "Strawberry", "weight": 9, "locked": true },
+        { "id": "golden", "name": "Golden Seed", "weight": 5, "locked": true },
+        { "id": "wild", "name": "Hamster Wild", "weight": 0, "wild": true },
+        { "id": "blank", "name": "Wood Shaving", "weight": 70, "blank": true }
+      ],
+      "payouts": {
+        "seed": { "3": 60000, "4": 120000, "5": 240000 },
+        "carrot": { "3": 90000, "4": 200000, "5": 440000 },
+        "corn": { "3": 140000, "4": 340000, "5": 900000 },
+        "blueberry": { "3": 220000, "4": 600000, "5": 1800000 },
+        "strawberry": { "3": 2000000, "4": 14000000, "5": 100000000 },
+        "golden": { "3": 8000000, "4": 80000000, "5": 1200000000 }
+      }
+    },
+    {
+      "id": "vault",
+      "name": "Acorn Vault",
+      "description": "A steel vault full of Golden Acorns. Six or more lock in place and respin for coins: fill it for the Grand.",
+      "unlockCost": 25000000000,
+      "startReels": 5,
+      "maxReels": 5,
+      "rows": 3,
+      "paylines": [[1, 1, 1, 1, 1], [0, 0, 0, 0, 0], [2, 2, 2, 2, 2], [0, 1, 2, 1, 0], [2, 1, 0, 1, 2],
+                   [0, 0, 1, 2, 2], [2, 2, 1, 0, 0], [1, 0, 0, 0, 1], [1, 2, 2, 2, 1], [1, 2, 1, 0, 1],
+                   [0, 1, 0, 1, 0], [2, 1, 2, 1, 2], [1, 1, 0, 1, 1], [1, 1, 2, 1, 1], [0, 1, 1, 1, 0],
+                   [2, 1, 1, 1, 2], [0, 0, 2, 0, 0], [2, 2, 0, 2, 2], [0, 2, 0, 2, 0], [2, 0, 2, 0, 2]],
+      "startLines": 10,
+      "spinCost": 50000,
+      "spinDuration": 3.6,
+      "symbols": [
+        { "id": "seed", "name": "Sunflower Seed", "weight": 28 },
+        { "id": "blueberry", "name": "Blueberry", "weight": 20 },
+        { "id": "carrot", "name": "Baby Carrot", "weight": 16 },
+        { "id": "apple", "name": "Red Apple", "weight": 12, "locked": true },
+        { "id": "golden", "name": "Golden Seed", "weight": 7, "locked": true },
+        { "id": "wild", "name": "Hamster Wild", "weight": 5, "wild": true },
+        { "id": "goldAcorn", "name": "Golden Acorn", "weight": 20, "scatter": true },
+        { "id": "blank", "name": "Wood Shaving", "weight": 70, "blank": true }
+      ],
+      "payouts": {
+        "seed": { "2": 315000, "3": 542500, "4": 945000, "5": 1662500 },
+        "blueberry": { "2": 472500, "3": 822500, "4": 1890000, "5": 4182500 },
+        "carrot": { "2": 665000, "3": 1487500, "4": 3745000, "5": 10482500 },
+        "apple": { "2": 1662500, "3": 10482500, "4": 62842500, "5": 314212500 },
+        "golden": { "2": 4182500, "3": 52377500, "4": 377055000, "5": 2094750000 },
+        "wild": { "2": 3150000, "3": 31430000, "4": 251370000, "5": 1675800000 }
+      },
+      "holdSpin": {
+        "symbol": "goldAcorn",
+        "trigger": 6,
+        "respins": 3,
+        "respinChance": 0.1,
+        "values": [
+          { "value": 175000, "weight": 40 },
+          { "value": 350000, "weight": 25 },
+          { "value": 875000, "weight": 18 },
+          { "value": 1750000, "weight": 10 },
+          { "value": 4375000, "weight": 5 },
+          { "value": 17500000, "weight": 2 }
+        ],
+        "grand": 175000000,
+        "respinSeconds": 1,
+        "pause": 1.2
+      }
+    },
+    {
+      "id": "cheese",
+      "name": "The Big Cheese",
+      "description": "A royal wheel of cheese. Every line of five spins the cheese wheel: \u00d72 to \u00d710 on that line.",
+      "unlockCost": 2500000000000,
+      "startReels": 5,
+      "maxReels": 5,
+      "rows": 3,
+      "paylines": [[1, 1, 1, 1, 1], [0, 0, 0, 0, 0], [2, 2, 2, 2, 2], [0, 1, 2, 1, 0], [2, 1, 0, 1, 2],
+                   [0, 0, 1, 2, 2], [2, 2, 1, 0, 0], [1, 0, 0, 0, 1], [1, 2, 2, 2, 1], [1, 2, 1, 0, 1],
+                   [0, 1, 0, 1, 0], [2, 1, 2, 1, 2], [1, 1, 0, 1, 1], [1, 1, 2, 1, 1], [0, 1, 1, 1, 0],
+                   [2, 1, 1, 1, 2], [0, 0, 2, 0, 0], [2, 2, 0, 2, 2], [0, 2, 0, 2, 0], [2, 0, 2, 0, 2]],
+      "startLines": 10,
+      "spinCost": 300000,
+      "spinDuration": 3.6,
+      "symbols": [
+        { "id": "seed", "name": "Sunflower Seed", "weight": 28 },
+        { "id": "blueberry", "name": "Blueberry", "weight": 20 },
+        { "id": "strawberry", "name": "Strawberry", "weight": 16 },
+        { "id": "apple", "name": "Red Apple", "weight": 12 },
+        { "id": "golden", "name": "Golden Seed", "weight": 7, "locked": true },
+        { "id": "cheese", "name": "Cheese Wedge", "weight": 5, "locked": true },
+        { "id": "wild", "name": "Hamster Wild", "weight": 5, "wild": true },
+        { "id": "blank", "name": "Wood Shaving", "weight": 70, "blank": true }
+      ],
+      "payouts": {
+        "seed": { "2": 1069200, "3": 1841400, "4": 3207600, "5": 5643000 },
+        "blueberry": { "2": 1603800, "3": 2791800, "4": 6415200, "5": 14196600 },
+        "strawberry": { "2": 2257200, "3": 5049000, "4": 12711600, "5": 35580600 },
+        "apple": { "2": 5643000, "3": 35580600, "4": 213305400, "5": 1066527000 },
+        "golden": { "2": 14196600, "3": 177784200, "4": 1279832400, "5": 7110180000 },
+        "cheese": { "2": 35640000, "3": 534600000, "4": 4158000000, "5": 26730000000 },
+        "wild": { "2": 10692000, "3": 106682400, "4": 853221600, "5": 5688144000 }
+      },
+      "wheel": {
+        "wedges": [
+          { "multiplier": 2, "weight": 45 },
+          { "multiplier": 3, "weight": 30 },
+          { "multiplier": 5, "weight": 17 },
+          { "multiplier": 10, "weight": 8 }
         ]
       }
     }
@@ -456,6 +581,193 @@
       "growthRate": 1,
       "maxLevel": 1,
       "effect": { "type": "bothWays" }
+    },
+    {
+      "id": "mazeMap",
+      "name": "Maze Map",
+      "description": "A map of every tunnel: each level makes a Hamster Maze spin 10% cheaper.",
+      "scope": "machine",
+      "machines": ["maze"],
+      "baseCost": 60000000,
+      "growthRate": 1.3,
+      "maxLevel": 8,
+      "effect": { "type": "spinCostMultiplier", "perLevel": 0.9 }
+    },
+    {
+      "id": "longerMaze",
+      "name": "Longer Maze",
+      "description": "Another reel of tunnels: 27 ways, then 81, then all 243 ways to win.",
+      "scope": "machine",
+      "machines": ["maze"],
+      "baseCost": 800000000,
+      "growthRate": 5,
+      "maxLevel": 2,
+      "effect": { "type": "extraReel", "reelsPerLevel": 1 }
+    },
+    {
+      "id": "mazeRunner",
+      "name": "Maze Runner",
+      "description": "Your hamster runs through the maze as a Hamster Wild, on reels 2 to 5. Each level: more wilds.",
+      "scope": "machine",
+      "machines": ["maze"],
+      "baseCost": 300000000,
+      "growthRate": 3,
+      "maxLevel": 3,
+      "effect": { "type": "symbolWeight", "symbol": "wild", "perLevel": 2 }
+    },
+    {
+      "id": "hiddenSnacks",
+      "name": "Hidden Snacks",
+      "description": "New symbols in the maze: the Strawberry, then the Golden Seed. Bigger prizes, but wins come a little less often.",
+      "scope": "machine",
+      "machines": ["maze"],
+      "baseCost": 200000000,
+      "growthRate": 6,
+      "maxLevel": 2,
+      "effect": { "type": "unlockSymbol", "symbols": ["strawberry", "golden"] }
+    },
+    {
+      "id": "luckyTurns",
+      "name": "Lucky Turns",
+      "description": "Machine Luck for the Hamster Maze: fewer Wood Shavings, more wins.",
+      "scope": "machine",
+      "machines": ["maze"],
+      "baseCost": 140000000,
+      "growthRate": 2,
+      "maxLevel": 5,
+      "effect": { "type": "luck", "perLevel": 10 }
+    },
+    {
+      "id": "oiledHinges",
+      "name": "Oiled Hinges",
+      "description": "The vault door swings easy: each level makes an Acorn Vault spin 10% cheaper.",
+      "scope": "machine",
+      "machines": ["vault"],
+      "baseCost": 3000000000,
+      "growthRate": 1.3,
+      "maxLevel": 8,
+      "effect": { "type": "spinCostMultiplier", "perLevel": 0.9 }
+    },
+    {
+      "id": "widerVault",
+      "name": "Wider Vault",
+      "description": "Two more paylines on the Acorn Vault each level, up to 20.",
+      "scope": "machine",
+      "machines": ["vault"],
+      "baseCost": 6000000000,
+      "growthRate": 2.5,
+      "maxLevel": 5,
+      "effect": { "type": "extraPayline", "linesPerLevel": 2 }
+    },
+    {
+      "id": "stickyPaws",
+      "name": "Sticky Paws",
+      "description": "One more respin in hold & spin: to start with, and every time a new acorn lands.",
+      "scope": "machine",
+      "machines": ["vault"],
+      "baseCost": 10000000000,
+      "growthRate": 4,
+      "maxLevel": 2,
+      "effect": { "type": "extraRespins", "perLevel": 1 }
+    },
+    {
+      "id": "vaultPantry",
+      "name": "Vault Pantry",
+      "description": "New symbols in the vault: the Red Apple, then the Golden Seed. Bigger prizes, but wins come a little less often.",
+      "scope": "machine",
+      "machines": ["vault"],
+      "baseCost": 10000000000,
+      "growthRate": 6,
+      "maxLevel": 2,
+      "effect": { "type": "unlockSymbol", "symbols": ["apple", "golden"] }
+    },
+    {
+      "id": "luckyCombination",
+      "name": "Lucky Combination",
+      "description": "Machine Luck for the Acorn Vault: fewer Wood Shavings, more wins, more acorns.",
+      "scope": "machine",
+      "machines": ["vault"],
+      "baseCost": 6000000000,
+      "growthRate": 2,
+      "maxLevel": 5,
+      "effect": { "type": "luck", "perLevel": 10 }
+    },
+    {
+      "id": "vaultBothWays",
+      "name": "Pays Both Ways",
+      "description": "Every Acorn Vault payline pays from the right-hand reel too, as well as from the left. A full line still pays once.",
+      "scope": "machine",
+      "machines": ["vault"],
+      "baseCost": 1000000000000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "bothWays" }
+    },
+    {
+      "id": "cheeseSlicer",
+      "name": "Cheese Slicer",
+      "description": "Thinner slices: each level makes a Big Cheese spin 10% cheaper.",
+      "scope": "machine",
+      "machines": ["cheese"],
+      "baseCost": 300000000000,
+      "growthRate": 1.3,
+      "maxLevel": 8,
+      "effect": { "type": "spinCostMultiplier", "perLevel": 0.9 }
+    },
+    {
+      "id": "biggerBoard",
+      "name": "Bigger Board",
+      "description": "Two more paylines on the Big Cheese each level, up to 20.",
+      "scope": "machine",
+      "machines": ["cheese"],
+      "baseCost": 600000000000,
+      "growthRate": 2.5,
+      "maxLevel": 5,
+      "effect": { "type": "extraPayline", "linesPerLevel": 2 }
+    },
+    {
+      "id": "agedCheese",
+      "name": "Aged Cheese",
+      "description": "Stronger cheese: +1 on every wedge of the cheese wheel (\u00d72 becomes \u00d73, and so on).",
+      "scope": "machine",
+      "machines": ["cheese"],
+      "baseCost": 1000000000000,
+      "growthRate": 4,
+      "maxLevel": 3,
+      "effect": { "type": "wheelBonus", "perLevel": 1 }
+    },
+    {
+      "id": "cheeseBoard",
+      "name": "Cheese Board",
+      "description": "New symbols on the Big Cheese: the Golden Seed, then the Cheese Wedge. Bigger prizes, but wins come a little less often.",
+      "scope": "machine",
+      "machines": ["cheese"],
+      "baseCost": 1000000000000,
+      "growthRate": 6,
+      "maxLevel": 2,
+      "effect": { "type": "unlockSymbol", "symbols": ["golden", "cheese"] }
+    },
+    {
+      "id": "luckyRind",
+      "name": "Lucky Rind",
+      "description": "Machine Luck for the Big Cheese: fewer Wood Shavings, more wins.",
+      "scope": "machine",
+      "machines": ["cheese"],
+      "baseCost": 600000000000,
+      "growthRate": 2,
+      "maxLevel": 5,
+      "effect": { "type": "luck", "perLevel": 10 }
+    },
+    {
+      "id": "cheeseBothWays",
+      "name": "Pays Both Ways",
+      "description": "Every Big Cheese payline pays from the right-hand reel too, as well as from the left. A full line still pays once (and spins the wheel once).",
+      "scope": "machine",
+      "machines": ["cheese"],
+      "baseCost": 100000000000000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "bothWays" }
     }
   ],
   "winTiers": [
@@ -771,10 +1083,14 @@
     { "id": "generation5", "name": "Big Family", "description": "Reach generation 5.", "goal": { "type": "generation", "target": 5 }, "tokens": 5 },
     { "id": "treeAll", "name": "Full Bloom", "description": "Plant every Family Tree trait.", "goal": { "type": "treeNodes", "target": 18 }, "tokens": 5 },
     { "id": "fashion", "name": "Fashion Hamster", "description": "Collect 8 skins from capsules.", "goal": { "type": "skinsOwned", "target": 8 }, "tokens": 5 },
-    { "id": "fullCage", "name": "Full Cage", "description": "Own every machine at once.", "goal": { "type": "machinesOwned", "target": 4 }, "tokens": 5 },
+    { "id": "fullCage", "name": "Full Cage", "description": "Own four machines at once.", "goal": { "type": "machinesOwned", "target": 4 }, "tokens": 5 },
     { "id": "grandHamster", "name": "Grand Hamster", "description": "Win the Grand jackpot.", "goal": { "type": "stat", "stat": "grandJackpots", "target": 1 }, "tokens": 5 },
     { "id": "nestEgg", "name": "Nest Egg", "description": "Hold 25 Heirloom Seeds at once.", "goal": { "type": "stat", "stat": "mostSeedsHeld", "target": 25 }, "tokens": 3 },
     { "id": "shootingStar", "name": "Shooting Star", "description": "Rebuild a machine for a Machine Star.", "goal": { "type": "stat", "stat": "rebuilds", "target": 1 }, "tokens": 3 },
-    { "id": "allStar", "name": "All-Star", "description": "Give one machine 5 Machine Stars.", "goal": { "type": "stat", "stat": "bestStars", "target": 5 }, "tokens": 5 }
+    { "id": "allStar", "name": "All-Star", "description": "Give one machine 5 Machine Stars.", "goal": { "type": "stat", "stat": "bestStars", "target": 5 }, "tokens": 5 },
+    { "id": "amazing", "name": "A-maze-ing", "description": "Win on 50 ways at once with one symbol in the Hamster Maze.", "goal": { "type": "stat", "stat": "bestWays", "target": 50 }, "tokens": 3 },
+    { "id": "nutHoarder", "name": "Nut Hoarder", "description": "Fill every cell of the Acorn Vault in hold & spin (the Grand).", "goal": { "type": "stat", "stat": "holdGrands", "target": 1 }, "tokens": 5 },
+    { "id": "bigCheese", "name": "The Big Cheese", "description": "Land a ×10 wedge on the cheese wheel.", "goal": { "type": "stat", "stat": "bestWheel", "target": 10 }, "tokens": 4 },
+    { "id": "wholeArcade", "name": "Whole Arcade", "description": "Own all seven machines at once.", "goal": { "type": "machinesOwned", "target": 7 }, "tokens": 5 }
   ]
 }

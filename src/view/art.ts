@@ -1407,12 +1407,194 @@ const snackIcon = [
   '................',
 ];
 
+// ── M9: the new machines (24×24 icons), their symbols and upgrade icons (16×16) ──
+// The Golden Acorn (the Acorn Vault's hold & spin coin): a tan cap, a gold body.
+const goldAcorn = [
+  '........................',
+  '...........UU...........',
+  '..........UNNU..........',
+  '.....UUUUUUNNUUUUUU.....',
+  '...UUxnnxnnxnnxnnxnUU...',
+  '..UxnnxnnxnnxnnxnnxnNU..',
+  '.UnxnnxnnxnnxnnxnnxnNNU.',
+  '.UNnnNnnNnnNnnNnnNnNNNU.',
+  '.UUUUUUUUUUUUUUUUUUUUUU.',
+  '..VyhhhyyyyyyyyyyyyYYV..',
+  '..VyhwhyyyyyyyyyyyyYYV..',
+  '..VyhhyyyyyyyyyyyyyYYV..',
+  '...VyhyyyyyyyyyyyyYYV...',
+  '...VyhyyyyyyyyyyyyYYV...',
+  '....VyyyyyyyyyyyyYYV....',
+  '....VyyyyyyyyyyyYYYV....',
+  '.....VyyyyyyyyyYYYV.....',
+  '......VyyyyyyyYYYV......',
+  '.......VyyyyyYYYV.......',
+  '........VyyyYYYV........',
+  '.........VYYYYV.........',
+  '..........VYYV..........',
+  '...........VV...........',
+  '........................',
+];
+
+// The Cheese Wedge (the Big Cheese's top symbol): the pale top face, the gold front with holes.
+const cheese = [
+  '........................',
+  '........................',
+  '........................',
+  '..................VV....',
+  '...............VVVhV....',
+  '............VVVhhhyV....',
+  '.........VVVhhhhhyyV....',
+  '......VVVhhhhhhhyyyV....',
+  '...VVVhhhhhhhhhyyyYV....',
+  '..VhhhhhhhhhhhyyyYYV....',
+  '..VVVVVVVVVVVVVVVVVV....',
+  '..VyyyyyyyyyyyyyyyYV....',
+  '..VyyYYyyyyyyyYYyyYV....',
+  '..VyYVVYyyyyyYVVYyYV....',
+  '..VyYVVYyyYYyyYYyyYV....',
+  '..VyyYYyyyYVYyyyyyYV....',
+  '..VyyyyyyyyYyyyYYyYV....',
+  '..VyyyyYYyyyyyYVVYYV....',
+  '..VyyyYVVYyyyyyYYyYV....',
+  '..VyyyyYYyyyyyyyyyYV....',
+  '..VYYYYYYYYYYYYYYYYV....',
+  '..VVVVVVVVVVVVVVVVVV....',
+  '........................',
+  '........................',
+];
+
+// The Hamster Maze: a hedge-green machine with a maze on its front (the Pouch Palace's frame, recoloured).
+const machineMaze = [
+  '...GG..GG..GG..GG..GG...',
+  '..GiGGGiGGGiGGGiGGGiGG..',
+  '.HHHHHHHHHHHHHHHHHHHHHH.',
+  '.HiiiiiiiiiiiiiiiiiiiGH.',
+  '.HiGVVVVVVVVVVVVVVVVGgH.',
+  '.HiGVhyyyyyyyyyyyyYVGgH.',
+  '.HiGVVVVVVVVVVVVVVVVGgH.',
+  '.HiGGiGGiGGiGGiGGiGGGgH.',
+  '.HiGHHHHHHHHHHHHHHHHGgH.',
+  '.HiGHwwqwwqwwqwwqwwHGgH.',
+  '.HiGHuzqrexyhqtaqpFHGgH.',
+  '.HiGHuIqrRqYyqtAqpPHGgH.',
+  '.HiGHqqqqqqqqqqqqqqHGgH.',
+  '.HiGHyyqdLquuqrrqttHGgH.',
+  '.HiGHhYqddqzIqeRqaTHGgH.',
+  '.HiGHwwqwwqwwqwwqwwHGgH.',
+  '.HiGHHHHHHHHHHHHHHHHGgH.',
+  '.HiGHHHHHGHHHHHHGHHHGgH.',
+  '.HiGGGGHGGGHGGGGHGGHGgH.',
+  '.HiGHHGHGHHHGHHGHHGHGgH.',
+  '.HiGHGGGGGGGHGGGGGGGGgH.',
+  '.HiGHHHHHHHHHHHHHHHHGgH.',
+  '.HggggggggggggggggggggH.',
+  '.HHHHHHHHHHHHHHHHHHHHHH.',
+];
+
+// The Acorn Vault: brushed steel with a gold vault handle.
+const machineVault = [
+  '..........KQQK..........',
+  '.........KqwwqK.........',
+  '.KKKKKKKKKKKKKKKKKKKKKK.',
+  '.KwwwwwwwwwwwwwwwwwwwqK.',
+  '.KwqVVVVVVVVVVVVVVVVqQK.',
+  '.KwqVhyyyyyyyyyyyyYVqQK.',
+  '.KwqVVVVVVVVVVVVVVVVqQK.',
+  '.KwqqyyqqqqqqqqqyyqqqQK.',
+  '.KwqKKKKKKKKKKKKKKKKqQK.',
+  '.KwqKwwqwwqwwqwwqwwKqQK.',
+  '.KwqKuzqrexyhqtaqpFKqQK.',
+  '.KwqKuIqrRqYyqtAqpPKqQK.',
+  '.KwqKqqqqqqqqqqqqqqKqQK.',
+  '.KwqKyyqdLquuqrrqttKqQK.',
+  '.KwqKhYqddqzIqeRqaTKqQK.',
+  '.KwqKwwqwwqwwqwwqwwKqQK.',
+  '.KwqKKKKKKKKKKKKKKKKqQK.',
+  '.KwqqqqqqKKKKKKqqqqqqQK.',
+  '.KwqqqqqKyyyyyyKqqqqqQK.',
+  '.KwqqqqqKyhVVYyKqqqqqQK.',
+  '.KwqqqqqKYYYYYYKqqqqqQK.',
+  '.KwqqqqqqKKKKKKqqqqqqQK.',
+  '.KQQQQQQQQQQQQQQQQQQQQK.',
+  '.KKKKKKKKKKKKKKKKKKKKKK.',
+];
+
+// The Big Cheese: a cheese-yellow machine with holes, a tan sign and a red wax seal on top.
+const machineCheese = [
+  '..........VrrV..........',
+  '.........VreerV.........',
+  '.VVVVVVVVVVVVVVVVVVVVVV.',
+  '.VhhhhhhhhhhhhhhhhhhhyV.',
+  '.VhyUUUUUUUUUUUUUUUUyYV.',
+  '.VhyUxnnnnnnnnnnnnxUyYV.',
+  '.VhyUUUUUUUUUUUUUUUUyYV.',
+  '.VhyYVYyyYVYyyyYVYyyYYV.',
+  '.VhyVVVVVVVVVVVVVVVVyYV.',
+  '.VhyVwwqwwqwwqwwqwwVyYV.',
+  '.VhyVuzqrexyhqtaqpFVyYV.',
+  '.VhyVuIqrRqYyqtAqpPVyYV.',
+  '.VhyVqqqqqqqqqqqqqqVyYV.',
+  '.VhyVyyqdLquuqrrqttVyYV.',
+  '.VhyVhYqddqzIqeRqaTVyYV.',
+  '.VhyVwwqwwqwwqwwqwwVyYV.',
+  '.VhyVVVVVVVVVVVVVVVVyYV.',
+  '.VhyyyYYyyyyyyyyYYyyyYV.',
+  '.VhyyYVVYyyVVVVyVVYyyYV.',
+  '.VhyyYVVYyyVDDVyVVYyyYV.',
+  '.VhyyyYYyyyVVVVyyYYyyYV.',
+  '.VhyyyyyyyyyyyyyyyyyyYV.',
+  '.VYYYYYYYYYYYYYYYYYYYYV.',
+  '.VVVVVVVVVVVVVVVVVVVVVV.',
+];
+
+// Sticky Paws (more respins): a small acorn.
+const acornIcon = [
+  '................',
+  '.......UU.......',
+  '...UUUUNNUUUU...',
+  '..UnxnnxnnxnNU..',
+  '.UnxnnxnnxnnNNU.',
+  '.UUUUUUUUUUUUUU.',
+  '..VyhhyyyyyyYV..',
+  '..VyhwyyyyyYYV..',
+  '...VyhyyyyyYV...',
+  '...VyyyyyyYYV...',
+  '....VyyyyYYV....',
+  '.....VyyYYV.....',
+  '......VYYV......',
+  '.......VV.......',
+  '................',
+  '................',
+];
+
+// Aged Cheese (a stronger cheese wheel): a small wedge.
+const cheeseIcon = [
+  '................',
+  '................',
+  '...........VV...',
+  '........VVVhV...',
+  '.....VVVhhhyV...',
+  '..VVVhhhhhyYV...',
+  '.VhhhhhhhyyYV...',
+  '.VVVVVVVVVVVV...',
+  '.VyyYYyyyyyYV...',
+  '.VyYVVYyYYyYV...',
+  '.VyyYYyyYVYYV...',
+  '.VyyyyyyyYYyV...',
+  '.VyyYYyyyyyYV...',
+  '.VYYYYYYYYYYV...',
+  '.VVVVVVVVVVVV...',
+  '................',
+];
+
 export const SPRITES: Record<string, string[]> = {
   seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple, hamster, hamster2, coin, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
   cheeks, wheel, oilcan, gear, reel, paylinesIcon, heart, star, bolt, scooter, backpack, parcel, pouch, goldenIcon, carrotIcon,
   machineClunky, machineStacker, machineBonanza, machinePalace, bottle, bowl, bedding,
   highRollerIcon, flame, wildIcon, ballIcon, pouchPolish,
   shaving, clover, horseshoe, seedPacket, cardBack, suitHearts, suitDiamonds, suitClubs, suitSpades, bothWaysIcon, snackIcon,
+  goldAcorn, cheese, machineMaze, machineVault, machineCheese, acornIcon, cheeseIcon,
   frameCard, framePaper, frameTab, frameButton, bubbleTail,
 };
 
@@ -1427,10 +1609,14 @@ export const CAPSULE_SPRITES: Record<string, string> = { common: 'capsule', rare
 export const SYMBOL_SPRITES: Record<string, string> = {
   seed: 'seed', carrot: 'carrot', golden: 'golden', blueberry: 'blueberry', strawberry: 'strawberry',
   wild: 'wild', ball: 'ball', pouch: 'pouch24', corn: 'corn', apple: 'apple', blank: 'shaving',
+  goldAcorn: 'goldAcorn', cheese: 'cheese', // M9
 };
 
 // Which sprite to draw for each machine id (from data.json), e.g. on the machine cards.
-export const MACHINE_SPRITES: Record<string, string> = { clunky: 'machineClunky', stacker: 'machineStacker', bonanza: 'machineBonanza', palace: 'machinePalace' };
+export const MACHINE_SPRITES: Record<string, string> = {
+  clunky: 'machineClunky', stacker: 'machineStacker', bonanza: 'machineBonanza', palace: 'machinePalace',
+  maze: 'machineMaze', vault: 'machineVault', cheese: 'machineCheese', // M9
+};
 
 // Upgrade icons: by upgrade id first, then by effect type, so a new upgrade
 // of an existing type gets a sensible icon automatically.
@@ -1443,6 +1629,7 @@ const UPGRADE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'cheeks', autoSpin: 'wheel', spinCostMultiplier: 'oilcan', extraReel: 'reel', extraPayline: 'paylinesIcon',
   betSteps: 'highRollerIcon', winStreak: 'flame', symbolWeight: 'wildIcon', extraFreeSpins: 'ballIcon', jackpotGrowth: 'pouchPolish',
   luck: 'horseshoe', unlockSymbol: 'seedPacket', bothWays: 'bothWaysIcon',
+  extraRespins: 'acornIcon', wheelBonus: 'cheeseIcon', // M9
 };
 export function upgradeIcon(def: { id: string; effect: { type: string } }): string | null {
   return UPGRADE_ICONS_BY_ID[def.id] || UPGRADE_ICONS_BY_TYPE[def.effect.type] || null;

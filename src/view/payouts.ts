@@ -3,7 +3,8 @@
 //      (and what its scatters do).
 //   2) Paylines: its paylines as little grids (lines you haven't unlocked are faded).
 //   3) Features: how its bonus features work, with the REAL odds from game.ts
-//      (wild, free spins, jackpot pots, the gamble, Hot Streak, bets).
+//      (wild, free spins, jackpot pots, the gamble, Hot Streak, bets; M9: ways,
+//      hold & spin, the cheese wheel).
 //   4) Recent wins: the last few wins, free spins, pots and gambles, newest first.
 //      View only: it's not saved, and it starts empty every session.
 
@@ -18,7 +19,7 @@ import type { Settings } from '../platform/save.ts';
 // One row of the Recent wins log.
 interface LogEntry {
   machineId: string;
-  kind: 'spin' | 'free' | 'pot' | 'gamble';
+  kind: 'spin' | 'free' | 'pot' | 'gamble' | 'hold';
   payout: Money; // below 0 for a lost gamble
   wins?: PaidWin[];
   tier?: string;
@@ -69,6 +70,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     const pot = md && md.jackpot ? md.jackpot.pots.find((p) => p.id === e.pot) : null;
     addLog({ machineId: e.machineId, kind: 'pot', payout: e.amount, text: `${pot ? pot.name : e.pot} jackpot` });
   });
+  game.on('holdEnded', (e) => addLog({ machineId: e.machineId, kind: 'hold', payout: e.amount, text: e.full ? `Hold & spin: every cell, the Grand!` : `Hold & spin: ${e.coins} acorns` }));
   game.on('gambleEnded', (e) => {
     if (!e.started) return;
     addLog({ machineId: e.machineId, kind: 'gamble', payout: e.won, text: e.won.gte(0) ? `Gamble: ${e.rounds} card${e.rounds === 1 ? '' : 's'} right` : 'Gamble lost' });
@@ -93,13 +95,13 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
       let chip = '';
       if (entry.kind === 'spin') {
         // Each winning line as "symbol ×count" (the icon shows which symbol).
-        middle = entry.wins!.map((w) => `<span class="log-line">${iconHTML(SYMBOL_SPRITES[w.symbolId!], 24)}×${w.count}</span>`).join('');
+        middle = entry.wins!.map((w) => `<span class="log-line">${iconHTML(SYMBOL_SPRITES[w.symbolId!], 24)}×${w.count}${w.ways ? ` · ${w.ways} ways` : ''}${w.wheel ? ` · 🧀×${w.wheel}` : ''}</span>`).join('');
         if ((entry.bet ?? 1) > 1) middle += `<span class="log-bet">bet ×${entry.bet}</span>`;
         if (TIER_NAMES[entry.tier!]) chip = `<span class="tier-chip tier-${entry.tier}">${TIER_NAMES[entry.tier!]}</span>`;
       } else {
-        const icon = ({ free: 'ballIcon', pot: 'pouchPolish', gamble: 'cardBack' } as Record<string, string>)[entry.kind];
+        const icon = ({ free: 'ballIcon', pot: 'pouchPolish', gamble: 'cardBack', hold: 'acornIcon' } as Record<string, string>)[entry.kind];
         middle = `<span class="log-line">${iconHTML(icon, 16)} ${entry.text}</span>`;
-        chip = `<span class="tier-chip tier-${entry.kind}">${({ free: 'Free spins', pot: 'Pot', gamble: 'Gamble' } as Record<string, string>)[entry.kind]}</span>`;
+        chip = `<span class="tier-chip tier-${entry.kind}">${({ free: 'Free spins', pot: 'Pot', gamble: 'Gamble', hold: 'Hold & spin' } as Record<string, string>)[entry.kind]}</span>`;
       }
       const sign = entry.payout.lt(0) ? '−' : '+';
       row.innerHTML = `<span class="log-machine" title="${md ? md.name : ''}">${iconHTML(MACHINE_SPRITES[entry.machineId], 24)}</span>
@@ -115,9 +117,11 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     const reelCount = game.getReelCount();
     const mult = game.getPayoutMultiplier().mul(game.getStarMultiplier()).mul(game.getBet()); // (with this machine's stars)
     const fullLine = game.getFullLineMultiplier();
+    // The columns start at the shortest run that pays (2 in a row; 3 on a ways machine).
+    const firstK = Math.min(...Object.values(md.payouts).flatMap((t) => Object.keys(t).map(Number)));
     const head = document.createElement('tr');
     head.innerHTML = '<th>Symbol</th><th>Chance</th>';
-    for (let k = 2; k <= md.maxReels; k++) {
+    for (let k = firstK; k <= md.maxReels; k++) {
       const th = document.createElement('th');
       th.textContent = k > reelCount ? `${k} in a row (locked)` : `${k} in a row`;
       th.classList.toggle('locked', k > reelCount);
@@ -145,7 +149,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
         // A blank pays nothing; a locked symbol says how to get it (its prizes stay visible, faded).
         if (s.blank) {
           const td = document.createElement('td');
-          td.colSpan = md.maxReels - 1;
+          td.colSpan = md.maxReels - firstK + 1;
           td.className = 'scatter-note';
           td.textContent = 'Never pays: the empty stop on the reels. Luck makes it land less often.';
           tr.appendChild(td);
@@ -157,9 +161,11 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
       if (s.scatter) {
         // A scatter pays nothing on a line: say what it does instead.
         const td = document.createElement('td');
-        td.colSpan = md.maxReels - 1;
+        td.colSpan = md.maxReels - firstK + 1;
         td.className = 'scatter-note';
-        if (md.freeSpins && md.freeSpins.symbol === s.id) {
+        if (md.holdSpin && md.holdSpin.symbol === s.id) {
+          td.textContent = `Anywhere on the reels: ${md.holdSpin.trigger}+ start hold & spin (each acorn holds coins)`;
+        } else if (md.freeSpins && md.freeSpins.symbol === s.id) {
           const awards = Object.entries(md.freeSpins.awards).map(([k, n]) => `${k}+ → ${n} free spins`).join(' · ');
           td.textContent = `Anywhere on the reels: ${awards} (wins ×${md.freeSpins.multiplier})`;
         } else if (md.jackpot && md.jackpot.symbol === s.id) {
@@ -168,7 +174,16 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
         tr.appendChild(td);
         return tr;
       }
-      for (let k = 2; k <= md.maxReels; k++) {
+      if (md.ways && s.wild) {
+        // On a ways machine the wild never lands on reel 1: it only stands in for others.
+        const td = document.createElement('td');
+        td.colSpan = md.maxReels - firstK + 1;
+        td.className = 'scatter-note';
+        td.textContent = 'Lands on reels 2 to 5 and stands in for any snack.';
+        tr.appendChild(td);
+        return tr;
+      }
+      for (let k = firstK; k <= md.maxReels; k++) {
         const td = document.createElement('td');
         // Jackpot Dance: a line of EVERY reel pays extra (for a locked column: once it unlocks).
         const bonus = k >= reelCount ? fullLine : 1;
@@ -212,6 +227,13 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     // Pays Both Ways (an upgrade) also reads every line from the right-hand reel.
     const both = game.hasBothWays();
     const sellsBoth = game.getAvailableUpgrades().some((u) => u.effect.type === 'bothWays');
+    if (md.ways) {
+      // A ways machine (M9) has no paylines to explain.
+      el.note.textContent = `No paylines: a symbol wins when it's on reel 1 and on the reels right after it, on ANY row. Every path through those cells (one per reel) is a way, and every way pays the prize shown, so the wins multiply: ${game.getWays()} ways with ${reelCount} reels.`
+        + (wild ? ' The Hamster Wild lands on reels 2 to 5 and stands in for any snack.' : '')
+        + ` A Wood Shaving never pays. Prices are per way, and include your payout bonuses and your bet (×${game.getBet()}). "Chance" is how often one cell lands on that symbol${luck > 0 ? `, with your Luck (${luck})` : ''}.`;
+      return;
+    }
     el.note.textContent = (both
       ? `${all ? 'Every payline is read on its own, from the left AND from the right (Pays Both Ways)' : 'Matches count from the left AND from the right (Pays Both Ways)'}: reels 1 and 2 match, or the last two reels do. A full line still pays once.${all ? ' Wins on several lines add up.' : ' Only the middle row (the payline) counts.'}`
       : (all
@@ -220,6 +242,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
         + (sellsBoth ? ' (The Pays Both Ways upgrade makes matches from the right pay too.)' : ''))
       + ' A Wood Shaving never pays and ends a run.'
       + (wild ? ' The Hamster Wild stands in for any symbol on a line (not scatters or Wood Shavings); a line pays whichever reading is worth more.' : '')
+      + (md.wheel ? ' A line of five (every reel) spins the cheese wheel, which multiplies that line.' : '')
       + ` Prices include your payout bonuses and your bet (×${game.getBet()}). "Chance" is how often one cell lands on that symbol${luck > 0 ? `, with your Luck (${luck})` : ''}.`;
   }
 
@@ -245,9 +268,14 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     cards.push(card('highRollerIcon', `Bet ×${game.getBet()}`,
       `Every spin costs and pays × your bet, so the machine pays back the same share at any bet: bigger bets are just bigger (and riskier). Use − and + next to Spin. You can bet up to ×${steps[game.getMaxBetIndex()]} now (High Roller unlocks up to ×${steps[steps.length - 1]}). Short of coins? A spin steps down to the biggest bet you can afford.`));
     if (md.symbols.some((s) => s.wild)) {
+      // The upgrade that brings the wild (Hamster Wild, Maze Runner), if the machine starts without it.
+      const wildId = md.symbols.find((s) => s.wild)!.id;
+      const wildUp = game.getAvailableUpgrades().find((u) => u.effect.type === 'symbolWeight' && effectAs(u, 'symbolWeight').symbol === wildId);
       cards.push(card('wildIcon', 'Hamster Wild', odds.wild > 0
-        ? `Lands on ${(odds.wild * 100).toFixed(1)}% of cells. It stands in for any symbol on a payline, and a line of wilds pays the wild's own prize.`
-        : 'This machine gets the wild with the Hamster Wild upgrade.'));
+        ? (md.ways
+          ? `Lands on ${(odds.wild * 100).toFixed(1)}% of the cells on reels 2 to 5 (never reel 1, so every win starts with a real snack). It stands in for any snack.`
+          : `Lands on ${(odds.wild * 100).toFixed(1)}% of cells. It stands in for any symbol on a payline, and a line of wilds pays the wild's own prize.`)
+        : `This machine gets the wild with the ${wildUp ? wildUp.name : 'Hamster Wild'} upgrade.`));
     }
     if (odds.freeSpins) {
       const f = odds.freeSpins;
@@ -262,6 +290,22 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
       }).join(' · ');
       cards.push(card('pouchPolish', 'Jackpot pots',
         `3 or more Cheek Pouches start the jackpot wheel (${oneIn(odds.jackpot.chance)}). It lands on one pot and pays it all. Every paid spin adds a little to every pot, and a pot starts again from its seed when it's won. Now: ${list}.`));
+    }
+    // M9: ways, hold & spin, the cheese wheel.
+    if (odds.ways) {
+      cards.push(card('reel', `${odds.ways} ways`,
+        `No paylines on ${md.name}: a symbol wins when it's on reel 1 and on the reels right after it, on any row, and every path through those cells is a way that pays. ${game.getReelCount()} reels of 3 rows: ${odds.ways} ways (the Longer Maze upgrade adds reels: 27, 81, then 243 ways).`));
+    }
+    if (odds.hold) {
+      const h = odds.hold;
+      cards.push(card('acornIcon', 'Hold & spin',
+        `${h.trigger} or more Golden Acorns anywhere start hold & spin (${oneIn(h.chance)}). The acorns lock in place, each holding coins, and the empty cells respin: ${h.respins} respins, and every new acorn locks too and sets them back to ${h.respins}. On average it ends with ${h.coins.toFixed(1)} acorns after ${h.averageRespins.toFixed(1)} respins. Fill every cell and the Grand pays too (${oneIn(h.full)}).`));
+    }
+    if (odds.wheel) {
+      const wheel = md.wheel!;
+      const wedges = wheel.wedges.map((w) => `×${w.multiplier + odds.wheel!.bonus}`).join(', ');
+      cards.push(card('cheeseIcon', 'The cheese wheel',
+        `A line of five (every reel) spins the cheese wheel, and that line's win is multiplied by the wedge it lands on: ${wedges}. On average ×${odds.wheel.average.toFixed(2)}.${odds.wheel.bonus > 0 ? ` (Aged Cheese adds +${odds.wheel.bonus} to every wedge.)` : ''}`));
     }
     if (odds.gamble) {
       const gm = odds.gamble;
@@ -285,7 +329,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     const st = game.data.stars;
     cards.push(card('star', `Machine Stars ${info.stars}/${info.maxStars}`,
       `Max every upgrade on ${md.name} and you can rebuild it: its upgrades start again from nothing, and it gets a star it keeps forever (retiring too). Every star: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck on this machine.${info.stars > 0 ? ` Now: ×${game.getStarMultiplier().toFixed(2)} payouts and +${info.stars * st.luckPerStar} Luck.` : ''}`));
-    cards.push(card('coin', 'Line hit rate', `A paid spin wins on a payline ${Math.round(odds.hitRate * 100)}% of the time on this machine.`));
+    cards.push(card('coin', odds.ways ? 'Hit rate' : 'Line hit rate', `A paid spin wins ${odds.ways ? 'some ways' : 'on a payline'} ${Math.round(odds.hitRate * 100)}% of the time on this machine.`));
     setHTML(el.features, cards.join(''));
   }
 

@@ -27,6 +27,8 @@ for (const m of data.machines) {
       const parts = [`lines ${r.lineEv.toFixed(2)}`];
       if (m.freeSpins) parts.push(`free spins ${r.freeSpins.ev.toFixed(2)} (1 in ${Math.round(1 / r.freeSpins.chance)}, ${r.freeSpins.perTriggerWithRetriggers.toFixed(1)} spins)`);
       if (m.jackpot) parts.push(`pots ${r.jackpot.ev.toFixed(2)} (wheel 1 in ${Math.round(1 / r.jackpot.chance)})`);
+      if (m.holdSpin) parts.push(`hold & spin ${r.hold.ev.toFixed(0)} (1 in ${Math.round(1 / r.hold.chance)}, ${r.hold.coins.toFixed(1)} acorns, the Grand 1 in ${Math.round(1 / r.hold.full)})`);
+      if (m.wheel) parts.push(`of which the cheese wheel ${r.wheel.ev.toFixed(0)} (×${r.wheel.average.toFixed(2)} on average)`);
       console.log(`  ${s.label}, L${step.level}: EV ${r.ev.toFixed(2)} [${parts.join(', ')}] | profit/spin ${(r.ev - m.spinCost).toFixed(2)}`);
     }
   }

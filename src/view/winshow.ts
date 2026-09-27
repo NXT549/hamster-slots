@@ -66,10 +66,13 @@ export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, 
 
   // What a line's turn says. One-line machines don't number their line.
   function lineText(w: PaidWin): string {
-    const many = game.getLineCount() > 1;
     const wild = w.usedWild && w.symbolId !== 'wild' ? ' (with a wild)' : '';
+    const wheel = w.wheel ? ` · cheese wheel ×${w.wheel}` : ''; // the Big Cheese (M9)
+    // A ways win (M9) names its ways instead of a line: "Baby Carrot ×4 · 6 ways".
+    if (w.ways) return `${symbolName(w.symbolId)} ×${w.count} · ${w.ways} way${w.ways === 1 ? '' : 's'}${wild}${wheel} · ${num(w.payout)}`;
+    const many = game.getLineCount() > 1;
     const side = w.fromRight ? ' from the right' : ''; // Pays Both Ways
-    return `${many ? `Line ${w.line + 1} · ` : ''}${symbolName(w.symbolId)} ×${w.count}${side}${wild} · ${num(w.payout)}`;
+    return `${many ? `Line ${w.line + 1} · ` : ''}${symbolName(w.symbolId)} ×${w.count}${side}${wild}${wheel} · ${num(w.payout)}`;
   }
 
   // The label takes the colour of the line it names (line-N classes set --lc).

@@ -198,7 +198,7 @@ function playSeed(seed) {
   let t = 0;
 
   const startLife = () => {
-    life = { generation: g.state.generation, start: t, marks: {}, income: {}, luck: {}, hit: {}, seeds: 0, planted: [], freeSpins: 0, pots: 0, stars: 0, held: 0 };
+    life = { generation: g.state.generation, start: t, marks: {}, income: {}, luck: {}, hit: {}, seeds: 0, planted: [], freeSpins: 0, pots: 0, holds: 0, stars: 0, held: 0 };
   };
   const mark = (name) => { if (!(name in life.marks)) life.marks[name] = (t - life.start) / 60; };
 
@@ -214,6 +214,7 @@ function playSeed(seed) {
   g.on('treeNodeBought', (e) => life && life.planted.push(e.id));
   g.on('freeSpinsStarted', () => life.freeSpins++);
   g.on('jackpotWon', () => life.pots++);
+  g.on('holdStarted', () => life.holds++); // M9: hold & spin on the Acorn Vault
 
   startLife();
   let treeDoneAt = null; // hours of play when every finite Family Tree node was planted
@@ -374,8 +375,9 @@ for (let i = 0; i < maxLives; i++) {
   if (lives.some((l) => l.held || l.totalStars)) {
     parts.push(`held after ${range(lives.map((l) => l.held)).replace(/\.0/g, '')} (+${Math.round(median(lives.map((l) => l.bonus)) * 100)}%) · stars ${range(lives.map((l) => l.totalStars)).replace(/\.0/g, '')}`);
   }
-  if (lives.some((l) => l.freeSpins || l.pots)) {
-    parts.push(`free-spin triggers ${median(lives.map((l) => l.freeSpins / (l.length / 60)))?.toFixed(1)}/h · pots ${median(lives.map((l) => l.pots / (l.length / 60)))?.toFixed(1)}/h`);
+  if (lives.some((l) => l.freeSpins || l.pots || l.holds)) {
+    parts.push(`free-spin triggers ${median(lives.map((l) => l.freeSpins / (l.length / 60)))?.toFixed(1)}/h · pots ${median(lives.map((l) => l.pots / (l.length / 60)))?.toFixed(1)}/h`
+      + (lives.some((l) => l.holds) ? ` · hold & spin ${median(lives.map((l) => l.holds / (l.length / 60)))?.toFixed(1)}/h` : ''));
   }
   console.log(parts.join(' | '));
 }

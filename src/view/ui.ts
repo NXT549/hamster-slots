@@ -32,6 +32,8 @@ import type { Settings } from '../platform/save.ts';
 // theme tokens). The wheel turns so the pot the game already picked ends up
 // under the pointer; which pot is decided in game.ts, never here.
 const PRIZE_SEGMENTS = ['--soft', '--buy', '--token', '--gold'];
+// The cheese wheel's wedges (M9): cheese yellows, and the rind.
+const CHEESE_SEGMENTS = ['--cheese', '--cheese-dark', '--cheese-light', '--cheese-rind'];
 
 // Win celebrations by tier (the tier comes from game.ts / data.json winTiers).
 // coins = how many coins fly to the counter; titles = the big celebration over
@@ -59,6 +61,8 @@ const UPGRADE_LINES: Record<string, (level: number, game: Game, def: UpgradeDef)
   extraFreeSpins: () => 'Bouncier balls: more free spins every time!',
   jackpotGrowth: () => 'Shiny pouches! The jackpot pots grow faster.',
   bothWays: () => 'Pays both ways! Matches on the right-hand reels count now too.',
+  extraRespins: (level, game) => `Sticky paws! Hold & spin starts with ${game.getHoldRespins()} respins now.`,
+  wheelBonus: (level, game) => `Aged to perfection! The cheese wheel averages ×${game.getWheelAverage().toFixed(1)} now.`,
   luck: (level, game) => `Luck ${game.getLuck().total}! Fewer Wood Shavings, more wins.`,
   unlockSymbol: (level, game, def) => {
     const id = effectAs(def, 'unlockSymbol').symbols[level - 1];
@@ -110,7 +114,7 @@ export function createUI(
     betBox: $('bet-box'), betDown: $<HTMLButtonElement>('bet-down'), betUp: $<HTMLButtonElement>('bet-up'), betAmount: $('bet-amount'), betHint: $('bet-hint'),
     wheel: $('wheel'), prizeFace: $('prize-face'), pots: $('pots'), streakBadge: $('streak-badge'), streakText: $('streak-text'),
     luckBadge: $('luck-badge'), luckText: $('luck-text'),
-    winMeter: $('win-meter'), winMeterValue: $('win-meter-value'), lineLabel: $('line-label'),
+    winMeter: $('win-meter'), winMeterValue: $('win-meter-value'), lineLabel: $('line-label'), holdBoard: $('hold-board'),
     gamble: $('gamble'), gambleTitle: $('gamble-title'), gambleNote: $('gamble-note'), gambleTimer: $('gamble-timer'),
     gambleCard: $('gamble-card'), gambleHistory: $('gamble-history'), gambleKeep: $('gamble-keep'),
     gamblePicks: [...document.querySelectorAll<HTMLButtonElement>('#gamble [data-pick]')],
@@ -146,7 +150,15 @@ export function createUI(
     quick: () => settings.quickReels,
   });
   // The prize wheel: { machineId, pot, turns, start, landedAt } while the jackpot wheel shows.
-  let prize: { machineId: string; pot: string; index: number; count: number; turns: number; landedAt: number | null } | null = null;
+  // M9: the same wheel is the Big Cheese's cheese wheel (kind "cheese"): it's timed by the view (the win was
+  // already paid, D92) and lands on a multiplier wedge, then onLand shows the celebration.
+  let prize: {
+    machineId: string; pot: string; index: number; count: number; turns: number; landedAt: number | null;
+    kind?: 'pots' | 'cheese'; start?: number; duration?: number; labels?: string[]; onLand?: () => void;
+  } | null = null;
+  const CHEESE_SECONDS = 2.4; // how long the cheese wheel turns (view only)
+  let holdCells: HTMLElement[] = []; // the hold & spin board's cells (M9)
+  let holdPlayed = -1; // how many respins the board has shown
   let lastTick = -1; // which segment the wheel last "ticked" past (for the clicking sound)
   let nodeEls = new Map<string, HTMLButtonElement>(); // tree node id → its button
   let selectedNode: string | null = null; // which tree node the detail panel shows
@@ -439,8 +451,11 @@ export function createUI(
     if (e.payout.lte(0)) return;
     const tierFx = WIN_FX[e.tier] || WIN_FX.win;
     const big = e.tier !== 'win';
+    // The cheese wheel (M9): a line of five spins it first, and the celebration waits for it to land.
+    const wheelWin = here ? Math.max(0, ...e.wins.map((w) => w.wheel || 0)) : 0;
+    if (wheelWin > 0) spinCheeseWheel(e, wheelWin, tierFx.titles || ['CHEESE WIN!']);
     // Small wins float a "+N"; big ones get the whole celebration, which counts the amount up itself.
-    if (tierFx.titles) celebrate.start({ kind: e.tier === 'jackpot' ? 'jackpot' : 'big', titles: tierFx.titles, amount: e.payout });
+    else if (tierFx.titles) celebrate.start({ kind: e.tier === 'jackpot' ? 'jackpot' : 'big', titles: tierFx.titles, amount: e.payout });
     else floatText(`+${formatCoins(e.payout)}`, big);
     if (big) replayClass(el.machine, 'big-win');
     if (here) replayClass(el.machine, 'winning'); // the marquee flashes
@@ -467,6 +482,47 @@ export function createUI(
     if (!e.free && e.streak >= 2 && game.getStreakMultiplier() > 1) sound.play('streak', e.streak);
   });
 
+  // The cheese wheel (M9): the hamster wheel turns into a wheel of cheese wedges
+  // (×2 … ×10, with Aged Cheese's bonus) and lands on the multiplier the game
+  // already rolled; then the celebration counts the (already paid) win up.
+  function spinCheeseWheel(e: GameEvents['spinResolved'], multiplier: number, titles: string[]): void {
+    const md = game.data.machines.find((m) => m.id === e.machineId)!;
+    const bonus = game.getWheelBonus();
+    const wedges = md.wheel!.wedges.map((w) => w.multiplier + bonus);
+    const index = Math.max(0, wedges.indexOf(multiplier));
+    prize = {
+      machineId: e.machineId, pot: '', index, count: wedges.length, turns: 4 + Math.floor(Math.random() * 2), landedAt: null,
+      kind: 'cheese', start: performance.now(), duration: lessMotion() ? 0.01 : CHEESE_SECONDS * 1000, labels: wedges.map((m) => `×${m}`),
+      onLand: () => {
+        sound.play('pot');
+        fx.burstAt(el.wheel, { count: 30, palette: fx.colors.gold, speed: 240 });
+        celebrate.start({ kind: e.tier === 'jackpot' || multiplier >= 10 ? 'jackpot' : 'big', titles: [...titles, `×${multiplier} CHEESE!`], amount: e.payout, sub: 'The cheese wheel' });
+        coinBurst(12);
+      },
+    };
+    lastTick = -1;
+    sound.play('anticipation');
+    say(`Five in a row! Spin the cheese wheel…`, 2500);
+  }
+
+  // Hold & spin (M9): the acorns lock on the board over the reels (renderHold),
+  // and the Acorn Vault pays when it's over.
+  game.on('holdStarted', (e) => {
+    if (e.machineId !== activeId()) return;
+    sound.play('freeSpins');
+    celebrate.start({ kind: 'free', titles: ['HOLD & SPIN!'], sub: `${e.cells.length} acorns · ${e.respins} respins` });
+    say(`${e.cells.length} Golden Acorns! They lock in place: every new acorn gives ${e.respins} respins again.`, 4000);
+  });
+  game.on('holdEnded', (e) => {
+    sound.play('pot');
+    const here = e.machineId === activeId();
+    celebrate.start(e.full
+      ? { kind: 'grand', titles: ['HOLD & SPIN!', 'THE GRAND!'], amount: e.amount, sub: 'Every cell filled' }
+      : { kind: 'pot', titles: ['ACORN VAULT!'], amount: e.amount, sub: `${e.coins} acorns` });
+    if (here) coinBurst(e.full ? 30 : 16);
+    say(e.full ? `EVERY CELL! The Grand! +${formatCoins(e.amount)} coins!` : `${e.coins} acorns cracked open: +${formatCoins(e.amount)} coins!`, 4000);
+  });
+
   // Free spins: a banner, a fanfare, and the marquee counts them down.
   game.on('freeSpinsStarted', (e) => {
     if (e.machineId !== activeId()) return;
@@ -491,7 +547,7 @@ export function createUI(
   game.on('jackpotStarted', (e) => {
     const pots = (game.data.machines.find((m) => m.id === e.machineId)!.jackpot || { pots: [] }).pots;
     const index = Math.max(0, pots.findIndex((p) => p.id === e.pot));
-    prize = { machineId: e.machineId, pot: e.pot, index, count: pots.length, turns: 4 + Math.floor(Math.random() * 2), landedAt: null };
+    prize = { machineId: e.machineId, pot: e.pot, index, count: pots.length, turns: 4 + Math.floor(Math.random() * 2), landedAt: null, kind: 'pots' };
     lastTick = -1;
     if (e.machineId === activeId()) winShow.setFeatureText('The jackpot wheel!');
     sound.play('anticipation');
@@ -553,7 +609,7 @@ export function createUI(
       return;
     }
     if (e.reason === 'bonus') {
-      say('Wait for the jackpot wheel to stop!');
+      say(game.getHold() ? 'Hold & spin is playing: watch the acorns!' : 'Wait for the jackpot wheel to stop!');
       return;
     }
     // On a pricey machine, a cheaper one you own is the other way out.
@@ -600,7 +656,10 @@ export function createUI(
   game.on('machineBought', (e) => {
     sound.play('machine');
     const md = game.data.machines.find((m) => m.id === e.id)!;
-    const extra = md.jackpot ? 'Three Cheek Pouches spin the jackpot wheel!'
+    const extra = md.ways ? 'No paylines here: matching snacks on neighbouring reels win on any row!'
+      : md.holdSpin ? `${md.holdSpin.trigger} Golden Acorns start hold & spin!`
+        : md.wheel ? 'Five in a row spins the cheese wheel: up to ×10!'
+          : md.jackpot ? 'Three Cheek Pouches spin the jackpot wheel!'
       : md.freeSpins ? 'Wilds, and three Hamster Balls give free spins!'
         : (md.rows ?? 1) > 1 ? 'Three rows and more paylines: so many ways to win!' : 'Let\'s give it a spin!';
     say(`A brand-new ${md.name}! ${extra}`, 5000);
@@ -929,6 +988,9 @@ export function createUI(
       ['Family traits planted', String(Object.keys(s.tree).length)],
       ['Machine Stars', `${Object.values(s.stars).reduce((a, b) => a + b, 0)} (${st.rebuilds} rebuilds)`],
       ['Most Heirloom Seeds held', count(st.mostSeedsHeld)],
+      ['Most ways won by one symbol', st.bestWays ? count(st.bestWays) : '—'],
+      ['Hold & spin', `${count(st.holdBonuses)} played · ${count(st.holdGrands)} Grand${st.holdGrands === 1 ? '' : 's'}`],
+      ['Best cheese wheel', st.bestWheel ? `×${st.bestWheel}` : '—'],
       ['Diary stickers', `${Object.keys(s.diary).length} / ${(game.data.diary || []).length}`],
       ['Capsules opened', String(st.capsulesOpened)],
       ['Skins collected', `${Object.keys(s.skins.owned).length} / ${pool.length}`],
@@ -1039,6 +1101,9 @@ export function createUI(
     const owned = game.state.machines.length;
     el.machineTags.classList.toggle('hidden', owned < 2);
     if (owned < 2) return;
+    // Past four machines (M9) the named tags would wrap onto the machine: icons only
+    // then (the marquee names the machine you're on, and every tag has a tooltip).
+    el.machineTags.classList.toggle('many', owned > 4);
     for (const [id, tag] of tagEls) {
       tag.classList.toggle('hidden', !game.ownsMachine(id));
       tag.classList.toggle('active', id === activeId());
@@ -1147,12 +1212,65 @@ export function createUI(
     }
   }
 
+  // Hold & spin (M9): a board over the reels. Locked acorns show their coins;
+  // empty cells shimmer while they respin. Each respin that lands acorns pops
+  // them in with a clink and sparkles (game.getHold says how far it has played).
+  function renderHold(hold: ReturnType<Game['getHold']>): void {
+    el.holdBoard.classList.toggle('hidden', !hold);
+    el.machine.classList.toggle('holding', !!hold);
+    if (!hold) {
+      holdPlayed = -1;
+      return;
+    }
+    if (holdCells.length !== hold.cells.length) {
+      const reels = hold.cells.length / hold.rows;
+      el.holdBoard.style.gridTemplateColumns = `repeat(${reels}, 1fr)`;
+      holdCells = hold.cells.map((_, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'hold-cell';
+        cell.style.gridColumn = String(Math.floor(i / hold.rows) + 1);
+        cell.style.gridRow = String((i % hold.rows) + 1);
+        cell.append(spriteImg('goldAcorn', 48), Object.assign(document.createElement('span'), { className: 'hold-value' }));
+        return cell;
+      });
+      el.holdBoard.replaceChildren(...holdCells);
+    }
+    hold.cells.forEach((value, i) => {
+      const cell = holdCells[i];
+      const filled = value.gt(0);
+      cell.classList.toggle('filled', filled);
+      setText(cell.lastChild!, filled ? formatCoins(value) : '');
+    });
+    el.holdBoard.classList.toggle('full', hold.full);
+    if (hold.played !== holdPlayed) {
+      const first = holdPlayed < 0;
+      holdPlayed = hold.played;
+      if (!first) {
+        if (hold.played > 0 && hold.landed.length === 0) sound.play('respin');
+        for (const i of hold.landed) {
+          replayClass(holdCells[i], 'landed');
+          fx.sparkleOver(holdCells[i], { count: 8 });
+        }
+        if (hold.landed.length && hold.played > 0) sound.play('acorn', hold.landed.length);
+      }
+    }
+  }
+
   // The prize wheel: the wheel face turns (following the game's bonus progress,
   // so it follows debug speed-ups too) and lands with the chosen pot under the pointer.
   function renderPrize(now: number): void {
-    const bonus = prize && prize.machineId === activeId() ? game.getBonusProgress() : null;
-    if (prize && bonus === null && (prize.landedAt === null || now - prize.landedAt > 2500)) prize = null;
+    // The cheese wheel (M9) runs on its own clock; after a switch away it just stops.
+    if (prize && prize.kind === 'cheese' && prize.machineId !== activeId()) prize = null;
+    const cheese = !!prize && prize.kind === 'cheese';
+    const bonus = !prize || prize.machineId !== activeId() ? null
+      : cheese ? Math.min(1, (now - prize.start!) / prize.duration!) : game.getBonusProgress();
+    if (prize && cheese && bonus === 1 && prize.landedAt === null) {
+      prize.landedAt = now;
+      if (prize.onLand) prize.onLand();
+    }
+    if (prize && (cheese ? prize.landedAt !== null && now - prize.landedAt > 2500 : bonus === null && (prize.landedAt === null || now - prize.landedAt > 2500))) prize = null;
     el.wheel.classList.toggle('prize', !!prize);
+    el.wheel.classList.toggle('cheese', cheese && !!prize);
     if (!prize) return;
     const seg = 360 / prize.count;
     const target = prize.turns * 360 + (360 - (prize.index * seg + seg / 2)); // this segment ends at the top
@@ -1160,14 +1278,24 @@ export function createUI(
     const eased = 1 - Math.pow(1 - t, 3);
     const angle = target * eased;
     el.prizeFace.style.transform = `rotate(${angle}deg)`;
-    if (!el.prizeFace.dataset.painted) {
+    const paintKey = `${prize.kind}|${prize.count}|${(prize.labels || []).join()}`;
+    if (el.prizeFace.dataset.painted !== paintKey) {
       const css = getComputedStyle(document.documentElement);
+      const colours = cheese ? CHEESE_SEGMENTS : PRIZE_SEGMENTS;
       const stops = Array.from({ length: prize.count }, (_, i) => {
-        const colour = css.getPropertyValue(PRIZE_SEGMENTS[i % PRIZE_SEGMENTS.length]).trim();
+        const colour = css.getPropertyValue(colours[i % colours.length]).trim();
         return `${colour} ${i * seg}deg ${(i + 1) * seg}deg`;
       }).join(', ');
       el.prizeFace.style.background = `repeating-conic-gradient(rgba(74,52,40,0.25) 0 1.5deg, transparent 1.5deg ${seg}deg), conic-gradient(${stops})`;
-      el.prizeFace.dataset.painted = '1';
+      // The cheese wheel's wedges say what they're worth ("×5"), turning with the wheel.
+      el.prizeFace.replaceChildren(...(prize.labels || []).map((text, i) => {
+        const label = document.createElement('span');
+        label.className = 'prize-label';
+        label.textContent = text;
+        label.style.transform = `rotate(${(i + 0.5) * seg}deg) translateY(-38px)`;
+        return label;
+      }));
+      el.prizeFace.dataset.painted = paintKey;
     }
     // A tick each time a segment edge passes the pointer, and sparks off the rim.
     const tick = Math.floor(angle / seg);
@@ -1219,12 +1347,12 @@ export function createUI(
     const free = game.getFreeSpins();
     const spinBet = game.getSpinBet();
     const gambling = !!s.gamble && s.gamble.started;
-    const busy = machine.spinning || !!machine.bonus || gambling || (!!free && free.left > 0);
+    const busy = machine.spinning || !!machine.bonus || !!machine.hold || gambling || (!!free && free.left > 0);
     if (free) {
       setText(el.spinTitle, 'Free');
       setHTML(el.spinMeta, `${free.left} left · ×${free.bet}`);
     } else {
-      setText(el.spinTitle, machine.bonus ? 'Jackpot!' : 'Spin');
+      setText(el.spinTitle, machine.bonus ? 'Jackpot!' : machine.hold ? 'Hold!' : 'Spin');
       setHTML(el.spinMeta, `${iconHTML('coin', 24)} ${formatCoins(game.getBetCost(spinBet || game.getBet()))}`);
     }
     // Not disabled while a normal spin runs: a click then queues the next spin.
@@ -1244,7 +1372,10 @@ export function createUI(
 
     // The machine's own extras: free-spin mode on the marquee, pots, streak, gamble.
     el.machine.classList.toggle('free-spins', !!free);
-    setText(el.machineName, free ? `Free spins ${free.played}/${free.total} · +${formatCoins(free.won)}` : game.getMachineData().name);
+    const hold = game.getHold();
+    setText(el.machineName, free ? `Free spins ${free.played}/${free.total} · +${formatCoins(free.won)}`
+      : hold ? `${hold.full ? 'Every cell!' : `${hold.respinsLeft} respin${hold.respinsLeft === 1 ? '' : 's'} left`} · ${formatCoins(hold.total)}`
+        : game.getMachineData().name);
     // Machine Stars (M8): little stars on the marquee, and a gold trim once it has one.
     const stars = game.getStars();
     setHTML(el.machineStars, starIcons(stars));
@@ -1254,6 +1385,7 @@ export function createUI(
     renderStreak(machine, realDt);
     renderGamble(now);
     renderPrize(now);
+    renderHold(hold);
     winShow.render(now);
     celebrate.render(now);
 
@@ -1313,6 +1445,7 @@ export function createUI(
     if (speech && now < speech.until) hint = speech.text;
     else if (delivering) hint = `Out delivering! No power to the machine for ${Math.ceil(s.delivery.timer)}s.`;
     else if (machine.bonus) hint = 'Round and round it goes… where it stops, nobody knows!';
+    else if (machine.hold) hint = 'Acorns lock in place. Every new one resets the respins. Fill the vault for the Grand!';
     else if (free && free.left > 0) hint = `Free spins! ${free.left} to go, and every win is doubled.`;
     else if (s.gamble && s.gamble.machineId === activeId()) hint = 'Feeling lucky? Guess the card: a colour doubles it, a suit makes it ×4!';
     else if (!machine.spinning && spinBet === null) hint = 'Out of coins! Send me on a delivery (D).';

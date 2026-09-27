@@ -34,6 +34,7 @@ export function createDebugPanel(
       <button id="dbg-free">+5 free spins</button>
       <button data-pot="mini">Wheel: Mini</button><button data-pot="minor">Minor</button><button data-pot="major">Major</button><button data-pot="grand">Grand</button>
       <button id="dbg-gamble">Offer a gamble (100)</button>
+      <button id="dbg-hold">Hold & spin (6 acorns)</button>
     </div>
     <div class="row"><span class="row-label">Offline earnings (pretend you were away)</span>
       <button data-away="600">10 min</button><button data-away="3600">1 h</button><button data-away="36000">10 h</button>
@@ -78,6 +79,9 @@ export function createDebugPanel(
     b.addEventListener('click', () => {
       if (!game.triggerJackpot(b.dataset.pot!)) setStatus('No jackpot wheel here (try the Pouch Palace), or the machine is busy.');
     });
+  });
+  panel.querySelector('#dbg-hold')!.addEventListener('click', () => {
+    if (!game.triggerHold(6)) setStatus('No hold & spin here (try the Acorn Vault), or the machine is busy.');
   });
   panel.querySelector('#dbg-gamble')!.addEventListener('click', () => {
     if (!game.triggerGamble(100)) setStatus('Can\'t offer a gamble now (one is open, or the machine is busy).');

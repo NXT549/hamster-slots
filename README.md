@@ -12,7 +12,7 @@ Spin the reels, win coins, buy upgrades, and teach your hamster to run the wheel
 
 ## What's in it
 
-- **Four slot machines**: Old Clunky, the Snack Stacker, the Burrow Bonanza and the Pouch Palace. Paylines, bets, wilds, free spins, a jackpot wheel with four pots, and a card gamble.
+- **Seven slot machines**: Old Clunky, the Snack Stacker, the Burrow Bonanza, the Pouch Palace, and for the late game the Hamster Maze (243 ways), the Acorn Vault (hold & spin) and the Big Cheese (a multiplier wheel). Paylines, bets, wilds, free spins, a jackpot wheel with four pots, and a card gamble.
 - **Upgrades** for your hamster and for every machine: payouts, auto-spin, Luck, new symbols, Pays Both Ways and more.
 - **Retirement and the Big Cage**: every seed you hold pays a bonus, or plant it in the Family Tree for a trait the family keeps forever.
 - **Machine Stars**: max a machine's upgrades and rebuild it for a star it keeps for good.

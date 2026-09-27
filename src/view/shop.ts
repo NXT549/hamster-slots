@@ -63,6 +63,9 @@ function effectFormats(game: Game): Record<string, (def: Def) => [string, Format
       return [`Starts owning the ${(game.data.machines.find((m) => m.id === id) || { name: id }).name}`, (v) => (v ? 'yes' : 'no')];
     },
     potSeedBonus: () => ['Pot seeds', (v) => `×${v.toFixed(2)}`],
+    // M9
+    extraRespins: () => ['Respins', String],
+    wheelBonus: () => ['Average wedge', (v) => `×${Number(v.toFixed(2))}`],
   };
 }
 
@@ -124,6 +127,10 @@ export function featureChips(info: MachineInfo): string {
   if (f.freeSpins) chips.push(`<span class="feature-chip chip-free">${iconHTML('ballIcon', 16)}Free spins</span>`);
   if (f.jackpot) chips.push(`<span class="feature-chip chip-pots">${iconHTML('pouchPolish', 16)}Jackpot pots</span>`);
   if (f.bothWays) chips.push(`<span class="feature-chip chip-both">${iconHTML('bothWaysIcon', 16)}Pays both ways</span>`);
+  // M9
+  if (f.ways) chips.push(`<span class="feature-chip chip-ways">${iconHTML('reel', 16)}Ways</span>`);
+  if (f.holdSpin) chips.push(`<span class="feature-chip chip-hold">${iconHTML('acornIcon', 16)}Hold & spin</span>`);
+  if (f.wheel) chips.push(`<span class="feature-chip chip-wheel">${iconHTML('cheeseIcon', 16)}Cheese wheel</span>`);
   return chips.join('');
 }
 
@@ -357,7 +364,8 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
     for (const c of cards) {
       const info = game.getMachineInfo(c.id)!;
       const reels = info.reels < info.maxReels ? `${info.reels} of ${info.maxReels} reels` : `${info.reels} reels`;
-      const lines = info.maxLines > 1 ? ` · ${info.lines} of ${info.maxLines} paylines` : ' · 1 payline';
+      // A ways machine (M9) has no paylines: say how many ways it pays instead.
+      const lines = info.features.ways ? ` · ${info.features.ways} ways` : info.maxLines > 1 ? ` · ${info.lines} of ${info.maxLines} paylines` : ' · 1 payline';
       const bet = info.owned && info.bet > 1 ? ` · bet ×${info.bet}` : '';
       setText(c.stats, `${reels}${lines} · ${formatCoins(info.spinCost)} a spin${bet}`);
       setHTML(c.features, featureChips(info));

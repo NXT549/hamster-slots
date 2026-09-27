@@ -11,7 +11,8 @@ import {
 // ─────────────────────────────────────────────────────────────
 describe('data.json sanity', () => {
   const knownTypes = ['payoutMultiplier', 'autoSpin', 'spinCostMultiplier', 'extraReel', 'extraPayline',
-    'betSteps', 'winStreak', 'symbolWeight', 'extraFreeSpins', 'jackpotGrowth', 'luck', 'unlockSymbol', 'bothWays'];
+    'betSteps', 'winStreak', 'symbolWeight', 'extraFreeSpins', 'jackpotGrowth', 'luck', 'unlockSymbol', 'bothWays',
+    'extraRespins', 'wheelBonus']; // M9
   const treeTypes = ['payoutMultiplier', 'shiftWeight', 'fullLineMultiplier', 'startingLevel', 'spinSpeed',
     'deliveryTime', 'deliveryPayoutBonus', 'autoDelivery',
     'heldSeedBonus', 'luck', 'startingMachineLevel', 'startingMachine', 'symbolWeight', 'potSeedBonus']; // M8
@@ -44,10 +45,14 @@ describe('data.json sanity', () => {
   const raised = (m, s) => data.upgrades.some((u) => u.effect.type === 'symbolWeight' && u.effect.symbol === s.id && (!u.machines || u.machines.includes(m.id)));
   check('every symbol has a positive weight (or an upgrade raises it from 0)',
     data.machines.every((m) => m.symbols.every((s) => s.weight > 0 || (s.weight === 0 && raised(m, s)))));
+  // (On a ways machine the wild never lands on reel 1, so it never starts a win and has no table.)
+  const needsTable = (m, s) => !(s.scatter || s.blank || (m.ways && s.wild));
   check('every line symbol has a payout table; scatters and blanks have none',
-    data.machines.every((m) => m.symbols.every((s) => (s.scatter || s.blank ? !m.payouts[s.id] : !!m.payouts[s.id]))));
-  // The exact hit-rate count in machine.ts relies on every 2-match paying something.
-  check('every line symbol\'s 2-match pays (wilds too)', data.machines.every((m) => m.symbols.every((s) => s.scatter || s.blank || m.payouts[s.id]['2'] > 0)));
+    data.machines.every((m) => m.symbols.every((s) => (needsTable(m, s) ? !!m.payouts[s.id] : !m.payouts[s.id]))));
+  // The exact hit-rate count in machine.ts relies on every 2-match paying something
+  // on a payline machine. (Ways machines count their hit rate another way: any shortest run.)
+  check('every line symbol\'s 2-match pays on a payline machine (wilds too)', data.machines.filter((m) => !m.ways).every((m) => m.symbols.every((s) => s.scatter || s.blank || m.payouts[s.id]['2'] > 0)));
+  check('every symbol of a ways machine pays for 3 on 3 reels (its first reels)', data.machines.filter((m) => m.ways).every((m) => m.startReels >= 3 && m.symbols.every((s) => !needsTable(m, s) || m.payouts[s.id]['3'] > 0)));
   check('at most one wild per machine, and no symbol is two kinds at once (wild, scatter, blank)',
     data.machines.every((m) => m.symbols.filter((s) => s.wild).length <= 1 && m.symbols.every((s) => [s.wild, s.scatter, s.blank].filter(Boolean).length <= 1)));
 
@@ -69,8 +74,20 @@ describe('data.json sanity', () => {
   check('Wheel Training rests between auto-spins (autoSpin "rest" > 0)', data.upgrades.filter((u) => u.effect.type === 'autoSpin').every((u) => u.effect.rest > 0));
   check('free spins and the jackpot wheel each name a scatter symbol of their machine',
     data.machines.every((m) => ['freeSpins', 'jackpot'].every((f) => !m[f] || m.symbols.some((s) => s.id === m[f].symbol && s.scatter))));
-  check('every scatter symbol starts something (free spins or the jackpot wheel)',
-    data.machines.every((m) => m.symbols.filter((s) => s.scatter).every((s) => [m.freeSpins, m.jackpot].some((f) => f && f.symbol === s.id))));
+  check('every scatter symbol starts something (free spins, the jackpot wheel or hold & spin)',
+    data.machines.every((m) => m.symbols.filter((s) => s.scatter).every((s) => [m.freeSpins, m.jackpot, m.holdSpin].some((f) => f && f.symbol === s.id))));
+  // M9
+  check('extraRespins / wheelBonus upgrades are only sold on machines with that feature',
+    data.upgrades.filter((u) => u.effect.type === 'extraRespins').every((u) => u.machines.every((id) => data.machines.find((m) => m.id === id).holdSpin))
+    && data.upgrades.filter((u) => u.effect.type === 'wheelBonus').every((u) => u.machines.every((id) => data.machines.find((m) => m.id === id).wheel)));
+  check('hold & spin: a trigger it can reach, respins, a chance per cell, coin values and a Grand',
+    data.machines.filter((m) => m.holdSpin).every((m) => {
+      const h = m.holdSpin;
+      return h.trigger >= 1 && h.trigger <= m.startReels * rowCount(m) && h.respins >= 1 && h.respinChance > 0 && h.respinChance < 1
+        && h.values.length > 0 && h.values.every((v) => v.value > 0 && v.weight > 0) && h.grand >= 0 && h.respinSeconds > 0 && h.pause >= 0;
+    }));
+  check('the cheese wheel: wedges with a multiplier of 2+ and a weight', data.machines.filter((m) => m.wheel).every((m) => m.wheel.wedges.length > 0 && m.wheel.wedges.every((w) => w.multiplier >= 2 && w.weight > 0)));
+  check('a ways machine has no paylines and sells no Pays Both Ways', data.machines.filter((m) => m.ways).every((m) => !m.paylines && !data.upgrades.some((u) => u.effect.type === 'bothWays' && u.machines.includes(m.id))));
   check('jackpot pots have a positive weight and seed, and growth >= 0',
     data.machines.every((m) => !m.jackpot || m.jackpot.pots.every((p) => p.weight > 0 && p.seed > 0 && p.growth >= 0)));
   check('symbolWeight upgrades name a symbol of every machine that sells them',

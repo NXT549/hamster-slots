@@ -140,7 +140,8 @@ describe('EV formula vs every line, and vs real spins (same RNG as the game)', (
     })([], 1);
     return { mean: m1, sd: Math.sqrt(Math.max(0, m2 - m1 * m1)) };
   }
-  for (const m of data.machines) {
+  // (Ways machines have no lines: m9.test.js checks their EV the same two ways.)
+  for (const m of data.machines.filter((x) => !x.ways)) {
     for (const wildWeight of wildWeights(m)) for (const unlocked of [0, unlockLevels(m).at(-1)]) {
       const md = withUnlocks(withWild(m, wildWeight), unlocked);
       const rules = symbolRules(md);

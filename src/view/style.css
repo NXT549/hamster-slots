@@ -69,6 +69,11 @@
   /* the Pouch Palace: velvet and gold */
   --palace: #a77bd6;        --palace-dark: #7c55b3;    --palace-light: #d4bdf3;
   --palace-gold: #ffd35c;
+  /* M9: the Hamster Maze (hedges), the Acorn Vault (steel), the Big Cheese (cheese) */
+  --maze: #6cc26a;          --maze-dark: #3f8f45;      --maze-light: #a8e290;     --maze-path: #f5d6a8;
+  --vault: #cfd5da;         --vault-dark: #8f989f;     --vault-light: #eef1f3;    --vault-rivet: #7f878d;
+  --cheese: #ffd35c;        --cheese-dark: #e8a93a;    --cheese-light: #fff3b8;   --cheese-rind: #f79a3e;   --cheese-rind-dark: #d9722a;
+  --acorn-cell: #3a2a20;    /* an empty hold & spin cell */
   --reel-bg: #fffdf8;
   /* paylines: one colour per line (line 1 … line 10; line 11 on reuses them) */
   --line-1: #ffbe2e; --line-2: #ff7fa3; --line-3: #4fb8e6; --line-4: #6fcb74; --line-5: #b08af0;
@@ -287,6 +292,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .machine-tag.active { --frame: var(--frame-paper-gold); }
 .machine-tag:not(.active) { opacity: 0.85; }
 .machine-tag:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+.machine-tags.many .machine-tag span { display: none; } /* 5+ machines (M9): icons only, one row */
 
 /* ── The slot machines ── */
 /* Old Clunky: a chunky mint toy machine with a pull lever. */
@@ -472,6 +478,80 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .machine[data-machine="palace"] .reel-window { box-shadow: 0 0 0 4px var(--palace-gold); }
 .machine[data-machine="palace"] .lever-knob { background: var(--palace-gold); box-shadow: inset -4px -4px 0 var(--gold-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.5); }
 .machine[data-machine="bonanza"] .payline-arrow, .machine[data-machine="palace"] .payline-arrow { display: none; }
+
+/* ── M9 machines ── */
+/* The Hamster Maze: a hedge-green machine with maze paths on it. No paylines, so no arrows or tags. */
+.machine[data-machine="maze"] {
+  background:
+    linear-gradient(90deg, var(--maze-path) 0 3px, transparent 3px) 0 0 / 26px 100%,
+    linear-gradient(var(--maze-path) 0 3px, transparent 3px) 13px 0 / 26px 26px,
+    var(--maze);
+  border-radius: 18px 18px 12px 12px; padding: 16px 22px 34px;
+  box-shadow: inset 0 -10px 0 var(--maze-dark), inset 0 0 0 4px var(--maze-dark), inset 0 5px 0 4px rgba(255, 255, 255, 0.25);
+}
+.machine[data-machine="maze"] .marquee { background: var(--maze-path); box-shadow: 0 0 0 3px var(--maze-dark), inset 0 -3px 0 rgba(74, 52, 40, 0.15); }
+.machine[data-machine="maze"] .reel-window { box-shadow: 0 0 0 5px var(--maze-dark); }
+.machine[data-machine="maze"] .lever-knob { background: var(--maze-light); box-shadow: inset -4px -4px 0 var(--maze), inset 3px 3px 0 rgba(255, 255, 255, 0.5); }
+/* The Acorn Vault: brushed steel with rivets and a gold trim. */
+.machine[data-machine="vault"] {
+  background:
+    radial-gradient(circle, var(--vault-rivet) 2px, transparent 2.5px) 6px 6px / 20px 20px,
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 2px, transparent 2px 6px),
+    var(--vault);
+  border-radius: 12px; padding: 14px 22px 34px;
+  box-shadow: inset 0 -10px 0 var(--vault-dark), inset 0 0 0 5px var(--vault-dark), inset 0 5px 0 5px rgba(255, 255, 255, 0.35);
+}
+.machine[data-machine="vault"] .marquee { background: var(--gold); box-shadow: 0 0 0 3px var(--vault-dark), inset 0 -3px 0 rgba(74, 52, 40, 0.15); }
+.machine[data-machine="vault"] .reel-window { box-shadow: 0 0 0 4px var(--gold-dark); }
+.machine[data-machine="vault"] .lever-knob { border-radius: 50%; background: var(--gold); box-shadow: inset -4px -4px 0 var(--gold-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.5); }
+/* The Big Cheese: a cheese-yellow machine full of holes, with a rind top. */
+.machine[data-machine="cheese"] {
+  background:
+    radial-gradient(circle, var(--cheese-dark) 5px, transparent 5.5px) 8px 30px / 44px 40px,
+    radial-gradient(circle, var(--cheese-dark) 3px, transparent 3.5px) 30px 12px / 38px 34px,
+    var(--cheese);
+  border-radius: 26px 26px 12px 12px; padding: 16px 22px 34px;
+  box-shadow: inset 0 -10px 0 var(--cheese-dark), inset 0 10px 0 var(--cheese-rind), inset 0 0 0 4px var(--cheese-dark);
+}
+.machine[data-machine="cheese"] .marquee { background: var(--cheese-light); box-shadow: 0 0 0 3px var(--cheese-rind), inset 0 -3px 0 rgba(74, 52, 40, 0.15); }
+.machine[data-machine="cheese"] .reel-window { box-shadow: 0 0 0 4px var(--cheese-rind); }
+.machine[data-machine="cheese"] .lever-knob { background: var(--cheese-rind); box-shadow: inset -4px -4px 0 var(--cheese-rind-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.4); }
+.machine[data-machine="maze"] .payline-arrow, .machine[data-machine="vault"] .payline-arrow, .machine[data-machine="cheese"] .payline-arrow { display: none; }
+
+/* Hold & spin (M9): a board over the reels. Locked acorns show their coins; empty cells shimmer. */
+.hold-board {
+  position: absolute; left: 5px; right: 5px; top: 5px; bottom: 5px; z-index: 6;
+  display: grid; grid-template-rows: repeat(3, 1fr); column-gap: 6px;
+}
+.hold-cell {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--acorn-cell); border-radius: 5px; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
+.hold-cell .sprite { opacity: 0; transform: scale(0.4); transition: opacity 0.15s, transform 0.2s; }
+.hold-cell:not(.filled)::after { /* a respinning cell: a faint shimmer running down it */
+  content: ""; position: absolute; inset: 0; border-radius: 5px;
+  background: linear-gradient(transparent 0 30%, rgba(255, 243, 184, 0.14) 45% 55%, transparent 70%) 0 0 / 100% 300%;
+  animation: respin 0.9s linear infinite;
+}
+@keyframes respin { from { background-position: 0 100%; } to { background-position: 0 -200%; } }
+.hold-cell.filled { background: color-mix(in srgb, var(--gold) 30%, var(--acorn-cell)); box-shadow: inset 0 0 0 3px var(--gold); }
+.hold-cell.filled .sprite { opacity: 1; transform: scale(1); }
+.hold-cell.landed { animation: acorn-land 0.45s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes acorn-land { 0% { transform: scale(1.35); filter: brightness(1.6); } }
+.hold-value {
+  position: absolute; bottom: 3px; left: 0; right: 0; text-align: center;
+  font-family: var(--font-num); font-weight: 900; font-size: 12px; color: #fff; text-shadow: 0 1px 0 var(--outline-ink), 1px 0 var(--outline-ink), -1px 0 var(--outline-ink);
+}
+.hold-board.full .hold-cell { animation: glow-cell 0.3s steps(2) infinite; }
+@keyframes glow-cell { 50% { box-shadow: inset 0 0 0 3px #fff; } }
+
+/* The cheese wheel (M9): the prize wheel's wedges say what they multiply by */
+.prize-label {
+  position: absolute; left: 50%; top: 50%; width: 30px; margin: -9px 0 0 -15px; text-align: center; transform-origin: 50% 50%;
+  font-family: var(--font-num); font-weight: 900; font-size: 13px; line-height: 18px; color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.wheel.prize.cheese { box-shadow: inset 0 0 0 9px var(--cheese-rind), inset 0 0 0 12px var(--cheese-dark), 0 0 0 4px var(--cheese-rind); }
 
 /* Jackpot pots: four little plaques above the reels */
 .pots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: -4px auto 10px; }
@@ -890,6 +970,9 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .chip-seeds { background: color-mix(in srgb, var(--heirloom) 40%, var(--paper)); }
 .chip-blank { background: var(--paper-2); }
 .chip-both { background: color-mix(in srgb, var(--buy) 40%, var(--paper)); }
+.chip-ways { background: color-mix(in srgb, var(--maze) 40%, var(--paper)); }
+.chip-hold { background: color-mix(in srgb, var(--gold) 45%, var(--paper)); }
+.chip-wheel { background: color-mix(in srgb, var(--cheese-rind) 35%, var(--paper)); }
 /* Paytable rows for symbols you haven't unlocked yet: faded (never recoloured: a
    grey Golden Seed would read as a Sunflower Seed, see rule 11), with how to unlock them */
 .paytable tr.locked-symbol td { opacity: 0.55; }
@@ -968,6 +1051,9 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 /* The particle canvas (src/view/fx.ts): over everything, never catches clicks */
 .fx { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 40; pointer-events: none; image-rendering: pixelated; }
 
+/* On a phone a 5-reel paytable is wider than the tray: it scrolls sideways on its
+   own instead of making the whole page scroll (the page must never scroll sideways). */
+.paytable-wrap { overflow-x: auto; }
 .paytable { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
 .paytable th { text-align: left; font-size: 12px; color: var(--kraft-edge); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 12px; }
 .paytable td { background: var(--paper); padding: 5px 12px; font-family: var(--font-num); font-weight: 900; font-size: 18px; box-shadow: inset 0 -3px 0 var(--paper-2); }
@@ -1303,6 +1389,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .less-motion .bulbs, .less-motion .machine.winning .marquee, .less-motion .machine.teasing .reel-window,
 .less-motion .cell .sprite, .less-motion .win-lines polyline { animation: none; }
 .less-motion .reel.fast .strip { filter: none; }
+.less-motion .hold-cell, .less-motion .hold-cell::after, .less-motion .hold-board.full .hold-cell { animation: none !important; }
 .less-motion .hamster.idle, .less-motion .buy-btn::after, .less-motion .btn-spin.attract, .less-motion .dialog[open],
 .less-motion .tab-panel, .less-motion .subpanel, .less-motion .intro * { animation: none !important; }
 .less-motion .pop-text { animation: banner-fade 0.9s forwards; }
@@ -1326,6 +1413,12 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   .wall { padding: 26px 8px 0; }
   .machine-tags { left: 10px; max-width: 90%; }
   .machine-tag span { display: none; } /* just the machine icons */
+  .machine-tags.many { gap: 4px; max-width: calc(100% - 20px); } /* seven icons still fit in one row */
+  .machine-tags.many .machine-tag { padding: 0 2px; }
+  /* A tighter paytable, so most machines' tables fit a phone without scrolling */
+  .paytable th { padding: 0 5px; font-size: 11px; letter-spacing: 0; }
+  .paytable td { padding: 5px; font-size: 15px; }
+  .paytable .sym-cell { gap: 6px; font-size: 13px; }
   .btn-spin { min-width: 150px; font-size: 24px; }
   .btn-deliver { min-width: 110px; }
   /* The bet box gets its own row under Deliver and Spin */
