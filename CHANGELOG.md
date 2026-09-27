@@ -8,6 +8,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Fixed
+
+- The Family Tree's lines no longer show through traits you can't plant yet. Those cards are solid now, with only their picture, name and price faded, in the Big Cage and on the Family tab.
+
 ## [1.1.0] - 2026-09-27
 
 **Three new machines, hats, and clothes that do something.**

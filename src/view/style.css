@@ -1129,7 +1129,10 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .node.ready .node-cost { color: var(--buy-dark); }
 .node.owned { --frame: var(--frame-paper-heirloom); }
 .node.owned .node-cost { color: var(--heirloom-dark); }
-.node.locked { opacity: 0.55; }
+/* A trait you can't plant yet: only what's on the card fades. The card itself stays
+   solid paper, because the tree's lines run behind it (a see-through card let them
+   cross its name). */
+.node.locked > * { opacity: 0.55; }
 .node.locked .node-icon img { filter: grayscale(1); }
 .node.selected { --frame: var(--frame-paper-selected); }
 /* 1.0: a planted trait springs up out of the ground */

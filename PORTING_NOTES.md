@@ -657,6 +657,10 @@ Template: date · build/milestone · what felt good · what felt bad · what to 
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
 
+**2026-09-27 · 1.1.x · the Family Tree's lines through locked traits (the user's report)**
+- The user saw the tree's connector lines run through locked trait cards (Family Pride → Family Fortune across Family Fortune's name, the branch lines down the Luck / Speed / Delivery columns). Cause: `.node.locked { opacity: 0.55 }` made the whole card see-through, and the lines are drawn behind the cards. Fix (style.css, view only): the card stays solid paper and only its icon, name and cost fade (the icon stays grey). Planted, affordable and selected cards are unchanged.
+- **Chromium (Playwright), 1280 and 390 px, no console errors:** the Big Cage (Family Pride planted, a locked trait selected) and the Family tab's read-only tree. The lines now stop at the cards' edges. On the Family tab the locked cards are now bright paper instead of paper tinted with the cardboard behind them.
+
 **2026-09-27 · M10 · Wardrobe buffs (automated, not a real playtest)**
 - `node tools/sim.mjs --lives 18 --seeds 3`, idle and active, with the wardrobe (the bot opens capsules and wears its rarest skins) and with `--no-capsules`; life lengths in minutes:
   - **Idle, without:** 49–62 · 38–48 · 40–50 · 50–56 · 44–61 · 32–39 · 23–31 · 14–18 · 14–19 · 7–14 · 6–9 · 5–6 · 4–6 · 5–6 · 2–6 · 3–24 · 12–25 · 22–40; whole tree 5.7–6.3 h.
