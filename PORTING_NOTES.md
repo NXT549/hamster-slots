@@ -632,7 +632,8 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - 1.3.1 = DESIGN §28 (D138–D140). **Save v12:** every older save migrates when it loads (the helper's switch on, two stats at 0, the new stickers it had already reached), so nobody's progress changes; data schema 13.
 - Released without a playtest first (the user's call), like 1.3.0: the automated checks are in Playtest notes (1.3.1). Not checked before the release: Firefox and Safari, a real phone's touch, how the helper and doubled wins feel.
 - Before the release, `main` had gained one docs commit (the v1.3.0 GitHub Release note, `554dbcd`), merged into the branch (the status block's "Tags" line kept from `main`, the names from the branch). The release commit moved the CHANGELOG's `[Unreleased]` to `[1.3.1] - 2026-09-27 · Nuts & Bolts`, set 1.3.1 in package.json and package-lock (from 1.3.1-rc.1) and marked it released in the docs; `main` was fast-forwarded to it, and the deploy workflow puts it on the Pages link.
-- The tag `v1.3.1` is made locally on the release commit; tag pushes are cut off by the sessions' git proxy, so the user publishes the GitHub Release **"v1.3.1 · Nuts & Bolts"** on the "Release 1.3.1" commit.
+- The deploy run (Actions run 11) passed; the live page serves the new build, which says 1.3.1 and "Nuts & Bolts" (checked with curl, like 1.3.0).
+- The tag `v1.3.1` is made locally on the release commit (`5d5bb4e`); the tag push was cut off again by the sessions' git proxy, so the user publishes the GitHub Release **"v1.3.1 · Nuts & Bolts"** on the "Release 1.3.1" commit (`5d5bb4e`).
 
 
 
