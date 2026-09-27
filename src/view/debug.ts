@@ -25,6 +25,7 @@ export function createDebugPanel(
     </div>
     <div class="row"><span class="row-label">Family (earned coins count toward Heirloom Seeds)</span>
       <button data-earn="10000">Earn +10K</button><button data-earn="100000">Earn +100K</button><button id="dbg-seeds">+5 seeds</button>
+      <button id="dbg-cage">Open the Big Cage</button>
     </div>
     <div class="row"><span class="row-label">Capsules</span>
       <button data-tokens="10">+10 tokens</button><button data-tokens="100">+100 tokens</button>
@@ -63,6 +64,10 @@ export function createDebugPanel(
     b.addEventListener('click', () => game.addCoins(Number(b.dataset.earn), true));
   });
   panel.querySelector('#dbg-seeds')!.addEventListener('click', () => game.addSeeds(5));
+  // Plant without retiring (M8: planting only happens in the Big Cage).
+  panel.querySelector('#dbg-cage')!.addEventListener('click', () => {
+    if (!game.openBigCage()) setStatus('Already in the Big Cage, or a gamble is under way.');
+  });
   panel.querySelectorAll<HTMLElement>('[data-tokens]').forEach((b) => {
     b.addEventListener('click', () => game.addTokens(Number(b.dataset.tokens)));
   });
@@ -181,7 +186,7 @@ export function createDebugPanel(
       `Won / spent    +${formatCoins(s.coinsWon)} / -${formatCoins(s.coinsSpent)}`,
       `Play time      ${minutes}m ${seconds}s (game time, all lives)`,
       `Family         gen ${game.state.generation} (${game.getPupName()}) · this life ${Math.floor(game.state.run.playTime / 60)}m, +${formatCoins(game.state.run.coinsEarned)}`,
-      `Seeds          ${game.state.seeds} to spend · ${game.state.seedsEarned} ever earned · ${game.getPendingSeeds()} pending`,
+      `Seeds          ${game.state.seeds} held (+${(game.getHeirloomBonus().toNumber() * 100).toFixed(1)}%) · ${game.state.seedsEarned} ever earned · ${game.getPendingSeeds()} pending${game.state.bigCage ? ' · IN THE BIG CAGE' : ''}`,
       `Heirloom bonus +${game.getHeirloomBonus().mul(100).toFixed(0)}% payouts · lifetime earned ${formatCoins(s.coinsEarned)}`,
       `Tokens         ${game.state.tokens} (${s.tokensEarned} earned) · stickers ${Object.keys(game.state.diary).length}/${(game.data.diary || []).length}`,
       `Capsules       ${s.capsulesOpened} opened · ${Object.keys(game.state.skins.owned).length} skins · pity in ${game.getPityRemaining()} · jackpots ${s.goldenJackpots}`,

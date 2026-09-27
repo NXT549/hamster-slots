@@ -1,6 +1,6 @@
 {
  "recordedWith": {
-  "schemaVersion": 8
+  "schemaVersion": 9
  },
  "sessions": {
   "firstLife": [
@@ -24,6 +24,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -67,17 +68,19 @@
       "coinsEarned": "330",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 0,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 2,
       "biggestBet": 1,
       "biggestWin": "27",
@@ -98,8 +101,10 @@
       "machinesBought": 0,
       "manualSpins": 42,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 300.0000000000558,
+      "rebuilds": 0,
       "spins": 42,
       "suitWins": 0,
       "symbolsUnlocked": 0,
@@ -134,6 +139,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -177,17 +183,19 @@
       "coinsEarned": "707",
       "playTime": 599.999999999783
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 1,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "27",
@@ -208,8 +216,10 @@
       "machinesBought": 0,
       "manualSpins": 85,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 599.999999999783,
+      "rebuilds": 0,
       "spins": 85,
       "suitWins": 0,
       "symbolsUnlocked": 0,
@@ -244,6 +254,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -288,17 +299,19 @@
       "coinsEarned": "1084",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 1,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "27",
@@ -319,8 +332,10 @@
       "machinesBought": 0,
       "manualSpins": 136,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 899.9999999995101,
+      "rebuilds": 0,
       "spins": 136,
       "suitWins": 0,
       "symbolsUnlocked": 0,
@@ -356,6 +371,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -401,17 +417,19 @@
       "coinsEarned": "1603",
       "playTime": 1199.9999999992374
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 1,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "33.75",
@@ -432,8 +450,10 @@
       "machinesBought": 0,
       "manualSpins": 183,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 1199.9999999992374,
+      "rebuilds": 0,
       "spins": 183,
       "suitWins": 1,
       "symbolsUnlocked": 0,
@@ -471,6 +491,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -518,17 +539,19 @@
       "coinsEarned": "2493.25",
       "playTime": 1499.9999999989645
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 1,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "40.5",
@@ -549,8 +572,10 @@
       "machinesBought": 0,
       "manualSpins": 239,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 1499.9999999989645,
+      "rebuilds": 0,
       "spins": 239,
       "suitWins": 5,
       "symbolsUnlocked": 0,
@@ -588,6 +613,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -637,17 +663,19 @@
       "coinsEarned": "3410.75",
       "playTime": 1799.9999999986917
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 1,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "47.25",
@@ -668,8 +696,10 @@
       "machinesBought": 0,
       "manualSpins": 305,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 1799.9999999986917,
+      "rebuilds": 0,
       "spins": 305,
       "suitWins": 7,
       "symbolsUnlocked": 1,
@@ -707,6 +737,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -756,17 +787,19 @@
       "coinsEarned": "3848.75",
       "playTime": 2099.9999999991282
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 1,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "47.25",
@@ -787,8 +820,10 @@
       "machinesBought": 0,
       "manualSpins": 361,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 2099.9999999991282,
+      "rebuilds": 0,
       "spins": 361,
       "suitWins": 7,
       "symbolsUnlocked": 1,
@@ -826,6 +861,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -876,17 +912,19 @@
       "coinsEarned": "5032.75",
       "playTime": 2400.000000002948
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 1,
       "bestLuck": 10,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "213.75",
@@ -907,8 +945,10 @@
       "machinesBought": 0,
       "manualSpins": 442,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 2400.000000002948,
+      "rebuilds": 0,
       "spins": 442,
       "suitWins": 9,
       "symbolsUnlocked": 1,
@@ -946,6 +986,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -996,17 +1037,19 @@
       "coinsEarned": "7310.5",
       "playTime": 2700.000000006768
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 1,
       "bestLuck": 20,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "261.25",
@@ -1027,8 +1070,10 @@
       "machinesBought": 0,
       "manualSpins": 533,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 2700.000000006768,
+      "rebuilds": 0,
       "spins": 533,
       "suitWins": 11,
       "symbolsUnlocked": 1,
@@ -1067,6 +1112,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 4.6,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -1119,17 +1165,19 @@
       "coinsEarned": "10245.5",
       "playTime": 3000.000000010588
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 12,
       "bestGambleRun": 1,
       "bestLuck": 30,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "308.75",
@@ -1150,8 +1198,10 @@
       "machinesBought": 0,
       "manualSpins": 591,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 3000.000000010588,
+      "rebuilds": 0,
       "spins": 603,
       "suitWins": 13,
       "symbolsUnlocked": 1,
@@ -1193,6 +1243,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": true,
      "capsules": {
       "sincePity": 0
      },
@@ -1235,17 +1286,19 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "2",
      "seedsEarned": "2",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 12,
       "bestGambleRun": 1,
       "bestLuck": 30,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "308.75",
@@ -1266,8 +1319,10 @@
       "machinesBought": 0,
       "manualSpins": 591,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 2,
       "offlineCoins": "0",
       "playTime": 3000.000000010588,
+      "rebuilds": 0,
       "spins": 603,
       "suitWins": 13,
       "symbolsUnlocked": 1,
@@ -1284,6 +1339,7 @@
    },
    {
     "events": {
+     "bigCageLeft": 1,
      "coinsChanged": 915,
      "deliveryFinished": 25,
      "deliveryStarted": 25,
@@ -1306,6 +1362,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -1348,17 +1405,19 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 12,
       "bestGambleRun": 1,
       "bestLuck": 30,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "308.75",
@@ -1379,8 +1438,10 @@
       "machinesBought": 0,
       "manualSpins": 591,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 2,
       "offlineCoins": "0",
       "playTime": 3000.000000010588,
+      "rebuilds": 0,
       "spins": 603,
       "suitWins": 13,
       "symbolsUnlocked": 1,
@@ -1402,6 +1463,7 @@
    },
    {
     "events": {
+     "bigCageLeft": 1,
      "coinsChanged": 1133,
      "deliveryFinished": 28,
      "deliveryStarted": 28,
@@ -1410,7 +1472,7 @@
      "gambleResolved": 140,
      "retired": 1,
      "seedsChanged": 3,
-     "spinBlocked": 291,
+     "spinBlocked": 208,
      "spinResolved": 749,
      "spinStarted": 751,
      "stickerEarned": 9,
@@ -1419,15 +1481,16 @@
      "upgradeBought": 21
     },
     "label": "second life, 10 min",
-    "paid": 11395.74,
+    "paid": 11357.14,
     "rng": 953957757,
     "save": {
      "activeMachine": 0,
      "autoTimer": 4.6,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
-     "coins": "37.24",
+     "coins": "13.29",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -1462,7 +1525,7 @@
        "spinBet": 1,
        "spinFree": false,
        "spinSource": "manual",
-       "spinTimer": 1.7500000000000044,
+       "spinTimer": 2.750000000000001,
        "spinning": true,
        "streak": 0,
        "typeId": "clunky",
@@ -1472,27 +1535,29 @@
       }
      ],
      "run": {
-      "coinsEarned": "1710.24",
+      "coinsEarned": "1671.64",
       "playTime": 599.999999999783
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
-      "autoSpins": 45,
+      "autoSpins": 46,
       "bestGambleRun": 1,
       "bestLuck": 30,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 1,
       "biggestWin": "308.75",
       "capsulesOpened": 0,
-      "coinsEarned": "11955.74",
-      "coinsSpent": "3265.99",
-      "coinsWon": "11395.74",
+      "coinsEarned": "11917.14",
+      "coinsSpent": "3266.49",
+      "coinsWon": "11357.14",
       "deliveries": 28,
       "deliveryCoins": "560",
       "freeSpinCoins": "0",
@@ -1504,10 +1569,12 @@
       "grandJackpots": 0,
       "jackpotsWon": 0,
       "machinesBought": 0,
-      "manualSpins": 706,
+      "manualSpins": 705,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 2,
       "offlineCoins": "0",
       "playTime": 3600.0000000182276,
+      "rebuilds": 0,
       "spins": 751,
       "suitWins": 14,
       "symbolsUnlocked": 1,
@@ -1546,6 +1613,7 @@
     "save": {
      "activeMachine": 3,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -1663,17 +1731,19 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 0,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 0,
       "biggestBet": 0,
       "biggestWin": "0",
@@ -1694,8 +1764,10 @@
       "machinesBought": 3,
       "manualSpins": 0,
       "mostLinesWon": 0,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 0,
+      "rebuilds": 0,
       "spins": 0,
       "suitWins": 0,
       "symbolsUnlocked": 7,
@@ -1737,6 +1809,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0.2499999999999999,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -1868,17 +1941,19 @@
       "coinsEarned": "494475.04",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 18,
       "bestGambleRun": 1,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 4,
       "biggestBet": 10,
       "biggestWin": "83125",
@@ -1899,8 +1974,10 @@
       "machinesBought": 3,
       "manualSpins": 37,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 180.00000000003539,
+      "rebuilds": 0,
       "spins": 55,
       "suitWins": 3,
       "symbolsUnlocked": 7,
@@ -1942,6 +2019,7 @@
     "save": {
      "activeMachine": 1,
      "autoTimer": 0.2499999999999999,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -2099,17 +2177,19 @@
       "coinsEarned": "9463009.58",
       "playTime": 360.00000000000125
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 44,
       "bestGambleRun": 1,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 49,
       "biggestBet": 10,
       "biggestWin": "1058062.5",
@@ -2130,8 +2210,10 @@
       "machinesBought": 3,
       "manualSpins": 63,
       "mostLinesWon": 5,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 360.00000000000125,
+      "rebuilds": 0,
       "spins": 107,
       "suitWins": 6,
       "symbolsUnlocked": 7,
@@ -2175,6 +2257,7 @@
     "save": {
      "activeMachine": 2,
      "autoTimer": 3.599999999999992,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -2365,17 +2448,19 @@
       "coinsEarned": "53622572.17",
       "playTime": 539.9999999998375
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 53,
       "bestGambleRun": 1,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 49,
       "biggestBet": 10,
       "biggestWin": "4256000",
@@ -2396,8 +2481,10 @@
       "machinesBought": 3,
       "manualSpins": 73,
       "mostLinesWon": 7,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 539.9999999998375,
+      "rebuilds": 0,
       "spins": 149,
       "suitWins": 7,
       "symbolsUnlocked": 7,
@@ -2444,6 +2531,7 @@
     "save": {
      "activeMachine": 3,
      "autoTimer": 2.249999999999997,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -2662,17 +2750,19 @@
       "coinsEarned": "971963822.17",
       "playTime": 725.4333333330022
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 70,
       "bestGambleRun": 1,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 49,
       "biggestBet": 10,
       "biggestWin": "713960625",
@@ -2693,8 +2783,10 @@
       "machinesBought": 3,
       "manualSpins": 102,
       "mostLinesWon": 10,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 725.4333333330022,
+      "rebuilds": 0,
       "spins": 195,
       "suitWins": 9,
       "symbolsUnlocked": 7,
@@ -2741,6 +2833,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 2.5999999999999956,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -2959,17 +3052,19 @@
       "coinsEarned": "979784994.05",
       "playTime": 744.4999999996515
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 74,
       "bestGambleRun": 1,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 49,
       "biggestBet": 10,
       "biggestWin": "713960625",
@@ -2990,8 +3085,10 @@
       "machinesBought": 3,
       "manualSpins": 104,
       "mostLinesWon": 10,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 744.4999999996515,
+      "rebuilds": 0,
       "spins": 201,
       "suitWins": 9,
       "symbolsUnlocked": 7,
@@ -3038,6 +3135,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 2.9999999999999942,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -3256,17 +3354,19 @@
       "coinsEarned": "979784994.05",
       "playTime": 744.8999999996512
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 74,
       "bestGambleRun": 1,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 49,
       "biggestBet": 10,
       "biggestWin": "713960625",
@@ -3287,8 +3387,10 @@
       "machinesBought": 3,
       "manualSpins": 104,
       "mostLinesWon": 10,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 744.8999999996512,
+      "rebuilds": 0,
       "spins": 201,
       "suitWins": 9,
       "symbolsUnlocked": 7,
@@ -3336,6 +3438,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 2.9999999999999942,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -3554,17 +3657,19 @@
       "coinsEarned": "984055499.51",
       "playTime": 744.8999999996512
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 74,
       "bestGambleRun": 1,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 49,
       "biggestBet": 10,
       "biggestWin": "713960625",
@@ -3585,8 +3690,10 @@
       "machinesBought": 3,
       "manualSpins": 104,
       "mostLinesWon": 10,
+      "mostSeedsHeld": 0,
       "offlineCoins": "4270505.46",
       "playTime": 744.8999999996512,
+      "rebuilds": 0,
       "spins": 201,
       "suitWins": 9,
       "symbolsUnlocked": 7,
@@ -3634,6 +3741,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 2.9999999999999942,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -3852,17 +3960,19 @@
       "coinsEarned": "984055499.51",
       "playTime": 744.8999999996512
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 74,
       "bestGambleRun": 1,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 49,
       "biggestBet": 10,
       "biggestWin": "713960625",
@@ -3883,8 +3993,10 @@
       "machinesBought": 3,
       "manualSpins": 104,
       "mostLinesWon": 10,
+      "mostSeedsHeld": 0,
       "offlineCoins": "4270505.46",
       "playTime": 744.8999999996512,
+      "rebuilds": 0,
       "spins": 201,
       "suitWins": 9,
       "symbolsUnlocked": 7,
@@ -3932,6 +4044,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 3.8,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -4151,17 +4264,19 @@
       "coinsEarned": "984905333.91",
       "playTime": 864.899999999542
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 84,
       "bestGambleRun": 1,
       "bestLuck": 100,
+      "bestStars": 0,
       "bestStreak": 49,
       "biggestBet": 10,
       "biggestWin": "713960625",
@@ -4182,8 +4297,10 @@
       "machinesBought": 3,
       "manualSpins": 131,
       "mostLinesWon": 10,
+      "mostSeedsHeld": 0,
       "offlineCoins": "4270505.46",
       "playTime": 864.899999999542,
+      "rebuilds": 0,
       "spins": 238,
       "suitWins": 9,
       "symbolsUnlocked": 7,
@@ -4216,6 +4333,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -4248,17 +4366,19 @@
       "coinsEarned": "20000",
       "playTime": 0
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 0,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 0,
       "biggestBet": 0,
       "biggestWin": "0",
@@ -4279,8 +4399,10 @@
       "machinesBought": 0,
       "manualSpins": 0,
       "mostLinesWon": 0,
+      "mostSeedsHeld": 0,
       "offlineCoins": "0",
       "playTime": 0,
+      "rebuilds": 0,
       "spins": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
@@ -4297,6 +4419,7 @@
    },
    {
     "events": {
+     "bigCageLeft": 1,
      "coinsChanged": 2,
      "retired": 1,
      "seedsChanged": 4,
@@ -4310,6 +4433,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 0
      },
@@ -4345,17 +4469,19 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
       "equipped": {},
       "owned": {}
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 0,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 0,
       "biggestBet": 0,
       "biggestWin": "0",
@@ -4376,8 +4502,10 @@
       "machinesBought": 0,
       "manualSpins": 0,
       "mostLinesWon": 0,
+      "mostSeedsHeld": 3,
       "offlineCoins": "0",
       "playTime": 0,
+      "rebuilds": 0,
       "spins": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
@@ -4400,6 +4528,7 @@
    },
    {
     "events": {
+     "bigCageLeft": 1,
      "capsuleOpened": 37,
      "coinsChanged": 2,
      "retired": 1,
@@ -4415,6 +4544,7 @@
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 2
      },
@@ -4452,7 +4582,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -4482,10 +4612,12 @@
        "wheelOak": true
       }
      },
+     "stars": {},
      "stats": {
       "autoSpins": 0,
       "bestGambleRun": 0,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 0,
       "biggestBet": 0,
       "biggestWin": "0",
@@ -4506,8 +4638,10 @@
       "machinesBought": 0,
       "manualSpins": 0,
       "mostLinesWon": 0,
+      "mostSeedsHeld": 3,
       "offlineCoins": "0",
       "playTime": 0,
+      "rebuilds": 0,
       "spins": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
@@ -4530,28 +4664,30 @@
    },
    {
     "events": {
+     "bigCageLeft": 1,
      "capsuleOpened": 37,
-     "coinsChanged": 22,
+     "coinsChanged": 29,
      "retired": 1,
      "seedsChanged": 4,
      "skinEquipped": 21,
-     "spinResolved": 14,
-     "spinStarted": 14,
+     "spinResolved": 20,
+     "spinStarted": 20,
      "stickerEarned": 6,
      "tokensChanged": 65,
      "treeNodeBought": 3,
      "upgradeBought": 1
     },
     "label": "an idle life, 15 min",
-    "paid": 174.8,
-    "rng": 304553418,
+    "paid": 202.5,
+    "rng": 808506694,
     "save": {
      "activeMachine": 0,
      "autoTimer": 4.6,
+     "bigCage": false,
      "capsules": {
       "sincePity": 2
      },
-     "coins": "4.8",
+     "coins": "2.5",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -4591,10 +4727,10 @@
       }
      ],
      "run": {
-      "coinsEarned": "174.8",
+      "coinsEarned": "202.5",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 8,
+     "saveVersion": 9,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -4624,17 +4760,19 @@
        "wheelOak": true
       }
      },
+     "stars": {},
      "stats": {
-      "autoSpins": 14,
+      "autoSpins": 20,
       "bestGambleRun": 0,
       "bestLuck": 0,
+      "bestStars": 0,
       "bestStreak": 2,
       "biggestBet": 1,
-      "biggestWin": "34.96",
+      "biggestWin": "33.75",
       "capsulesOpened": 37,
-      "coinsEarned": "20174.8",
-      "coinsSpent": "70",
-      "coinsWon": "174.8",
+      "coinsEarned": "20202.5",
+      "coinsSpent": "100",
+      "coinsWon": "202.5",
       "deliveries": 0,
       "deliveryCoins": "0",
       "freeSpinCoins": "0",
@@ -4648,15 +4786,17 @@
       "machinesBought": 0,
       "manualSpins": 0,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 3,
       "offlineCoins": "0",
       "playTime": 899.9999999995101,
-      "spins": 14,
+      "rebuilds": 0,
+      "spins": 20,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "tokensEarned": "18",
       "upgradesBought": 1,
       "wildWins": 0,
-      "wins": 5
+      "wins": 6
      },
      "tokens": "6",
      "tree": {
@@ -4673,24 +4813,26 @@
    },
    {
     "events": {
+     "bigCageLeft": 2,
      "capsuleOpened": 37,
-     "coinsChanged": 24,
+     "coinsChanged": 31,
      "retired": 2,
-     "seedsChanged": 14,
+     "seedsChanged": 16,
      "skinEquipped": 21,
-     "spinResolved": 14,
-     "spinStarted": 14,
-     "stickerEarned": 8,
-     "tokensChanged": 68,
-     "treeNodeBought": 12,
+     "spinResolved": 20,
+     "spinStarted": 20,
+     "stickerEarned": 9,
+     "tokensChanged": 69,
+     "treeNodeBought": 14,
      "upgradeBought": 1
     },
     "label": "third generation",
-    "paid": 174.8,
-    "rng": 304553418,
+    "paid": 202.5,
+    "rng": 808506694,
     "save": {
      "activeMachine": 0,
      "autoTimer": 0,
+     "bigCage": false,
      "capsules": {
       "sincePity": 2
      },
@@ -4707,6 +4849,7 @@
       "firstSpin": true,
       "firstWin": true,
       "millionaire": true,
+      "nestEgg": true,
       "tree5": true,
       "wheelTraining": true
      },
@@ -4725,15 +4868,17 @@
        "spinning": false,
        "streak": 0,
        "typeId": "clunky",
-       "upgrades": {}
+       "upgrades": {
+        "horseshoe": 1
+       }
       }
      ],
      "run": {
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 8,
-     "seeds": "0",
+     "saveVersion": 9,
+     "seeds": "1",
      "seedsEarned": "39",
      "skins": {
       "equipped": {
@@ -4762,17 +4907,19 @@
        "wheelOak": true
       }
      },
+     "stars": {},
      "stats": {
-      "autoSpins": 14,
+      "autoSpins": 20,
       "bestGambleRun": 0,
-      "bestLuck": 0,
+      "bestLuck": 20,
+      "bestStars": 0,
       "bestStreak": 2,
       "biggestBet": 1,
-      "biggestWin": "34.96",
+      "biggestWin": "33.75",
       "capsulesOpened": 37,
-      "coinsEarned": "2020174.8",
-      "coinsSpent": "70",
-      "coinsWon": "174.8",
+      "coinsEarned": "2020202.5",
+      "coinsSpent": "100",
+      "coinsWon": "202.5",
       "deliveries": 0,
       "deliveryCoins": "0",
       "freeSpinCoins": "0",
@@ -4786,23 +4933,27 @@
       "machinesBought": 0,
       "manualSpins": 0,
       "mostLinesWon": 1,
+      "mostSeedsHeld": 36,
       "offlineCoins": "0",
       "playTime": 899.9999999995101,
-      "spins": 14,
+      "rebuilds": 0,
+      "spins": 20,
       "suitWins": 0,
       "symbolsUnlocked": 0,
-      "tokensEarned": "27",
+      "tokensEarned": "30",
       "upgradesBought": 1,
       "wildWins": 0,
-      "wins": 5
+      "wins": 6
      },
-     "tokens": "15",
+     "tokens": "18",
      "tree": {
       "bigBackpack": 1,
+      "bigSpender": 1,
       "carrotPatch": 1,
-      "familyFortune": 3,
+      "familyFortune": 2,
       "familyPride": 1,
-      "jackpotDance": 1,
+      "luckyFamily": 2,
+      "luckyHeirlooms": 1,
       "luckyWhiskers": 1,
       "quickPaws": 1,
       "selfStarter": 1,
@@ -4810,6 +4961,7 @@
       "warmUpLaps": 1
      },
      "upgrades": {
+      "highRoller": 1,
       "wheel": 1
      }
     },
@@ -4817,29 +4969,33 @@
    },
    {
     "events": {
+     "bigCageLeft": 2,
      "capsuleOpened": 37,
-     "coinsChanged": 139,
+     "coinsChanged": 132,
+     "deliveryFinished": 1,
+     "deliveryStarted": 1,
      "offlineEarned": 1,
      "retired": 2,
-     "seedsChanged": 14,
+     "seedsChanged": 16,
      "skinEquipped": 21,
-     "spinResolved": 94,
-     "spinStarted": 95,
-     "stickerEarned": 9,
-     "tokensChanged": 69,
-     "treeNodeBought": 12,
-     "upgradeBought": 19
+     "spinResolved": 93,
+     "spinStarted": 94,
+     "stickerEarned": 10,
+     "tokensChanged": 70,
+     "treeNodeBought": 14,
+     "upgradeBought": 6
     },
     "label": "third generation, 5 min",
-    "paid": 6674.27,
-    "rng": 665471700,
+    "paid": 1321.28,
+    "rng": 1297307370,
     "save": {
      "activeMachine": 0,
-     "autoTimer": 1.9199999999999904,
+     "autoTimer": 0.6966666666666369,
+     "bigCage": false,
      "capsules": {
       "sincePity": 2
      },
-     "coins": "648.37",
+     "coins": "279.86",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -4848,11 +5004,12 @@
      "diary": {
       "fashion": true,
       "firstCapsule": true,
+      "firstDelivery": true,
       "firstRetirement": true,
       "firstSpin": true,
       "firstWin": true,
       "millionaire": true,
-      "newSeed": true,
+      "nestEgg": true,
       "tree5": true,
       "wheelTraining": true
      },
@@ -4868,29 +5025,28 @@
          "blank"
         ],
         [
-         "carrot"
+         "blank"
         ]
        ],
        "spinBet": 1,
        "spinFree": false,
        "spinSource": "auto",
-       "spinTimer": 0.4833333333333371,
+       "spinTimer": 1.7166666666666694,
        "spinning": true,
-       "streak": 1,
+       "streak": 0,
        "typeId": "clunky",
        "upgrades": {
-        "horseshoe": 2,
-        "lever": 5,
-        "newSeeds": 1
+        "horseshoe": 1,
+        "lever": 2
        }
       }
      ],
      "run": {
-      "coinsEarned": "8044.49",
+      "coinsEarned": "1672.16",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 8,
-     "seeds": "0",
+     "saveVersion": 9,
+     "seeds": "1",
      "seedsEarned": "39",
      "skins": {
       "equipped": {
@@ -4919,19 +5075,21 @@
        "wheelOak": true
       }
      },
+     "stars": {},
      "stats": {
-      "autoSpins": 95,
+      "autoSpins": 94,
       "bestGambleRun": 0,
-      "bestLuck": 30,
+      "bestLuck": 20,
+      "bestStars": 0,
       "bestStreak": 2,
       "biggestBet": 1,
-      "biggestWin": "988.77",
+      "biggestWin": "60.24",
       "capsulesOpened": 37,
-      "coinsEarned": "2028219.29",
-      "coinsSpent": "375.12",
-      "coinsWon": "6674.27",
-      "deliveries": 0,
-      "deliveryCoins": "0",
+      "coinsEarned": "2021874.66",
+      "coinsSpent": "422.3",
+      "coinsWon": "1321.28",
+      "deliveries": 1,
+      "deliveryCoins": "44.62",
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -4943,23 +5101,27 @@
       "machinesBought": 0,
       "manualSpins": 0,
       "mostLinesWon": 1,
-      "offlineCoins": "1545.02",
+      "mostSeedsHeld": 36,
+      "offlineCoins": "508.76",
       "playTime": 1199.9999999992374,
-      "spins": 95,
+      "rebuilds": 0,
+      "spins": 94,
       "suitWins": 0,
-      "symbolsUnlocked": 1,
-      "tokensEarned": "29",
-      "upgradesBought": 19,
+      "symbolsUnlocked": 0,
+      "tokensEarned": "31",
+      "upgradesBought": 6,
       "wildWins": 0,
-      "wins": 20
+      "wins": 26
      },
-     "tokens": "17",
+     "tokens": "19",
      "tree": {
       "bigBackpack": 1,
+      "bigSpender": 1,
       "carrotPatch": 1,
-      "familyFortune": 3,
+      "familyFortune": 2,
       "familyPride": 1,
-      "jackpotDance": 1,
+      "luckyFamily": 2,
+      "luckyHeirlooms": 1,
       "luckyWhiskers": 1,
       "quickPaws": 1,
       "selfStarter": 1,
@@ -4967,8 +5129,8 @@
       "warmUpLaps": 1
      },
      "upgrades": {
-      "cheeks": 9,
-      "clover": 1,
+      "cheeks": 3,
+      "highRoller": 1,
       "wheel": 1
      }
     },

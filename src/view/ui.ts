@@ -24,7 +24,7 @@ import type { Money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
 import type { BackupActions } from './backup.ts';
 import type { Game } from '../logic/game.ts';
-import type { Card, MachineState, Named, SpinSource, TreeNodeDef, UpgradeDef } from '../logic/types.ts';
+import type { Card, GameEvents, MachineState, Named, SpinSource, TreeNodeDef, UpgradeDef } from '../logic/types.ts';
 import type { Settings } from '../platform/save.ts';
 
 // The jackpot wheel's four segments, clockwise from the top (the colours are
@@ -73,6 +73,13 @@ const TREE_LINES: Record<string, (level: number) => string> = {
   deliveryTime: () => 'Vroom! Deliveries are quicker now.',
   deliveryPayoutBonus: () => 'A bigger backpack means bigger deliveries!',
   autoDelivery: () => "Out of coins? I'll head off on a delivery by myself.",
+  // M8
+  heldSeedBonus: () => 'The savings jar is growing! Every seed we hold pays more now.',
+  luck: () => 'A lucky family! More Luck on every machine.',
+  startingMachineLevel: () => 'Every machine will start with a head start!',
+  startingMachine: () => 'We keep the Snack Stacker! Every pup starts with it.',
+  symbolWeight: () => 'The ball pit is full: more Hamster Balls on the Bonanza!',
+  potSeedBonus: () => 'Golden pouches: the jackpot pots start bigger!',
 };
 
 // The Menu's segmented settings: [setting key, [value, label] …].
@@ -108,8 +115,11 @@ export function createUI(
     road: $('road'), roadFill: $('road-fill'), roadHamster: $<HTMLImageElement>('road-hamster'), roadLabel: $('road-label'),
     familyTab: $('family-tab'), pupName: $('pup-name'), pupGen: $('pup-gen'),
     retireGain: $('retire-gain'), seedBarFill: $('seed-bar-fill'), seedNext: $('seed-next'),
-    heirloomPerSeed: $('heirloom-per-seed'), retireBtn: $<HTMLButtonElement>('retire-btn'),
-    tree: $('tree'), treeDetail: $('tree-detail'),
+    heirloomPerSeed: $('heirloom-per-seed'), retireBtn: $<HTMLButtonElement>('retire-btn'), retireBonus: $('retire-bonus'),
+    tree: $('tree'), treeDetail: $('tree-detail'), treeBox: $('tree-box'), treeHome: $('tree-home'),
+    bigCage: $<HTMLDialogElement>('big-cage'), bcSub: $('bc-sub'), bcHeld: $('bc-held'), bcBonus: $('bc-bonus'), bcStars: $('bc-stars'),
+    bcExplain: $('bc-explain'), bcTreeHome: $('bc-tree-home'), bcStart: $<HTMLButtonElement>('bc-start'),
+    machineStars: $('machine-stars'),
     capsulesTab: $('capsules-tab'), stageGacha: $('stage-gacha'), tray: document.querySelector<HTMLElement>('.tray')!,
     muteBtn: $('mute-btn'), volume: $<HTMLInputElement>('volume'), statsBtn: $('stats-btn'), backupBtn: $('backup-btn'), stats: $<HTMLDialogElement>('stats'), statsList: $('stats-list'),
     welcome: $<HTMLDialogElement>('welcome'), welcomeText: $('welcome-text'), welcomeCoins: $('welcome-coins'),
@@ -145,6 +155,7 @@ export function createUI(
   let speech: { text: string; until: number } | null = null; // a temporary line from the hamster: { text, until }
   let resetArmed = 0; // reset needs two taps; this is when the first tap expires
   let retireArmed = 0; // same for retiring
+  let lastRetired: GameEvents['retired'] | null = null; // what the Big Cage page says about the hamster that just retired
   let rigFitKey = ''; // stage width + machine + reel count the rig was last fitted for
 
   const lessMotion = () => settings.motion === 'less' || (settings.motion === 'auto' && systemReducedMotion);
@@ -260,6 +271,9 @@ export function createUI(
     requestAnimationFrame(rollup);
   }
   const seedLabel = (text: string) => `${iconHTML('heirloom')}${text}`;
+  // A payout bonus as "+4.5%" (one decimal while it's small, whole percents after).
+  const bonusText = (bonus: Money) => (bonus.lt(1) ? `+${(bonus.toNumber() * 100).toFixed(1).replace(/\.0$/, '')}%` : `+${formatWhole(bonus.mul(100).round())}%`);
+  const starIcons = (n: number) => iconHTML('star', 16).repeat(n);
 
   // ─────────────────────── building ───────────────────────
 
@@ -288,6 +302,8 @@ export function createUI(
       btn.addEventListener('click', (e) => {
         (e.currentTarget as HTMLElement).blur();
         selectedNode = def.id;
+        // The details (and the Plant button) sit under the tree: bring them into view.
+        requestAnimationFrame(() => el.treeDetail.scrollIntoView({ block: 'nearest', behavior: lessMotion() ? 'auto' : 'smooth' }));
       });
       nodeEls.set(def.id, btn);
       return btn;
@@ -303,22 +319,26 @@ export function createUI(
       slot.appendChild(makeNode(def));
       trunk.appendChild(slot);
     });
-    const fork = document.createElement('div');
-    fork.className = 'tree-fork';
-
-    const cols = document.createElement('div');
-    cols.className = 'tree-branches';
-    for (const branch of branches) {
-      const col = document.createElement('div');
-      col.className = 'tree-col';
-      const head = document.createElement('div');
-      head.className = 'tree-branch-name';
-      head.textContent = branch.name;
-      col.appendChild(head);
-      for (const def of nodesOn(branch)) col.appendChild(makeNode(def));
-      cols.appendChild(col);
+    // The branches hang below it in rows of three (M8 added a second row).
+    const parts: HTMLElement[] = [trunk];
+    for (let i = 0; i < branches.length; i += 3) {
+      const fork = document.createElement('div');
+      fork.className = `tree-fork${i > 0 ? ' more' : ''}`;
+      const cols = document.createElement('div');
+      cols.className = 'tree-branches';
+      for (const branch of branches.slice(i, i + 3)) {
+        const col = document.createElement('div');
+        col.className = 'tree-col';
+        const head = document.createElement('div');
+        head.className = 'tree-branch-name';
+        head.textContent = branch.name;
+        col.appendChild(head);
+        for (const def of nodesOn(branch)) col.appendChild(makeNode(def));
+        cols.appendChild(col);
+      }
+      parts.push(fork, cols);
     }
-    el.tree.append(trunk, fork, cols);
+    el.tree.append(...parts);
     if (!selectedNode || !nodeEls.has(selectedNode)) selectedNode = ft.nodes[0] ? ft.nodes[0].id : null;
   }
 
@@ -502,6 +522,10 @@ export function createUI(
       say('Pick a card, or take your win first!');
       return;
     }
+    if (e.reason === 'bigCage') {
+      say('We\'re in the Big Cage: start the new life first!');
+      return;
+    }
     if (e.reason === 'bonus') {
       say('Wait for the jackpot wheel to stop!');
       return;
@@ -567,9 +591,31 @@ export function createUI(
     showMachine();
     shownCoins = game.state.coins; // jump, don't roll down from millions
     retireArmed = 0;
+    lastRetired = e;
     sound.play('retire');
     floatText(`+${formatWhole(e.seedsGained)} Heirloom Seeds`, true);
-    say(`Hi, I'm ${e.newName}! ${e.oldName} retired to the Big Cage and left the family ${formatWhole(e.seedsGained)} Heirloom Seeds.`, 6000);
+    // The Big Cage page opens now (renderBigCage); the new pup says hello when it closes.
+  });
+
+  game.on('bigCageLeft', (e) => {
+    showMachine();
+    sound.play('machine');
+    say(lastRetired
+      ? `Hi, I'm ${e.name}! ${lastRetired.oldName} left me ${formatWhole(game.state.seeds)} Heirloom Seeds to hold. Let's go!`
+      : `Hi, I'm ${e.name}! Let's go!`, 6000);
+    lastRetired = null;
+  });
+
+  // Machine Stars (M8): a rebuilt machine gets a star, a gold trim and a burst of sparkles.
+  game.on('machineRebuilt', (e) => {
+    const md = game.data.machines.find((m) => m.id === e.id)!;
+    sound.play('unlock');
+    if (e.id === activeId()) {
+      showMachine();
+      fx.burstAt(el.machine, { count: 40, palette: fx.colors.gold, speed: 240 });
+    }
+    const st = game.data.stars;
+    say(`${md.name} is good as new, with star ${e.stars}! Every star: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck on it, for good.`, 6000);
   });
 
   // Tokens: the hamster mentions them only once the Capsules tab is showing,
@@ -680,6 +726,13 @@ export function createUI(
     }
     retireArmed = performance.now() + 3000;
   });
+
+  // The Big Cage: only the button starts the new life (Escape doesn't close it).
+  el.bcStart.addEventListener('click', (e) => {
+    (e.currentTarget as HTMLElement).blur();
+    game.leaveBigCage();
+  });
+  el.bigCage.addEventListener('cancel', (e) => e.preventDefault());
 
   // The detail panel's button is redrawn often, so listen on the panel itself
   // ("event delegation") instead of on the button.
@@ -797,6 +850,8 @@ export function createUI(
       ['Machines bought', String(st.machinesBought)],
       ['Heirloom Seeds earned', String(s.seedsEarned)],
       ['Family traits planted', String(Object.keys(s.tree).length)],
+      ['Machine Stars', `${Object.values(s.stars).reduce((a, b) => a + b, 0)} (${st.rebuilds} rebuilds)`],
+      ['Most Heirloom Seeds held', count(st.mostSeedsHeld)],
       ['Diary stickers', `${Object.keys(s.diary).length} / ${(game.data.diary || []).length}`],
       ['Capsules opened', String(st.capsulesOpened)],
       ['Skins collected', `${Object.keys(s.skins.owned).length} / ${pool.length}`],
@@ -849,7 +904,9 @@ export function createUI(
     const prog = game.getSeedProgress();
     el.seedBarFill.style.width = `${(prog.progress * 100).toFixed(1)}%`;
     setText(el.seedNext, `Family lifetime coins: ${formatCoins(prog.earned)} · next seed at ${formatCoins(prog.nextAt)}`);
-    setText(el.heirloomPerSeed, String(Math.round(((game.data.retirement || {}).payoutBonusPerSeedEarned || 0) * 100)));
+    const perSeed = game.getHeldSeedBonusPerSeed();
+    setText(el.heirloomPerSeed, String(Math.round(perSeed * 1000) / 10));
+    setText(el.retireBonus, `Heirloom bonus: ${bonusText(s.seeds.mul(perSeed))} now → ${bonusText(s.seeds.add(pending).mul(perSeed))} with the new seeds held`);
     el.retireBtn.disabled = !game.canRetire(); // also not while the jackpot wheel turns or a gamble is on
     setText(el.retireBtn, now < retireArmed ? `Tap again to retire ${name}` : 'Retire to the Big Cage');
 
@@ -879,9 +936,17 @@ export function createUI(
     const branch = game.data.familyTree.branches.find((b) => b.id === def.branch);
     const maxText = def.maxLevel ? `Lv ${level}/${def.maxLevel}` : `Lv ${level}`;
     const needs = unlocked ? '' : `<div class="note">Needs ${def.requires.map((r) => game.getTreeNodeDef(r)!.name).join(' + ')} first.</div>`;
-    const fill = maxed || affordable || !unlocked ? 0 : Math.min(100, divide(game.state.seeds, cost).toNumber() * 100);
+    // M8: you plant in the Big Cage (between lives), and a planted seed stops paying its held bonus.
+    const inCage = game.state.bigCage;
+    const held = game.state.seeds;
+    const per = game.getHeldSeedBonusPerSeed();
+    const perAfter = def.effect.type === 'heldSeedBonus' && !maxed ? Number(game.previewTreeNode(def.id).next) : per;
+    const trade = inCage && unlocked && !maxed && held.gte(cost)
+      ? `<div class="note">Planting spends ${formatWhole(cost)} of your ${formatWhole(held)} seeds held: heirloom bonus ${bonusText(held.mul(per))} → ${bonusText(held.sub(cost).mul(perAfter))}.</div>`
+      : !inCage && !maxed ? '<div class="note">You plant in the Big Cage, when you retire.</div>' : '';
+    const fill = maxed || affordable || !unlocked || !inCage ? 0 : Math.min(100, divide(game.state.seeds, cost).toNumber() * 100);
     const buttonClass = maxed ? 'maxed' : affordable ? '' : 'poor';
-    const buttonText = maxed ? 'Owned' : unlocked ? seedLabel(`Plant ${formatWhole(cost)}`) : 'Locked';
+    const buttonText = maxed ? 'Owned' : !unlocked ? 'Locked' : inCage ? seedLabel(`Plant ${formatWhole(cost)}`) : seedLabel(`${formatWhole(cost)} · plant when you retire`);
     setHTML(el.treeDetail, `
       <div class="tile-top">
         <div class="tile-icon">${iconHTML(treeIcon(def) || 'heirloom', 32)}</div>
@@ -889,7 +954,7 @@ export function createUI(
       </div>
       <div class="tile-desc">${def.description}</div>
       <div class="tile-effect">${describeEffect(game, def, game.previewTreeNode(def.id))}</div>
-      ${needs}
+      ${needs}${trade}
       <button class="buy-btn ${buttonClass}"><span class="buy-fill" style="width:${fill.toFixed(1)}%"></span><span class="buy-label">${buttonText}</span></button>`);
   }
 
@@ -1097,6 +1162,10 @@ export function createUI(
     // The machine's own extras: free-spin mode on the marquee, pots, streak, gamble.
     el.machine.classList.toggle('free-spins', !!free);
     setText(el.machineName, free ? `Free spins ${free.played}/${free.total} · +${formatCoins(free.won)}` : game.getMachineData().name);
+    // Machine Stars (M8): little stars on the marquee, and a gold trim once it has one.
+    const stars = game.getStars();
+    setHTML(el.machineStars, starIcons(stars));
+    el.machine.classList.toggle('starred', stars > 0);
     renderPots();
     renderLuck();
     renderStreak(machine, realDt);
@@ -1155,6 +1224,35 @@ export function createUI(
     payouts.render(now);
     renderFamily(now);
     renderCapsules(now);
+    renderBigCage();
+  }
+
+  // The Big Cage page (M8): open while the family is between lives (also after
+  // a reload). The Family Tree moves into it (one tree, two homes), because the
+  // Big Cage is the only place to plant; it moves back when the new life starts.
+  function renderBigCage(): void {
+    const s = game.state;
+    if (s.bigCage && !el.bigCage.open) {
+      el.bcTreeHome.appendChild(el.treeBox);
+      el.bigCage.showModal();
+      el.bigCage.scrollTop = 0;
+    } else if (!s.bigCage && el.bigCage.open) {
+      el.bigCage.close();
+      el.treeHome.appendChild(el.treeBox);
+    }
+    if (!s.bigCage) return;
+    const name = game.getPupName();
+    setText(el.bcSub, lastRetired
+      ? `${lastRetired.oldName} retired and left the family +${formatWhole(lastRetired.seedsGained)} Heirloom Seeds. ${name} (generation ${s.generation}) is next.`
+      : `${name} (generation ${s.generation}) is waiting to start.`);
+    setHTML(el.bcHeld, seedLabel(formatWhole(s.seeds)));
+    const per = game.getHeldSeedBonusPerSeed();
+    setText(el.bcBonus, `${bonusText(s.seeds.mul(per))} payouts`);
+    const stars = Object.values(s.stars).reduce((a, b) => a + b, 0);
+    setHTML(el.bcStars, stars > 0 ? `${iconHTML('star', 16)}${stars}` : 'none yet');
+    setText(el.bcExplain, `Every seed you hold gives +${Math.round(per * 1000) / 10}% payouts. Planting a seed gives that up, but the trait is the family's forever. `
+      + 'Coins, upgrades and machines start over; the seeds, the tree and Machine Stars stay. Time stands still until you start the new life.');
+    setText(el.bcStart, `Start ${name}'s life`);
   }
 
   function renderCapsules(now: number): void {

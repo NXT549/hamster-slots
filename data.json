@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 8,
+  "schemaVersion": 9,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -473,15 +473,19 @@
     "currencyName": "Heirloom Seeds",
     "seedDivisor": 1300,
     "seedExponent": 0.5,
-    "payoutBonusPerSeedEarned": 0.015,
+    "payoutBonusPerSeedHeld": 0.015,
     "pupNames": ["Pip", "Nibbles", "Biscuit", "Hazel", "Mochi", "Peanut", "Waffles", "Clover", "Pudding", "Sesame", "Truffle", "Button"]
   },
+  "stars": { "max": 5, "payoutPerStar": 0.1, "luckPerStar": 2 },
   "familyTree": {
     "branches": [
       { "id": "roots", "name": "Roots" },
       { "id": "luck", "name": "Luck" },
       { "id": "speed", "name": "Speed" },
-      { "id": "delivery", "name": "Delivery" }
+      { "id": "delivery", "name": "Delivery" },
+      { "id": "charms", "name": "Charms" },
+      { "id": "headStart", "name": "Head Start" },
+      { "id": "bonuses", "name": "Bonuses" }
     ],
     "nodes": [
       {
@@ -498,13 +502,13 @@
       {
         "id": "familyFortune",
         "name": "Family Fortune",
-        "description": "Old family savings that grow with every generation.",
+        "description": "The family's savings jar. Every Heirloom Seed you hold pays a little more.",
         "branch": "roots",
         "requires": ["familyPride"],
         "baseCost": 3,
         "growthRate": 1.5,
         "maxLevel": null,
-        "effect": { "type": "payoutMultiplier", "perLevel": 0.1 }
+        "effect": { "type": "heldSeedBonus", "perLevel": 0.005 }
       },
       {
         "id": "luckyWhiskers",
@@ -604,6 +608,83 @@
         "growthRate": 1,
         "maxLevel": 1,
         "effect": { "type": "autoDelivery" }
+      },
+      {
+        "id": "luckyFamily",
+        "name": "Lucky Family",
+        "description": "Every pup is born lucky: more Hamster Luck on every machine.",
+        "branch": "charms",
+        "requires": ["familyPride"],
+        "baseCost": 2,
+        "growthRate": 2,
+        "maxLevel": 4,
+        "effect": { "type": "luck", "perLevel": 5 }
+      },
+      {
+        "id": "luckyHeirlooms",
+        "name": "Lucky Heirlooms",
+        "description": "Lucky charms passed down the family: every machine starts with a level of its Machine Luck.",
+        "branch": "charms",
+        "requires": ["luckyFamily"],
+        "baseCost": 4,
+        "growthRate": 1.5,
+        "maxLevel": 5,
+        "effect": { "type": "startingMachineLevel", "upgradeType": "luck", "levels": 1 }
+      },
+      {
+        "id": "bigSpender",
+        "name": "Big Spender",
+        "description": "Pups are born with bigger coins: every life starts with a High Roller bet step.",
+        "branch": "headStart",
+        "requires": ["familyPride"],
+        "baseCost": 3,
+        "growthRate": 3,
+        "maxLevel": 2,
+        "effect": { "type": "startingLevel", "upgrade": "highRoller", "levels": 1 }
+      },
+      {
+        "id": "seedVault",
+        "name": "Seed Vault",
+        "description": "The family keeps its seed packets: every machine starts with its first symbol unlocked (then both).",
+        "branch": "headStart",
+        "requires": ["bigSpender"],
+        "baseCost": 4,
+        "growthRate": 2,
+        "maxLevel": 2,
+        "effect": { "type": "startingMachineLevel", "upgradeType": "unlockSymbol", "levels": 1 }
+      },
+      {
+        "id": "snackInheritance",
+        "name": "Snack Inheritance",
+        "description": "The family keeps the Snack Stacker: every pup starts owning it.",
+        "branch": "headStart",
+        "requires": ["seedVault"],
+        "baseCost": 10,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "startingMachine", "machine": "stacker" }
+      },
+      {
+        "id": "ballPit",
+        "name": "Ball Pit",
+        "description": "A pit full of Hamster Balls: they land more often on the Burrow Bonanza, so free spins come sooner.",
+        "branch": "bonuses",
+        "requires": ["familyPride"],
+        "baseCost": 5,
+        "growthRate": 2,
+        "maxLevel": 3,
+        "effect": { "type": "symbolWeight", "symbol": "ball", "perLevel": 0.4 }
+      },
+      {
+        "id": "goldenPouches",
+        "name": "Golden Pouches",
+        "description": "Every jackpot pot starts bigger, and starts again bigger after it is won.",
+        "branch": "bonuses",
+        "requires": ["ballPit"],
+        "baseCost": 6,
+        "growthRate": 2,
+        "maxLevel": 3,
+        "effect": { "type": "potSeedBonus", "perLevel": 0.5 }
       }
     ]
   },
@@ -688,9 +769,12 @@
     { "id": "firstCapsule", "name": "Capsule Collector", "description": "Open a capsule.", "goal": { "type": "stat", "stat": "capsulesOpened", "target": 1 }, "tokens": 1 },
     { "id": "spins10000", "name": "Marathon Runner", "description": "Spin 10,000 times.", "goal": { "type": "stat", "stat": "spins", "target": 10000 }, "tokens": 5 },
     { "id": "generation5", "name": "Big Family", "description": "Reach generation 5.", "goal": { "type": "generation", "target": 5 }, "tokens": 5 },
-    { "id": "treeAll", "name": "Full Bloom", "description": "Plant every Family Tree trait.", "goal": { "type": "treeNodes", "target": 11 }, "tokens": 5 },
+    { "id": "treeAll", "name": "Full Bloom", "description": "Plant every Family Tree trait.", "goal": { "type": "treeNodes", "target": 18 }, "tokens": 5 },
     { "id": "fashion", "name": "Fashion Hamster", "description": "Collect 8 skins from capsules.", "goal": { "type": "skinsOwned", "target": 8 }, "tokens": 5 },
     { "id": "fullCage", "name": "Full Cage", "description": "Own every machine at once.", "goal": { "type": "machinesOwned", "target": 4 }, "tokens": 5 },
-    { "id": "grandHamster", "name": "Grand Hamster", "description": "Win the Grand jackpot.", "goal": { "type": "stat", "stat": "grandJackpots", "target": 1 }, "tokens": 5 }
+    { "id": "grandHamster", "name": "Grand Hamster", "description": "Win the Grand jackpot.", "goal": { "type": "stat", "stat": "grandJackpots", "target": 1 }, "tokens": 5 },
+    { "id": "nestEgg", "name": "Nest Egg", "description": "Hold 25 Heirloom Seeds at once.", "goal": { "type": "stat", "stat": "mostSeedsHeld", "target": 25 }, "tokens": 3 },
+    { "id": "shootingStar", "name": "Shooting Star", "description": "Rebuild a machine for a Machine Star.", "goal": { "type": "stat", "stat": "rebuilds", "target": 1 }, "tokens": 3 },
+    { "id": "allStar", "name": "All-Star", "description": "Give one machine 5 Machine Stars.", "goal": { "type": "stat", "stat": "bestStars", "target": 5 }, "tokens": 5 }
   ]
 }

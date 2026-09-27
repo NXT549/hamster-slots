@@ -5,7 +5,7 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree, plant,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -53,8 +53,9 @@ describe('retirement: Heirloom Seeds', () => {
   check('retire resets this life\'s totals', num(g.state.run.coinsEarned) === 0 && g.state.run.playTime === 0);
   check('retire keeps lifetime stats', num(g.state.stats.coinsEarned) === lifetimeBefore && g.state.stats.spins === spinsBefore);
   check('right after retiring, 0 seeds are pending', num(g.getPendingSeeds()) === 0 && g.canRetire() === false);
-  check(`heirloom bonus: 3 seeds earned -> +${(3 * r.payoutBonusPerSeedEarned * 100).toFixed(0)}% payouts`,
-    near(num(g.getPayoutMultiplier()), 1 + 3 * r.payoutBonusPerSeedEarned, 1e-9));
+  check('retiring opens the Big Cage (between lives)', g.state.bigCage === true);
+  check(`heirloom bonus (M8): 3 seeds held -> +${(3 * r.payoutBonusPerSeedHeld * 100).toFixed(0)}% payouts`,
+    near(num(g.getPayoutMultiplier()), 1 + 3 * r.payoutBonusPerSeedHeld, 1e-9));
 
   // Same coins, same seeds: retiring in two steps gives exactly the seeds of one big retirement.
   const a = newGame();
@@ -63,6 +64,7 @@ describe('retirement: Heirloom Seeds', () => {
   const b = newGame();
   b.addCoins(coinsFor(2), true);
   b.retire();
+  b.leaveBigCage();
   b.addCoins(coinsFor(5) - coinsFor(2), true);
   b.retire();
   check('retiring often gives no extra seeds (lifetime formula)', num(a.state.seedsEarned) === 5 && num(b.state.seedsEarned) === 5,
@@ -81,6 +83,10 @@ describe('retirement: Heirloom Seeds', () => {
 // ─────────────────────────────────────────────────────────────
 describe('family tree: buying nodes', () => {
   const g = newGame(13);
+  g.addSeeds(5);
+  check('M8: cannot plant outside the Big Cage (only between lives)', g.canBuyTreeNode('familyPride') === false && g.buyTreeNode('familyPride') === false);
+  g.addSeeds(-5);
+  g.openBigCage(); // the debug way in (normally: retire)
   check('cannot buy a node with no seeds', g.buyTreeNode('familyPride') === false);
   g.addSeeds(5);
   check('cannot buy a node before its requirement', g.isTreeNodeUnlocked('luckyWhiskers') === false && g.buyTreeNode('luckyWhiskers') === false);
@@ -95,6 +101,7 @@ describe('family tree: buying nodes', () => {
   check('tree levels are stored in state.tree', g.state.tree.familyPride === 1 && g.state.tree.familyFortune === 4);
 
   // The tree survives retirement.
+  g.leaveBigCage();
   g.addCoins(data.retirement.seedDivisor, true);
   g.retire();
   check('tree nodes are kept after retiring', g.getTreeLevel('familyPride') === 1 && g.getTreeLevel('familyFortune') === 4);
@@ -104,7 +111,7 @@ describe('family tree: buying nodes', () => {
 
 // ─────────────────────────────────────────────────────────────
 describe('family traits (tree effects)', () => {
-  const buy = (g, ...ids) => { g.addSeeds(1000); for (const id of ids) g.buyTreeNode(id); };
+  const buy = (g, ...ids) => plant(g, ...ids);
 
   // Family Pride multiplies with Chubby Cheeks instead of adding to it.
   const p = newGame();
@@ -182,10 +189,11 @@ describe('family traits (tree effects)', () => {
   check('Heirloom Reel gives 3 reels right away', s.getReelCount() === 3);
   s.addCoins(data.retirement.seedDivisor, true);
   s.retire();
+  s.leaveBigCage();
   check('after retiring: Wheel Training Lv 1 and 3 reels for free', s.getUpgradeLevel('wheel') === 1 && s.getReelCount() === 3);
   check('the free level never lowers a bought one', (() => {
     s.addCoins(1e4); s.buyUpgrade('wheel'); s.buyUpgrade('wheel');
-    s.buyTreeNode('familyFortune'); // triggers applyStartingLevels again
+    buy(s, 'familyFortune'); // triggers applyStartingLevels again
     return s.getUpgradeLevel('wheel') === 3;
   })());
 

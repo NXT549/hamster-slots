@@ -14,8 +14,10 @@
 // Fixtures that already exist are never overwritten: old ones are the old-format
 // saves the migrations are tested against.
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { SESSIONS, FIXTURES, data } from '../tests/golden/sessions.js';
+import { createGame } from '../src/logic/game.ts';
+import { createRng } from '../src/logic/rng.ts';
 
 const goldenFile = new URL('../tests/golden/golden.json', import.meta.url);
 const fixturesDir = new URL('../tests/fixtures/', import.meta.url);
@@ -40,15 +42,29 @@ if (!onlyFixtures) {
   console.log('wrote tests/golden/golden.json');
 }
 
+// A new save version's fixture is the PREVIOUS version's fixture of the same
+// name, loaded into today's game and saved again (the migration's own output), so
+// "every older save migrates to exactly the current file" holds even when the
+// game now plays differently (M8 changed the heirloom bonus, so a session's
+// checkpoint would no longer be the same moment). The first set came straight
+// from the sessions.
 mkdirSync(fixturesDir, { recursive: true });
 for (const [session, label, name] of FIXTURES) {
   const cp = sessions[session].find((c) => c.label === label);
   if (!cp) throw new Error(`no checkpoint "${label}" in ${session}`);
-  const file = `save-v${cp.save.saveVersion}-${name}.json`;
+  const version = cp.save.saveVersion;
+  const file = `save-v${version}-${name}.json`;
   if (existsSync(new URL(file, fixturesDir))) {
     console.log(`kept tests/fixtures/${file} (it already exists)`);
     continue;
   }
-  writeFileSync(new URL(file, fixturesDir), JSON.stringify(cp.save, null, 1) + '\n');
-  console.log(`wrote tests/fixtures/${file} (${label})`);
+  const older = [...Array(version).keys()].reverse().map((v) => `save-v${v}-${name}.json`).find((f) => existsSync(new URL(f, fixturesDir)));
+  let save = cp.save;
+  if (older) {
+    const game = createGame(structuredClone(data), createRng(1));
+    if (!game.loadSaveData(JSON.parse(readFileSync(new URL(older, fixturesDir), 'utf8')))) throw new Error(`${older} doesn't load`);
+    save = game.toSaveData();
+  }
+  writeFileSync(new URL(file, fixturesDir), JSON.stringify(save, null, 1) + '\n');
+  console.log(`wrote tests/fixtures/${file} (${older ? `${older}, migrated` : label})`);
 }

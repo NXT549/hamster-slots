@@ -140,6 +140,6 @@ describe('loading a code', () => {
     expect(check.ok).toBe(true);
     const g = newGame(1);
     loadSaveCode(g, createMemoryPlatform(), check.save);
-    expect(JSON.parse(JSON.stringify(g.toSaveData()))).toEqual(JSON.parse(fixture(`save-v8-${name}.json`)));
+    expect(JSON.parse(JSON.stringify(g.toSaveData()))).toEqual(JSON.parse(fixture(`save-v${SAVE_VERSION}-${name}.json`)));
   });
 });

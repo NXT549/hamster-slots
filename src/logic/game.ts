@@ -40,8 +40,10 @@ import type {
 // v7 added symbols you unlock (old saves get the ones they already had) and the
 // stats symbolsUnlocked, bestLuck and suitWins.
 // v8 saves money as text, so it can grow past 1.8e308 (big numbers, money.ts).
+// v9 (M8, The Big Cage) added Machine Stars, the Big Cage flag (between lives)
+// and the stats rebuilds, bestStars and mostSeedsHeld.
 // See migrateSave() below.
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -241,7 +243,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   // (A Money: the heirloom bonus grows with the seeds, and seeds can grow huge.)
   function getPayoutMultiplier(overrides?: Overrides): Money {
     let upgrades = 1;
-    let family = money(1).add(getHeirloomBonus());
+    let family = money(1).add(getHeirloomBonus(overrides));
     for (const { effect, level, fromTree } of effectsOfType('payoutMultiplier', overrides)) {
       if (fromTree) family = family.add(effect.perLevel * level);
       else upgrades += effect.perLevel * level;
@@ -249,12 +251,18 @@ export function createGame(initialData: GameData, rng: Rng) {
     return family.mul(upgrades);
   }
 
-  // Heirloom bonus: every seed the family has EVER earned adds a little to payouts,
-  // even after it's planted in the tree. Planting never makes you weaker, and
-  // each generation starts stronger than the last.
-  function getHeirloomBonus(): Money {
-    const perSeed = (data.retirement && data.retirement.payoutBonusPerSeedEarned) || 0;
-    return state.seedsEarned.mul(perSeed);
+  // Heirloom bonus (M8): every seed you HOLD adds a little to payouts. Planting a
+  // seed in the Family Tree spends it, so you give up its bonus for the trait:
+  // plant or hold is a real choice (the user's "a reason to both rebirth and hold
+  // heirloom seeds"). Family Fortune makes every held seed worth more.
+  function getHeldSeedBonusPerSeed(overrides?: Overrides): number {
+    let per = (data.retirement && data.retirement.payoutBonusPerSeedHeld) || 0;
+    for (const { effect, level } of effectsOfType('heldSeedBonus', overrides)) per += effect.perLevel * level;
+    return per;
+  }
+
+  function getHeirloomBonus(overrides?: Overrides): Money {
+    return state.seeds.mul(getHeldSeedBonusPerSeed(overrides));
   }
 
   // Oiled Lever / Smooth Gears: base spin cost × perLevel ^ level
@@ -367,6 +375,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       if (scope === 'machine') own += effect.perLevel * level;
       else hamster += effect.perLevel * level;
     }
+    own += getStars(machine.typeId) * starData().luckPerStar; // Machine Stars count as Machine Luck
     return { hamster, machine: own, total: hamster + own };
   }
 
@@ -384,12 +393,19 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // Warm-up Laps / Heirloom Reel: free upgrade levels at the start of every life.
+  // M8's Seed Vault and Lucky Heirlooms do it by effect type instead: every
+  // machine starts with levels of ITS symbol-unlock (or Machine Luck) upgrade.
   function getStartingLevel(upgradeId: string, overrides?: Overrides): number {
     let levels = 0;
     for (const { effect, level } of effectsOfType('startingLevel', overrides)) {
       if (effect.upgrade === upgradeId) levels += effect.levels * level;
     }
     const def = getUpgradeDef(upgradeId);
+    if (def && def.scope === 'machine') {
+      for (const { effect, level } of effectsOfType('startingMachineLevel', overrides)) {
+        if (effect.upgradeType === def.effect.type) levels += effect.levels * level;
+      }
+    }
     return def && def.maxLevel !== null && def.maxLevel !== undefined ? Math.min(levels, def.maxLevel) : levels;
   }
 
@@ -507,6 +523,53 @@ export function createGame(initialData: GameData, rng: Rng) {
     return growth;
   }
 
+  // ── Machine Stars (M8) ──
+  // A machine with every one of its upgrades maxed can be REBUILT: its upgrades
+  // start again from nothing (the family's free levels come back) and it gets a
+  // star it keeps forever, through every retirement. Each star gives that machine
+  // +payouts and +Machine Luck (data.json "stars").
+  function starData() {
+    return data.stars || { max: 0, payoutPerStar: 0, luckPerStar: 0 };
+  }
+
+  function getStars(id: string = activeMachine().typeId): number {
+    return state.stars[id] || 0;
+  }
+
+  // What a machine's stars multiply its payouts by (1 = no stars).
+  function getStarMultiplier(machine: MachineState = activeMachine()): number {
+    return 1 + starData().payoutPerStar * getStars(machine.typeId);
+  }
+
+  // Every upgrade this machine sells is at its max level.
+  function isFullyUpgraded(machine: MachineState): boolean {
+    const defs = data.upgrades.filter((u) => u.scope === 'machine' && isUpgradeAvailable(u, machine));
+    return defs.length > 0 && defs.every((u) => maxedAtLevel(u, getUpgradeLevel(u.id, machine)));
+  }
+
+  // Not while the machine is busy (a spin, free spins, the jackpot wheel or a
+  // gamble on it), and not past the most stars a machine can have.
+  function canRebuild(id: string): boolean {
+    const m = findMachine(id);
+    if (!m || state.bigCage || getStars(id) >= starData().max) return false;
+    if (m.spinning || m.bonus || (m.freeSpins && m.freeSpins.left > 0) || (state.gamble && state.gamble.machineId === id)) return false;
+    return isFullyUpgraded(m);
+  }
+
+  function rebuild(id: string): boolean {
+    if (!canRebuild(id)) return false;
+    const m = findMachine(id)!;
+    m.upgrades = {};
+    m.result = null; // its reels may be fewer now (Old Clunky goes back to 2)
+    state.stars[id] = getStars(id) + 1;
+    state.stats.rebuilds++;
+    state.stats.bestStars = Math.max(state.stats.bestStars, state.stars[id]);
+    applyStartingLevels(); // the family's free levels (Heirloom Reel, Seed Vault …) come straight back
+    events.emit('machineRebuilt', { id, stars: state.stars[id] });
+    checkDiary();
+    return true;
+  }
+
   // Does this machine pay both ways (a "Pays Both Ways" upgrade)? Every line is
   // then also read from the right-hand reel (machine.ts evaluateGrid).
   function hasBothWays(overrides?: Overrides, machine: MachineState = activeMachine()): boolean {
@@ -535,15 +598,25 @@ export function createGame(initialData: GameData, rng: Rng) {
     // Both Ways: like a symbol unlock, it shows what it does to the hit rate and the average win.
     bothWays: (def, o) => {
       const v = spinValue(activeMachine(), o);
-      return { on: hasBothWays(o), hitRate: v.hitRate, win: getPayoutMultiplier(o).mul(v.ev) };
+      return { on: hasBothWays(o), hitRate: v.hitRate, win: getPayoutMultiplier(o).mul(getStarMultiplier()).mul(v.ev) };
     },
     // Milestone 7: these show what they do in plain numbers ("hit rate 24% → 27%").
     luck: (def, o) => ({ luck: getLuck(o).total, hitRate: spinValue(activeMachine(), o).hitRate }),
     // "win" = the average win per paid spin at ×1, with every payout bonus.
     unlockSymbol: (def, o) => {
       const v = spinValue(activeMachine(), o);
-      return { open: effectAs(def, 'unlockSymbol').symbols.filter((id) => !isSymbolLocked(id, o)).length, hitRate: v.hitRate, win: getPayoutMultiplier(o).mul(v.ev) };
+      return { open: effectAs(def, 'unlockSymbol').symbols.filter((id) => !isSymbolLocked(id, o)).length, hitRate: v.hitRate, win: getPayoutMultiplier(o).mul(getStarMultiplier()).mul(v.ev) };
     },
+    // M8 traits
+    heldSeedBonus: (def, o) => getHeldSeedBonusPerSeed(o),
+    startingMachineLevel: (def, o) => {
+      const e = effectAs(def, 'startingMachineLevel');
+      let levels = 0;
+      for (const x of effectsOfType('startingMachineLevel', o)) if (x.effect.upgradeType === e.upgradeType) levels += x.effect.levels * x.level;
+      return levels;
+    },
+    startingMachine: (def, o) => effectsOfType('startingMachine', o).some((x) => x.effect.machine === effectAs(def, 'startingMachine').machine && x.level > 0),
+    potSeedBonus: (def, o) => getPotSeedMultiplier(o),
   };
 
   // The affected stat now, and after `levels` more levels (next = null when maxed).
@@ -579,13 +652,15 @@ export function createGame(initialData: GameData, rng: Rng) {
       jackpotGrowth: getJackpotGrowth(overrides, machine),
       spinDuration: getSpinDuration(overrides, machine),
       bothWays: hasBothWays(overrides, machine),
+      potSeedMultiplier: getPotSeedMultiplier(overrides),
     });
   }
 
   function getEconomy(machine: MachineState = activeMachine()) {
     const md = getMachineData(machine);
     const value = spinValue(machine);
-    const payoutMultiplier = getPayoutMultiplier();
+    const starMultiplier = getStarMultiplier(machine);
+    const payoutMultiplier = getPayoutMultiplier().mul(starMultiplier); // on THIS machine (with its stars)
     const spinCost = getSpinCost(undefined, machine);
     const bet = getBet(machine);
     const autoInterval = getAutoInterval(undefined, machine);
@@ -603,6 +678,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       freeSpins: value.freeSpins,
       jackpot: value.jackpot,
       payoutMultiplier,
+      starMultiplier,
       spinCost, // at ×1
       bet,
       betCost: getBetCost(bet, machine),
@@ -647,6 +723,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   function changeSeeds(amount: Money): void {
     state.seeds = state.seeds.add(amount);
+    state.stats.mostSeedsHeld = Math.max(state.stats.mostSeedsHeld, Math.min(state.seeds.toNumber(), 1e300));
     events.emit('seedsChanged', { seeds: state.seeds, amount });
   }
 
@@ -670,6 +747,11 @@ export function createGame(initialData: GameData, rng: Rng) {
   // which the machine plays by itself; see tick()).
   function spin(source: SpinSource = 'manual'): boolean {
     const machine = activeMachine();
+    if (state.bigCage) {
+      // Between lives: the new pup hasn't started yet (leaveBigCage starts it).
+      events.emit('spinBlocked', { reason: 'bigCage', source });
+      return false;
+    }
     if (state.delivery.active) {
       // The hamster is out delivering, so nobody is running the wheel.
       events.emit('spinBlocked', { reason: 'delivery', source });
@@ -745,7 +827,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     const bet = machine.spinBet || 1;
     const free = !!machine.spinFree;
     const manual = machine.spinSource === 'manual';
-    const multiplier = getPayoutMultiplier().mul(bet);
+    const multiplier = getPayoutMultiplier().mul(getStarMultiplier(machine)).mul(bet);
     const fullLineBonus = getFullLineMultiplier();
     const featureMultiplier = free && md.freeSpins ? md.freeSpins.multiplier : 1;
     const streakMultiplier = free ? 1 : getStreakMultiplier(machine); // the streak BEFORE this spin
@@ -865,10 +947,23 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Each pot is kept in base units (×1 bet, before payout bonuses). Every paid
   // spin adds its growth; winning it pays pot × bet × payout multiplier, and the
   // pot goes back to its seed.
+  // Golden Pouches (M8): every pot starts, and starts again after it's won, at
+  // its seed × this.
+  function getPotSeedMultiplier(overrides?: Overrides): number {
+    let m = 1;
+    for (const { effect, level } of effectsOfType('potSeedBonus', overrides)) m += effect.perLevel * level;
+    return m;
+  }
+
+  // Where a pot starts (in base units).
+  function potSeed(pot: PotDef): Money {
+    return roundMoney(money(pot.seed).mul(getPotSeedMultiplier()));
+  }
+
   // A pot's coins in base units (a missing or empty pot counts as its seed).
   function potBase(machine: MachineState, pot: PotDef): Money {
     const value = machine.pots[pot.id];
-    return value && !value.eq(0) ? value : money(pot.seed);
+    return value && !value.eq(0) ? value : potSeed(pot);
   }
 
   function growPots(machine: MachineState): void {
@@ -890,9 +985,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     const jp = getMachineData(machine).jackpot!;
     const { pot, bet } = machine.bonus!;
     const def = jp.pots.find((p) => p.id === pot)!;
-    const amount = roundMoney(potBase(machine, def).mul(bet).mul(getPayoutMultiplier()));
+    const amount = roundMoney(potBase(machine, def).mul(bet).mul(getPayoutMultiplier()).mul(getStarMultiplier(machine)));
     machine.bonus = null;
-    machine.pots[pot] = money(def.seed);
+    machine.pots[pot] = potSeed(def);
     state.stats.jackpotsWon++;
     if (def === jp.pots[jp.pots.length - 1]) state.stats.grandJackpots++; // the last pot in the list is the top one
     state.stats.biggestWin = state.stats.biggestWin.max(amount);
@@ -914,7 +1009,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function getJackpotPots(machine: MachineState = activeMachine()) {
     const jp = getMachineData(machine).jackpot;
     if (!jp) return [];
-    const scale = getPayoutMultiplier().mul(getBet(machine));
+    const scale = getPayoutMultiplier().mul(getStarMultiplier(machine)).mul(getBet(machine));
     return jp.pots.map((p) => {
       const base = potBase(machine, p);
       return { id: p.id, name: p.name, base, value: roundMoney(base.mul(scale)) };
@@ -1033,7 +1128,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   // This is what makes spin costs safe: you can never get stuck.
   // source: "manual" (the player) or "auto" (the Self-Starter family trait).
   function startDelivery(source: 'manual' | 'auto' = 'manual'): boolean {
-    if (state.delivery.active) return false;
+    if (state.delivery.active || state.bigCage) return false;
     const duration = getDeliveryDuration();
     state.delivery.active = true;
     state.delivery.timer = duration;
@@ -1185,6 +1280,11 @@ export function createGame(initialData: GameData, rng: Rng) {
       },
       freeSpinsLeft: owned && owned.freeSpins ? owned.freeSpins.left : 0,
       bonus: !!(owned && owned.bonus),
+      // Machine Stars (M8): kept forever, even for a machine you don't own this life.
+      stars: getStars(id),
+      maxStars: starData().max,
+      fullyUpgraded: !!owned && isFullyUpgraded(owned),
+      canRebuild: canRebuild(id),
     };
   }
 
@@ -1208,6 +1308,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Debug only: free Heirloom Seeds (not counted in seedsEarned).
   function addSeeds(amount: MoneyLike): void {
     changeSeeds(money(amount).floor().max(state.seeds.neg()));
+    checkDiary(); // e.g. Nest Egg (seeds held)
   }
 
   // ─────────────────── Retirement + family tree ───────────────────
@@ -1237,7 +1338,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Not while the jackpot wheel is turning or a gamble is under way (their coins
   // would vanish with the old life).
   function canRetire(): boolean {
-    return getPendingSeeds().gte(1) && !state.machines.some((m) => m.bonus) && !(state.gamble && state.gamble.started);
+    return !state.bigCage && getPendingSeeds().gte(1) && !state.machines.some((m) => m.bonus) && !(state.gamble && state.gamble.started);
   }
 
   // For the progress bar: how far lifetime coins are towards the next seed.
@@ -1260,6 +1361,20 @@ export function createGame(initialData: GameData, rng: Rng) {
   // upgrade that is below its free level (never lower one the player bought).
   // A machine upgrade is only raised on the machines that sell it.
   function applyStartingLevels(): void {
+    // Snack Inheritance (M8): every pup starts owning these machines (it stays on
+    // the machine it's running; a new one starts at the bet you use).
+    for (const { effect, level } of effectsOfType('startingMachine')) {
+      const md = data.machines.find((m) => m.id === effect.machine);
+      if (level <= 0 || !md || ownsMachine(md.id)) continue;
+      const machine = newMachineState(md);
+      machine.bet = getBetIndex();
+      state.machines.push(machine);
+    }
+    // Golden Pouches (M8): a pot below its (bigger) seed starts at the seed.
+    for (const m of state.machines) {
+      const jp = getMachineData(m).jackpot;
+      if (jp) for (const pot of jp.pots) if (potBase(m, pot).lt(potSeed(pot))) m.pots[pot.id] = potSeed(pot);
+    }
     for (const def of data.upgrades) {
       const free = getStartingLevel(def.id);
       if (free <= 0) continue;
@@ -1274,7 +1389,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // Retire to the Big Cage: collect the pending seeds, and a new pup starts a new
   // life. Coins, upgrades, machines, deliveries and timers go back to the start.
-  // The family keeps: generation, Heirloom Seeds, the tree, and lifetime stats.
+  // The family keeps: generation, Heirloom Seeds, the tree, Machine Stars and lifetime stats.
   function retire(): boolean {
     if (!canRetire()) return false;
     const gained = getPendingSeeds();
@@ -1294,11 +1409,31 @@ export function createGame(initialData: GameData, rng: Rng) {
     state.autoTimer = fresh.autoTimer;
     state.run = fresh.run;
     queuedManual = false;
+    state.bigCage = true; // the Big Cage page: plant, then leaveBigCage() starts the new life
     applyStartingLevels(); // the new pup's head start from the tree
 
     events.emit('retired', { generation: state.generation, seedsGained: gained, oldName, newName: getPupName(), runEarned });
     events.emit('coinsChanged', { coins: state.coins, amount: money(0) });
     if (data.tokens) earnTokens(data.tokens.perRetirement, 'retire');
+    checkDiary();
+    return true;
+  }
+
+  // Debug only (the debug panel, tests): open the Big Cage without retiring, to
+  // plant seeds. Time stands still until leaveBigCage(), as after a retirement.
+  function openBigCage(): boolean {
+    if (state.bigCage || (state.gamble && state.gamble.started)) return false;
+    if (state.gamble) endGamble('retire'); // an untouched offer just closes
+    state.bigCage = true;
+    queuedManual = false;
+    return true;
+  }
+
+  // Leave the Big Cage: the new pup's life starts (time runs again).
+  function leaveBigCage(): boolean {
+    if (!state.bigCage) return false;
+    state.bigCage = false;
+    events.emit('bigCageLeft', { generation: state.generation, name: getPupName() });
     checkDiary();
     return true;
   }
@@ -1317,8 +1452,10 @@ export function createGame(initialData: GameData, rng: Rng) {
     return !!def && def.requires.every((r) => getTreeLevel(r) > 0);
   }
 
+  // Planting only happens in the Big Cage, between lives (M8: the user's "it takes
+  // you to a fully in-depth page of just the upgrades", and they can only be bought there).
   function canBuyTreeNode(id: string): boolean {
-    return !!getTreeNodeDef(id) && isTreeNodeUnlocked(id) && !isTreeMaxed(id) && state.seeds.gte(getTreeCost(id));
+    return state.bigCage && !!getTreeNodeDef(id) && isTreeNodeUnlocked(id) && !isTreeMaxed(id) && state.seeds.gte(getTreeCost(id));
   }
 
   function buyTreeNode(id: string): boolean {
@@ -1333,8 +1470,20 @@ export function createGame(initialData: GameData, rng: Rng) {
     return true;
   }
 
+  // A trait's "now → next" (M8): planting spends seeds, and held seeds pay the
+  // heirloom bonus, so "next" is worked out with those seeds already gone (Family
+  // Pride shows the payouts you'd really have). The seeds are put back at once.
   function previewTreeNode(id: string) {
-    return preview(getTreeNodeDef(id)!, getTreeLevel(id));
+    const def = getTreeNodeDef(id)!;
+    const held = state.seeds;
+    state.seeds = held.sub(getTreeCost(id)).max(0);
+    try {
+      const after = preview(def, getTreeLevel(id));
+      state.seeds = held;
+      return { ...after, now: STAT_FOR_EFFECT[def.effect.type](def) };
+    } finally {
+      state.seeds = held;
+    }
   }
 
   // ─────────────── Hamster Tokens + the Hamster Diary ───────────────
@@ -1492,7 +1641,8 @@ export function createGame(initialData: GameData, rng: Rng) {
   // No Wheel Training = no auto-spin = nothing earned while away.
   function getOfflineEarnings(seconds: number): { seconds: number; coins: Money } {
     const o = data.offline;
-    if (!o || !(seconds >= o.minSeconds)) return { seconds: 0, coins: money(0) };
+    // Nothing runs while you're in the Big Cage between lives.
+    if (!o || !(seconds >= o.minSeconds) || state.bigCage) return { seconds: 0, coins: money(0) };
     const counted = Math.min(seconds, o.maxSeconds);
     const perSecond = getEconomy().expectedAutoProfitPerSecond.max(0);
     return { seconds: counted, coins: roundMoney(perSecond.mul(counted).mul(o.efficiency)) };
@@ -1523,6 +1673,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // One fixed step. Order matters: finish things first, then start new things.
   function tick(dt: number): void {
+    if (state.bigCage) return; // time stands still between lives
     state.stats.playTime += dt;
     state.run.playTime += dt;
 
@@ -1662,9 +1813,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     off: events.off,
 
     // actions
-    update, spin, startDelivery, buyUpgrade, buyMachine, switchMachine, retire, buyTreeNode, pullCapsule, equipSkin,
+    update, spin, startDelivery, buyUpgrade, buyMachine, switchMachine, retire, leaveBigCage, buyTreeNode, rebuild, pullCapsule, equipSkin,
     setBet, gamble, collectGamble,
-    applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, setData,
+    applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, openBigCage, setData,
 
     // queries: coins, upgrades
     getUpgradeDef, getAvailableUpgrades, getUpgradeLevel, getUpgradeCost, getUpgradeBulk, getUpgradeNeeds, isMaxed, canAfford, canBuyUpgrade,
@@ -1673,7 +1824,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     // queries: machines, symbols, Luck
     getMachineData, getMachineInfo, getMachineCost, ownsMachine, canBuyMachine,
     getReelCount, getLineCount, getPaylines, getRowCount, getSymbols, getSymbolChance, getSpinCost, getSpinDuration,
-    isSymbolLocked, getSymbolUnlock, getLuck, hasBothWays,
+    isSymbolLocked, getSymbolUnlock, getLuck, hasBothWays, getStars, getStarMultiplier, canRebuild, getPotSeedMultiplier,
     getPayoutMultiplier, getHeirloomBonus, getFullLineMultiplier, getAutoInterval,
     getDeliveryDuration, getDeliveryReward, hasAutoDelivery,
     getSpinProgress, getDeliveryProgress, getEconomy, getWinTier, getOfflineEarnings,
@@ -1684,7 +1835,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     getFeatureOdds, canGamble, getGambleInfo, getCardHistory,
 
     // queries: retirement + family tree
-    getPendingSeeds, canRetire, getSeedProgress, getPupName,
+    getPendingSeeds, canRetire, getSeedProgress, getPupName, getHeldSeedBonusPerSeed,
     getTreeNodeDef, getTreeLevel, getTreeCost, isTreeMaxed, isTreeNodeUnlocked, canBuyTreeNode, previewTreeNode,
     getStartingLevel,
 
@@ -1749,6 +1900,10 @@ function newStats(): Stats {
     symbolsUnlocked: 0, // symbol unlocks bought (they reset on retiring, so this keeps counting)
     bestLuck: 0, // the most Luck any machine has had
     suitWins: 0, // gamble wins where you picked the suit (×4)
+    // v9 (M8): the Big Cage and Machine Stars
+    rebuilds: 0, // machines rebuilt for a Machine Star
+    bestStars: 0, // the most stars one machine has had
+    mostSeedsHeld: 0, // the most Heirloom Seeds held at once
   };
 }
 
@@ -1769,6 +1924,8 @@ export function newState(data: GameData): GameState {
     seeds: money(0), // unspent Heirloom Seeds
     seedsEarned: money(0), // every seed ever received from retiring (the seed formula subtracts these)
     tree: {}, // family tree node levels, e.g. { familyPride: 1 }
+    stars: {}, // Machine Stars by machine type, e.g. { clunky: 2 } (M8)
+    bigCage: false, // true between lives: on the Big Cage page, where you plant (M8)
 
     // ── collection (also kept when retiring) ──
     tokens: money(0), // unspent Hamster Tokens
@@ -1864,6 +2021,15 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
   // so only the version changes here.
   if (save.saveVersion === 7) {
     save.saveVersion = 8;
+  }
+
+  // v8 → v9: M8, the Big Cage. No machine has a star yet, and an old save is in
+  // the middle of a life, not between lives. (The new stats start at 0; the
+  // heirloom bonus now counts the seeds you hold, which the save already has.)
+  if (save.saveVersion === 8) {
+    save.stars = {};
+    save.bigCage = false;
+    save.saveVersion = 9;
   }
 
   if (save.saveVersion !== SAVE_VERSION) return null;
@@ -1974,6 +2140,14 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   s.seeds = moneyFrom(raw.seeds, 0).floor().max(0);
   s.seedsEarned = moneyFrom(raw.seedsEarned, 0).floor().max(0);
   s.tree = cleanLevels(raw.tree, (data.familyTree && data.familyTree.nodes) || []);
+  const maxStars = data.stars ? data.stars.max : 0;
+  if (raw.stars && typeof raw.stars === 'object') {
+    for (const md of data.machines) {
+      const n = clamp(Math.floor(num(raw.stars[md.id], 0)), 0, maxStars);
+      if (n > 0) s.stars[md.id] = n;
+    }
+  }
+  s.bigCage = raw.bigCage === true;
 
   s.tokens = moneyFrom(raw.tokens, 0).floor().max(0);
   if (raw.diary && typeof raw.diary === 'object') {

@@ -24,13 +24,15 @@ const HELP = `node tools/sim.mjs [options]
   --retire R             retire once pending seeds >= max(3, R x seeds earned)  (default 0.5)
   --first-minutes N      play the first life for exactly N minutes (no early retire)
   --bankroll N           a bet is only used if you hold N spins' worth of coins (default 40)
+  --plant S              at the Big Cage, plant a trait if it costs at most S x the
+                         seeds held (or 1 seed); hold the rest for their bonus   (default 0.25)
   --data FILE            another data.json to try                               (default data.json)
   --verbose              print every purchase`;
 
 // ───────────────────────── Options ─────────────────────────
 
 function parseArgs(argv) {
-  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, data: null, verbose: false };
+  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -42,6 +44,7 @@ function parseArgs(argv) {
     else if (a === '--retire') opts.retire = Number(next());
     else if (a === '--first-minutes') opts.firstMinutes = Number(next());
     else if (a === '--bankroll') opts.bankroll = Number(next());
+    else if (a === '--plant') opts.plant = Number(next());
     else if (a === '--data') opts.data = next();
     else if (a === '--verbose') opts.verbose = true;
     else { console.log(`Unknown option ${a}\n\n${HELP}`); process.exit(1); }
@@ -147,15 +150,43 @@ function rankPurchases(g) {
   return options.sort((a, b) => a.time - b.time);
 }
 
-// Plant the tree: every finite node first (cheapest first), then the endless sink.
+// At the Big Cage (M8), plant or hold. Every seed held adds to payouts, so
+// planting gives that up. The bot plants a trait (cheapest first) when it costs
+// at most --plant × the seeds held (or just 1 seed), and buys Family Fortune
+// (more per held seed) only when it raises the family's bonus. The rest is held.
 function plantTree(g) {
   const nodes = data.familyTree.nodes;
+  const isSink = (n) => n.effect.type === 'heldSeedBonus';
   for (;;) {
-    const finite = nodes.filter((n) => n.maxLevel !== null && g.canBuyTreeNode(n.id)).sort((a, b) => num(g.getTreeCost(a.id)) - num(g.getTreeCost(b.id)));
-    const pick = finite[0] || nodes.find((n) => n.maxLevel === null && g.canBuyTreeNode(n.id) && nodes.every((x) => x.maxLevel === null || g.isTreeMaxed(x.id)));
-    if (!pick) return;
-    g.buyTreeNode(pick.id);
+    const held = num(g.state.seeds);
+    const cost = (n) => num(g.getTreeCost(n.id));
+    const pick = nodes
+      .filter((n) => !isSink(n) && g.canBuyTreeNode(n.id) && cost(n) <= Math.max(1, opts.plant * held))
+      .sort((a, b) => cost(a) - cost(b))[0];
+    if (pick) { g.buyTreeNode(pick.id); continue; }
+    const sink = nodes.find((n) => isSink(n) && g.canBuyTreeNode(n.id));
+    const per = g.getHeldSeedBonusPerSeed();
+    if (sink && (held - cost(sink)) * (per + sink.effect.perLevel) > held * per) { g.buyTreeNode(sink.id); continue; }
+    return;
   }
+}
+
+// Just before retiring, coins are "use it or lose it" (the new pup starts over),
+// so the bot spends them finishing machines, cheapest machine first, and rebuilds
+// each finished one for a Machine Star (again and again while the coins last).
+function spendOnStars(g) {
+  let stars = 0;
+  const active = g.state.machines[g.state.activeMachine].typeId;
+  for (const { typeId } of [...g.state.machines]) {
+    g.switchMachine(typeId);
+    for (let i = 0; i < 10; i++) {
+      for (const u of g.getAvailableUpgrades().filter((x) => x.scope === 'machine')) g.buyUpgrade(u.id, Infinity);
+      if (!(g.canRebuild(typeId) && g.rebuild(typeId))) break;
+      stars++;
+    }
+  }
+  g.switchMachine(active);
+  return stars;
 }
 
 // ───────────────────────── One run (one seed) ─────────────────────────
@@ -167,7 +198,7 @@ function playSeed(seed) {
   let t = 0;
 
   const startLife = () => {
-    life = { generation: g.state.generation, start: t, marks: {}, income: {}, luck: {}, hit: {}, seeds: 0, planted: [], freeSpins: 0, pots: 0 };
+    life = { generation: g.state.generation, start: t, marks: {}, income: {}, luck: {}, hit: {}, seeds: 0, planted: [], freeSpins: 0, pots: 0, stars: 0, held: 0 };
   };
   const mark = (name) => { if (!(name in life.marks)) life.marks[name] = (t - life.start) / 60; };
 
@@ -253,9 +284,14 @@ function playSeed(seed) {
       life.seeds = pending;
       life.earned = num(g.state.run.coinsEarned);
       life.length = lifeSeconds / 60;
+      life.stars = spendOnStars(g);
       lives.push(life);
       g.retire();
       plantTree(g); // (the nodes land in this life's "planted" list: planted after it)
+      life.held = num(g.state.seeds); // seeds held into the next life
+      life.bonus = num(g.getHeirloomBonus());
+      life.totalStars = Object.values(g.state.stars).reduce((a, b) => a + b, 0);
+      g.leaveBigCage();
       if (treeDoneAt === null && data.familyTree.nodes.every((n) => n.maxLevel === null || g.isTreeMaxed(n.id))) treeDoneAt = t / 3600;
       startLife();
       ranking = null;
@@ -335,6 +371,9 @@ for (let i = 0; i < maxLives; i++) {
     return luck === null ? `${min}m —` : `${min}m L${Math.round(luck)} ${Math.round(hit * 100)}%`;
   }).join(' · ');
   parts.push(`Luck/hit ${luckAt}`);
+  if (lives.some((l) => l.held || l.totalStars)) {
+    parts.push(`held after ${range(lives.map((l) => l.held)).replace(/\.0/g, '')} (+${Math.round(median(lives.map((l) => l.bonus)) * 100)}%) · stars ${range(lives.map((l) => l.totalStars)).replace(/\.0/g, '')}`);
+  }
   if (lives.some((l) => l.freeSpins || l.pots)) {
     parts.push(`free-spin triggers ${median(lives.map((l) => l.freeSpins / (l.length / 60)))?.toFixed(1)}/h · pots ${median(lives.map((l) => l.pots / (l.length / 60)))?.toFixed(1)}/h`);
   }

@@ -89,6 +89,11 @@ export type Effect =
   | { type: 'extraFreeSpins'; perLevel: number }
   | { type: 'jackpotGrowth'; perLevel: number }
   | { type: 'bothWays' }
+  // M8 (The Big Cage): Family Tree traits
+  | { type: 'heldSeedBonus'; perLevel: number } // each Heirloom Seed you HOLD pays this much more
+  | { type: 'startingMachineLevel'; upgradeType: string; levels: number } // every machine starts with levels of its upgrade of this effect type
+  | { type: 'startingMachine'; machine: string } // every pup starts owning this machine
+  | { type: 'potSeedBonus'; perLevel: number } // jackpot pots start (and restart) bigger
   | { type: 'shiftWeight'; from: string; to: string; amount: number }
   | { type: 'fullLineMultiplier'; multiplier: number }
   | { type: 'startingLevel'; upgrade: string; levels: number }
@@ -175,9 +180,11 @@ export interface GameData {
     currencyName: string;
     seedDivisor: number;
     seedExponent: number;
-    payoutBonusPerSeedEarned: number;
+    payoutBonusPerSeedHeld: number; // M8: every seed you HOLD (not planted) adds this to payouts
     pupNames: string[];
   };
+  // M8: Machine Stars, for rebuilding a machine with every upgrade maxed.
+  stars: { max: number; payoutPerStar: number; luckPerStar: number };
   familyTree: { branches: Named[]; nodes: TreeNodeDef[] };
   tokens: {
     name: string;
@@ -307,6 +314,9 @@ export interface Stats {
   symbolsUnlocked: number;
   bestLuck: number;
   suitWins: number;
+  rebuilds: number; // M8: machines rebuilt for a Machine Star
+  bestStars: number; // M8: the most stars one machine has had
+  mostSeedsHeld: number; // M8: the most Heirloom Seeds held at once
 }
 
 export interface GameState {
@@ -324,6 +334,8 @@ export interface GameState {
   seeds: Money;
   seedsEarned: Money;
   tree: Levels;
+  stars: Record<string, number>; // M8: Machine Stars by machine type, e.g. { clunky: 2 }
+  bigCage: boolean; // M8: between lives, on the Big Cage page (time stands still; the only time you can plant)
   // the collection (also kept)
   tokens: Money;
   diary: Record<string, boolean>;
@@ -368,7 +380,7 @@ export interface GameEvents {
     machineId: string; result: Grid; wins: PaidWin[]; payout: Money; fullLine: boolean; tier: string;
     bet: number; free: boolean; streak: number; featureCells: Cell[];
   };
-  spinBlocked: { reason: 'coins' | 'delivery' | 'gamble' | 'bonus'; source: SpinSource; cost?: Money };
+  spinBlocked: { reason: 'coins' | 'delivery' | 'gamble' | 'bonus' | 'bigCage'; source: SpinSource; cost?: Money };
   betChanged: { machineId: string; index: number; bet: number };
   freeSpinsStarted: { machineId: string; count: number; retrigger: boolean; bet: number; left: number };
   freeSpinsEnded: { machineId: string; spins: number; won: Money };
@@ -386,6 +398,8 @@ export interface GameEvents {
   machineSwitched: { id: string; from: string };
   treeNodeBought: { id: string; level: number; cost: Money };
   retired: { generation: number; seedsGained: Money; oldName: string; newName: string; runEarned: Money };
+  bigCageLeft: { generation: number; name: string };
+  machineRebuilt: { id: string; stars: number };
   deliveryStarted: { duration: number; reward: Money; source: 'manual' | 'auto' };
   deliveryFinished: { reward: Money };
   tokensChanged: { tokens: Money; amount: Money; source: TokenSource };

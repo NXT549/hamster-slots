@@ -7,7 +7,7 @@
 // (It used to be the last part of tools/test_logic.mjs; step 3.3 moved it here.)
 
 import {
-  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree, plant,
 } from '../tests/logic/helpers.js';
 
 // Every setup: reels, paylines, wild level, and each step of the symbol unlocks
@@ -57,10 +57,13 @@ for (const m of data.machines.filter((x) => x.jackpot)) {
 {
   // Old Clunky and the Snack Stacker with every luck trait (the tree's weight shifts
   // and Jackpot Dance), every symbol unlocked, no Luck upgrades.
+  // (Only those traits: the M8 traits add Luck and free levels, which the Luck tables cover.)
   for (const m of [clunky, stacker]) {
-    const g = gameWithWholeTree();
+    const g = newGame();
+    plant(g, 'familyPride', 'luckyWhiskers', 'carrotPatch', 'jackpotDance');
     g.addCoins(1e12);
     if (m !== clunky) g.buyMachine(m.id);
+    g.switchMachine(m.id);
     g.buyUpgrade(soldOn(m, 'unlockSymbol')[0].id, Infinity);
     const md = { ...m, symbols: g.getSymbols() };
     const all = allPaylines(m).length;

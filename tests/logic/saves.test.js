@@ -59,6 +59,7 @@ describe('saving and loading', () => {
   f.retire();
   f.buyTreeNode('familyPride');
   f.buyTreeNode('speedyScooter');
+  f.leaveBigCage();
   f.startDelivery();
   f.update(3);
   const fSave = JSON.parse(JSON.stringify(f.toSaveData()));
@@ -272,7 +273,7 @@ describe('save migration: v7 -> v8 (money saved as text: big numbers)', () => {
   const g2 = newGame();
   check('a v7 save (money as plain numbers) loads', g2.loadSaveData(v7) === true);
   const v8 = g2.toSaveData();
-  check('v7 -> v8: the same amounts, now written as text', v8.saveVersion === 8 && v8.coins === String(v7.coins) && v8.tokens === '7'
+  check('v7 -> v8: the same amounts, now written as text', v8.saveVersion === SAVE_VERSION && v8.coins === String(v7.coins) && v8.tokens === '7'
     && typeof v8.stats.coinsWon === 'string' && typeof v8.run.coinsEarned === 'string', JSON.stringify([v8.coins, v8.tokens]));
 
   // What v8 is for: money past 1.8e308, where a plain number would be Infinity.
@@ -313,4 +314,56 @@ describe('hot reload (debug "Reload data.json")', () => {
   check('reload keeps coins', num(g.state.coins) === coins);
   check('reload caps levels to the new maxLevel', g.getUpgradeLevel('wheel') === 3);
   check('reload applies new balance values', num(g.getSpinCost()) === 7);
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('save migration: v8 -> v9 (M8: the Big Cage, Machine Stars)', () => {
+  // A family in its second life, with seeds held, a planted tree and Family Fortune.
+  const g = newGame(170);
+  g.addCoins(data.retirement.seedDivisor * 100, true); // 10 seeds
+  g.retire();
+  g.buyTreeNode('familyPride');
+  g.buyTreeNode('familyFortune');
+  g.leaveBigCage();
+  g.spin();
+  g.update(1);
+  const v8 = JSON.parse(JSON.stringify(g.toSaveData()));
+  delete v8.stars;
+  delete v8.bigCage;
+  for (const key of ['rebuilds', 'bestStars', 'mostSeedsHeld']) delete v8.stats[key];
+  v8.saveVersion = 8;
+  const g2 = newGame();
+  check('a v8 save loads', g2.loadSaveData(v8) === true);
+  const v9 = g2.toSaveData();
+  check('v8 -> v9: no stars yet, and the save is mid-life (not in the Big Cage)',
+    v9.saveVersion === SAVE_VERSION && deepEqual(v9.stars, {}) && v9.bigCage === false && g2.getStars('clunky') === 0);
+  check('v8 -> v9: the new stats start at 0', g2.state.stats.rebuilds === 0 && g2.state.stats.bestStars === 0 && g2.state.stats.mostSeedsHeld === 0);
+  check('v8 -> v9: the tree, the seeds held and the spin in progress are kept',
+    g2.getTreeLevel('familyPride') === 1 && g2.getTreeLevel('familyFortune') === 1 && num(g2.state.seeds) === num(g.state.seeds)
+    && g2.state.machines[0].spinning === g.state.machines[0].spinning);
+  check('v8 -> v9: the heirloom bonus counts the seeds held (with Family Fortune)',
+    near(num(g2.getHeirloomBonus()), num(g2.state.seeds) * g2.getHeldSeedBonusPerSeed(), 1e-9)
+    && near(g2.getHeldSeedBonusPerSeed(), data.retirement.payoutBonusPerSeedHeld + nodes.find((n) => n.id === 'familyFortune').effect.perLevel, 1e-12));
+  const rest = { ...v9 };
+  check('v8 -> v9: nothing else changes', deepEqual({ ...rest, saveVersion: 8, stars: undefined, bigCage: undefined, stats: { ...rest.stats, rebuilds: undefined, bestStars: undefined, mostSeedsHeld: undefined } },
+    { ...v8, stars: undefined, bigCage: undefined, stats: { ...v8.stats, rebuilds: undefined, bestStars: undefined, mostSeedsHeld: undefined } }));
+
+  // The Big Cage and stars round-trip, and junk is cleaned.
+  const c = newGame(171);
+  c.addCoins(data.retirement.seedDivisor * 4, true);
+  c.retire();
+  const inCage = JSON.parse(JSON.stringify(c.toSaveData()));
+  const c2 = newGame();
+  c2.loadSaveData(inCage);
+  const t0 = c2.state.stats.playTime;
+  c2.update(30);
+  check('a save made in the Big Cage loads in the Big Cage, where time stands still',
+    c2.state.bigCage === true && c2.state.stats.playTime === t0 && c2.spin() === false);
+  const junk = JSON.parse(JSON.stringify(inCage));
+  junk.stars = { clunky: 99, bonanza: 2.7, nope: 3, stacker: -1 };
+  junk.bigCage = 'yes';
+  const c3 = newGame();
+  c3.loadSaveData(junk);
+  check('junk stars are cleaned (capped at the max, whole numbers, known machines only); a non-true bigCage is false',
+    deepEqual(c3.state.stars, { clunky: data.stars.max, bonanza: 2 }) && c3.state.bigCage === false, JSON.stringify(c3.state.stars));
 });

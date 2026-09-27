@@ -267,7 +267,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 | Currency | Milestone | How you earn it | What it buys |
 |----------|-----------|-----------------|--------------|
 | **Coins** | 1 | Winning spins, food deliveries | Spins, upgrades, new machines (§16). Reset when you retire. |
-| **Heirloom Seeds** | 2 | Retiring your hamster (§13) | Family Tree traits, kept forever. Each seed ever earned also gives +1.5% payouts (M7). |
+| **Heirloom Seeds** | 2 | Retiring your hamster (§13) | Family Tree traits, kept forever, planted in the Big Cage. Each seed you **hold** gives +1.5% payouts (M8, §22); planting spends it. |
 | **Hamster Tokens** | 3 | Diary stickers, golden jackpots, every 5th delivery, retiring (§14) | Capsule Machine pulls, i.e. skins only. Never power. Kept when you retire. |
 
 - You start with **100 coins** (20 spins on Old Clunky; 25 before milestone 7). At a ~28% hit rate that makes going broke in the first minutes rare (~3%).
@@ -279,13 +279,14 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 
 - Autosave every 10 s, and also when the tab is hidden or closed. On the web the save lives in `localStorage`; saving goes through the platform layer, so Steam and mobile can store it their own way (PORTING_NOTES → The platform layer).
 - **Save backup (Menu → Save backup, since 3.8):** the save as a one-line code (`HS1:…`, about 1.5–4 KB) to copy out and paste back in, as a backup and to move a save between sites or devices (the user asked for it with the web-first plan, 2026-09-25). A pasted code is checked first and says what's in it (pup, generation, coins, seeds, machines, when it was made) or what's wrong with it; loading it needs two taps, replaces the game, and pays no offline earnings for the time since the code was made. Old codes load like old saves (the migrations).
-- The save holds **player state only**: coins, upgrade levels, any in-progress spin or delivery, this life's totals, the family (generation, Heirloom Seeds, seeds ever earned, tree levels), lifetime stats, and a `saveVersion` number. Amounts of money are saved as text ("1.5e400"), so they can grow without limit (save v8). It never holds balance values. That way, a change to `data.json` applies straight away to an existing save.
+- The save holds **player state only**: coins, upgrade levels, any in-progress spin or delivery, this life's totals, the family (generation, Heirloom Seeds, seeds ever earned, tree levels, Machine Stars, whether it's in the Big Cage), lifetime stats, and a `saveVersion` number. Amounts of money are saved as text ("1.5e400"), so they can grow without limit (save v8). It never holds balance values. That way, a change to `data.json` applies straight away to an existing save.
 - When a save loads, unknown upgrades and tree nodes are dropped and levels are capped at the current max, in case `data.json` changed.
 - **Save version 2** (milestone 2) added the family. A version 1 save is migrated: the hamster becomes generation 1, and everything it had already earned counts towards its first seeds.
 - **Save version 3** (milestone 3) added Hamster Tokens, the diary, owned/equipped skins and the pity counter. A v2 save starts with no tokens, then gets every diary sticker it had already reached.
 - **Save version 4** (milestone 4) added two lifetime stats, `biggestWin` and `offlineCoins` (older saves start them at 0).
 - **Save version 5** (milestone 5) made each machine's spin result a **grid** (`result[reel][row]`) and added the stats `machinesBought` and `mostLinesWon`. A v4 result (one symbol per reel) becomes a one-row grid; an old save with wins starts `mostLinesWon` at 1. The save can hold several machines; loading keeps each machine type once and always keeps the free first machine.
 - **Save version 6** (milestone 6) gave every machine its chosen **bet**, **free spins** (left, total, bet, won), its **jackpot pots**, a jackpot wheel in progress (`bonus`), its **win streak**, and the bet a running spin was paid with. New lifetime stats: `biggestBet`, `freeSpins`, `freeSpinTriggers`, `freeSpinCoins`, `wildWins`, `bestStreak`, `jackpotsWon`, `grandJackpots`, `gambleWins`, `gambleLosses`, `bestGambleRun`. A v5 save starts them all at their defaults (bet ×1, pots at their seeds, 0). An open **gamble is never saved** (dropping it = collecting: its coins are already in your pile).
+- **Save version 9** (milestone 8) added **Machine Stars** (`stars`, by machine type, kept through retiring), the **Big Cage** flag (`bigCage`: between lives, §22) and the stats `rebuilds`, `bestStars` and `mostSeedsHeld`. A v8 save has no stars and is mid-life. (Save version 8 wrote money as text, see above.)
 - **Save version 7** (milestone 7) added **symbols you unlock** and the stats `symbolsUnlocked`, `bestLuck` and `suitWins`. Machines now start with some symbols locked, so a v6 save gives every machine every unlock it sells (maxed): an older hamster had every symbol, and nobody loses one. Luck isn't stored (it comes from upgrade levels), and neither is the gamble's card history.
 - The save also keeps `savedAt` (real-world time), which pays **offline earnings** on the next visit (§15).
 - Settings (sound on/off and volume, Motion, Quick reels, Numbers, the ×1/×10/Max choice) are stored separately from the save, so **Reset progress** keeps them.
@@ -302,7 +303,7 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's
 - **Expected auto profit/s** vs **measured net coins/s** (last 10 s of game time: payouts + deliveries − spin costs)
 - Spins, hit rate (vs expected), deliveries, play time, RNG seed
 - Buttons to add coins: +100 / +1K / +10K. These are free coins and **don't** count as earned, so they give no seeds.
-- Family buttons: **Earn +10K / +100K** (counts as earned, so you can test retiring quickly) and **+5 seeds**.
+- Family buttons: **Earn +10K / +100K** (counts as earned, so you can test retiring quickly), **+5 seeds** and **Open the Big Cage** (M8: plant without retiring; the new life starts when you leave).
 - Capsule buttons: **+10 / +100 tokens** (free, not counted as earned). Stats: tokens, stickers, capsules opened, skins, pity countdown, golden jackpots.
 - Offline buttons: pretend you were away **10 min / 1 h / 10 h** (opens the welcome-back dialog; needs Wheel Training).
 - Bonus buttons (milestone 6): **+5 free spins** (machines with free spins) and **Wheel: Mini / Minor / Major / Grand** (starts the jackpot wheel on a chosen pot; machines with pots, when not spinning). Stats: feature odds and EV, pots, free spins left, bet (chosen, max, what the next spin uses), streak.
@@ -319,9 +320,10 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's
 2. **Delivery coins/s must be lower than auto-spin profit/s at Wheel Training level 1** on the starting machine. Currently 0.44 vs 0.54. **This must also hold with the whole Family Tree** (faster, bigger deliveries), on 2 reels and on 3 reels. Currently 1.00 vs 2.76 (2 reels) and 1.00 vs 3.55 (3 reels), with no Chubby Cheeks and no heirloom bonus. (The Snack Stacker earns far more per second than a delivery, so it's never the problem.)
 3. **One delivery always covers at least one spin** at base spin cost **on the free first machine**, so 0 coins is never a dead end. Currently 20 vs 5. A Snack Stacker spin (25) costs more than a delivery, but you can always switch back to Old Clunky, and the free machine can never be lost. (Bets don't break this: a spin you can't afford at your bet steps down to one you can, down to ×1.)
 4. **The gamble is fair and can't farm seeds** (milestone 6; the card gamble since M7): a colour wins 50% for ×2 and a suit 25% for ×4 (a test checks 20,000 picks of each, the win rates AND the average pay-back of 0), and gamble wins and losses never count as coins *earned*, so gambling can't raise Heirloom Seeds.
-5. **Free spins always end**: every free spin retriggers less than once on average (Burrow Bonanza with every Bouncy Ball and max Luck: 0.13), so the expected number of free spins per trigger is finite (26.8).
+5. **Free spins always end**: every free spin retriggers less than once on average (Burrow Bonanza with every Bouncy Ball and max Luck: 0.13; with the whole Family Tree too, Ball Pit included, still well below 1), so the expected number of free spins per trigger is finite (26.8).
 6. **Every symbol unlock raises the EV and lowers the hit rate** (milestone 7), in every setup of every machine (Pays Both Ways included), at no Luck and at max Luck: bigger prizes, fewer wins, never a trap (§21).
-7. **Every level of Luck raises both the hit rate and the EV** (milestone 7), on every machine, with nothing and with everything unlocked, and paying both ways.
+7. **Every level of Luck raises both the hit rate and the EV** (milestone 7), on every machine, with nothing and with everything unlocked, and paying both ways. (M8's Lucky Family trait and Machine Stars add Luck the same way.)
+9. **Machine Stars and the M8 traits only ever add** (M8): a star multiplies a machine's payouts and adds Machine Luck; Golden Pouches raise the pots' seeds; the EV stays exact with them (the tests compare the game's EV with `spinExpectation` / `jackpotStats`).
 8. **The auto-spin interval is never shorter than the spin time + the rest** (0.8 s; milestone 7), on every machine and Wheel Training level, with or without Quick Paws.
 
 ## 10. Balance targets (what "good" looks like)
@@ -344,7 +346,7 @@ The user picked **"real slog"** for the first life (PORTING_NOTES D93). Measured
 | Snack Stacker / Burrow Bonanza / Pouch Palace | | ~30–37 min into gen 2 / gens 4–5 / from gen 8 | a little earlier |
 | Whole Family Tree | | 4.0–4.9 h | 2.7–3.4 h |
 
-**Known issue (for M8):** from generation ~9 lives shrink again, to 3–10 minutes: once bets ×10 and the Palace multiply income, a square-root seed curve hands out seeds easily. Milestone 8 reworks the rebirth economy (held seeds, new traits, D94), so it's left there (PORTING_NOTES D102).
+**Known issue (M7, still open after M8):** from generation ~9 lives shrink again, to a few minutes: once bets ×10 and the Palace multiply income, a square-root seed curve hands out seeds easily. M8 kept generations 1–8 close to M7 (§22) but didn't fix the late lives: by then the family owns every machine, bet and trait, so a life is a quick re-run. Steeper seed curves and weaker held seeds were tried and didn't help (PORTING_NOTES D121); new content (M9's machines) is what's missing there.
 
 **A limit to keep in mind:** balance rules 2 and 3 together mean the base RTP must be at least **1 + auto-spin interval ÷ delivery time** (a delivery pays at least one spin, and must earn less per second than auto-spin at Wheel Training 1). So the slog comes from **time and prices** (slower spins, slower auto-spin, longer deliveries, higher prices), not from an RTP below that floor. RTP stays above 100% (Old Clunky starts at 150%).
 
@@ -398,8 +400,8 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | 5 | New look, QoL & a second machine *(done)* | The user asked to "start on qol features and begin adding new slot machine" and for "a full redesign of the ascetic", and picked: the **hamster cage** look, **collect & switch** machines, and the QoL sets **Buy ×10 / Max** and **Settings & info**. So: the **cage redesign** with pixel cardboard/paper UI frames (§12), reels as a **grid with paylines** and the **Snack Stacker** (§16, this pulls in most of the old "Machine types I"), buying and switching machines, ×1/×10/Max with "ready in" hints, Menu settings (Motion, Quick reels, Numbers), coins in the tab title, a recent-wins log (§17), save v5. ("1.2K" numbers are now the default.) |
 | 6 | Pokies night *(done)* | The user gave ten goals and picked, in a question round: two milestones with the pokies part first, **all four bonus features**, bets unlocked by an upgrade. So: **bets** ×1 … ×10 with **High Roller** (§18); the **Hamster Wild**, **free spins** (Hamster Ball scatter), the **jackpot wheel with four pots**, the **gamble** and **Hot Streak** (§19); two new machines, the **Burrow Bonanza** and the **Pouch Palace** (§16); new upgrades (High Roller, Hot Streak, Hamster Wild, Bouncy Ball, Pouch Polish, and spin-cost and payline upgrades for the new machines); the **balance simulator** `tools/sim.mjs` and a tuning pass (the old roadmap's "Balance simulator"); **sub-tabs** in the tray and the Info tab (§12, §17); **pixel particles and animations** (§20); save v6; 8 diary stickers. (This absorbs the old "Machine types II": a third machine and the wild.) |
 | 7 | Real pokies *(done; §21; + Pays Both Ways after the first feedback, §3)* | The user's "slow down spin speed… early game to feel like a slog", "make it more like slot machines… make them go one by one", luck you can see, symbols to unlock, and a new double-or-nothing. So: **slower spins and auto-spin** with reels that stop one at a time; a **win show** that lights each winning line **one by one** while a **WIN meter** counts up; a **blank symbol** (Wood Shaving); **unlockable symbols** (the user's "new seeds": machines start with fewer symbols); **Hamster Luck + Machine Luck** with a visible Luck number; the **pokies card gamble** (red/black ×2, suit ×4); a full **rebalance to the "real slog"** with `tools/sim.mjs` (§10); save v7; particles for all of it. Built with one change to the plan: each machine's unlocks are ONE upgrade that opens its symbols in a fixed order (PORTING_NOTES D96). |
-| **8** | **The Big Cage (rebirth rework)** *(next, after the M7 playtest)* | The user's "use the rebirth system more… a reason to both rebirth and hold heirloom seeds" and "when you rebirth it takes you to a fully in-depth page of just the upgrades". So: retiring opens a **full-screen Big Cage page** between lives, and it's the **only place to plant** (the Family tab keeps the retire card and a read-only tree). **Held seeds give +X% income each** (planting spends them, so plant-or-hold is a real choice); a "Retire now: +N seeds → +X%" preview. A **bigger tree**: start with High Roller steps, keep symbol unlocks / Machine Luck / a machine, free-spin luck, bigger pot seeds. **Machine rebirths ("Rebuild")**: a fully upgraded machine can be rebuilt for a permanent **Machine Star** (+payouts and +Machine Luck on that machine, a gold trim), kept through retirement. Numbers from the simulator. Save v8. It should also fix M7's known issue: lives from generation ~9 get short again (§10). |
-| 9 | More machines | The user's "more slot machines". 2–3 machines, each with a new pokie mechanic and exact EV: an **early machine** in the gap between Old Clunky and the Snack Stacker, **243 ways** (wins on any row, reel to reel), **hold & spin** (coin symbols lock in place with 3 respins), maybe a multiplier wheel past the Pouch Palace. Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers. |
+| 8 | The Big Cage (rebirth rework) *(built; §22)* | The user's "use the rebirth system more… a reason to both rebirth and hold heirloom seeds" and "when you rebirth it takes you to a fully in-depth page of just the upgrades". So: retiring opens a **full-screen Big Cage page** between lives, and it's the **only place to plant** (the Family tab keeps the retire card and a read-only tree). **Held seeds give +X% income each** (planting spends them, so plant-or-hold is a real choice); a "Retire now: +N seeds → +X%" preview. A **bigger tree**: start with High Roller steps, keep symbol unlocks / Machine Luck / a machine, free-spin luck, bigger pot seeds. **Machine rebirths ("Rebuild")**: a fully upgraded machine can be rebuilt for a permanent **Machine Star** (+payouts and +Machine Luck on that machine, a gold trim), kept through retirement. Numbers from the simulator. Save v8. It should also fix M7's known issue: lives from generation ~9 get short again (§10). |
+| **9** | **More machines** *(next, after the M8 playtest)* | The user's "more slot machines". 2–3 machines, each with a new pokie mechanic and exact EV: an **early machine** in the gap between Old Clunky and the Snack Stacker, **243 ways** (wins on any row, reel to reel), **hold & spin** (coin symbols lock in place with 3 respins), maybe a multiplier wheel past the Pouch Palace. Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers. |
 | 10 | Wardrobe buffs | The user's "hats & skins which both give unique changes and improvements" (was M7): **every skin gives a buff while worn** (fur → payouts, wheel → speed, machine → spin cost, room → offline/delivery; rarer = stronger), **hats** as a 5th capsule category (a layered sprite on the hamster), some pieces with **unique changes**, not just a % (e.g. one more card in the gamble history, a free spin more), the Wardrobe as a loadout. The user chose "what you wear gives the buff" and "hats come from capsules"; this reverses D39 (tokens were cosmetic only). |
 | 11 | Hamster Casino | The user's "minigames or side games… roulette, blackjack etc in a hamster casino". A casino room (a new tab) with side games: **roulette** (the hamster in a ball on the wheel), **blackjack**, and hamster ones (a derby race, a seed drop). Played with **Casino Chips**, which never count as coins earned (they can't farm seeds, like rule 4). A **Prize Counter** for hats, timed boosts and luck charms. Honest odds on screen. Each game is its own headless logic module (rule 1), not more code in game.ts. |
 | 12 | Your own casino (late game) | The user's "late game you can eventually start your own casino". The family opens **its own casino**: put machines you own on the floor, hamster guests play them, and you earn the **house edge** while idle; decor, staff, more rooms, a new late-game currency/layer. Unlocked far into the game (e.g. every machine owned and several generations). Planned in detail when we get there. |
@@ -470,9 +472,9 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 ### Retiring
 
 - The **Family tab** appears once the hamster could retire for its first seed. The hamster announces it in the speech bubble.
-- **Retire to the Big Cage** (two taps within 3 s): the pending seeds are paid, the generation goes up by one, and a new pup with the next name takes over (`retirement.pupNames` in data.json, cycling: Pip, Nibbles, Biscuit …).
+- **Retire to the Big Cage** (two taps within 3 s): the pending seeds are paid, the generation goes up by one, and a new pup with the next name takes over (`retirement.pupNames` in data.json, cycling: Pip, Nibbles, Biscuit …). Since M8 retiring opens the **Big Cage page** (§22), the only place to plant; the new life starts when you leave it.
 - **Resets:** coins (back to 25), every upgrade (including the Third Reel), any spin or delivery in progress, the auto-spin timer, and this life's totals.
-- **Keeps:** the generation, Heirloom Seeds, seeds ever earned, the Family Tree, and lifetime stats.
+- **Keeps:** the generation, Heirloom Seeds, seeds ever earned, the Family Tree, Machine Stars (M8), and lifetime stats.
 
 ### Heirloom Seeds
 
@@ -492,17 +494,17 @@ retire gives = total seeds − seeds the family already received
 
 ### Heirloom bonus
 
-**Every seed the family has ever earned gives +1.5% payouts** (+10% in M2–M5, +3% in M6; lowered in M7 because late lives got too short, D102), even after it's planted in the tree. Planting never makes you weaker, and each generation starts stronger than the last. (Without it, a bot showed lives stretching to 90 minutes by generation 4, see PORTING_NOTES D28. With milestone 6's bets and machines, +10% fed back so hard that lives collapsed instead, see D80.)
+**Since M8: every seed you HOLD gives +1.5% payouts** (+0.5% more per level of Family Fortune). Planting a seed spends it, and its bonus with it, so plant-or-hold is a real choice (the user's "a reason to both rebirth and hold heirloom seeds", D94, D120). Until M7 it was every seed ever *earned* (+10% in M2–M5, +3% in M6, +1.5% in M7), planted or not. (Without a bonus, a bot showed lives stretching to 90 minutes by generation 4, see PORTING_NOTES D28. With milestone 6's bets and machines, +10% fed back so hard that lives collapsed instead, see D80.)
 
 ### How payout bonuses combine
 
 ```
 payout multiplier = (1 + coin upgrade bonuses) × (1 + family bonuses)
   coin upgrade bonuses = Chubby Cheeks 0.25 × level
-  family bonuses       = 0.015 × seeds ever earned + Family Pride 0.25 + Family Fortune 0.10 × level
+  family bonuses       = (0.015 + 0.005 × Family Fortune level) × seeds HELD + Family Pride 0.25   (M8)
 ```
 
-Bonuses **add up inside a group** and the two groups **multiply**. Example: Cheeks Lv 2 (1.5) with Family Pride and 3 seeds earned (1 + 0.25 + 0.045 = 1.295) gives ×1.94. A spin win also gets ×1.5 on a full line with Jackpot Dance, then × the bet (§18), then × Hot Streak or the free-spin multiplier (§19).
+Bonuses **add up inside a group** and the two groups **multiply**. Example: Cheeks Lv 2 (1.5) with Family Pride and 3 seeds held (1 + 0.25 + 0.045 = 1.295) gives ×1.94. On a machine with **Machine Stars** (M8) the payout is also × (1 + 0.1 × stars). A spin win also gets ×1.5 on a full line with Jackpot Dance, then × the bet (§18), then × Hot Streak or the free-spin multiplier (§19).
 
 ### The Family Tree
 
@@ -511,7 +513,7 @@ Nodes are bought ("planted") with Heirloom Seeds and are **permanent**. They use
 | Branch | Trait | Cost | Needs | Effect |
 |---|---|---:|---|---|
 | Roots | ❤️ **Family Pride** | 1 | — | +25% payouts (family group) |
-| Roots | 🌱 **Family Fortune** | 3 × 1.5ⁿ (3, 4, 6, 10, 15 …), no max | Family Pride | +10% payouts per level. The endless seed sink. |
+| Roots | 🌱 **Family Fortune** | 3 × 1.5ⁿ (3, 4, 6, 10, 15 …), no max | Family Pride | **M8:** every seed you hold pays +0.5% more per level (it was +10% payouts per level, a worse deal than holding once held seeds pay). The endless seed sink. |
 | Luck | **Lucky Whiskers** | 2 | Family Pride | 5 weight moves from Sunflower Seed to Golden Seed: 50/25/12 → **45/25/17** (only once the Golden Seed is unlocked, §21) |
 | Luck | **Carrot Patch** | 4 | Lucky Whiskers | 5 weight moves from Sunflower Seed to Baby Carrot: → **40/30/17** (only once the Baby Carrot is unlocked) |
 | Luck | ⭐ **Jackpot Dance** | 8 | Carrot Patch | Full-line wins (every reel matches) pay ×1.5 |
@@ -521,8 +523,15 @@ Nodes are bought ("planted") with Heirloom Seeds and are **permanent**. They use
 | Delivery | 🛴 **Speedy Scooter** | 1 | Family Pride | Delivery trip × 0.6 (45 s → 27 s) |
 | Delivery | 🎒 **Big Backpack** | 2 | Speedy Scooter | Delivery rewards get your payout multiplier |
 | Delivery | 📦 **Self-Starter** | 3 | Big Backpack | When you can't afford a spin (and nothing is spinning), the hamster starts a delivery by itself |
+| Charms *(M8)* | 🍀 **Lucky Family** | 2 × 2ⁿ, max 4 | Family Pride | +5 Hamster Luck on every machine per level |
+| Charms *(M8)* | 🧲 **Lucky Heirlooms** | 4 × 1.5ⁿ, max 5 | Lucky Family | Every machine starts with a level of its Machine Luck upgrade per level |
+| Head Start *(M8)* | 🪙 **Big Spender** | 3 × 3ⁿ, max 2 | Family Pride | Every life starts with a High Roller level per level (bet ×2, then ×3) |
+| Head Start *(M8)* | 🌱 **Seed Vault** | 4 × 2ⁿ, max 2 | Big Spender | Every machine starts with its first symbol unlocked, then both |
+| Head Start *(M8)* | 🍓 **Snack Inheritance** | 10 | Seed Vault | Every pup starts owning the Snack Stacker |
+| Bonuses *(M8)* | ⚽ **Ball Pit** | 5 × 2ⁿ, max 3 | Family Pride | +0.4 weight on the Hamster Ball (Burrow Bonanza) per level: free spins come sooner |
+| Bonuses *(M8)* | 👝 **Golden Pouches** | 6 × 2ⁿ, max 3 | Ball Pit | Every jackpot pot starts (and restarts) at its seed × (1 + 0.5 per level) |
 
-The whole tree costs **37 seeds** (with Family Fortune once). The Delivery branch is cheaper because it's mostly quality of life, not raw power.
+The whole tree costs **71 seeds** (every trait at level 1, Family Fortune once; 37 before M8). The Delivery branch is cheaper because it's mostly quality of life, not raw power. Since M8 the traits that "keep" something are free levels at the start of every life (like Warm-up Laps), not memories of the last life (D120).
 
 Free levels (Warm-up Laps, Heirloom Reel) are real upgrade levels. The next Wheel Training level costs the Lv 1 price (960), and a free level never lowers one you bought. Since M7, Warm-up Laps is the trait that makes later lives zip: the first retirement (3 seeds) buys Family Pride, Warm-up Laps and Speedy Scooter, so generation 2 skips the ~10 minutes of clicking.
 
@@ -538,6 +547,8 @@ Both symbols unlocked, Lucky Whiskers, Carrot Patch and Jackpot Dance, no Luck u
 These family traits **lower the hit rate** (fewer Sunflower pairs) but raise the payout per spin: fewer, bigger wins. Since milestone 7 that's the job of symbol unlocks too, and **Luck** (§21) is what raises the hit rate. (M8 plans Luck traits for the tree.)
 
 ### Pacing (from the balance simulator, not a real playtest)
+
+**M8:** the numbers in §22 replace this table (lives 1–8 stay close to M7's). The M7 table below is kept for comparison.
 
 `node tools/sim.mjs --lives 12 --seeds 5` (milestone 7) plays the real game logic: an **idle** player (clicks every 1.5 s until Wheel Training, then lets the hamster work), buying by "time to afford + time to pay back" (PORTING_NOTES D100), retiring when the pending seeds reach max(3, +50% of the seeds already earned), 120 min max per life. Ranges are over 5 seeds.
 
@@ -575,7 +586,7 @@ The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **
 
 | Source | Tokens | Notes |
 |---|---:|---|
-| **Hamster Diary stickers** (table below) | 1–5 each, 91 in total | One-time goals. They're checked after every spin (when it starts and when it lands), delivery, purchase, retirement and capsule, and on load, so an older save gets the stickers it already earned. |
+| **Hamster Diary stickers** (table below) | 1–5 each, 102 in total | One-time goals. They're checked after every spin (when it starts and when it lands), delivery, purchase, retirement and capsule, and on load, so an older save gets the stickers it already earned. |
 | **Golden jackpot**: a Golden Seed on every reel of a payline, 3+ reels | 1 per golden line | Old Clunky (once the Golden Seed is unlocked, M7): 1 in 1,331 spins with no Luck, 1 in 760 with max Luck. A 2-reel golden pair doesn't count. On the Snack Stacker each payline counts on its own. Since M6, Hamster Wilds may fill in (golden, wild, golden counts); a line of wilds alone doesn't. |
 | **Every 5th delivery** ("a customer tipped me") | 1 | Counts lifetime deliveries. A counter, not luck. |
 | **Retiring** | 3 | Plus the "The Big Cage" sticker the first time |
@@ -611,12 +622,15 @@ The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **
 | Capsule Collector | Open 1 capsule | 1 |
 | Marathon Runner | 10,000 spins | 5 |
 | Big Family | Generation 5 | 5 |
-| Full Bloom | Every Family Tree trait (11) | 5 |
+| Full Bloom | Every Family Tree trait (18 since M8; 11 before) | 5 |
 | Fashion Hamster | 8 skins from capsules | 5 |
 | Full Cage *(M6)* | Own every machine at once | 5 |
 | Grand Hamster *(M6)* | Win the Grand jackpot | 5 |
+| Nest Egg *(M8)* | Hold 25 Heirloom Seeds at once | 3 |
+| Shooting Star *(M8)* | Rebuild a machine for a Machine Star | 3 |
+| All-Star *(M8)* | Give one machine 5 Machine Stars | 5 |
 
-Goal types (data.json `goal.type`): `stat` (a lifetime stat ≥ target), `upgradeLevel` (the best level on any machine), `generation`, `treeNodes`, `skinsOwned`, `machinesOwned` (M6: how many machines you own right now). A new sticker of an existing type needs only data.json. The two M5 stickers use the new stats `machinesBought` and `mostLinesWon`; the M6 stickers use `bestStreak`, `biggestBet`, `bestGambleRun`, `wildWins`, `freeSpinTriggers`, `jackpotsWon` and `grandJackpots`; the M7 stickers `symbolsUnlocked`, `suitWins` and `bestLuck` (the most Luck any machine has had, noted just before the diary is checked).
+Goal types (data.json `goal.type`): `stat` (a lifetime stat ≥ target), `upgradeLevel` (the best level on any machine), `generation`, `treeNodes`, `skinsOwned`, `machinesOwned` (M6: how many machines you own right now). A new sticker of an existing type needs only data.json. The two M5 stickers use the new stats `machinesBought` and `mostLinesWon`; the M6 stickers use `bestStreak`, `biggestBet`, `bestGambleRun`, `wildWins`, `freeSpinTriggers`, `jackpotsWon` and `grandJackpots`; the M7 stickers `symbolsUnlocked`, `suitWins` and `bestLuck` (the most Luck any machine has had, noted just before the diary is checked); the M8 stickers `mostSeedsHeld`, `rebuilds` and `bestStars`.
 
 The first five goals (First Spin, Beginner's Luck, Look No Paws!, Warming Up, Three's Company) pay exactly **10 tokens, the first pull** (a test checks this). So the **Capsules tab appears after ~3–6 minutes** of a first game in M6; with M7's slog it waits for Wheel Training and the Third Reel, so ~12–47 minutes into a first life (the simulator's range for an idle player).
 
@@ -1100,3 +1114,62 @@ A dust puff and a clunk as each reel stops · sparkles along each line as it's s
 - Does unlocking a symbol feel like a "new seed" moment, even though wins get rarer?
 - Is a ~1 h first life a satisfying slog, or does it lose people? Are the first 10 minutes of clicking before Wheel Training fun?
 - Is the card gamble more fun than "pick a cheek"? Does the suit bet get used?
+
+---
+
+## 22. The Big Cage (milestone 8)
+
+> **Status: built** (2026-09-27) on a branch, waiting for the user's playtest (the live game is still M7 + Pays Both Ways until the user OKs it). It came from the user's M6 feedback (§11) and their picks on 2026-09-27: rebuild any time once a machine is maxed, all four groups of new traits, and M8 kept on a branch until they've tried it (PORTING_NOTES D120–D122).
+
+*"Use the rebirth system more… a reason to both rebirth and hold heirloom seeds."* *"When you rebirth it takes you to a fully in-depth page of just the upgrades."* (the user)
+
+### Held seeds
+
+- **Every Heirloom Seed you hold gives +1.5% payouts** (`retirement.payoutBonusPerSeedHeld`), in the family group (§13). Planting a seed spends it, and its bonus with it. Most traits are still well worth a seed (Family Pride's +25% is ~17 held seeds' worth), so the choice bites on the expensive ones and on Family Fortune.
+- **Family Fortune** now makes every held seed pay +0.5% more per level (it used to be +10% payouts per level, which holding would beat).
+- The retire card previews it: "Heirloom bonus +4.5% now → +9% with the new seeds held". A trait's preview counts the seeds planting would spend (Family Pride shows the payouts you'd really have), and the Big Cage says what planting costs: "Planting spends 1 of your 12 seeds held: heirloom bonus +18% → +16.5%".
+
+### The Big Cage page
+
+- **Retiring opens it** (a full-screen page): who retired and how many seeds they left, seeds held, the heirloom bonus, Machine Stars, and **the Family Tree**. Tap a trait for its details and **Plant** button (it scrolls into view).
+- **It's the only place to plant.** The Family tab keeps the retire card and shows the tree, read-only ("plant when you retire").
+- **Time stands still** while it's open: no spins, auto-spins, deliveries or offline pay (a save made there loads there). **Start [pup]'s life** closes it and the new life begins. (Debug panel: **Open the Big Cage** to plant without retiring.)
+
+### A bigger Family Tree (18 traits, 71 seeds)
+
+Three new branches, one for each group the user picked (§13 has the full table):
+- **Charms:** Lucky Family (+5 Hamster Luck per level) and Lucky Heirlooms (every machine starts with Machine Luck levels).
+- **Head Start:** Big Spender (High Roller levels at the start of every life), Seed Vault (every machine starts with its symbols unlocked), Snack Inheritance (every pup owns the Snack Stacker).
+- **Bonuses:** Ball Pit (more Hamster Balls, so free spins come sooner) and Golden Pouches (bigger jackpot pot seeds).
+The traits that "keep" something are **free starting levels** (like Warm-up Laps and Heirloom Reel), not a memory of the last life: easier to understand and to balance (D120).
+
+### Machine Stars ("Rebuild")
+
+- **Max every upgrade on a machine** and a **Rebuild** card appears (in its upgrades, and on its machine card). Rebuilding (two taps) resets **that machine's upgrades** (not your coins; the family's free levels come straight back) and gives it a **star**.
+- **Every star: +10% payouts and +2 Machine Luck on that machine** (`stars` in data.json), up to **5 stars** per machine, **kept forever**, through every retirement. A starred machine gets a gold trim and its stars on the marquee.
+- Not while the machine is busy (spinning, free spins, the jackpot wheel, a gamble on it). The Info tab's Features page explains it with the machine's own numbers.
+- Since coins reset on retiring, the smart time to rebuild is just before you retire: spend the leftover coins finishing a machine, then rebuild it.
+
+### Balance (from the simulator; the full tables are in PORTING_NOTES → Playtest notes, 2026-09-27)
+
+| Life | M7 (idle) | M8 (idle) | M8 (active) |
+|---|---:|---:|---:|
+| Gen 1 | 46–77 min | 46–77 min | 28–45 min |
+| Gen 2–4 | 35–43 · 32–50 · 39–65 | 32–48 · 40–50 · 42–56 | 25–33 · 28–34 · 27–36 |
+| Gen 5–7 | 33–46 · 31–40 · 16–31 | 38–61 · 32–39 · 23–31 | 25–35 · 20–26 · 12–20 |
+| Gen 8 | 10–18 | 11–19 | 10–15 |
+| Gen 9–12 | 2–18 | 1–13 | 1–12 |
+| Whole tree planted | 4.0–4.9 h (37 seeds) | 5.2–6.1 h (71 seeds) | 3.5–3.9 h |
+
+The simulated player plants a trait when it costs at most a quarter of the seeds held (or 1 seed) and holds the rest, and spends its last coins before retiring on finishing machines for stars (tools/sim.mjs `--plant`). It reaches 5 stars on Old Clunky around generation 6–7, and 15–20 stars in all by generation 12. Lives 1–8 stay close to M7; the late lives are still short (§10).
+
+### Save v9
+
+A v8 save gets no stars and is mid-life (not in the Big Cage); its tree, seeds and Family Fortune levels are kept, and its heirloom bonus now counts the seeds it holds.
+
+### Questions the playtest must answer
+
+- Does the Big Cage feel like a moment ("a new pup!"), or a chore between lives? Is the tree readable at this size (18 traits)?
+- Is plant-or-hold a real choice? Do you hold seeds on purpose? Is Family Fortune worth it?
+- Do Machine Stars feel worth rebuilding for? Is "rebuild just before retiring" fun or a chore?
+- Which new traits feel good, and which are ignored?

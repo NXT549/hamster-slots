@@ -132,15 +132,28 @@ function setups(m, luck) {
   return out;
 }
 
-// A game that owns every family tree node once (Family Fortune at level 1).
-// Seeds are added with the debug helper so the heirloom bonus stays 0.
+// Plant Family Tree nodes (M8: only in the Big Cage, so open it with the debug
+// helper, plant, and leave). The seeds come from the debug helper, and what's left
+// is taken away again, so no held seeds add a heirloom bonus.
+function plant(g, ...ids) {
+  const wasInCage = g.state.bigCage;
+  if (!wasInCage) g.openBigCage();
+  const before = g.state.seeds;
+  g.addSeeds(1e6);
+  const ok = ids.map((id) => g.buyTreeNode(id));
+  g.addSeeds(before.sub(g.state.seeds)); // back to the seeds held before
+  if (!wasInCage) g.leaveBigCage();
+  return ok.every(Boolean);
+}
+
+// A game that owns every family tree node once (Family Fortune at level 1),
+// holding no seeds (so there's no heirloom bonus).
 function gameWithWholeTree(seed = 1) {
   const g = newGame(seed);
-  g.addSeeds(10000);
-  for (const id of nodeIds) g.buyTreeNode(id);
+  plant(g, ...nodeIds);
   return g;
 }
 
 export {
-  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree, plant,
 };

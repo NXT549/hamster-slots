@@ -24,6 +24,7 @@ const EVENTS = [
   'spinStarted', 'spinResolved', 'spinBlocked', 'betChanged', 'freeSpinsStarted', 'freeSpinsEnded',
   'jackpotStarted', 'jackpotWon', 'gambleOffered', 'gambleResolved', 'gambleEnded', 'coinsChanged',
   'seedsChanged', 'upgradeBought', 'machineBought', 'machineSwitched', 'treeNodeBought', 'retired',
+  'bigCageLeft', 'machineRebuilt',
   'deliveryStarted', 'deliveryFinished', 'tokensChanged', 'stickerEarned', 'capsuleOpened',
   'skinEquipped', 'offlineEarned', 'dataReloaded', 'stateLoaded',
 ];
@@ -124,6 +125,7 @@ function buyCheapest(g) {
 }
 
 // Plant Family Tree nodes, cheapest first, until nothing more can be planted.
+// (Since M8 that only works in the Big Cage, right after retiring.)
 function plantAll(g) {
   for (;;) {
     const ids = data.familyTree.nodes.map((n) => n.id).filter((id) => g.canBuyTreeNode(id));
@@ -170,6 +172,7 @@ function firstLife() {
   if (s.g.canRetire()) s.g.retire();
   checkpoint(s, 'retired');
   plantAll(s.g);
+  s.g.leaveBigCage(); // M8: the new life starts when you leave the Big Cage
   checkpoint(s, 'planted the tree');
   play(s, 10 * 60, { buyEvery: 5 });
   checkpoint(s, 'second life, 10 min');
@@ -245,6 +248,7 @@ function family() {
   checkpoint(s, 'earned 20K');
   g().retire();
   plantAll(g());
+  g().leaveBigCage();
   checkpoint(s, 'retired and planted');
 
   g().addTokens(300);
@@ -258,6 +262,7 @@ function family() {
   g().addCoins(2e6, true);
   g().retire();
   plantAll(g());
+  g().leaveBigCage();
   checkpoint(s, 'third generation');
 
   g().applyOfflineEarnings(600);

@@ -1387,12 +1387,32 @@ const bothWaysIcon = [
   '....E...........',
 ];
 
+// Snack Inheritance (16×16): a tiny Snack Stacker, snacks in its window.
+const snackIcon = [
+  '................',
+  '..ZZZZZZZZZZZZ..',
+  '.ZFFFFFFFFFFFPZ.',
+  '.ZFhyyyyyyyyYPZ.',
+  '.ZFppppppppppPZ.',
+  '.ZFZZZZZZZZZZPZ.',
+  '.ZFZGGqooquuZPZ.',
+  '.ZFZggqOOqIIZPZ.',
+  '.ZFZqqqqqqqqZPZ.',
+  '.ZFZrrqyyqddZPZ.',
+  '.ZFZRRqYYqssZPZ.',
+  '.ZFZZZZZZZZZZPZ.',
+  '.ZFppppppppppPZ.',
+  '.ZPPPPPPPPPPPPZ.',
+  '..ZZZZZZZZZZZZ..',
+  '................',
+];
+
 export const SPRITES: Record<string, string[]> = {
   seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple, hamster, hamster2, coin, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
   cheeks, wheel, oilcan, gear, reel, paylinesIcon, heart, star, bolt, scooter, backpack, parcel, pouch, goldenIcon, carrotIcon,
   machineClunky, machineStacker, machineBonanza, machinePalace, bottle, bowl, bedding,
   highRollerIcon, flame, wildIcon, ballIcon, pouchPolish,
-  shaving, clover, horseshoe, seedPacket, cardBack, suitHearts, suitDiamonds, suitClubs, suitSpades, bothWaysIcon,
+  shaving, clover, horseshoe, seedPacket, cardBack, suitHearts, suitDiamonds, suitClubs, suitSpades, bothWaysIcon, snackIcon,
   frameCard, framePaper, frameTab, frameButton, bubbleTail,
 };
 
@@ -1432,10 +1452,15 @@ export function upgradeIcon(def: { id: string; effect: { type: string } }): stri
 const TREE_ICONS_BY_ID: Record<string, string> = {
   familyPride: 'heart', familyFortune: 'pouch', luckyWhiskers: 'goldenIcon', carrotPatch: 'carrotIcon',
   warmUpLaps: 'wheel', heirloomReel: 'reel',
+  // M8
+  bigSpender: 'highRollerIcon', luckyHeirlooms: 'horseshoe', seedVault: 'seedPacket',
 };
 const TREE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'heart', shiftWeight: 'goldenIcon', fullLineMultiplier: 'star', startingLevel: 'wheel',
   spinSpeed: 'bolt', deliveryTime: 'scooter', deliveryPayoutBonus: 'backpack', autoDelivery: 'parcel',
+  // M8
+  heldSeedBonus: 'pouch', luck: 'clover', startingMachineLevel: 'seedPacket', startingMachine: 'snackIcon',
+  symbolWeight: 'ballIcon', potSeedBonus: 'pouchPolish',
 };
 export function treeIcon(def: { id: string; effect: { type: string } }): string | null {
   return TREE_ICONS_BY_ID[def.id] || TREE_ICONS_BY_TYPE[def.effect.type] || null;

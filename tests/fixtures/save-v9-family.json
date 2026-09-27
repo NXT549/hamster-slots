@@ -1,0 +1,144 @@
+{
+ "saveVersion": 9,
+ "coins": "648.37",
+ "upgrades": {
+  "cheeks": 9,
+  "wheel": 1,
+  "clover": 1
+ },
+ "machines": [
+  {
+   "typeId": "clunky",
+   "upgrades": {
+    "lever": 5,
+    "newSeeds": 1,
+    "horseshoe": 2
+   },
+   "bet": 0,
+   "spinning": true,
+   "spinTimer": 0.4833333333333371,
+   "spinBet": 1,
+   "spinFree": false,
+   "spinSource": "auto",
+   "result": [
+    [
+     "blank"
+    ],
+    [
+     "carrot"
+    ]
+   ],
+   "streak": 1,
+   "freeSpins": null,
+   "pots": {},
+   "bonus": null
+  }
+ ],
+ "activeMachine": 0,
+ "delivery": {
+  "active": false,
+  "timer": 0,
+  "duration": 0
+ },
+ "autoTimer": 1.9199999999999904,
+ "run": {
+  "coinsEarned": "8044.49",
+  "playTime": 300.0000000000558
+ },
+ "generation": 3,
+ "seeds": "0",
+ "seedsEarned": "39",
+ "tree": {
+  "familyPride": 1,
+  "familyFortune": 3,
+  "luckyWhiskers": 1,
+  "carrotPatch": 1,
+  "jackpotDance": 1,
+  "warmUpLaps": 1,
+  "quickPaws": 1,
+  "speedyScooter": 1,
+  "bigBackpack": 1,
+  "selfStarter": 1
+ },
+ "stars": {},
+ "bigCage": false,
+ "tokens": "17",
+ "diary": {
+  "firstSpin": true,
+  "firstWin": true,
+  "wheelTraining": true,
+  "newSeed": true,
+  "millionaire": true,
+  "firstRetirement": true,
+  "tree5": true,
+  "firstCapsule": true,
+  "fashion": true
+ },
+ "skins": {
+  "owned": {
+   "furCinnamon": true,
+   "furSnowball": true,
+   "furCocoa": true,
+   "furLavender": true,
+   "furMint": true,
+   "furGolden": true,
+   "wheelMint": true,
+   "wheelBerry": true,
+   "wheelOak": true,
+   "wheelGold": true,
+   "machinePeach": true,
+   "machineSky": true,
+   "machineGrape": true,
+   "roomStrawberry": true,
+   "roomMint": true,
+   "roomStarry": true,
+   "roomSunflower": true
+  },
+  "equipped": {
+   "fur": "furGolden",
+   "wheel": "wheelGold",
+   "machine": "machineGrape",
+   "room": "roomSunflower"
+  }
+ },
+ "capsules": {
+  "sincePity": 2
+ },
+ "stats": {
+  "spins": 95,
+  "manualSpins": 0,
+  "autoSpins": 95,
+  "wins": 20,
+  "coinsWon": "6674.27",
+  "coinsSpent": "375.12",
+  "deliveries": 0,
+  "deliveryCoins": "0",
+  "coinsEarned": "2028219.29",
+  "upgradesBought": 19,
+  "playTime": 1199.9999999992374,
+  "goldenJackpots": 0,
+  "capsulesOpened": 37,
+  "tokensEarned": "29",
+  "biggestWin": "988.77",
+  "offlineCoins": "1545.02",
+  "machinesBought": 0,
+  "mostLinesWon": 1,
+  "biggestBet": 1,
+  "freeSpins": 0,
+  "freeSpinTriggers": 0,
+  "freeSpinCoins": "0",
+  "wildWins": 0,
+  "bestStreak": 2,
+  "jackpotsWon": 0,
+  "grandJackpots": 0,
+  "gambleWins": 0,
+  "gambleLosses": 0,
+  "bestGambleRun": 0,
+  "symbolsUnlocked": 1,
+  "bestLuck": 30,
+  "suitWins": 0,
+  "rebuilds": 0,
+  "bestStars": 0,
+  "mostSeedsHeld": 0
+ }
+}

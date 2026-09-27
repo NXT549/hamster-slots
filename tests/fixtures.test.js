@@ -52,10 +52,34 @@ describe('save v7 → v8: money is saved as text (big numbers)', () => {
       const fields = moneyFields(now);
       expect(fields.length).toBeGreaterThan(10);
       for (const [obj, key] of fields) expect(typeof obj[key]).toBe('string');
-      // Turn the text back into numbers (and the version back to 7): then it's the old save again.
+      // Turn the text back into numbers (and the version back to 7), and leave out
+      // what v9 added: then it's the old save again.
       for (const [obj, key] of fields) obj[key] = Number(obj[key]);
       now.saveVersion = 7;
-      expect(now).toEqual(canonical(old));
+      expect(withoutV9(now)).toEqual(canonical(old));
+    });
+  }
+});
+
+// What save v9 (M8, the Big Cage) added, taken out again.
+function withoutV9(save) {
+  const out = structuredClone(save);
+  delete out.stars;
+  delete out.bigCage;
+  for (const key of ['rebuilds', 'bestStars', 'mostSeedsHeld']) delete out.stats[key];
+  return out;
+}
+
+describe('save v8 → v9: M8 adds Machine Stars and the Big Cage', () => {
+  for (const [, , name] of FIXTURES) {
+    test(`save-v8-${name}.json: gets no stars, is mid-life, starts the new stats at 0; nothing else changes`, () => {
+      const old = read(`save-v8-${name}.json`);
+      const now = canonical(loadAndSave(old));
+      expect(now.stars).toEqual({});
+      expect(now.bigCage).toBe(false);
+      expect([now.stats.rebuilds, now.stats.bestStars, now.stats.mostSeedsHeld]).toEqual([0, 0, 0]);
+      now.saveVersion = 8;
+      expect(withoutV9(now)).toEqual(canonical(old));
     });
   }
 });

@@ -52,6 +52,17 @@ function effectFormats(game: Game): Record<string, (def: Def) => [string, Format
     symbolWeight: (def) => [`${symbolName(effectAs(def, 'symbolWeight').symbol)} chance`, percent],
     extraFreeSpins: () => ['Free spins a trigger', String],
     jackpotGrowth: () => ['Pot growth', (v) => `×${v.toFixed(2)}`],
+    // M8 Family Tree traits
+    heldSeedBonus: () => ['Per seed held', (v) => `+${Number((v * 100).toFixed(2))}%`],
+    startingMachineLevel: (def) => {
+      const type = effectAs(def, 'startingMachineLevel').upgradeType;
+      return [type === 'luck' ? 'Free Machine Luck levels' : type === 'unlockSymbol' ? 'Free symbol unlocks' : 'Free levels', (v) => `Lv ${v}`];
+    },
+    startingMachine: (def) => {
+      const id = effectAs(def, 'startingMachine').machine;
+      return [`Starts owning the ${(game.data.machines.find((m) => m.id === id) || { name: id }).name}`, (v) => (v ? 'yes' : 'no')];
+    },
+    potSeedBonus: () => ['Pot seeds', (v) => `×${v.toFixed(2)}`],
   };
 }
 
@@ -79,8 +90,21 @@ function describeBothWays({ now, next }: Preview): string {
   return `Avg win ${arrow(formatCoins(now.win), formatCoins(next.win))} · hit rate ${arrow(pct(now.hitRate), pct(next.hitRate))}`;
 }
 
+// A Family Tree trait that adds weight to a symbol only some machines have (Ball
+// Pit: the Hamster Ball is only on the Burrow Bonanza), shown as that weight.
+function describeTreeWeight(game: Game, def: TreeNodeDef, next: unknown): string {
+  const e = effectAs(def, 'symbolWeight');
+  const md = game.data.machines.find((m) => m.symbols.some((x) => x.id === e.symbol));
+  const symbol = md ? md.symbols.find((x) => x.id === e.symbol)!.name : e.symbol;
+  const level = game.getTreeLevel(def.id);
+  const w = (l: number) => `+${Number((e.perLevel * l).toFixed(2))}`;
+  const label = `${symbol} weight${md ? ` on the ${md.name}` : ''}`;
+  return next === null ? `${label} ${w(level)} <span class="note">(max)</span>` : `${label} ${w(level)} → <span class="next">${w(level + 1)}</span>`;
+}
+
 // The "now → next" line, as HTML with the next value highlighted.
 export function describeEffect(game: Game, def: Def, { now, next }: Preview): string {
+  if (def.effect.type === 'symbolWeight' && 'branch' in def) return describeTreeWeight(game, def, next);
   if (def.effect.type === 'luck' || def.effect.type === 'unlockSymbol') return describeTwoWay(game, def, { now, next });
   if (def.effect.type === 'bothWays') return describeBothWays({ now, next });
   const format = effectFormats(game)[def.effect.type] || ((): [string, Format] => ['', String]);
@@ -122,6 +146,8 @@ interface Card {
   id: string;
   card: HTMLElement;
   button: HTMLButtonElement;
+  rebuild: HTMLButtonElement;
+  stars: HTMLElement;
   stats: HTMLElement;
   features: HTMLElement;
   fill: HTMLElement;
@@ -137,6 +163,25 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
     amount: $('buy-amount'), machineNote: $('machine-upgrades-note'),
   };
   const subtabs = createSubTabs($('upgrades-subtabs'), $('tab-upgrades'), { key: 'upgrades', settings, onSettingsChange });
+  const rebuildEl = { card: $('rebuild-card'), text: $('rebuild-text'), button: $<HTMLButtonElement>('rebuild-btn') };
+  let rebuildArmed: { id: string; until: number } | null = null; // the first tap on a Rebuild button
+
+  // Rebuilding needs two taps within 3 s (it resets the machine's upgrades).
+  function tryRebuild(id: string): void {
+    if (!game.canRebuild(id)) return;
+    if (rebuildArmed && rebuildArmed.id === id && performance.now() < rebuildArmed.until) {
+      rebuildArmed = null;
+      game.rebuild(id);
+      return;
+    }
+    rebuildArmed = { id, until: performance.now() + 3000 };
+  }
+  rebuildEl.button.addEventListener('click', (e) => {
+    (e.currentTarget as HTMLElement).blur();
+    tryRebuild(game.getMachineData().id);
+  });
+  const armed = (id: string) => !!rebuildArmed && rebuildArmed.id === id && performance.now() < rebuildArmed.until;
+  const starRow = (n: number, max: number) => `${iconHTML('star', 16).repeat(n)}<span class="note">${n}/${max} Machine Stars</span>`;
   let tiles: Tile[] = [];
   let cards: Card[] = [];
   let tileKey = ''; // which upgrades the tiles were built for (they change with the machine)
@@ -173,9 +218,10 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       card.className = 'machine-card';
       card.innerHTML = `
         <div class="mc-icon"></div>
-        <div class="mc-text"><div class="tile-name"></div><div class="tile-tag mc-stats"></div><div class="mc-features"></div><div class="tile-desc"></div></div>
+        <div class="mc-text"><div class="tile-name"></div><div class="tile-tag mc-stats"></div><div class="mc-features"></div><div class="mc-stars"></div><div class="tile-desc"></div></div>
         <div class="mc-action">
           <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>
+          <button class="btn btn-gold btn-small rebuild-btn hidden"></button>
           <span class="wait-hint"></span>
         </div>`;
       card.querySelector('.mc-icon')!.appendChild(spriteImg(MACHINE_SPRITES[md.id], 48, md.name[0]));
@@ -187,9 +233,15 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
         if (game.ownsMachine(md.id)) game.switchMachine(md.id);
         else game.buyMachine(md.id);
       });
+      // Rebuild (M8): two taps, like retiring, because it resets the machine's upgrades.
+      const rebuild = card.querySelector<HTMLButtonElement>('.rebuild-btn')!;
+      rebuild.addEventListener('click', (e) => {
+        (e.currentTarget as HTMLElement).blur();
+        tryRebuild(md.id);
+      });
       el.machines.appendChild(card);
       return {
-        id: md.id, card, button,
+        id: md.id, card, button, rebuild, stars: card.querySelector<HTMLElement>('.mc-stars')!,
         stats: card.querySelector<HTMLElement>('.mc-stats')!, features: card.querySelector<HTMLElement>('.mc-features')!, fill: card.querySelector<HTMLElement>('.buy-fill')!,
         label: card.querySelector<HTMLElement>('.buy-label')!, wait: card.querySelector<HTMLElement>('.wait-hint')!,
       };
@@ -309,6 +361,10 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       const bet = info.owned && info.bet > 1 ? ` · bet ×${info.bet}` : '';
       setText(c.stats, `${reels}${lines} · ${formatCoins(info.spinCost)} a spin${bet}`);
       setHTML(c.features, featureChips(info));
+      // Machine Stars (M8): shown once it has one, or could get one.
+      setHTML(c.stars, info.stars > 0 || info.canRebuild ? starRow(info.stars, info.maxStars) : '');
+      c.rebuild.classList.toggle('hidden', !info.canRebuild);
+      setText(c.rebuild, armed(c.id) ? 'Tap again: reset its upgrades' : 'Rebuild for a star');
       c.card.classList.toggle('active', info.active);
       c.card.classList.toggle('owned', info.owned);
       const affordable = !info.owned && game.canBuyMachine(c.id);
@@ -344,6 +400,21 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       setText(t.wait, maxed || bulk.affordable || needs.length > 0 ? '' : waitText(bulk.cost, rate));
       if (bulk.affordable) ready[t.def.scope === 'machine' ? 'machine' : 'hamster'] = true;
     }
+    // The machine's own sub-tab: a Rebuild card once every upgrade on it is maxed.
+    const here = game.getMachineInfo(game.getMachineData().id)!;
+    const st = game.data.stars;
+    const showRebuild = here.fullyUpgraded && here.stars < here.maxStars;
+    rebuildEl.card.classList.toggle('hidden', !(showRebuild || here.stars > 0));
+    setHTML(rebuildEl.text, showRebuild
+      ? `<b>Every upgrade on ${game.getMachineData().name} is maxed!</b> Rebuild it for Machine Star ${here.stars + 1} of ${here.maxStars}: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck on this machine, for good. Its upgrades start again from nothing (your coins stay).<div>${starRow(here.stars, here.maxStars)}</div>`
+      : here.stars >= here.maxStars
+        ? `${starRow(here.stars, here.maxStars)} Every star this machine can have.`
+        : `${starRow(here.stars, here.maxStars)} Max every upgrade here to rebuild it for another star.`);
+    rebuildEl.button.classList.toggle('hidden', !showRebuild);
+    rebuildEl.button.disabled = !here.canRebuild; // (busy: spinning, free spins, the jackpot wheel)
+    setText(rebuildEl.button, armed(here.id) ? 'Tap again: reset its upgrades for a star' : here.canRebuild ? 'Rebuild for a star' : 'Rebuild when the machine is idle');
+    if (showRebuild && here.canRebuild) ready.machine = true;
+
     subtabs.setDot('hamster', ready.hamster);
     subtabs.setDot('machine', ready.machine);
     subtabs.setDot('machines', machineReady);

@@ -5,7 +5,7 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree, plant,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -243,7 +243,7 @@ describe('balance rules (DESIGN.md section 9)', () => {
     let ok = true;
     let checked = 0;
     for (const quick of [false, true]) {
-      if (quick) { t.addSeeds(100); for (const id of ['familyPride', 'warmUpLaps', 'quickPaws']) t.buyTreeNode(id); }
+      if (quick) plant(t, 'familyPride', 'warmUpLaps', 'quickPaws');
       for (const m of data.machines) {
         t.switchMachine(m.id);
         for (let l = 1; l <= w.maxLevel; l++) {
@@ -266,8 +266,7 @@ describe('balance rules (DESIGN.md section 9)', () => {
   // Rule 2 must also hold with the WHOLE family tree (faster, bigger deliveries).
   // Checked at 2 reels: a fresh life on 2 reels is the worst case for auto-spin.
   const t = newGame();
-  t.addSeeds(10000);
-  for (const id of nodeIds) if (id !== 'heirloomReel') t.buyTreeNode(id);
+  plant(t, ...nodeIds.filter((id) => id !== 'heirloomReel'));
   const tEcon = t.getEconomy();
   const [tDelivery, tAuto] = [num(tEcon.deliveryPerSecond), num(tEcon.expectedAutoProfitPerSecond)];
   check(`rule 2 with the whole tree (2 reels): delivery ${tDelivery.toFixed(2)}/s < auto-spin ${tAuto.toFixed(2)}/s`,

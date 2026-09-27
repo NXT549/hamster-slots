@@ -113,7 +113,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     const md = game.getMachineData();
     const symbols = game.getSymbols();
     const reelCount = game.getReelCount();
-    const mult = game.getPayoutMultiplier().mul(game.getBet());
+    const mult = game.getPayoutMultiplier().mul(game.getStarMultiplier()).mul(game.getBet()); // (with this machine's stars)
     const fullLine = game.getFullLineMultiplier();
     const head = document.createElement('tr');
     head.innerHTML = '<th>Symbol</th><th>Chance</th>';
@@ -281,6 +281,10 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
         ? 'Every payline is read from the left AND from the right, so a match on the last reels pays too. A full line still pays once.'
         : `Wins count from the left: a match on the last reels doesn't pay yet. The ${bothWays.name} upgrade makes them pay too${needs.length > 0 ? ` (it needs the ${needs.join(' and the ')} first)` : ''}.`));
     }
+    // Machine Stars (M8)
+    const st = game.data.stars;
+    cards.push(card('star', `Machine Stars ${info.stars}/${info.maxStars}`,
+      `Max every upgrade on ${md.name} and you can rebuild it: its upgrades start again from nothing, and it gets a star it keeps forever (retiring too). Every star: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck on this machine.${info.stars > 0 ? ` Now: ×${game.getStarMultiplier().toFixed(2)} payouts and +${info.stars * st.luckPerStar} Luck.` : ''}`));
     cards.push(card('coin', 'Line hit rate', `A paid spin wins on a payline ${Math.round(odds.hitRate * 100)}% of the time on this machine.`));
     setHTML(el.features, cards.join(''));
   }
@@ -288,7 +292,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
   function render(now: number): void {
     // Rebuild the table only when something it shows changed.
     const weights = game.getSymbols().map((s) => s.weight).join(',');
-    const key = `${game.getMachineData().id}|${game.getReelCount()}|${game.getLineCount()}|${game.getPayoutMultiplier()}|${game.getFullLineMultiplier()}|${weights}|${game.getBet()}|${game.hasBothWays()}`;
+    const key = `${game.getMachineData().id}|${game.getReelCount()}|${game.getLineCount()}|${game.getPayoutMultiplier()}|${game.getFullLineMultiplier()}|${weights}|${game.getBet()}|${game.hasBothWays()}|${game.getStars()}`;
     if (key !== tableKey) {
       tableKey = key;
       buildTable();

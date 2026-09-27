@@ -13,7 +13,8 @@ describe('data.json sanity', () => {
   const knownTypes = ['payoutMultiplier', 'autoSpin', 'spinCostMultiplier', 'extraReel', 'extraPayline',
     'betSteps', 'winStreak', 'symbolWeight', 'extraFreeSpins', 'jackpotGrowth', 'luck', 'unlockSymbol', 'bothWays'];
   const treeTypes = ['payoutMultiplier', 'shiftWeight', 'fullLineMultiplier', 'startingLevel', 'spinSpeed',
-    'deliveryTime', 'deliveryPayoutBonus', 'autoDelivery'];
+    'deliveryTime', 'deliveryPayoutBonus', 'autoDelivery',
+    'heldSeedBonus', 'luck', 'startingMachineLevel', 'startingMachine', 'symbolWeight', 'potSeedBonus']; // M8
   check('every upgrade has a known effect type', data.upgrades.every((u) => knownTypes.includes(u.effect.type)));
   check('every tree node has a known effect type', nodes.every((n) => treeTypes.includes(n.effect.type)),
     nodes.filter((n) => !treeTypes.includes(n.effect.type)).map((n) => n.id).join(', '));

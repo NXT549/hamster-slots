@@ -53,7 +53,7 @@
 
           <!-- The slot machine. data-machine says which one (it changes its look). -->
           <div class="machine" id="machine" data-machine="clunky">
-            <div class="marquee"><span class="bulbs"></span><span id="machine-name">Old Clunky</span><span class="bulbs"></span></div>
+            <div class="marquee"><span class="bulbs"></span><span id="machine-name">Old Clunky</span><span class="marquee-stars" id="machine-stars"></span><span class="bulbs"></span></div>
             <!-- Jackpot pots (machines with a jackpot wheel): live coin values at your bet -->
             <div class="pots hidden" id="pots"></div>
             <div class="reel-window">
@@ -161,6 +161,11 @@
         </div>
         <div class="subpanel" data-sub="machine">
           <p class="note subpanel-note" id="machine-upgrades-note"></p>
+          <!-- M8: every upgrade maxed? Rebuild the machine for a Machine Star -->
+          <div class="rebuild-card hidden" id="rebuild-card">
+            <div class="rebuild-text" id="rebuild-text"></div>
+            <button class="btn btn-gold" id="rebuild-btn">Rebuild for a star</button>
+          </div>
           <div class="upgrade-grid" id="upgrade-list-machine"></div>
         </div>
         <div class="subpanel" data-sub="machines">
@@ -181,22 +186,27 @@
               </div>
             </div>
             <div class="retire-gain">Retire now: <span class="seed-amount" id="retire-gain"></span></div>
+            <div class="note" id="retire-bonus"></div>
             <div class="seed-bar"><div class="seed-bar-fill" id="seed-bar-fill"></div></div>
             <div class="note" id="seed-next"></div>
           </div>
           <div class="retire-action">
             <p class="note">A new pup starts over: coins, upgrades (High Roller too), machines and unplayed free spins reset.
-              The family keeps its Heirloom Seeds, the family tree, and a <b>+<span id="heirloom-per-seed"></span>% payout bonus</b> for every seed ever earned.</p>
+              The family keeps its Heirloom Seeds (<b>+<span id="heirloom-per-seed"></span>% payouts for every seed you hold</b>), the Family Tree and Machine Stars.
+              Retiring opens the Big Cage, where you plant.</p>
             <button class="btn btn-gold" id="retire-btn">Retire to the Big Cage</button>
           </div>
         </div>
 
         <div class="section-head">
           <h3>Family Tree</h3>
-          <span class="note">Plant Heirloom Seeds for traits every future pup is born with.</span>
+          <span class="note">Traits every future pup is born with. You plant them in the Big Cage, when you retire.</span>
         </div>
-        <div class="tree" id="tree"></div>
-        <div class="tree-detail" id="tree-detail"></div>
+        <!-- The tree moves into the Big Cage page while it's open (ui.ts), and back here after. -->
+        <div id="tree-home"><div class="tree-box" id="tree-box">
+          <div class="tree" id="tree"></div>
+          <div class="tree-detail" id="tree-detail"></div>
+        </div></div>
       </div>
 
       <!-- Capsules: spend Hamster Tokens on skins, wear them, and see how to earn tokens -->
@@ -300,6 +310,26 @@
     <h2>Stats</h2>
     <div class="stats-list" id="stats-list"></div>
     <form method="dialog"><button class="btn btn-primary">Close</button></form>
+  </dialog>
+
+  <!-- ── The Big Cage (M8): the page between lives. Retiring opens it, and it's the
+       only place to plant Heirloom Seeds. The new life starts when you leave. ── -->
+  <dialog class="dialog big-cage" id="big-cage">
+    <div class="bc-head">
+      <img id="bc-img" data-sprite="hamster" data-size="48" alt="">
+      <div>
+        <h2>The Big Cage</h2>
+        <p class="note" id="bc-sub"></p>
+      </div>
+    </div>
+    <div class="bc-summary">
+      <div class="bc-stat"><span class="bc-label">Seeds held</span><span class="seed-amount" id="bc-held"></span></div>
+      <div class="bc-stat"><span class="bc-label">Heirloom bonus</span><span class="bc-value" id="bc-bonus"></span></div>
+      <div class="bc-stat"><span class="bc-label">Machine Stars</span><span class="bc-value" id="bc-stars"></span></div>
+    </div>
+    <p class="note bc-explain" id="bc-explain"></p>
+    <div id="bc-tree-home"></div>
+    <div class="bc-foot"><button class="btn btn-gold" id="bc-start">Start the new life</button></div>
   </dialog>
 
   <!-- ── Welcome back: coins earned while the game was closed ── -->

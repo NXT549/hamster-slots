@@ -403,7 +403,8 @@ export function freeSpinStats(machineData: MachineDef, reelCount: number, extra 
 // spin is won after 1/c spins on average, holding seed + growth/c by then. So on
 // average each pot pays c × seed + growth per spin: everything that flows in
 // flows back out. (All in base units: before the bet and payout bonuses.)
-export function jackpotStats(machineData: MachineDef, reelCount: number, growthMultiplier = 1): { q: number; ev: number; pots: { id: string; chance: number }[] } {
+// seedMultiplier (Golden Pouches, M8): pots start again at seed × this after a win.
+export function jackpotStats(machineData: MachineDef, reelCount: number, growthMultiplier = 1, seedMultiplier = 1): { q: number; ev: number; pots: { id: string; chance: number }[] } {
   const jp = machineData.jackpot;
   if (!jp) return { q: 0, ev: 0, pots: [] };
   const cells = reelCount * rowCount(machineData);
@@ -413,7 +414,7 @@ export function jackpotStats(machineData: MachineDef, reelCount: number, growthM
   let ev = 0;
   const pots = jp.pots.map((pot) => {
     const chance = (q * pot.weight) / totalWeight; // this pot is won on a spin
-    ev += chance * pot.seed + pot.growth * growthMultiplier;
+    ev += chance * pot.seed * seedMultiplier + pot.growth * growthMultiplier;
     return { id: pot.id, chance };
   });
   return { q, ev, pots };
@@ -429,6 +430,7 @@ export interface SpinOptions {
   jackpotGrowth?: number;
   spinDuration?: number;
   bothWays?: boolean; // lines pay from the right too (the "Pays Both Ways" upgrades)
+  potSeedMultiplier?: number; // jackpot pots start bigger (Golden Pouches, M8)
 }
 
 // What a paid spin is worth, and where that comes from.
@@ -455,7 +457,7 @@ export interface SpinValue {
 export function spinExpectation(machineData: MachineDef, reelCount: number, opts: SpinOptions = {}): SpinValue {
   const {
     lines = 1, fullLineMultiplier = 1, streakPerStack = 0, streakCap = 0,
-    extraFreeSpins = 0, jackpotGrowth = 1, spinDuration = machineData.spinDuration, bothWays = false,
+    extraFreeSpins = 0, jackpotGrowth = 1, spinDuration = machineData.spinDuration, bothWays = false, potSeedMultiplier = 1,
   } = opts;
   const { ev: lineEv, hitRate } = expectedValue(machineData, reelCount, fullLineMultiplier, lines, bothWays);
   let streakSum = 0;
@@ -467,7 +469,7 @@ export function spinExpectation(machineData: MachineDef, reelCount: number, opts
   const freeSpinsPerSpin = fs.q * fs.total;
   const freeEv = fsData ? freeSpinsPerSpin * lineEv * fsData.multiplier : 0;
 
-  const jp = jackpotStats(machineData, reelCount, jackpotGrowth);
+  const jp = jackpotStats(machineData, reelCount, jackpotGrowth, potSeedMultiplier);
   const extraSeconds = (fsData ? freeSpinsPerSpin * (spinDuration + fsData.pause) : 0)
     + (machineData.jackpot ? jp.q * machineData.jackpot.duration : 0);
 

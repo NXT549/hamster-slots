@@ -5,7 +5,7 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree, plant,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -104,8 +104,7 @@ describe('machines: collect & switch', () => {
   check('retiring resets machines to the free first machine', r.state.machines.length === 1 && r.getMachineData().id === 'clunky');
   check('Heirloom Reel only gives Old Clunky its Third Reel', (() => {
     const h = newGame(65);
-    h.addSeeds(1000);
-    for (const id of ['familyPride', 'warmUpLaps', 'quickPaws', 'heirloomReel']) h.buyTreeNode(id);
+    plant(h, 'familyPride', 'warmUpLaps', 'quickPaws', 'heirloomReel');
     h.addCoins(1e6);
     h.buyMachine('stacker');
     return h.getReelCount() === 3 && h.getUpgradeLevel('fourthReel') === 0 && h.getMachineInfo('clunky').reels === 3;

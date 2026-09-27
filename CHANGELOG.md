@@ -10,7 +10,19 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ### Added
 
+- **The Big Cage.** Retiring now opens the Big Cage, a page between lives: see what your hamster left the family, and plant your Heirloom Seeds in the Family Tree. It's the only place to plant, and time stands still until you start the new pup's life.
+- **Seeds you hold pay.** Every Heirloom Seed you keep gives +1.5% payouts. Planting a seed spends it (and its bonus), so it's your choice: a trait forever, or a bigger bonus now.
+- **Seven new Family Tree traits** in three new branches. Charms: Lucky Family (more Luck everywhere) and Lucky Heirlooms (every machine starts with Machine Luck). Head Start: Big Spender (start with bigger bets), Seed Vault (machines start with their symbols unlocked) and Snack Inheritance (every pup owns the Snack Stacker). Bonuses: Ball Pit (free spins come sooner) and Golden Pouches (bigger jackpot pots).
+- **Machine Stars.** Max every upgrade on a machine, then rebuild it: its upgrades start again, and it earns a star it keeps forever, even when you retire. Each star gives that machine +10% payouts and +2 Luck (up to 5 stars), plus a gold trim.
+- Three new diary stickers: Nest Egg, Shooting Star and All-Star.
 - **Pays Both Ways**, a new upgrade for every machine. Wins can now start from the right-hand reel too, so a pair on the last two reels pays (on Old Clunky: a pair on reels 2 and 3). A line that matches all the way across still pays once. Old Clunky's needs the Third Reel first. The win show says "from the right" when a win reads that way.
+
+### Changed
+
+- The Heirloom Seed bonus now counts the seeds you **hold**, not every seed ever earned. Seeds you already planted stay planted as traits.
+- **Family Fortune** now makes every seed you hold pay a little more, instead of a flat +10% payouts.
+- Seeds are planted in the Big Cage when you retire; the Family tab shows the tree and what each trait does.
+- The "Full Bloom" sticker now needs all 18 Family Tree traits.
 
 ## [0.2.0] - 2026-09-26
 

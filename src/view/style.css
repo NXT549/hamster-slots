@@ -893,9 +893,53 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .node.bought { animation: bought 0.35s ease-out; }
 .node:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
 
+.tree-fork.more { margin-top: 22px; } /* the second row of branches (M8) */
+.tree-fork.more::before { top: -21px; height: 18px; }
 .tree-detail { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding: 2px 4px 4px; }
 .tree-detail:empty { display: none; }
+.big-cage .tree-detail { scroll-margin-bottom: 80px; } /* not hidden under the Start button */
 .tree-detail .buy-btn { align-self: flex-start; min-width: 180px; }
+
+/* ── The Big Cage (M8): the page between lives, where you plant ── */
+.dialog.big-cage { /* (.dialog.big-cage: more specific than .dialog's own size) */
+  --frame: var(--frame-paper-heirloom);
+  width: min(820px, 96vw); max-height: 94vh; overflow: auto; padding-bottom: 0;
+}
+.big-cage::backdrop { background: rgba(58, 40, 30, 0.72); }
+.bc-head { display: flex; align-items: center; gap: 12px; }
+.bc-head h2 { margin: 0; }
+.bc-head .note { margin: 2px 0 0; line-height: 1.4; }
+.bc-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 8px; }
+.bc-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; background: var(--paper-2); clip-path: var(--notch); text-align: center; }
+.bc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-soft); }
+.bc-value, .bc-stat .seed-amount { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; font-size: 17px; }
+.bc-value { color: var(--luck-dark); }
+.bc-stat img { width: 16px; height: 16px; }
+.bc-explain { margin: 4px 2px 12px; line-height: 1.45; }
+#bc-tree-home .tree-box { margin-bottom: 4px; }
+.bc-foot { /* the Start button stays in sight while you scroll the tree */
+  position: sticky; bottom: 0; z-index: 3; margin: 0 -10px; padding: 0 10px 8px;
+  background: var(--paper); box-shadow: 0 -6px 8px -6px rgba(74, 52, 40, 0.25);
+}
+.bc-foot .btn { margin-top: 8px; }
+
+/* Machine Stars (M8): stars on the marquee, a gold trim, stars + Rebuild on the cards */
+.marquee-stars { display: inline-flex; gap: 1px; }
+.marquee-stars:empty { display: none; }
+.marquee-stars img { width: 16px; height: 16px; }
+.machine.starred { outline: 4px solid var(--gold); outline-offset: 3px; }
+.mc-stars { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-top: 2px; }
+.mc-stars:empty { display: none; }
+.mc-stars img { width: 16px; height: 16px; }
+.mc-stars .note, .rebuild-text .note { margin-left: 4px; }
+.rebuild-btn { margin-top: 6px; }
+.rebuild-card {
+  --frame: var(--frame-paper-gold);
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; padding: 4px 6px;
+}
+.rebuild-text { flex: 1 1 260px; line-height: 1.45; font-size: 14px; }
+.rebuild-text img { width: 16px; height: 16px; vertical-align: -3px; }
+.rebuild-card .btn { flex: none; }
 
 /* ── Capsules tab: Capsule Machine, Wardrobe, Hamster Diary ── */
 
