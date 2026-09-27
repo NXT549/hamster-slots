@@ -558,6 +558,11 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - Before releasing, the user was told: no person had played M9/M10 yet; the seed jar caps held seeds at +100% (a nerf only for families past 67 seeds, which nobody on 1.0 could have reached in its few hours live); saves go v9 → v10 on load, and rolling back to 1.0 would still load them but drop the new machines and hats, so problems are fixed forward (1.1.1).
 - The tag `v1.1.0` is made on `main`; this session's git proxy refuses tag pushes (HTTP 403, as for `v1.0.0`), so the user pushes the tags or makes GitHub Releases.
 
+**D131 — M15, the visual redesign: on the roadmap, not decided** (the user, 2026-09-27: "i want an entire visual redesign", with better upgrades UI because "having to scroll down is a pain", a rebirth animation, and "a separate screen where you spend heirloom seeds and you can only spend those seeds when you rebirth").
+- Added as **row 15 of the roadmap** (DESIGN §11) and **§26**, at the end, where the user asked for it. When it's built (before or after M11, the Hamster Casino) is the user's pick; nothing is built until they answer §26's questions.
+- **Two of the asks already exist in some form:** M8's Big Cage is a full-screen page between lives and the only place to plant (D120), and 1.0 has the iris, seed rain and sprouting traits (D123). So the plan doesn't build them a second time; it asks the user what should change (the look, the length, whether the Family tab keeps its read-only tree) and makes them look and feel like their own place and moment.
+- **Proposed as view only**, like 1.0: no rules, balance or save changes, so the golden run and the save fixtures are untouched. Mock-ups (screenshots at 1280 and 390 px) come before any code change, since the look is the user's call.
+
 ---
 
 ## Balance log
@@ -656,6 +661,11 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-09-27 · 1.1.0 · the user: the layout (→ M15, D131)**
+- Bad: "having to scroll down is a pain" (the upgrades). Measured in Chromium on 1.1.0: at 1280×800 the page is 1,377 px tall and the tray starts ~715 px down, below the fold, so buying something scrolls the machine off the screen; at 390×844 the page is 1,796 px, one ~190 px tile per row.
+- Also asked for: an entire visual redesign, a rebirth animation, a separate screen for spending seeds (DESIGN §26).
+- Seen in the Big Cage at the same time: the tree's lines show through the traits you can't plant yet (`.node.locked` is 55% see-through, with the lines drawn behind it), and on a phone most of the tree sits below the Start button.
 
 **2026-09-27 · M10 · Wardrobe buffs (automated, not a real playtest)**
 - `node tools/sim.mjs --lives 18 --seeds 3`, idle and active, with the wardrobe (the bot opens capsules and wears its rarest skins) and with `--no-capsules`; life lengths in minutes:

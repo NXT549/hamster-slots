@@ -409,6 +409,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | 12 | Your own casino (late game) | The user's "late game you can eventually start your own casino". The family opens **its own casino**: put machines you own on the floor, hamster guests play them, and you earn the **house edge** while idle; decor, staff, more rooms, a new late-game currency/layer. Unlocked far into the game (e.g. every machine owned and several generations). Planned in detail when we get there. |
 | 13 | Delivery depth | Only if playtests say deliveries are fun: routes (short/safe vs long/lucrative), helper hamsters. (The scooter, backpack and auto-delivery are now Family Tree traits.) |
 | 14 | Release prep (toward 1.0.0) *(done: moved up after M8 and released as 1.0.0 on 2026-09-27, §23)* | The user's "I want a full release before trying to make the game longer" (2026-09-27): **1.0 = M1–M8, polished**, with the user's "cool animations and effects" (celebrations, reel and win-show effects, little touches, the big moments between lives) and the release basics (icons, a link card, the version in the Menu, a crash screen, a README). Then 1.0.0, the full public release (AGENTS → Git and releases); M9 onwards come after it as updates. Still before each store release: the store-rule checks below. *Was "Port-prep freeze" for the Godot rebuild (D106).* |
+| 15 | Visual redesign *(planned; §26; when is the user's pick: before or after M11)* | The user's "i want an entire visual redesign" (2026-09-27): **a new look for the whole game**, **no page scrolling in play** (the upgrades beside or under the machine, in compact rows: "having to scroll down is a pain"), **retiring as a real animated sequence**, and **the Big Cage as its own screen** (it already is the only place to spend seeds, between lives only, since M8; the redesign makes it look and feel like its own place). View only: no rules, balance or save changes. Mock-ups first, for the user to pick a look and a layout. |
 | → | **Releases** | GitHub Pages from the start; then itch.io, Steam (Electron or Tauri), maybe mobile (Capacitor), all from the same web codebase. See PORTING_NOTES → The plan. |
 
 **Particles and animations are now a thread, not a milestone** (the user's "fun particle effects and animations"): every milestone ships the effects for what it adds (M7: dust puffs as each reel stops, sparkles per winning line, rolling WIN digits, a card flip, a clover sparkle when luck goes up; M8: the Big Cage scene and a star burst on a rebuild; and so on). **1.0 went through the whole game** (the user's "I also really want some cool animations and effects", §23). Motion "Less" keeps turning them all off.
@@ -418,11 +419,12 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 - ~~**Skill tree**~~ → built as the **Family Tree** (milestone 2, §13).
 - ~~**Rebirth system**~~ → built as **Retirement** (milestone 2, §13).
 - ~~**Skins**~~ → built as the **Capsule Machine** with Hamster Tokens (milestone 3, §14), as the user asked: a separate gacha system with its own tokens.
-- **Art & UI direction:** the user picked **the hamster cage** (milestone 5, §12): the stage is the inside of a cage, the UI is cardboard and paper. Still a prototype look; the playtest decides whether it's the final direction.
+- **Art & UI direction:** the user picked **the hamster cage** (milestone 5, §12): the stage is the inside of a cage, the UI is cardboard and paper. Still a prototype look; the playtest decides whether it's the final direction. After 1.1.0 the user asked for **an entire visual redesign** (M15, §26).
 - **QoL:** the user picked *Buy ×10 / Max* and *Settings & info* first (§17). Not picked yet: keyboard shortcuts for buying and tabs. The save backup (export/import code) was built in 3.8: the user asked for it with the web-first plan (2026-09-25, §7).
 - **Milestone 6 goals (user):** "different denoms like actual pokies", "features where you can win more", "more slot machines", "better game balances", "new and unique upgrade", "different tabs for upgrades and stuff", "cool particle effects and animations" → milestone 6. "Hats that give different buffs", "skins give different buffs", "new Heirloom Seed upgrades" → planned as milestone 7, now M10 (hats, skins) and M8 (tree traits).
 - **First M7 feedback (user, 2026-09-27):** "issue with 3 slots its based left to right meaning if you get 2 on the right it doesnt count" → the user picked **Pays Both Ways as an upgrade** (§3, D119), over "both ways always", "keep left to right, explain it better" and "both ways on Old Clunky only".
 - **M9 (user, 2026-09-27):** after 1.0 ("looks good keep going"), the user picked **all three** proposed machines (243 ways, hold & spin, a multiplier wheel) and placed them in the **late game**, "priced so lives from generation ~9 get longer again" (§24; that part didn't work out, §10).
+- **After 1.1.0 (user, 2026-09-27):** "i want an entire visual redesign" · "i want better ui for upgrades as having to scroll down is a pain" · "i want a rebirth animation" · "i want a separate screen where you spend heirloom seeds and you can only spend those seeds when you rebirth" → M15 (§26). The last two partly exist already (1.0's iris and seed rain, M8's Big Cage page), so the plan asks the user what should change about them.
 - **After M6 (user, 2026-09-25):** new: "more slot machines" → M9 · "rebirths for slot machines" → M8 · "unlock/buy new seeds (carrot, sunflower, golden)", which the user explained as *unlockable symbols you don't start with, kept balanced* → M7 · "more new fun upgrades" → every milestone (luck M7, stars M8, casino M11) · "roulette, blackjack etc in a hamster casino" → M11 · "late game you can eventually start your own casino" → M12 · "hats & skins which both give unique changes and improvements" → M10 · "fun particle effects and animations" → every milestone. Balancing: "slow down spin speed… early game to feel like a slog" → M7 (the user picked "real slog") · "with new symbols added change how likely you are to actually get wins therefore making players buy the luck upgrade" → M7 · "a reason to both rebirth and hold heirloom seeds" → M8. Changes: "change how the double or nothing system works" → M7 (the user picked the pokies card gamble) · "make it more like slot machines… make them go one by one" → M7 · "luck upgrades so you can see how much luck you have… hamster luck and machine luck" → M7 · "when you rebirth it takes you to a fully in-depth page of just the upgrades" → M8.
 
 ### Things to keep in mind for release (itch.io, Steam, mobile)
@@ -434,7 +436,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 
 ## 12. Look & feel (prototype): the hamster cage
 
-**Direction: the inside of a hamster cage** (milestone 5, the user's pick from four directions: hamster cage, night arcade, cozy cottage, candy toy shop). It is *not* the classic clicker layout (big button on the left, long text shop on the right). The game is a little cage you look into: wire bars, wood-shaving bedding, a coloured plastic base, a water bottle and a food bowl, and clear plastic tubes. The UI around it is **cardboard and paper**: the tray is a taped-up cardboard box, tiles and dialogs are paper cards, and every border is a crisp pixel-art frame. **The final look is open:** the 2D pixel-art cage is the current look, and the 2.5D look planned for the Godot rebuild went with it (D106). Whether the release keeps this look is decided later.
+**Direction: the inside of a hamster cage** (milestone 5, the user's pick from four directions: hamster cage, night arcade, cozy cottage, candy toy shop). It is *not* the classic clicker layout (big button on the left, long text shop on the right). The game is a little cage you look into: wire bars, wood-shaving bedding, a coloured plastic base, a water bottle and a food bowl, and clear plastic tubes. The UI around it is **cardboard and paper**: the tray is a taped-up cardboard box, tiles and dialogs are paper cards, and every border is a crisp pixel-art frame. **The final look is open:** the 2D pixel-art cage is the current look, and the 2.5D look planned for the Godot rebuild went with it (D106). Whether the release keeps this look is decided later. **The user asked for an entire visual redesign after 1.1.0** (M15, §26): this section describes the look until then.
 
 | Area | What's there | Why |
 |---|---|---|
@@ -1409,3 +1411,60 @@ So the gentle buffs make lives ~10–30% shorter from the middle game on, and th
 - Do the buffs make capsules exciting, or do they feel like a must-have? Is "gentle" noticeable?
 - Do the hats read well on the hamster at every size? Which ones do people wear?
 - Are the Epic twists fun and understandable? Is the Wardrobe's summary line clear?
+
+---
+
+## 26. The visual redesign (milestone 15)
+
+> **Status: planned, not built** (the user's request, 2026-09-27, after 1.1.0; PORTING_NOTES D131). Nothing below is decided yet: the questions at the end go to the user before any code changes, and so does when it's built (before or after M11).
+
+*"i want an entire visual redesign · i want better ui for upgrades as having to scroll down is a pain · i want a rebirth animation · i want a separate screen where you spend heirloom seeds and you can only spend those seeds when you rebirth"* (the user, 2026-09-27)
+
+### Where the game is today (1.1.0)
+
+- **One long page.** The HUD, the cage and the tray are stacked, and the page scrolls. At 1280×800 the page is 1,377 px tall: the cage and its buttons fill the first ~700 px, so the tray starts below the fold, and scrolling down to buy something takes the machine off the screen. At 390×844 (a phone) it's 1,796 px, with one upgrade tile per row (~190 px each).
+- **Tall upgrade tiles.** Every tile has an icon, the name and level, a description, "now → next", pips and a buy button. The Hamster sub-tab has 5, each machine's has 5–7 (41 across the 7 machines), and Machines has 7 cards. The sub-tabs (M6) keep each list short, but not short enough to sit beside the machine.
+- **The rebirth animation** (1.0, §23): a dark circle closes on the hamster, the Big Cage page arrives in parts with seed rain and a count-up, a trait springs up when it's planted, and the circle opens on the new pup. A few seconds in all.
+- **The seed screen already exists** (M8, §22): retiring opens **the Big Cage**, a full-screen page between lives. It's the only place to plant (only between lives), and time stands still while it's open; the Family tab keeps the retire card and a read-only copy of the tree. But it looks like one more paper dialog on a dark backdrop: the tree is a column of pale cards to scroll through, its lines show through the traits you can't plant yet (they're see-through), and on a phone most of the tree sits below the Start button.
+
+So two of the four asks are already there in some form (the separate screen with its spending rule, and a short animation). For those, the redesign's job is to make them *feel* like the big moment they are; a question below checks that with the user.
+
+### What the redesign is for
+
+1. **No page scrolling in play.** The machine, Spin and what you can buy are on screen together, at every size from a phone up. Only a list inside a panel may scroll, and the main ones should fit without it.
+2. **Upgrades at a glance.** Compact rows or small tiles (icon · name · level · "now → next" · price), with the rest a tap (or a hover) away, and the affordable ones standing out. The 5 hamster upgrades and a machine's 5–7 should fit without scrolling.
+3. **Retiring as a real sequence**, not a transition: a few seconds you can skip. For example, the hamster packs up and waves goodbye, its seeds pour into the family's jar, the Big Cage opens, and after planting the new pup arrives and the cage comes back to life.
+4. **The Big Cage as its own place:** its own scene and look, not a dialog. The tree is drawn as a tree, all 18 traits readable at once (no scrolling on a laptop), with the seed jar in view and the new pup waiting. Planting stays between lives only (already the rule).
+5. **A new look for the whole game:** one consistent style for the HUD, the cage, the 7 machines, the tray, the dialogs and the Big Cage.
+
+### Layouts to try (as mock-ups first)
+
+- **Laptop and wider:** the cage on the left, a **side panel** with the tabs on the right. The panel scrolls on its own if it must; the page never does.
+- **Phone:** the cage on top at a fixed height and the tray filling the rest of the screen, or a tray that slides up over the cage and back down.
+- **Upgrade rows:** two lines per upgrade (icon, name and level; "now → next" and the buy button), with the description and "ready in" on a tap.
+
+### What stays
+
+- **View only, like 1.0:** no rules, balance or save changes, so the golden run, the save fixtures and the simulator stay untouched. (Hiding the tree from the Family tab would be view only too.)
+- **The art rules** (rule 9, rule 11): sprites in art.ts, colours as theme tokens, whole-number scales, the pixel font for words and the clean font for numbers, highlights behind symbols. Skins keep recolouring through tokens (fur, hats, wheel, machine, room), so every token a skin sets must still mean something in the new look.
+- **Motion "Less"** turns off every new animation (a `.less-motion` rule each), and the game still works at 390 px.
+- **Nothing gets lost:** the features on the machine, the win show, the card gamble, the jackpot pots, the Info tab's honest odds and every setting stay reachable.
+
+### How it would be built (proposed)
+
+On a branch (`main` stays playable), one step at a time, with a look from the user after each:
+1. **Mock-ups:** 2–3 layouts and looks as screenshots at 1280 and 390 px, for the user to pick from.
+2. **The layout and the upgrades:** no page scrolling, the new tray.
+3. **The Big Cage as its own screen.**
+4. **The retirement sequence.**
+5. **The new look everywhere else** (the machines, dialogs, the Menu, Capsules, Info).
+
+Then the next minor version (1.2.0).
+
+### Questions for the user (before building)
+
+- **Which look?** The hamster cage remade cleaner, or a new direction (M5's other three were a night arcade, a cozy cottage and a candy toy shop), or something else? Still pixel art?
+- **The Big Cage and the rebirth animation:** have you seen 1.0's (on the live link)? What should change: the look, the length, what happens in it?
+- **The Family tab:** stop showing the tree there, so it's only ever in the Big Cage, or keep the read-only copy?
+- **Upgrades:** compact rows, or small tiles in a grid? A side panel on a laptop?
+- **When:** next (before M11, the Hamster Casino), or after it?
