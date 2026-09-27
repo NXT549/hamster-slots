@@ -8,6 +8,7 @@ import { CAPSULE_SPRITES } from './art.ts';
 import { formatCoins, formatWhole, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
 import { skinPreview } from './skins.ts';
 import type { Sound } from './sound.ts';
+import type { Fx } from './fx.ts';
 import type { Game } from '../logic/game.ts';
 import type { GameEvents } from '../logic/types.ts';
 import type { Settings } from '../platform/save.ts';
@@ -18,7 +19,7 @@ const REVEAL_MS = 900;
 
 export function createCapsulesView(
   game: Game,
-  { say, sound, settings, onSettingsChange }: { say: (text: string, ms?: number) => void; sound: Sound; settings: Settings; onSettingsChange: () => void },
+  { say, sound, fx, settings, onSettingsChange }: { say: (text: string, ms?: number) => void; sound: Sound; fx: Fx; settings: Settings; onSettingsChange: () => void },
 ) {
   // The element with this id (every id used here is in index.html).
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -180,13 +181,21 @@ export function createCapsulesView(
       el.reveal.dataset.key = key;
       el.reveal.dataset.html = '';
       el.reveal.innerHTML = `<div class="reveal-card rarity-edge-${e.rarity}">
-          <span class="reveal-preview"></span>
+          <span class="reveal-preview"><span class="reveal-rays rarity-${e.rarity}"></span></span>
           <div class="reveal-text"><div class="tile-name">${def.name}</div>
             <div><span class="rarity-chip rarity-${e.rarity}">${rarityName(e.rarity)}</span> <span class="note">${categoryName(def.category)}</span></div>
             ${badge}</div>
           ${button}
         </div>`;
       el.reveal.querySelector('.reveal-preview')!.appendChild(skinPreview(def, 48));
+      // 1.0: the prize bursts out in its rarity's colour; the rarest one with confetti too.
+      if (!e.duplicate || e.rarity !== 'common') {
+        const preview = el.reveal.querySelector('.reveal-preview');
+        const colour = getComputedStyle(document.documentElement).getPropertyValue(`--rarity-${e.rarity}`).trim() || fx.colors.gold[0];
+        fx.burstAt(preview, { count: e.rarity === game.data.capsules.pityRarity ? 36 : 20, palette: [colour, '#ffffff', fx.colors.gold[0]], speed: 220 });
+        fx.ringAt(preview, { count: 24, speed: 300, palette: [colour, '#ffffff'] });
+        if (e.rarity === game.data.capsules.pityRarity) fx.confetti(60, el.machine.closest('.capsule-card'));
+      }
     }
   }
 

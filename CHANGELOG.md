@@ -8,8 +8,18 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+This is going to be **1.0**, the full release: everything so far, plus the Big Cage, polished with a lot of new animations and effects.
+
 ### Added
 
+- **Big win celebrations.** A big win now dims the cage, turns on the light rays and slams a huge **BIG WIN!** over it while the coins count up and gold coins fly. Jackpots climb **BIG WIN! → HUGE WIN! → JACKPOT!** with gold raining down the cage, and the jackpot pots, free spins and Machine Stars get their own. They never get in your way: tap the cage (or spin) and they fade, and you can still play the card gamble underneath.
+- **Livelier reels.** Reels blur as they race and thump as they land, winning symbols dance, each winning line draws itself across the reels, the machine's lights chase, the sign flashes on a win, and a reel that could still land a bonus makes the machine's window throb.
+- **Little touches everywhere.** A glint runs across the upgrades you can afford, buying one pops "LV 3!" or "MAX!", the hamster breathes while it rests, dozes off with little "z"s if you leave it alone, and sends up hearts on big wins. Free spins turn the cage to night with twinkling stars. The game opens with the cage landing into place, and tabs and windows slide in.
+- **Between lives.** Retiring closes the scene on your hamster like an old cartoon, Heirloom Seeds rain down the Big Cage as your seed count rolls up, planted traits spring out of the ground, and the new pup's life opens with hearts and confetti. A new Machine Star pops onto the machine's sign, and capsule prizes shine in their rarity's colour.
+- **A hamster icon** in your browser tab, and on your phone's home screen if you add the game there. A link to the game now shows a picture in chats.
+- **The game's version** at the bottom of the Menu, with a link to this list of what's new.
+- If the game ever hits a bug, it now stops safely and says so (your last save is kept) instead of freezing.
+- Menu → Motion "Less" (or your device's "reduce motion" setting) turns all the new movement off.
 - **The Big Cage.** Retiring now opens the Big Cage, a page between lives: see what your hamster left the family, and plant your Heirloom Seeds in the Family Tree. It's the only place to plant, and time stands still until you start the new pup's life.
 - **Seeds you hold pay.** Every Heirloom Seed you keep gives +1.5% payouts. Planting a seed spends it (and its bonus), so it's your choice: a trait forever, or a bigger bonus now.
 - **Seven new Family Tree traits** in three new branches. Charms: Lucky Family (more Luck everywhere) and Lucky Heirlooms (every machine starts with Machine Luck). Head Start: Big Spender (start with bigger bets), Seed Vault (machines start with their symbols unlocked) and Snack Inheritance (every pup owns the Snack Stacker). Bonuses: Ball Pit (free spins come sooner) and Golden Pouches (bigger jackpot pots).

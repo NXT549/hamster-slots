@@ -15,14 +15,15 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 
 > **Keep this block accurate.** Update it in the same commit as any change it describes.
 
-- **Version:** **0.2.0** (CHANGELOG.md) = milestones 1–7 on the new web foundation, plus the save backup and big numbers (0.1.0 was the plain-JS prototype). These are separate numbers: the save format is `SAVE_VERSION` 9 (game.ts; 9 since M8) and the data is `schemaVersion` 9 (data.json; 8 since Pays Both Ways, 9 since M8).
+- **Version:** **0.2.0** is the last release (CHANGELOG.md) = milestones 1–7 on the new web foundation, plus the save backup and big numbers (0.1.0 was the plain-JS prototype). The branch is **1.0.0-rc.1** (package.json; the Menu shows it): the 1.0 release candidate, below. These are separate numbers: the save format is `SAVE_VERSION` 9 (game.ts; 9 since M8) and the data is `schemaVersion` 9 (data.json; 8 since Pays Both Ways, 9 since M8).
 - **Now: the switch to web-first.** Step 1 (docs) and Step 2 (the migration plan) are approved. **Step 3, the migration, is complete** (PORTING_NOTES → Web migration, D110–D117): npm + Vite, the layer folders, Vitest + the golden run, TypeScript for all of `src/`, the platform layer, break_eternity.js (save v8), the save backup, bundled fonts, the debug-panel rule. The user OK'd every step; 0.2.0 is merged into `main` and tagged `v0.2.0`. **Step 4 (GitHub Pages):** the repo is **https://github.com/NXT549/hamster-slots** (public; the git remote `origin`), Pages → Source = GitHub Actions, and every push to `main` tests, builds and deploys the game to **https://nxt549.github.io/hamster-slots/** (`.github/workflows/deploy.yml`, D118). Friends play from that link.
 - **The code today:** everything in `src/` (logic, view, platform, boot) is **TypeScript** (strict), and the stack below is all in place. The tests and tools are JavaScript (typing them needs `@types/node`, a new dependency: ask first). Vite runs and builds it (`npm run dev`, `npm run build`, which type-checks first). Git: releases are tagged on `main` (`v0.1.0`, `v0.2.0`); the migration was done on the `web-migration` branch.
 - **The game:** M7 "Real pokies" is built and waiting for the user's playtest (the questions are in DESIGN §21). **First M7 feedback (2026-09-27):** a pair on the right-hand reels didn't pay (wins count from reel 1, D3). The user picked **Pays Both Ways as an upgrade** (one per machine; Old Clunky's needs the Third Reel; DESIGN §3, D119). The user OK'd it (and the 5,000 price on Old Clunky) and it's **merged into `main` and live** (2026-09-27), built on the branch `claude/serene-mayer-lgbgdp`. It has no release number yet: CHANGELOG `[Unreleased]` (a new feature = a minor version, 0.3.0, when the user wants a release). Friends can join that playtest from the Pages link (https://nxt549.github.io/hamster-slots/).
-- **M8 "The Big Cage" is built** (2026-09-27, the user's "keep developing the game") on the branch `claude/serene-mayer-lgbgdp`, **not merged into `main`**: the user asked to keep it on a branch until they've played it (D120). It's held Heirloom Seeds (+1.5% payouts each; planting spends them), the Big Cage page between lives (the only place to plant; time stands still there), 7 new Family Tree traits in 3 branches, and Machine Stars (rebuild a maxed machine; +10% payouts, +2 Luck, up to 5, kept forever): DESIGN §22, D120–D122, save v9. It waits for the user's playtest (the questions are in DESIGN §22); then M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M9+ early. **Still open:** from generation ~9 lives are short (1–13 min): M8 kept gens 1–8 close to M7 but couldn't fix the late ones, which need new content (D121).
-- **Tests now:** `npm test` (Vitest) runs 1,375 tests in about 15 s: the logic checks (812: M7's 687 + 6 for save v8 + 56 for Pays Both Ways + 63 for M8), 400 art checks, the golden run (33), the save fixtures (21), the platform layer (27), money (57) and save codes (25).
-- **Last verified (0.2.0, 2026-09-26):** all tests; the golden run unchanged since 0.1.0 (the game plays exactly the same, to the cent); the simulator's and `npm run economy`'s output identical to 0.1.0; the built game in Chromium (fonts from the build, the debug rule). M7's own checks: PORTING_NOTES → Playtest notes, 2026-09-25. **Pays Both Ways (2026-09-27):** all tests and the build; the golden run re-recorded (only the `allMachines` session plays differently: it buys every upgrade); the simulator before/after and the Chromium check are in PORTING_NOTES → Playtest notes, 2026-09-27. **M8 (2026-09-27, on the branch):** all tests and the build; the golden run re-recorded (the first life and the all-machines session play exactly as before; only lives after planting change); the simulator (idle and active, 12 lives) and the Chromium check at 1280 and 390 px: PORTING_NOTES → Playtest notes, 2026-09-27 (M8).
-- **Not yet verified:** how the M7 sounds *sound* (tick, card, luck, unlock, softer auto clunks); the label on a natural jackpot-wheel trigger; the look in Firefox and Safari.
+- **M8 "The Big Cage" is built** (2026-09-27, the user's "keep developing the game") on the branch `claude/serene-mayer-lgbgdp`, **not merged into `main`**: the user asked to keep it on a branch until they've played it (D120). It's held Heirloom Seeds (+1.5% payouts each; planting spends them), the Big Cage page between lives (the only place to plant; time stands still there), 7 new Family Tree traits in 3 branches, and Machine Stars (rebuild a maxed machine; +10% payouts, +2 Luck, up to 5, kept forever): DESIGN §22, D120–D122, save v9. Its playtest questions are in DESIGN §22; it now ships inside 1.0 (next bullet); then M9 More machines → M10 Wardrobe buffs → M11 Hamster Casino → M12 Your own casino (DESIGN §11). Don't build M9+ early. **Still open:** from generation ~9 lives are short (1–13 min): M8 kept gens 1–8 close to M7 but couldn't fix the late ones, which need new content (D121).
+- **1.0, the full release, is built** (2026-09-27, the user's "I want a full release before trying to make the game longer; I also really want some cool animations and effects") on the same branch, on top of M8, **not merged into `main`**: one playtest covers M8 and the polish (D123). It's **view only** (no rules, balance or save changes; the golden run is untouched): celebrations over the cage (BIG WIN! → HUGE WIN! → JACKPOT!, pots, free spins, stars; `src/view/celebrate.ts`), reel and win-show effects, little touches everywhere, the big moments between lives (the iris, seed rain, sprouting traits), all obeying Motion "Less"; plus the release basics (icons, manifest, link card, the version in the Menu, a crash screen, README.md): DESIGN §23, D123–D124. **When the user OKs it:** the release commit (CHANGELOG `[Unreleased]` → `[1.0.0]` with the date, package.json + package-lock 1.0.0), merge into `main` (deploys), tag `v1.0.0` and push the tag. Its playtest questions are in DESIGN §23.
+- **Tests now:** `npm test` (Vitest) runs 1,378 tests in about 15 s: the logic checks (812: M7's 687 + 6 for save v8 + 56 for Pays Both Ways + 63 for M8), 400 art checks, the golden run (33), the save fixtures (21), the platform layer (27), money (57), save codes (25) and the release files (3).
+- **Last verified (0.2.0, 2026-09-26):** all tests; the golden run unchanged since 0.1.0 (the game plays exactly the same, to the cent); the simulator's and `npm run economy`'s output identical to 0.1.0; the built game in Chromium (fonts from the build, the debug rule). M7's own checks: PORTING_NOTES → Playtest notes, 2026-09-25. **Pays Both Ways (2026-09-27):** all tests and the build; the golden run re-recorded (only the `allMachines` session plays differently: it buys every upgrade); the simulator before/after and the Chromium check are in PORTING_NOTES → Playtest notes, 2026-09-27. **M8 (2026-09-27, on the branch):** all tests and the build; the golden run re-recorded (the first life and the all-machines session play exactly as before; only lives after planting change); the simulator (idle and active, 12 lives) and the Chromium check at 1280 and 390 px: PORTING_NOTES → Playtest notes, 2026-09-27 (M8). **1.0.0-rc.1 (2026-09-27, on the branch):** all tests and the build, the golden run unchanged; every new effect in Chromium at 1280 and 390 px and with reduced motion: PORTING_NOTES → Playtest notes, 2026-09-27 (1.0.0-rc.1).
+- **Not yet verified:** how the M7 and 1.0 sounds *sound* (tick, card, luck, unlock, softer auto clunks; the slam, the count-up, star, sprout, whoosh); the label on a natural jackpot-wheel trigger; the look in Firefox and Safari (for 1.0: the rays' `mask`, the line trace, the reel blur).
 
 ## Project docs
 
@@ -30,6 +31,7 @@ Read it fully before touching anything. `CLAUDE.md` in this folder just imports 
 - **DESIGN.md:** what the game is and where it's heading. The source of truth for design decisions.
 - **PORTING_NOTES.md:** platform plans (web, Steam, mobile). Below them it also keeps the project's logs: **Decisions** (D-numbers), the **Balance log**, **Playtest notes** and the **Prototype history** (the old dev changelog).
 - **CHANGELOG.md:** the player-facing record of changes.
+- **README.md:** the public repository's front page (what the game is, the link to play, how to run it). Keep it true when the game's big picture changes.
 - **Any change that affects what these docs say must update them in the same commit.** Docs must never go out of date.
 
 | If you change… | Update… |
@@ -93,6 +95,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
   - `tests/fixtures.test.js`: real saves (`tests/fixtures/save-v<version>-<name>.json`, one set per save version, kept for good). The current version's must load and save back unchanged; each older one must migrate to exactly the current file of the same name (v7 → v8: every amount becomes the same amount as text). A new save version gets its set with `node tools/golden.mjs --fixtures` (it never touches the recording or overwrites a file); since v9 a new version's file is the previous version's file of the same name, loaded and saved again, so "migrates to exactly" holds even when the sessions now play differently (D122).
   - `tests/money.test.js`: big numbers (`src/logic/money.ts`): the same answers as plain numbers for everyday amounts (the cent-exact promise), big numbers past 1.8e308, reading money from a save, and how `formatCoins` writes it.
   - `tests/savecode.test.js`: save codes: made, checked (every problem a pasted code can have), loaded (stored straight away, no offline pay), old v7 codes through the migrations, UTF-8.
+  - `tests/release.test.js`: the files a release needs: the icons exist at their sizes, the manifest and index.html point at them, the link card's picture is there, and package.json's version is a real version (and matches package-lock.json).
   - `tests/platform.test.js`: the platform layer. Saving and loading, broken saves, full or blocked storage, settings, Reset keeping the settings, autosave and the pay for time away, all on the pretend platform (`src/platform/memory.ts`); and the web version on a fake browser.
 - **The tests and tools are JavaScript** (`.test.js`, `.mjs`): typing them would need `@types/node`, a new dependency (ask first).
 
@@ -101,7 +104,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 - **Work on a branch for anything bigger than a small fix;** merge to `main` when it's working.
 - **Commit after each working step** with a clear message.
 - **`main` must always be playable**, because it deploys to players automatically.
-- **Versioning:** patch (0.1.1) for fixes, minor (0.2.0) for new features/content, major (1.0.0) for the full public release.
+- **Versioning:** patch (0.1.1) for fixes, minor (0.2.0) for new features/content, major (1.0.0) for the full public release. A release candidate waiting for the user's OK on a branch says so in package.json (`1.0.0-rc.1`).
 - **Every player-facing change gets a CHANGELOG.md entry** under `[Unreleased]`, written in plain language for players. A release moves those entries under the new version and its date (and sets the same version in `package.json` once that file exists).
 - **Commit identity** (set in this repo's own git config): name `nxt`, email `94941422+NXT549@users.noreply.github.com` (GitHub's private address, so no personal email is published). Claude's commits add a `Co-Authored-By` line.
 - **Deploying:** `.github/workflows/deploy.yml` runs `npm ci`, the tests and the build on every push to `main` and, only if all pass, puts `dist/` on GitHub Pages (a failed run deploys nothing; the site keeps the last good version). The repo is https://github.com/NXT549/hamster-slots (remote `origin`), the game is at https://nxt549.github.io/hamster-slots/; a run's result is on the repo's **Actions** tab. So work is committed on a branch and merged into `main` (and pushed) after the user's OK. Releases are tagged on `main` and the tags pushed (`v0.1.0`, `v0.2.0`); the CHANGELOG's version links compare them on GitHub.
@@ -113,7 +116,7 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
 ## Code style
 
 - **Rule 7: comment for a learner.** The user is learning. Add short comments that explain *why*, at key points. Don't comment every line.
-- **Rule 9: prototype art.** Pixel sprites in `src/view/art.ts` follow the style guide at the top of that file (24/16/12 px, colour ramps, matching outlines, whole-number scales; 12×12 UI frames are 9-slice and must keep their edges uniform). The palette's letters are all used: new colours go on free digits/punctuation (the purple ramp uses `8 9 0 +`); M7's sprites (Wood Shaving, clover, horseshoe, seed packet, card back, four suits) reuse existing ramps. The cage itself (bars, base, tubes, machines, the WIN meter, the gamble card) is CSS. Particles (`src/view/fx.ts`) are whole-pixel squares in token colours and must stay off with Motion "Less". Spend effort on feel and clarity, not detail.
+- **Rule 9: prototype art.** Pixel sprites in `src/view/art.ts` follow the style guide at the top of that file (24/16/12 px, colour ramps, matching outlines, whole-number scales; 12×12 UI frames are 9-slice and must keep their edges uniform). The palette's letters are all used: new colours go on free digits/punctuation (the purple ramp uses `8 9 0 +`); M7's sprites (Wood Shaving, clover, horseshoe, seed packet, card back, four suits) reuse existing ramps. The cage itself (bars, base, tubes, machines, the WIN meter, the gamble card) is CSS. Particles (`src/view/fx.ts`) are whole-pixel squares in token colours, or sprites from art.ts drawn at a whole-number scale (1.0: coins, stars, seeds, hearts), and must stay off with Motion "Less". Every new animation needs its `.less-motion` rule in style.css. Spend effort on feel and clarity, not detail.
 
 ## How to run
 
@@ -135,11 +138,13 @@ The hard rules keep their numbers (1–11), because the logs refer to them ("rul
   - **Unlocks and Luck:** `hamster.game.buyUpgrade('newSeeds', 2)`, `buyUpgrade('clover', Infinity)`, `buyUpgrade('horseshoe', Infinity)`.
   - **The Big Cage (M8):** retire (debug **Earn +100K**, then Family → Retire twice), or debug **Open the Big Cage** to plant without retiring; **Start [pup]'s life** closes it. In the console: `hamster.game.openBigCage()`, `hamster.game.leaveBigCage()`.
   - **Machine Stars:** `hamster.game.addCoins(1e7)`, then Upgrades → the machine's tab → Max on every tile (or `for (const u of hamster.game.getAvailableUpgrades().filter((x) => x.scope === 'machine')) hamster.game.buyUpgrade(u.id, Infinity)`), and the Rebuild card appears (two taps).
+  - **Celebrations (1.0):** in the console, `hamster.ui.celebrate.start({ kind: 'jackpot', titles: ['BIG WIN!', 'HUGE WIN!', 'JACKPOT!'], amount: hamster.game.state.coins })` (kinds: `big`, `jackpot`, `grand`, `pot`, `free`, `star`; `icon: 'star'` and `sub: '…'` are optional). A real one: debug **Wheel: Grand** on the Pouch Palace, or retire / rebuild as below.
   - **Pays Both Ways:** `hamster.game.buyUpgrade('thirdReel')`, then `buyUpgrade('clunkyBothWays')` (the others: `stackerBothWays`, `bonanzaBothWays`, `palaceBothWays`). A win from the right says "from the right" in the win show.
   - **The win show on many lines:** buy the Stacker with its paylines and wild, then speed time up until a spin wins on 3+ lines and slow it back down (a spin every ~3 s at normal speed).
   - **A fresh game:** Menu → Reset (twice). Clearing localStorage from the console doesn't stick, because the game saves itself when the page unloads.
   - **Save backup:** Menu → Save backup. A save file's plain JSON can be pasted too, e.g. one of `tests/fixtures/` (old v7 ones load through the migrations). Loading restarts the page.
   - **Offline earnings:** debug panel → pretend you were away 10 min / 1 h / 10 h. **Sound:** Menu → Sound; `hamster.sound.ready` in the console says whether audio is on.
+- **Icons:** `node tools/icons.mjs` redraws `public/icons/` from the hamster sprite (run it after changing the sprite). `public/social.png` (the link card's picture) is a 1200×630 screenshot of a BIG WIN.
 - **Sprite gallery:** `http://localhost:8765/tools/sprites.html` shows every sprite big (`?only=seed,carrot&zoom=8` for close-ups).
 - Requires Node.js with npm (the user has Node 24, npm 11). Python isn't needed any more. The tools (`sim.mjs`, `economy.mjs`, `golden.mjs`) run the `.ts` logic straight from Node 24, which strips the types itself: that's why imports name the `.ts` file.
 
@@ -155,13 +160,16 @@ hamster_slots/
 ├── PORTING_NOTES.md   ← platform plans (web, itch.io, Steam, mobile) + decisions, balance log, playtest notes,
 │                         prototype history
 ├── CHANGELOG.md       ← what players got in each version (Keep a Changelog, from 0.1.0)
+├── README.md          ← the public repo's front page: what the game is, the link to play, how to run it
 ├── data.json          ← ALL balance data (read by the game, tests and simulator): betSteps, gamble, machines (+ paylines,
 │                         wild/scatter/blank symbols, locked symbols, freeSpins, jackpot pots), upgrades (incl.
 │                         luck, unlockSymbol, bothWays; `requires` = upgrades needed first), retirement (seeds, held
 │                         bonus) + familyTree (7 branches since M8), stars (Machine Stars), tokens, capsules, skins, diary
 ├── index.html         ← page skeleton (HUD, cage stage + bet box + card gamble panel + pots + WIN meter + clover
-│                         badge, tray tabs and sub-tabs, menu + settings, save backup, the Big Cage page, the particle
-│                         canvas) + file:// warning
+│                         badge, tray tabs and sub-tabs, menu + settings + version line, save backup, the Big Cage page,
+│                         the particle canvas) + icons, manifest and link-card tags + file:// and no-JavaScript warnings
+├── public/            ← copied into the build as it is: icons/ (the hamster, made by tools/icons.mjs), manifest.webmanifest
+│                         (add to home screen), social.png (the link card's picture)
 ├── package.json       ← npm: the version, scripts (dev, typecheck, build, preview, test, economy, sim) and packages (Vite, Vitest, TypeScript; in the game: break_eternity.js and the two Fontsource fonts)
 ├── tsconfig.json      ← TypeScript settings (strict; .ts imports; only erasable syntax, so Node can run it)
 ├── tsconfig.logic.json ← src/logic checked with no browser types (rule 1)
@@ -183,16 +191,19 @@ hamster_slots/
 │   ├── fixtures/      ← real save files, one set per save version (v7, v8, v9): the old-format saves migrations are tested on
 │   ├── savecode.test.js ← save codes (Menu → Save backup): make, check, load, old codes
 │   ├── money.test.js  ← big numbers: exact for everyday amounts, past 1.8e308, from a save, on screen
+│   ├── release.test.js ← the release files: icons at their sizes, the manifest, index.html's links, the version
 │   └── platform.test.js ← the platform layer on a pretend platform (full/blocked storage, hide/show/close) + web.ts
 ├── tools/
 │   ├── sim.mjs        ← the balance simulator: a bot plays the real logic (node tools/sim.mjs --help)
 │   ├── economy.mjs    ← prints the economy tables for DESIGN.md (npm run economy)
 │   ├── golden.mjs     ← records the golden run (only for approved gameplay changes: --confirm) + save fixtures (--fixtures;
 │   │                     a new version's = the previous version's file migrated)
+│   ├── icons.mjs      ← draws public/icons/ from the hamster sprite (a tiny PNG writer; node tools/icons.mjs)
 │   └── sprites.html   ← sprite gallery (dev page): every sprite in src/view/art.ts, big
 └── src/
     ├── main.ts        ← BOOT: boot(createWebPlatform()): the fonts, data.json (bundled; hot-applied in dev) → game → load save →
-    │                    settings, theme, sound, debug + UI → offline earnings → frame loop + autosave
+    │                    settings, theme, sound, debug + UI (+ the version) → offline earnings → frame loop + autosave;
+    │                    the crash screen (a bug in the loop stops autosave and says so)
     ├── logic/         ← LOGIC: no DOM, no clock, runs headless in Node (rule 1)
     │   ├── types.ts   ← the shapes of data.json (GameData), the state/save (GameState) and every event (GameEvents)
     │   ├── money.ts   ← Money = a big number (break_eternity.js Decimal) + helpers that give plain numbers' exact answers
@@ -222,14 +233,21 @@ hamster_slots/
     └── view/          ← VIEW: draws the game and turns clicks and keys into game actions
         ├── style.css  ← the "hamster cage" look; THEME TOKENS in :root (colours, fonts, sizes)
         ├── art.ts     ← pixel sprites as text grids + palette (+ per-draw palette overrides for fur);
-        │                symbol/machine/upgrade/tree node/capsule → sprite maps; UI frames + bedding tile
+        │                symbol/machine/upgrade/tree node/capsule → sprite maps; UI frames + bedding tile; spriteCanvas
+        │                (a sprite at 1× on a canvas, for the sprite particles)
         ├── theme.ts   ← turns the UI frame sprites into CSS variables (9-slice borders), painted in token colours
         ├── skins.ts   ← what each skin looks like (fur colours, cage theme tokens) + swatches
-        ├── dom.ts     ← shared helpers: formatCoins (+ short/full numbers; 1.23e15 from a quadrillion up; plain numbers or Money), formatWhole (seeds, tokens), mix, setText, setHTML, replayClass,
+        ├── dom.ts     ← shared helpers: formatCoins (+ short/full numbers; 1.23e15 from a quadrillion up; plain numbers or Money), formatWhole (seeds, tokens), mix, setText, setHTML, replayClass
+        │                (takes its class off when the animation ends), popText ("LV 3!" floating off an element),
         │                iconHTML, createSubTabs, formatSeconds/Duration/Wait
         ├── sound.ts   ← synthesized sound effects (Web Audio), volume + mute
         ├── fx.ts      ← pixel particles on one canvas over the page: sparkles, confetti, fountains, dust, embers,
-        │                motes (capped at 400; none with Motion "Less")
+        │                motes, twinkles, rings (shockwaves), and sprite particles (spinning coins, stars, seeds,
+        │                hearts: coinFountain, rain, spriteBurst) (capped at 400; none with Motion "Less"). ui.ts moves
+        │                the canvas into the Big Cage dialog while it's open (a dialog sits above the page)
+        ├── celebrate.ts ← the big moments (1.0): the celebration over the cage (dim, rays, a title that slams in and
+        │                climbs BIG WIN! → HUGE WIN! → JACKPOT!, the count-up, coins; taps go through, D124) and the
+        │                iris between lives (closes on the hamster when it retires, opens on the new pup)
         ├── reels.ts   ← scrolling reel strips (3 visible rows; real rows on grid machines) that stop one at a
         │                time, payline tags (or badges on many-line machines), winning cells + lines, feature
         │                cells, anticipation, quick reels
@@ -244,9 +262,11 @@ hamster_slots/
         │                tags, bubble, bet box, pots, clover + streak badges, card gamble panel, delivery tube,
         │                fit-to-width, stars on the marquee + gold trim), tray tabs, Family tab (retire + read-only
         │                tree), the Big Cage page (the tree moves into it while it's open), menu + settings, skins on the
-        │                stage, capsule prop, win celebrations (WIN_FX + particles), reel clunks + dust, sounds,
-        │                welcome-back + stats dialogs
-        ├── capsules.ts ← the Capsules tab (sub-tabs): machine card + reveal, Wardrobe, Hamster Diary
+        │                stage, capsule prop, win celebrations (WIN_FX → celebrate.ts + particles), reel clunks, dust and
+        │                thumps, the little touches (hearts, the breathing and dozing hamster, Spin's glow, the night
+        │                cage in free spins, the page opening), retire → iris → Big Cage (seed rain, count-up) → new
+        │                life, sounds, welcome-back + stats dialogs
+        ├── capsules.ts ← the Capsules tab (sub-tabs): machine card + reveal (rays in the rarity's colour), Wardrobe, Hamster Diary
         ├── backup.ts  ← the Save backup dialog (Menu): your code + Copy, paste a code (checked as you paste), two-tap Load
         └── debug.ts   ← debug panel (dev, or ?debug in a built game): stats incl. Luck and feature odds, coins, free spins, jackpot wheel, offer
                          a gamble, time speed, reload data in dev)
@@ -301,4 +321,4 @@ Every amount of money it gives back (coins, seeds, tokens, costs, payouts, pots,
 - **Queries (tokens, capsules, skins):** `getDiaryProgress(id)` → `{value, target, done}`, `getPullCost()`, `canPull()`, `getPityRemaining()`, `getCapsuleOdds()` → `[{id, name, chance, withPity, duplicateRefund}]`, `getSkinDef(id)`, `isSkinOwned(id)`, `getEquippedSkin(category)`.
 - **State you'll read:** `state.coins`, `state.machines` (owned: `{typeId, upgrades, bet, spinning, spinTimer, spinBet, spinFree, spinSource, result, streak, freeSpins, pots, bonus}`), `state.gamble` (never saved), `state.activeMachine` (index), `state.run` (this life), `state.generation`, `state.seeds` (held), `state.seedsEarned`, `state.tree`, `state.stars` (Machine Stars by machine type), `state.bigCage` (between lives), `state.tokens`, `state.diary`, `state.skins` (`owned`, `equipped`), `state.capsules.sincePity`, `state.stats` (lifetime, incl. `coinsEarned`, `goldenJackpots`, `capsulesOpened`, `tokensEarned`, `machinesBought`, `mostLinesWon`, `biggestBet`, `freeSpins`, `freeSpinTriggers`, `freeSpinCoins`, `wildWins`, `bestStreak`, `jackpotsWon`, `grandJackpots`, `gambleWins`, `gambleLosses`, `bestGambleRun`, `symbolsUnlocked`, `bestLuck`, `suitWins`, `rebuilds`, `bestStars`, `mostSeedsHeld`).
 - **Saving:** `toSaveData()`, `loadSaveData(obj)`.
-- **Read-only:** `game.state`, `game.data`, `game.rng`. In the browser console: `hamster.game`, `hamster.clock.timeScale`, `hamster.ui.render()`, `hamster.sound`.
+- **Read-only:** `game.state`, `game.data`, `game.rng`. In the browser console: `hamster.game`, `hamster.clock.timeScale`, `hamster.ui.render()`, `hamster.ui.celebrate` (try a celebration), `hamster.sound`.

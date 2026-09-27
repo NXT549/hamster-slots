@@ -4,6 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hamster Slots</title>
+  <meta name="description" content="A cute pixel-art idle slot machine powered by a hamster on a wheel. Spin, upgrade, retire and plant the family tree. Fake coins only: no real money, ever.">
+  <meta name="theme-color" content="#e9dac4">
+  <!-- The icons (made from the hamster sprite by tools/icons.mjs) and the web app
+       manifest (lets phones add the game to the home screen). They live in public/. -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/icon-64.png">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- The card a link to the game shows in chats and on social sites (the picture
+       needs a full address, so it points at the public site). -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hamster Slots">
+  <meta property="og:description" content="A cute pixel-art idle slot machine powered by a hamster on a wheel. Fake coins only: no real money, ever.">
+  <meta property="og:url" content="https://nxt549.github.io/hamster-slots/">
+  <meta property="og:image" content="https://nxt549.github.io/hamster-slots/social.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="src/view/style.css">
 </head>
 <body>
@@ -281,7 +299,7 @@
       </span>
     </div>
     <!-- Segmented settings: ui.ts fills in the buttons -->
-    <div class="menu-row"><span>Motion <span class="note">(hops, shakes, flying coins)</span></span><span class="seg" id="set-motion"></span></div>
+    <div class="menu-row"><span>Motion <span class="note">(particles, hops, shakes, flying coins)</span></span><span class="seg" id="set-motion"></span></div>
     <div class="menu-row"><span>Reels <span class="note">(spins take the same time)</span></span><span class="seg" id="set-reels"></span></div>
     <div class="menu-row"><span>Numbers</span><span class="seg" id="set-numbers"></span></div>
     <button class="btn btn-soft" id="backup-btn">Save backup</button>
@@ -289,6 +307,9 @@
     <button class="btn btn-soft" id="debug-btn">Toggle debug panel</button>
     <button class="btn btn-danger" id="reset-btn">Reset progress</button>
     <form method="dialog"><button class="btn btn-primary">Close</button></form>
+    <!-- The version (package.json) and what's new; ui.ts fills in the version -->
+    <p class="menu-foot note">Hamster Slots <span id="app-version"></span> · the coins are pretend: no real money, ever ·
+      <a href="https://github.com/NXT549/hamster-slots/blob/main/CHANGELOG.md" target="_blank" rel="noopener">What's new</a></p>
   </dialog>
 
   <!-- ── Save backup (Menu → Save backup): the save as a one-line code (view/backup.ts) ── -->
@@ -347,6 +368,7 @@
   <!-- Pixel particles (src/view/fx.ts): sparkles, confetti, embers. Over the whole page, never clickable. -->
   <canvas id="fx" class="fx" aria-hidden="true"></canvas>
   <div id="boot-error" class="boot-error hidden"></div>
+  <noscript><div class="boot-error"><div class="dialog-card"><p><b>Hamster Slots needs JavaScript.</b> Please switch it on for this page.</p></div></div></noscript>
 
   <!-- Opened by double-clicking index.html (a file:// address)? Then the browser
        won't load the game's code at all (it blocks JavaScript modules from disk),

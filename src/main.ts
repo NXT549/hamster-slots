@@ -10,6 +10,8 @@
 // Vite bundles data.json into the game's code, so there's no separate file to
 // load: it works the same on every platform (and even offline).
 import bundledData from '../data.json';
+// The game's version (package.json), shown at the bottom of the Menu.
+import { version } from '../package.json';
 // The two fonts come with the game (the Fontsource packages; both fonts are OFL,
 // so that's allowed), so it looks the same offline, on itch.io, and later in the
 // desktop and phone apps. Pixelify Sans (pixel words) only at weight 500, Nunito
@@ -92,6 +94,7 @@ function boot(platform: Platform) {
   const ui = createUI(game, {
     sound,
     settings,
+    version,
     onReset() {
       autosave.stop(); // or the "save when the page closes" would write the old progress straight back
       clearSave(platform);
@@ -127,9 +130,17 @@ function boot(platform: Platform) {
   function frame(nowMs: number) {
     const realDt = Math.min((nowMs - last) / 1000, MAX_FRAME_SECONDS);
     last = nowMs;
-    game.update(realDt * clock.timeScale);
-    ui.render();
-    debug?.render();
+    try {
+      game.update(realDt * clock.timeScale);
+      ui.render();
+      debug?.render();
+    } catch (err) {
+      // A bug: stop saving first, so the last good save isn't overwritten by a
+      // broken game, and say so (the loop stops here too).
+      autosave.stop();
+      crashScreen(err);
+      return;
+    }
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -153,5 +164,25 @@ function boot(platform: Platform) {
   window.hamster = { game, clock, ui, sound };
 }
 
+// Something went badly wrong (a bug): a friendly box instead of a frozen game.
+// The save is whatever the last autosave wrote (every few seconds), so a reload
+// carries on from there. The error text helps whoever fixes the bug.
+function crashScreen(err: unknown) {
+  const box = document.getElementById('boot-error');
+  if (!box) return;
+  const text = err instanceof Error ? `${err.message}\n${err.stack || ''}` : String(err);
+  box.innerHTML = '<div class="dialog-card"><p><b>Oops! The hamster tripped over a bug.</b></p>'
+    + '<p>Your game was saved a few seconds ago. Reload the page to carry on from there.</p>'
+    + '<p><button class="btn btn-primary" id="crash-reload">Reload</button></p>'
+    + '<details><summary class="note">What went wrong (for bug reports)</summary><pre class="crash-text"></pre></details></div>';
+  box.querySelector('.crash-text')!.textContent = text;
+  box.querySelector('#crash-reload')!.addEventListener('click', () => location.reload());
+  box.classList.remove('hidden');
+}
+
 // The web version of the platform. A Steam or phone version would pass its own.
-boot(createWebPlatform());
+try {
+  boot(createWebPlatform());
+} catch (err) {
+  crashScreen(err);
+}

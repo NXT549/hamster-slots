@@ -74,10 +74,36 @@ export function setHTML(node: HTMLElement, html: string): void {
 }
 
 // Restart a one-shot CSS animation by removing and re-adding its class.
+// The class comes off again when its animation ends (1.0), so an element's
+// resting animation (the hamster breathing) comes back after a hop.
 export function replayClass(node: HTMLElement, cls: string): void {
   node.classList.remove(cls);
   void node.offsetWidth; // forces the browser to notice the removal
   node.classList.add(cls);
+  const done = (e: AnimationEvent) => {
+    if (e.target !== node) return; // a child's animation ending bubbles up here too
+    node.classList.remove(cls);
+    node.removeEventListener('animationend', done);
+  };
+  node.addEventListener('animationend', done);
+}
+
+// A little word that pops up over an element and floats away ("LV 3!", "MAX!",
+// "+1 Luck"), e.g. over the button you just pressed. `cls` picks its colour
+// (style.css .pop-text). It lives on the page itself, so it can float anywhere.
+export function popText(anchor: Element | null | undefined, text: string, cls = ''): void {
+  if (!anchor) return;
+  const r = anchor.getBoundingClientRect();
+  if (r.width === 0 && r.height === 0) return; // hidden (another tab)
+  const node = document.createElement('div');
+  node.className = `pop-text ${cls}`;
+  node.textContent = text;
+  node.style.left = `${r.left + r.width / 2}px`;
+  node.style.top = `${r.top + Math.min(r.height / 2, 20)}px`;
+  // Inside an open dialog it must live in the dialog: a dialog sits above everything else on the page.
+  (anchor.closest('dialog[open]') || document.body).appendChild(node);
+  node.addEventListener('animationend', () => node.remove());
+  setTimeout(() => node.remove(), 2000); // in case no animation runs (Motion "Less")
 }
 
 // An inline pixel icon for HTML strings (e.g. a coin before a price), about

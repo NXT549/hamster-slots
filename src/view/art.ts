@@ -1495,6 +1495,29 @@ export function spriteURL(name: string, colors: Colors | null = null): string | 
   return url;
 }
 
+// A sprite painted at 1× on its own little canvas (cached), for code that draws
+// it itself: the particles (fx.ts) draw coins, stars and seeds this way, scaled
+// up by a whole number with smoothing off, so they stay crisp pixel art.
+const canvasCache = new Map<string, HTMLCanvasElement>();
+export function spriteCanvas(name: string): HTMLCanvasElement | null {
+  if (canvasCache.has(name)) return canvasCache.get(name)!;
+  const rows = SPRITES[name];
+  if (!rows) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = rows[0].length;
+  canvas.height = rows.length;
+  const ctx = canvas.getContext('2d')!;
+  rows.forEach((row, y) => {
+    [...row].forEach((ch, x) => {
+      if (!PALETTE[ch]) return;
+      ctx.fillStyle = PALETTE[ch];
+      ctx.fillRect(x, y, 1, 1);
+    });
+  });
+  canvasCache.set(name, canvas);
+  return canvas;
+}
+
 // Sizes are asked for in CSS pixels, but a sprite is only ever scaled by a WHOLE
 // number, so every pixel stays a crisp square: the biggest whole scale that fits.
 // e.g. a 24-pixel sprite asked for at 48 → 2×; at 40 → 1× (24 px).

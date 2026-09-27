@@ -1,7 +1,7 @@
 # Hamster Slots — Design
 
 > Working title. A cute pixel-art idle/clicker game. A tiny hamster runs on a wheel, and the wheel powers a slot machine.
-> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). It's still early: the art is prototype art, and playtests are still finding the fun and tuning the balance.
+> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates. The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
 > All currency is fake in-game coins. There is no real money and nothing to buy with real money.
 
 Every number in this file comes from `data.json`. If you change one there, change it here too, and log it in `PORTING_NOTES.md` → Balance log.
@@ -401,15 +401,15 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | 6 | Pokies night *(done)* | The user gave ten goals and picked, in a question round: two milestones with the pokies part first, **all four bonus features**, bets unlocked by an upgrade. So: **bets** ×1 … ×10 with **High Roller** (§18); the **Hamster Wild**, **free spins** (Hamster Ball scatter), the **jackpot wheel with four pots**, the **gamble** and **Hot Streak** (§19); two new machines, the **Burrow Bonanza** and the **Pouch Palace** (§16); new upgrades (High Roller, Hot Streak, Hamster Wild, Bouncy Ball, Pouch Polish, and spin-cost and payline upgrades for the new machines); the **balance simulator** `tools/sim.mjs` and a tuning pass (the old roadmap's "Balance simulator"); **sub-tabs** in the tray and the Info tab (§12, §17); **pixel particles and animations** (§20); save v6; 8 diary stickers. (This absorbs the old "Machine types II": a third machine and the wild.) |
 | 7 | Real pokies *(done; §21; + Pays Both Ways after the first feedback, §3)* | The user's "slow down spin speed… early game to feel like a slog", "make it more like slot machines… make them go one by one", luck you can see, symbols to unlock, and a new double-or-nothing. So: **slower spins and auto-spin** with reels that stop one at a time; a **win show** that lights each winning line **one by one** while a **WIN meter** counts up; a **blank symbol** (Wood Shaving); **unlockable symbols** (the user's "new seeds": machines start with fewer symbols); **Hamster Luck + Machine Luck** with a visible Luck number; the **pokies card gamble** (red/black ×2, suit ×4); a full **rebalance to the "real slog"** with `tools/sim.mjs` (§10); save v7; particles for all of it. Built with one change to the plan: each machine's unlocks are ONE upgrade that opens its symbols in a fixed order (PORTING_NOTES D96). |
 | 8 | The Big Cage (rebirth rework) *(built; §22)* | The user's "use the rebirth system more… a reason to both rebirth and hold heirloom seeds" and "when you rebirth it takes you to a fully in-depth page of just the upgrades". So: retiring opens a **full-screen Big Cage page** between lives, and it's the **only place to plant** (the Family tab keeps the retire card and a read-only tree). **Held seeds give +X% income each** (planting spends them, so plant-or-hold is a real choice); a "Retire now: +N seeds → +X%" preview. A **bigger tree**: start with High Roller steps, keep symbol unlocks / Machine Luck / a machine, free-spin luck, bigger pot seeds. **Machine rebirths ("Rebuild")**: a fully upgraded machine can be rebuilt for a permanent **Machine Star** (+payouts and +Machine Luck on that machine, a gold trim), kept through retirement. Numbers from the simulator. Save v8. It should also fix M7's known issue: lives from generation ~9 get short again (§10). |
-| **9** | **More machines** *(next, after the M8 playtest)* | The user's "more slot machines". 2–3 machines, each with a new pokie mechanic and exact EV: an **early machine** in the gap between Old Clunky and the Snack Stacker, **243 ways** (wins on any row, reel to reel), **hold & spin** (coin symbols lock in place with 3 respins), maybe a multiplier wheel past the Pouch Palace. Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers. |
+| **9** | **More machines** *(after the 1.0 release)* | The user's "more slot machines". 2–3 machines, each with a new pokie mechanic and exact EV: an **early machine** in the gap between Old Clunky and the Snack Stacker, **243 ways** (wins on any row, reel to reel), **hold & spin** (coin symbols lock in place with 3 respins), maybe a multiplier wheel past the Pouch Palace. Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers. |
 | 10 | Wardrobe buffs | The user's "hats & skins which both give unique changes and improvements" (was M7): **every skin gives a buff while worn** (fur → payouts, wheel → speed, machine → spin cost, room → offline/delivery; rarer = stronger), **hats** as a 5th capsule category (a layered sprite on the hamster), some pieces with **unique changes**, not just a % (e.g. one more card in the gamble history, a free spin more), the Wardrobe as a loadout. The user chose "what you wear gives the buff" and "hats come from capsules"; this reverses D39 (tokens were cosmetic only). |
 | 11 | Hamster Casino | The user's "minigames or side games… roulette, blackjack etc in a hamster casino". A casino room (a new tab) with side games: **roulette** (the hamster in a ball on the wheel), **blackjack**, and hamster ones (a derby race, a seed drop). Played with **Casino Chips**, which never count as coins earned (they can't farm seeds, like rule 4). A **Prize Counter** for hats, timed boosts and luck charms. Honest odds on screen. Each game is its own headless logic module (rule 1), not more code in game.ts. |
 | 12 | Your own casino (late game) | The user's "late game you can eventually start your own casino". The family opens **its own casino**: put machines you own on the floor, hamster guests play them, and you earn the **house edge** while idle; decor, staff, more rooms, a new late-game currency/layer. Unlocked far into the game (e.g. every machine owned and several generations). Planned in detail when we get there. |
 | 13 | Delivery depth | Only if playtests say deliveries are fun: routes (short/safe vs long/lucrative), helper hamsters. (The scooter, backpack and auto-delivery are now Family Tree traits.) |
-| 14 | Release prep (toward 1.0.0) | Final balance pass, the store-rule checks below, then 1.0.0, the full public release (AGENTS → Git and releases). *Was "Port-prep freeze" for the Godot rebuild (D106).* |
+| 14 | Release prep (toward 1.0.0) *(moved up: built after M8, §23)* | The user's "I want a full release before trying to make the game longer" (2026-09-27): **1.0 = M1–M8, polished**, with the user's "cool animations and effects" (celebrations, reel and win-show effects, little touches, the big moments between lives) and the release basics (icons, a link card, the version in the Menu, a crash screen, a README). Then 1.0.0, the full public release (AGENTS → Git and releases); M9 onwards come after it as updates. Still before each store release: the store-rule checks below. *Was "Port-prep freeze" for the Godot rebuild (D106).* |
 | → | **Releases** | GitHub Pages from the start; then itch.io, Steam (Electron or Tauri), maybe mobile (Capacitor), all from the same web codebase. See PORTING_NOTES → The plan. |
 
-**Particles and animations are now a thread, not a milestone** (the user's "fun particle effects and animations"): every milestone ships the effects for what it adds (M7: dust puffs as each reel stops, sparkles per winning line, rolling WIN digits, a card flip, a clover sparkle when luck goes up; M8: the Big Cage scene and a star burst on a rebuild; and so on). Motion "Less" keeps turning them all off.
+**Particles and animations are now a thread, not a milestone** (the user's "fun particle effects and animations"): every milestone ships the effects for what it adds (M7: dust puffs as each reel stops, sparkles per winning line, rolling WIN digits, a card flip, a clover sparkle when luck goes up; M8: the Big Cage scene and a star burst on a rebuild; and so on). **1.0 went through the whole game** (the user's "I also really want some cool animations and effects", §23). Motion "Less" keeps turning them all off.
 
 ### User wishlist
 
@@ -682,10 +682,10 @@ How big a win *feels* depends on the **base payout ÷ the machine's base spin co
 |---|---:|---|---:|---|
 | win | any | Sunflower pair or line | ~14.4% | "+N" popup, reel glow (a soft blip for spins you pulled yourself) |
 | **nice** | 10× | Carrot pair | ~2.9% | + chime, 5 coins fly to the counter, the hamster hops |
-| **big** | 20× | Carrot line, Golden pair | ~1.4% | + "Big win!" banner, 10 coins, fanfare |
-| **jackpot** | 100× | Golden line | ~0.075% | + gold "JACKPOT!" banner, 24 coins, the room shakes |
+| **big** | 20× | Carrot line, Golden pair | ~1.4% | + the **BIG WIN!** celebration over the cage (1.0, §23), 10 coins, fanfare, hearts |
+| **jackpot** | 100× | Golden line | ~0.075% | + the celebration climbing **BIG WIN! → HUGE WIN! → JACKPOT!** with coin rain, 24 coins, the room shakes |
 
-- At most 40 coins fly at once, and only one banner shows at a time (so a lucky streak at 50× debug speed can't flood the page).
+- At most 40 coins fly at once, and only one banner or celebration shows at a time (so a lucky streak at 50× debug speed can't flood the page).
 - Since milestone 6, big and jackpot banners **count the win up** under the words, and every win throws **pixel sparkles** from its lit cells in the line's colour (big: confetti; jackpot: confetti and a coin fountain). See §20.
 - Players whose system asks for **reduced motion** get no flying coins, hops or shaking. Since milestone 5, **Menu → Motion** can also switch it on or off by hand (§17).
 
@@ -934,11 +934,12 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 
 | Setting | Options | What it does |
 |---|---|---|
-| **Motion** | Auto · Less · Full | *Less* turns off flying coins, hops, shakes, bobbing and flashing (banners just fade). *Auto* follows the system's reduced-motion setting. |
+| **Motion** | Auto · Less · Full | *Less* turns off particles, flying coins, hops, shakes, bobbing and flashing (banners just fade; 1.0's celebrations stand still and show the amount at once, §23). *Auto* follows the system's reduced-motion setting. |
 | **Reels** | Scroll · Quick | *Quick* makes the reels drop a few symbols and land early instead of scrolling. **A spin still takes the same game time** (view only), so it's calmer, not faster: faster spins are a paid trait (Quick Paws). |
 | **Numbers** | 47.2K · 47,275 | Short numbers (default) or full numbers below a million. From a million up it's always 1.5M, and from a quadrillion up 1.23e15. |
 
 - **Save backup** (Menu, since 3.8): your save as a code to copy, or paste one to load it (§7).
+- **The version** (1.0) at the bottom of the Menu, with a link to what's new (the CHANGELOG on GitHub) and "the coins are pretend: no real money, ever".
 - **Coins in the browser tab's title** ("47.27K coins · Hamster Slots"), so you can peek from another tab.
 - **Recent wins** (Info → Recent wins since M6): the last 10 wins on any machine (machine, symbol × count for every winning line, the bet, tier, coins, how long ago), plus free-spin totals, jackpot pots and gambles (M6). View only: it's not saved and starts empty each visit.
 - **Payline diagrams** (Info → Paylines) (locked lines faded), and numbered payline tags on the Stacker's window that pulse when their line wins.
@@ -1035,6 +1036,7 @@ A hamster upgrade (§5): every machine counts its winning paid spins in a row, a
 - Animations: **anticipation** (reels that could still complete a feature shimmer and land a beat later, within the same spin time), win banners that **count the win up**, a gold glow around the machine during free spins, pot plaques that flash when won.
 - Sounds (synthesized, `src/view/sound.ts`): bet click, anticipation rise, free-spins fanfare, wheel ticks, pot fanfare, gamble win and "wah-wah", streak chimes.
 - **Milestone 7:** a clunk and a puff of dust as **each reel lands** (quieter for auto-spins); **sparkles along each line** as the win show names it; the WIN meter's **rolling digits** with a soft tick; a **card flip** (sound + animation); a **clover sparkle** and a pop of the Luck badge when Luck goes up; a **"new symbol" fanfare** and confetti over the machine on an unlock. Motion "Less" turns the particles and the flip off, and the meter jumps straight to the total.
+- **1.0 (§23):** particles can be **little sprites** too (spinning gold coins, stars, Heirloom Seeds, hearts), drawn from art.ts at whole-number scales; plus rings of sparks (shockwaves) and twinkling stars. The celebrations, the reel and win-show effects, the little touches and the big moments between lives are all in §23. New sounds: a title slam, the rising count-up, a star, a sprout, the whoosh of the iris.
 
 ---
 
@@ -1173,3 +1175,71 @@ A v8 save gets no stars and is mid-life (not in the Big Cage); its tree, seeds a
 - Is plant-or-hold a real choice? Do you hold seeds on purpose? Is Family Fortune worth it?
 - Do Machine Stars feel worth rebuilding for? Is "rebuild just before retiring" fun or a chore?
 - Which new traits feel good, and which are ignored?
+
+---
+
+## 23. The 1.0 release: polish & feel
+
+> **Status: built** (2026-09-27) on the branch with M8, as **1.0.0-rc.1** (a release candidate), waiting for the user's playtest. When the user OKs it, it's merged into `main` and released as **1.0.0** (PORTING_NOTES D123).
+
+*"I want a full release before trying to make the game longer. I also really want some cool animations and effects."* (the user, 2026-09-27)
+
+So the roadmap's last step, **Release prep (toward 1.0.0)** (§11), moved up to right after M8: the content that's there (M1–M8) gets polished and released as the full 1.0, and M9 onwards (more machines, …) come after it as updates. **Nothing about the rules or the balance changed:** every effect is view only, and the golden run plays exactly as before, to the cent.
+
+### Celebrations (`src/view/celebrate.ts`)
+
+The big moments get a pokie-style show over the cage (the wall, not the buttons below it):
+- The cage **dims**, **light rays** turn behind a big pixel **title that slams in**, its letters bob in a wave, and the win **counts up** under it with a rising tick. **Gold coins** (little spinning coin sprites) burst out of the title; on a jackpot they also **rain** down the cage and bounce on the bedding.
+- The title **climbs** as the win counts up, like a real pokie's rollup: a big win says **BIG WIN!**; a jackpot-tier win goes **BIG WIN! → HUGE WIN! → JACKPOT!**, a new title slamming in at each third of the count.
+
+| Moment | Title | How long (count + hold) |
+|---|---|---|
+| Big win (tier `big`) | BIG WIN! | 1.6 s + 1.1 s |
+| Jackpot-tier win | BIG WIN! → HUGE WIN! → JACKPOT! (+ a white flash, coin rain) | 3.2 s + 1.8 s |
+| A jackpot pot | MINI / MINOR / MAJOR JACKPOT!; the Grand: JACKPOT! → GRAND JACKPOT! | 2.2 s + 1.4 s (the Grand 3.6 + 2) |
+| Free spins won / their total | 8 FREE SPINS! / FREE SPINS WIN (in blue) | 1.3 s / 1.8 s + 1.3 s |
+| A Machine Star | STAR 3! with a big star, "+10% payouts and +2 Luck per star" | 2.6 s |
+
+- **It never stands in your way:** taps go straight through it, so the card gamble's 5-second offer can be played underneath; any tap on the cage, or a spin you pull yourself, fades it out. Auto-spins carry on under it. (A blocking "tap to skip" screen would have eaten the gamble's time, D124.)
+- Small wins keep their "+N" pop; nice wins keep the chime, coins to the counter and the hop.
+
+### The reels and the win show
+
+- Reels **blur** while they race and sharpen before they land; the machine gives a tiny **thump** as each reel lands.
+- Winning symbols **dance** (a squash-and-stretch hop), a beat apart from reel to reel, so the line ripples; each winning line **draws itself** across the reels, left to right.
+- The marquee's bulbs **chase** slowly at rest and race while it spins; a win **flashes** the marquee; a teasing reel (anticipation) makes the reel window **throb** like a heartbeat.
+
+### Little touches everywhere
+
+- Buy buttons you can afford get a **glint** sweeping across now and then. Buying an upgrade fires a **ring of sparks** and **"LV 3!"** (or **"MAX!"**) floats up from the button; more Luck floats up **"Luck 12!"**.
+- The hamster **breathes** while it rests, **dozes** with little "z"s after 25 s without a spin (and no auto-spin), and **hearts** float up from it on big wins. With no auto-spin yet, the Spin button **glows** to say "tap me" (the first spin, or after 8 s idle).
+- **Free spins turn the cage to night:** a purple glow around its edges and twinkling stars.
+- Deliveries: a **puff of bedding** as the hamster scoots off, dust as it runs down the tube, and the pay **flies out of the tube** into your coins.
+- The page **opens** with the HUD dropping in, the wheel rolling in and the machine landing with a bounce; tabs and sub-tabs **fade in**; dialogs **pop in**.
+
+### The big moments between lives
+
+- **Retiring:** a dark circle **closes on the hamster** like the end of an old cartoon; then the Big Cage page arrives in parts (the header, each number, the tree), **Heirloom Seeds rain** down it, and the seeds held **count up** from what the family had before.
+- **Planting:** the trait **springs up** out of the ground with a burst of leaves, a ring of sparks and **"Planted!"** (or "LV 2!") from the Plant button, and the seeds it cost float off the seed count.
+- **Starting the new life:** the circle **opens** from the new pup, who hops about with hearts and confetti.
+- **A Machine Star:** the STAR celebration (above) with a burst of stars; when it fades, the new star **pops onto the marquee**.
+- **Capsules:** a new prize gets **light rays** in its rarity's colour, a burst and a ring of sparks (the rarest also confetti).
+
+### Motion "Less"
+
+Everything above respects Menu → Motion (and the system's "reduce motion"): no particles, rays that don't turn, no slams, hops, glints, blurs, iris or page-opening; celebrations still say what you won (the amount straight away), and the Big Cage opens at once.
+
+### Release basics
+
+- **Icons:** the hamster as the browser-tab icon and the phone home-screen icon (`tools/icons.mjs` draws them from the hamster sprite), and a **web app manifest** so a phone can add the game to its home screen.
+- **A link card:** a link to the game in a chat shows its name, a line about it and a picture of a BIG WIN (`public/social.png`).
+- **The version** at the bottom of the Menu, with a link to what's new (the CHANGELOG) and "the coins are pretend: no real money, ever".
+- **A crash screen:** if a bug ever stops the game, it stops saving (so the last good save is kept) and says so kindly, with a Reload button and the error for a bug report.
+- **README.md** for the public repository: what the game is, the link to play, how to run it.
+- Not done (not needed for a web 1.0, or needs the user): playing offline as an installed app (a service worker), a title screen, credits by name, the store-rule checks for itch.io and Steam (§11, before each store release).
+
+### Questions the playtest must answer
+
+- Do the celebrations feel exciting, or too much? Is a BIG WIN every few minutes on auto-spin fun or noisy? Should the rays or the coin rain be bigger or smaller?
+- Is anything too busy on a phone? Does anything feel slow (the iris, the Big Cage arriving in parts)?
+- Is 1.0 ready: anything else that must be fixed or explained before friends play it as "the full game"?

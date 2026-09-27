@@ -314,8 +314,17 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   width: 28px; height: 10px;
   background: radial-gradient(circle, #fff 2px, var(--gold-dark) 2.5px, transparent 4px) 0 0 / 10px 10px repeat-x;
 }
-.machine.spinning .bulbs { animation: bulbs 0.25s steps(2) infinite; }
+.bulbs { animation: bulbs 1.4s steps(2) infinite; } /* a lazy chase while it rests… */
+.machine.spinning .bulbs { animation-duration: 0.25s; } /* …racing while it spins */
 @keyframes bulbs { to { background-position: 10px 0; } }
+/* 1.0: a win flashes the marquee; a teasing reel makes the reel window throb.
+   (Each reel landing gives the machine a tiny thump: ui.ts, with element.animate,
+   so it never fights the machine's own animations like the big-win glow.) */
+.machine.winning .marquee { animation: marquee-flash 0.24s steps(2) 6; }
+@keyframes marquee-flash { 50% { background: #fff8d8; box-shadow: 0 0 0 3px var(--gold), 0 0 16px 4px color-mix(in srgb, var(--gold) 70%, transparent); } }
+.machine.teasing .reel-window { animation: heartbeat 0.5s ease-in-out infinite; }
+.machine.teasing .bulbs { animation-duration: 0.12s; }
+@keyframes heartbeat { 20% { transform: scale(1.015); } 40% { transform: scale(1); } }
 .machine.big-win { animation: glow 0.3s steps(2) 5; }
 @keyframes glow { 50% { background: var(--gold); } }
 .machine.switch-in { animation: switch-in 0.35s ease-out; }
@@ -351,6 +360,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
     linear-gradient(rgba(74, 52, 40, 0.14), transparent 12%, transparent 88%, rgba(74, 52, 40, 0.14));
 }
 .strip { position: relative; z-index: 1; will-change: transform; }
+.reel.fast .strip { filter: blur(1.2px); } /* a motion blur while the reel races (reels.ts); gone before it lands */
 .cell { height: var(--cell); display: flex; align-items: center; justify-content: center; }
 /* A winning cell glows BEHIND its symbol (the symbol's colours must stay true) */
 .cell.win {
@@ -359,6 +369,18 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   animation: win-pulse 0.6s ease-in-out infinite alternate;
 }
 @keyframes win-pulse { to { background: color-mix(in srgb, var(--lc, var(--gold)) 55%, transparent); } }
+/* 1.0: winning symbols dance, a beat apart from reel to reel, so the line ripples */
+.cell.win .sprite, .cell.feature .sprite { animation: sym-dance 0.7s ease-in-out infinite; }
+.reel:nth-child(2) .cell .sprite { animation-delay: 0.08s; }
+.reel:nth-child(3) .cell .sprite { animation-delay: 0.16s; }
+.reel:nth-child(4) .cell .sprite { animation-delay: 0.24s; }
+.reel:nth-child(5) .cell .sprite { animation-delay: 0.32s; }
+@keyframes sym-dance {
+  0%, 70%, 100% { transform: translateY(0) scale(1, 1); }
+  20% { transform: translateY(-6px) scale(0.94, 1.08); }
+  40% { transform: translateY(0) scale(1.1, 0.9); }
+  55% { transform: translateY(-2px) scale(0.98, 1.02); }
+}
 .payline-arrow {
   position: absolute; top: 50%; width: 0; height: 0; margin-top: -8px;
   border: 8px solid transparent;
@@ -391,6 +413,9 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .win-lines polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .win-lines .under { stroke: var(--outline-ink); stroke-width: 8; opacity: 0.5; }
 .win-lines .over { stroke: var(--lc); stroke-width: 4; }
+/* 1.0: each line draws itself across, left to right (--len = its length, reels.ts) */
+.win-lines polyline { stroke-dasharray: var(--len); animation: trace 0.35s ease-out backwards; }
+@keyframes trace { from { stroke-dashoffset: var(--len); } }
 
 .lever { position: absolute; right: -32px; top: 72px; width: 26px; height: 96px; transform-origin: 50% 100%; transition: transform 0.12s; }
 .lever-stick { position: absolute; left: 9px; top: 18px; width: 8px; height: 78px; background: var(--ink-faint); border: var(--outline-thin) solid var(--outline-ink); border-radius: 3px; }
@@ -594,7 +619,138 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   80% { opacity: 1; }
   100% { transform: translate(-50%, -80%) scale(1); opacity: 0; }
 }
+/* ── Celebrations (1.0, celebrate.ts): BIG WIN, JACKPOT, free spins, Machine Stars ──
+   Over the cage's wall (not the buttons): the cage dims, rays turn behind a title
+   that slams in, and the amount counts up. --cel-ray and --cel-title colour each kind. */
+.celebration {
+  --cel-ray: rgba(255, 243, 184, 0.5); --cel-title: var(--gold); --cel-dim: rgba(58, 42, 32, 0.5);
+  position: absolute; inset: 0; z-index: 8; overflow: hidden; pointer-events: none; /* taps go through (celebrate.ts) */
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle, rgba(58, 42, 32, 0.1), var(--cel-dim) 75%);
+  animation: cel-in 0.2s ease-out;
+}
+.celebration.out { animation: cel-out 0.35s ease-in forwards; }
+@keyframes cel-in { from { opacity: 0; } }
+@keyframes cel-out { to { opacity: 0; } }
+.cel-rays {
+  position: absolute; left: 50%; top: 50%; width: 1200px; height: 1200px; margin: -600px 0 0 -600px;
+  background: repeating-conic-gradient(var(--cel-ray) 0deg 8deg, transparent 8deg 20deg);
+  -webkit-mask: radial-gradient(circle, #000 8%, transparent 42%);
+  mask: radial-gradient(circle, #000 8%, transparent 42%);
+  animation: rays 14s steps(140) infinite; /* steps: it turns in little ticks, like pixel art */
+}
+@keyframes rays { to { transform: rotate(360deg); } }
+.cel-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.kind-jackpot .cel-flash, .kind-grand .cel-flash, .kind-star .cel-flash { animation: cel-flash 0.5s ease-out; }
+@keyframes cel-flash { 0% { opacity: 0.85; } 100% { opacity: 0; } }
+.cel-body { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; padding: 0 12px; }
+.cel-title {
+  font-family: var(--font-display); font-weight: 500; font-size: 60px; line-height: 1.05; color: var(--cel-title); white-space: nowrap;
+  /* a chunky pixel outline: the ink colour 4 px out in eight directions, and a drop shadow */
+  text-shadow:
+    4px 0 var(--outline-ink), -4px 0 var(--outline-ink), 0 4px var(--outline-ink), 0 -4px var(--outline-ink),
+    4px 4px var(--outline-ink), -4px 4px var(--outline-ink), 4px -4px var(--outline-ink), -4px -4px var(--outline-ink),
+    0 10px 0 rgba(58, 42, 32, 0.35);
+}
+.cel-title.slam { animation: slam 0.45s cubic-bezier(0.2, 1.5, 0.45, 1); }
+@keyframes slam { 0% { transform: scale(2.6); opacity: 0; } 55% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1); } }
+/* Every letter bobs, one after another: a wave running through the word */
+.cel-title span { display: inline-block; animation: letter-wave 1.1s ease-in-out infinite; animation-delay: calc(var(--i) * 0.07s); }
+@keyframes letter-wave { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+.cel-amount {
+  font-family: var(--font-num); font-weight: 900; font-size: 42px; line-height: 1.1; color: #fff; font-variant-numeric: tabular-nums;
+  text-shadow: 3px 0 var(--outline-ink), -3px 0 var(--outline-ink), 0 3px var(--outline-ink), 0 -3px var(--outline-ink),
+    3px 3px var(--outline-ink), -3px 3px var(--outline-ink), 3px -3px var(--outline-ink), -3px -3px var(--outline-ink), 0 7px 0 rgba(58, 42, 32, 0.35);
+}
+.cel-sub {
+  font-family: var(--font-display); font-weight: 500; font-size: 16px; color: var(--paper); margin-top: 6px;
+  background: var(--outline-ink); padding: 3px 12px; clip-path: var(--notch);
+}
+.cel-icon .sprite { animation: star-spin 1.2s ease-in-out infinite; filter: drop-shadow(0 4px 0 rgba(58, 42, 32, 0.4)); }
+@keyframes star-spin { 0%, 100% { transform: scale(1) rotate(-8deg); } 50% { transform: scale(1.15) rotate(8deg); } }
+.kind-jackpot, .kind-grand { --cel-ray: rgba(255, 211, 92, 0.6); --cel-dim: rgba(58, 42, 32, 0.62); }
+.kind-grand .cel-title, .kind-jackpot .cel-title { font-size: 64px; }
+.kind-pot { --cel-ray: rgba(255, 211, 92, 0.45); }
+.kind-free { --cel-ray: rgba(147, 207, 232, 0.55); --cel-title: var(--soft); }
+.kind-star { --cel-ray: rgba(255, 243, 184, 0.65); --cel-title: var(--gold); }
+@media (max-width: 640px) {
+  .cel-title { font-size: 38px; }
+  .kind-grand .cel-title, .kind-jackpot .cel-title { font-size: 40px; }
+  .cel-amount { font-size: 30px; }
+  .cel-sub { font-size: 13px; }
+}
+
 .burst-coin { position: fixed; left: 0; top: 0; margin: -12px 0 0 -12px; z-index: 30; pointer-events: none; }
+/* The iris between lives (celebrate.ts): a round window in a huge dark shadow, shrinking onto the hamster */
+.iris {
+  position: fixed; z-index: 45; width: 0; height: 0; border-radius: 50%; transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 300vmax var(--outline-ink); pointer-events: none;
+}
+
+/* ── 1.0: little touches all over (ui.ts, dom.ts popText) ── */
+/* A word popping up over what you pressed: "LV 3!", "MAX!", "Luck 12!" */
+.pop-text {
+  position: fixed; z-index: 31; pointer-events: none; transform: translate(-50%, -50%); white-space: nowrap;
+  font-family: var(--font-display); font-weight: 500; font-size: 20px; color: #fff;
+  text-shadow: 2px 0 var(--outline-ink), -2px 0 var(--outline-ink), 0 2px var(--outline-ink), 0 -2px var(--outline-ink),
+    2px 2px var(--outline-ink), -2px 2px var(--outline-ink), 2px -2px var(--outline-ink), -2px -2px var(--outline-ink);
+  animation: pop-rise 0.9s ease-out forwards;
+}
+.pop-text.gold { color: var(--gold); font-size: 24px; }
+.pop-text.luck { color: #bff0a8; }
+.pop-text.seed { color: var(--heirloom-soft); }
+@keyframes pop-rise {
+  0% { transform: translate(-50%, -30%) scale(0.6); opacity: 0; }
+  20% { transform: translate(-50%, -70%) scale(1.15); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(-50%, -190%) scale(1); opacity: 0; }
+}
+/* A glint sweeps across every buy button you can afford, now and then (hard-edged, like pixel art) */
+.buy-btn::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 46%; pointer-events: none; opacity: 0;
+  background: linear-gradient(100deg, transparent 0 28%, rgba(255, 255, 255, 0.55) 28% 50%, transparent 50% 62%, rgba(255, 255, 255, 0.35) 62% 72%, transparent 72%);
+  transform: translateX(-120%);
+}
+.buy-btn:not(.poor):not(.maxed):not(:disabled)::after { opacity: 1; animation: glint 3.4s ease-in-out infinite; }
+.upgrade-grid > :nth-child(2n) .buy-btn::after { animation-delay: 0.5s; }
+.upgrade-grid > :nth-child(3n) .buy-btn::after { animation-delay: 1.1s; }
+@keyframes glint { 0% { transform: translateX(-120%); } 28%, 100% { transform: translateX(330%); } }
+/* Spin glows when the hamster's waiting for you (no auto-spin yet) */
+.btn-spin.attract { animation: attract 1.6s ease-in-out infinite; }
+@keyframes attract { 50% { transform: scale(1.04); filter: brightness(1.08) drop-shadow(0 0 8px color-mix(in srgb, var(--primary) 70%, transparent)); } }
+/* A dozing hamster lets out a "z" now and then */
+.zzz {
+  position: absolute; left: 96px; top: 70px; z-index: 5; pointer-events: none;
+  font-family: var(--font-display); font-weight: 500; font-size: 18px; color: var(--soft-dark);
+  text-shadow: 2px 2px 0 var(--paper); animation: zzz 2.4s ease-out forwards;
+}
+@keyframes zzz {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(26px, -60px) scale(1.4); opacity: 0; }
+}
+/* Free spins: the cage goes to night, a purple glow around its edges (the stars are particles) */
+.wall { transition: box-shadow 0.6s; }
+.wall.free-mode { box-shadow: inset 0 0 110px 40px rgba(80, 56, 160, 0.45); }
+/* The page opening: the HUD drops in, the wheel rolls in, the machine lands, the tray slides up */
+.intro .hud { animation: drop-in 0.5s ease-out backwards; }
+.intro .wheel-unit { animation: roll-in 0.7s cubic-bezier(0.3, 1.3, 0.5, 1) 0.15s backwards; }
+.intro .machine { animation: land-in 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) 0.25s backwards; }
+.intro .controls { animation: rise-in 0.5s ease-out 0.4s backwards; }
+.intro .tray { animation: rise-in 0.6s ease-out 0.5s backwards; }
+@keyframes drop-in { from { transform: translateY(-30px); opacity: 0; } }
+@keyframes roll-in { from { transform: translateX(-160px) rotate(-40deg); opacity: 0; } }
+@keyframes land-in { from { transform: translateY(-120px) scale(0.9); opacity: 0; } }
+@keyframes rise-in { from { transform: translateY(30px); opacity: 0; } }
+/* Tabs and sub-tabs fade in when you switch to them */
+.tab-panel, .subpanel { animation: panel-in 0.22s ease-out; }
+@keyframes panel-in { from { opacity: 0; transform: translateY(6px); } }
+/* Buttons light up a little under the mouse */
+@media (hover: hover) {
+  .btn:hover:not(:disabled):not(.poor), .buy-btn:hover:not(.poor):not(.maxed):not(:disabled) { filter: brightness(1.06); }
+}
+.hamster.idle { transform-origin: 50% 100%; animation: breathe 2.6s ease-in-out infinite; } /* resting: it breathes */
+@keyframes breathe { 50% { transform: scale(1.04, 0.97); } }
 .hamster.hop { animation: hop 0.45s ease-out 2; }
 @keyframes hop { 40% { transform: translateY(-14px); } }
 .stage.shake-stage { animation: stage-shake 0.5s; }
@@ -890,7 +1046,9 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .node.locked { opacity: 0.55; }
 .node.locked .node-icon img { filter: grayscale(1); }
 .node.selected { --frame: var(--frame-paper-selected); }
-.node.bought { animation: bought 0.35s ease-out; }
+/* 1.0: a planted trait springs up out of the ground */
+.node.sprout { transform-origin: 50% 100%; animation: sprout 0.55s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes sprout { 0% { transform: scale(0.6, 0.3); } 50% { transform: scale(0.94, 1.14); } 75% { transform: scale(1.05, 0.96); } }
 .node:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
 
 .tree-fork.more { margin-top: 22px; } /* the second row of branches (M8) */
@@ -927,6 +1085,17 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .marquee-stars { display: inline-flex; gap: 1px; }
 .marquee-stars:empty { display: none; }
 .marquee-stars img { width: 16px; height: 16px; }
+.marquee-stars.new img:last-child { animation: star-land 0.7s cubic-bezier(0.3, 1.6, 0.5, 1); } /* a new star pops on (1.0) */
+@keyframes star-land { 0% { transform: scale(3) rotate(-90deg); opacity: 0; } 60% { transform: scale(0.8) rotate(10deg); opacity: 1; } }
+/* The Big Cage page arrives in parts (1.0): the header, then each number, then the tree */
+.big-cage[open] .bc-head { animation: drop-in 0.4s ease-out 0.1s backwards; }
+.big-cage[open] .bc-stat { animation: pop-in 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) backwards; }
+.big-cage[open] .bc-stat:nth-child(1) { animation-delay: 0.25s; }
+.big-cage[open] .bc-stat:nth-child(2) { animation-delay: 0.35s; }
+.big-cage[open] .bc-stat:nth-child(3) { animation-delay: 0.45s; }
+.big-cage[open] .bc-explain { animation: fade-in 0.5s ease-out 0.5s backwards; }
+.big-cage[open] #bc-tree-home { animation: rise-in 0.5s ease-out 0.6s backwards; }
+.big-cage[open] .bc-foot { animation: rise-in 0.4s ease-out 0.8s backwards; }
 .machine.starred { outline: 4px solid var(--gold); outline-offset: 3px; }
 .mc-stars { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-top: 2px; }
 .mc-stars:empty { display: none; }
@@ -980,7 +1149,19 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .reveal-card.rarity-edge-rare { --frame: var(--frame-paper-selected); }
 .reveal-card.rarity-edge-epic { --frame: var(--frame-paper-gold); }
 @keyframes pop-in { from { transform: scale(0.85); opacity: 0; } }
-.reveal-preview { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
+.reveal-preview { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
+.reveal-preview > :not(.reveal-rays) { position: relative; } /* the prize sits on top of its rays */
+/* 1.0: light rays in the rarity's colour turn behind a new prize */
+.reveal-rays {
+  position: absolute; left: 50%; top: 50%; width: 150px; height: 150px; margin: -75px 0 0 -75px; pointer-events: none;
+  background: repeating-conic-gradient(var(--ray) 0deg 10deg, transparent 10deg 24deg);
+  -webkit-mask: radial-gradient(circle, #000 20%, transparent 68%);
+  mask: radial-gradient(circle, #000 20%, transparent 68%);
+  animation: rays 10s steps(100) infinite;
+}
+.reveal-rays.rarity-starter, .reveal-rays.rarity-common { --ray: color-mix(in srgb, var(--rarity-common) 45%, transparent); }
+.reveal-rays.rarity-rare { --ray: color-mix(in srgb, var(--rarity-rare) 60%, transparent); }
+.reveal-rays.rarity-epic { --ray: color-mix(in srgb, var(--rarity-epic) 80%, transparent); width: 190px; height: 190px; margin: -95px 0 0 -95px; }
 .reveal-text { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
 .reveal-text .note { display: inline-flex; align-items: center; gap: 4px; }
 .reveal-card .btn { width: auto; }
@@ -1049,9 +1230,15 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   color: var(--ink); box-shadow: 0 20px 60px rgba(74, 52, 40, 0.3); overflow: visible;
 }
 .dialog::backdrop { background: rgba(58, 40, 30, 0.5); }
+.dialog[open] { animation: dialog-in 0.28s cubic-bezier(0.2, 1.4, 0.4, 1); } /* 1.0: dialogs pop in */
+.dialog[open]::backdrop { animation: fade-in 0.25s ease-out; }
+@keyframes dialog-in { from { transform: translateY(12px) scale(0.9); opacity: 0; } }
+@keyframes fade-in { from { opacity: 0; } }
 .dialog h2 { font-family: var(--font-display); font-weight: 500; margin: 0 0 10px; }
 .dialog .btn { width: 100%; margin-top: 10px; }
 .dialog form { margin: 0; }
+.menu-foot { margin: 12px 0 2px; text-align: center; font-size: 12px; line-height: 1.5; }
+.menu-foot a { color: var(--soft-dark); }
 .menu-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 2px dashed var(--paper-2); font-size: 14px; flex-wrap: wrap; }
 .sound-controls { display: flex; align-items: center; gap: 10px; }
 .sound-controls input[type="range"] { width: 120px; accent-color: var(--primary); }
@@ -1101,18 +1288,29 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .debug .status { color: var(--buy); min-height: 1em; }
 
 /* ── Boot error ──────────────────────────────────────── */
-.boot-error { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(74, 52, 40, 0.6); z-index: 20; padding: 16px; }
+.boot-error { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(74, 52, 40, 0.6); z-index: 50; padding: 16px; }
+.crash-text { max-height: 160px; overflow: auto; font-size: 11px; white-space: pre-wrap; background: var(--paper-2); padding: 6px; }
 .dialog-card { --fw: 12px; padding: 12px; max-width: 520px; line-height: 1.5; background: var(--paper); }
 
 /* ── Less motion (Menu → Motion, or the system setting) ── */
 .less-motion .hamster.hop, .less-motion .stage.shake-stage, .less-motion .stage-gacha.ready,
 .less-motion .machine.spinning .bulbs, .less-motion .machine.switch-in, .less-motion .line-tag.won,
-.less-motion .tile.bought, .less-motion .node.bought, .less-motion .machine-card.bought, .less-motion .cap-machine.shake,
+.less-motion .tile.bought, .less-motion .machine-card.bought, .less-motion .cap-machine.shake,
 .less-motion .coin-tag.gain, .less-motion .seed-tag.gain, .less-motion .btn.shake { animation: none; }
 .less-motion .cell.win, .less-motion .cell.feature, .less-motion .reel.tease, .less-motion .machine.free-spins,
 .less-motion .streak-badge.hot, .less-motion .pot.lit, .less-motion .gamble { animation: none; }
 .less-motion .gamble-card.flip, .less-motion .luck-badge.up { animation: none; }
+.less-motion .bulbs, .less-motion .machine.winning .marquee, .less-motion .machine.teasing .reel-window,
+.less-motion .cell .sprite, .less-motion .win-lines polyline { animation: none; }
+.less-motion .reel.fast .strip { filter: none; }
+.less-motion .hamster.idle, .less-motion .buy-btn::after, .less-motion .btn-spin.attract, .less-motion .dialog[open],
+.less-motion .tab-panel, .less-motion .subpanel, .less-motion .intro * { animation: none !important; }
+.less-motion .pop-text { animation: banner-fade 0.9s forwards; }
+.less-motion .node.sprout, .less-motion .marquee-stars.new img, .less-motion .big-cage[open] *, .less-motion .reveal-rays { animation: none !important; }
 .less-motion .win-banner { animation-name: banner-fade; }
+.less-motion .celebration, .less-motion .cel-rays, .less-motion .cel-flash, .less-motion .cel-title.slam,
+.less-motion .cel-title span, .less-motion .cel-icon .sprite { animation: none; }
+.less-motion .celebration.out { animation: cel-out 0.2s forwards; }
 @keyframes banner-fade { 0% { opacity: 0; } 10%, 80% { opacity: 1; } 100% { opacity: 0; } }
 
 /* ── Small screens: shrink the machine rig to fit ────── */

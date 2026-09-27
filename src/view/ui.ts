@@ -11,13 +11,14 @@
 import { applySprite, spriteImg, treeIcon, MACHINE_SPRITES, SUIT_SPRITES } from './art.ts';
 import { createReels } from './reels.ts';
 import { createWinShow } from './winshow.ts';
-import { formatCoins, formatWhole, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle } from './dom.ts';
+import { formatCoins, formatWhole, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle, popText } from './dom.ts';
 import { furColors, applyStageSkins } from './skins.ts';
 import { createCapsulesView } from './capsules.ts';
 import { createBackupView } from './backup.ts';
 import { createShopView, describeEffect } from './shop.ts';
 import { createPayoutsView } from './payouts.ts';
 import { createFx } from './fx.ts';
+import { createCelebration, createIris, IRIS_MS } from './celebrate.ts';
 import { effectAs } from '../logic/game.ts';
 import { divide } from '../logic/money.ts';
 import type { Money } from '../logic/money.ts';
@@ -33,12 +34,13 @@ import type { Settings } from '../platform/save.ts';
 const PRIZE_SEGMENTS = ['--soft', '--buy', '--token', '--gold'];
 
 // Win celebrations by tier (the tier comes from game.ts / data.json winTiers).
-// coins = how many coins fly to the counter; banner = the big text on the machine.
-const WIN_FX: Record<string, { coins: number; sound: string; hop?: boolean; banner?: string; shake?: boolean }> = {
+// coins = how many coins fly to the counter; titles = the big celebration over
+// the cage (celebrate.ts), climbing from the first to the last as the win counts up.
+const WIN_FX: Record<string, { coins: number; sound: string; hop?: boolean; titles?: string[]; shake?: boolean }> = {
   win: { coins: 0, sound: 'win' },
   nice: { coins: 5, sound: 'nice', hop: true },
-  big: { coins: 10, sound: 'big', hop: true, banner: 'Big win!' },
-  jackpot: { coins: 24, sound: 'jackpot', hop: true, banner: 'JACKPOT!', shake: true },
+  big: { coins: 10, sound: 'big', hop: true, titles: ['BIG WIN!'] },
+  jackpot: { coins: 24, sound: 'jackpot', hop: true, titles: ['BIG WIN!', 'HUGE WIN!', 'JACKPOT!'], shake: true },
 };
 
 // The system's own "reduce motion" setting (the Menu's Motion "Auto" follows it).
@@ -91,8 +93,8 @@ const SETTING_ROWS: Record<string, [keyof Settings, [unknown, string][]]> = {
 
 export function createUI(
   game: Game,
-  { onReset, onToggleDebug, sound, settings, onSettingsChange, backup }:
-    { onReset: () => void; onToggleDebug: (() => void) | null; sound: Sound; settings: Settings; onSettingsChange: () => void; backup: BackupActions },
+  { onReset, onToggleDebug, sound, settings, onSettingsChange, backup, version }:
+    { onReset: () => void; onToggleDebug: (() => void) | null; sound: Sound; settings: Settings; onSettingsChange: () => void; backup: BackupActions; version: string },
 ) {
   // The element with this id (every id used here is in index.html).
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -132,6 +134,8 @@ export function createUI(
   const reels = createReels(el.reels, game, {
     onLand: (i) => {
       sound.play('reelStop', i, lastSpinSource !== 'manual');
+      // A tiny thump of the whole machine (animate() plays on top of its CSS animations).
+      if (!lessMotion()) el.machine.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(2px)', offset: 0.35 }, { transform: 'translateY(0)' }], { duration: 150, easing: 'ease-out' });
       const col = reels.reelElement(i);
       if (col) {
         const r = col.getBoundingClientRect();
@@ -157,13 +161,20 @@ export function createUI(
   let retireArmed = 0; // same for retiring
   let lastRetired: GameEvents['retired'] | null = null; // what the Big Cage page says about the hamster that just retired
   let rigFitKey = ''; // stage width + machine + reel count the rig was last fitted for
+  let lastZ = 0; // when the dozing hamster last let out a "z"
+  let bigCageAt = 0; // the Big Cage page waits for the iris to close first (performance.now() time)
+  let heldRoll: { from: Money; at: number } | null = null; // the Big Cage's seed count rolling up after a retirement
 
   const lessMotion = () => settings.motion === 'less' || (settings.motion === 'auto' && systemReducedMotion);
   const activeId = () => game.getMachineData().id;
   const fx = createFx($('fx'), { lessMotion });
+  // The big moments (1.0): BIG WIN, JACKPOT, free spins, Machine Stars, over the cage.
+  const celebrate = createCelebration({ host: el.wall, fx, sound, lessMotion });
+  const iris = createIris(); // retiring: the old life closes on the hamster, the new one opens from it
   // The win show: all winning cells + the WIN meter counting, then one line at a time.
   const winShow = createWinShow({
     game, reels, meter: el.winMeter, meterValue: el.winMeterValue, label: el.lineLabel, reelsEl: el.reels, fx, sound, lessMotion,
+    quiet: () => celebrate.active, // the celebration's own count-up ticks instead
   });
   let cardShown: { card: Card; win: boolean; until: number } | null = null; // the gamble card turned face up: { card, win, until } (view only)
   let lastLuck = game.getLuck().total;
@@ -212,6 +223,11 @@ export function createUI(
   }
   function say(text: string, ms = 2600): void {
     speech = { text, until: performance.now() + ms };
+  }
+  // Hearts floating up from the hamster (it's happy).
+  function hearts(count: number): void {
+    const c = fx.centerOf(el.hamster);
+    fx.spriteBurst('heart', c.x, c.y - 10, { count, speed: 150, scale: 1, life: 1.2, gravity: -120 });
   }
   // Coins fly from the machine up into the coin counter (view only, for fun).
   // At most MAX_FLYING at once, so a lucky streak at 50× debug speed can't
@@ -409,6 +425,7 @@ export function createUI(
     el.machine.classList.remove('big-win');
     lastSpinSource = e.source;
     if (e.source === 'manual') {
+      celebrate.close(); // a spin you pulled yourself: on with the game
       lastManualSpinAt = performance.now();
       sound.play('lever');
     }
@@ -422,13 +439,17 @@ export function createUI(
     if (e.payout.lte(0)) return;
     const tierFx = WIN_FX[e.tier] || WIN_FX.win;
     const big = e.tier !== 'win';
-    floatText(`+${formatCoins(e.payout)}`, big);
+    // Small wins float a "+N"; big ones get the whole celebration, which counts the amount up itself.
+    if (tierFx.titles) celebrate.start({ kind: e.tier === 'jackpot' ? 'jackpot' : 'big', titles: tierFx.titles, amount: e.payout });
+    else floatText(`+${formatCoins(e.payout)}`, big);
     if (big) replayClass(el.machine, 'big-win');
+    if (here) replayClass(el.machine, 'winning'); // the marquee flashes
     if (e.tier !== 'win' || lastSpinSource === 'manual') sound.play(tierFx.sound); // small auto-spin wins stay quiet
-    if (tierFx.banner) banner(tierFx.banner, e.tier, e.payout);
     coinBurst(tierFx.coins);
     if (tierFx.hop && !lessMotion()) replayClass(el.hamster, 'hop');
     if (tierFx.shake && !lessMotion()) replayClass(el.stage, 'shake-stage');
+    // The hamster is thrilled: little hearts float up from it (big wins and up).
+    if (tierFx.titles) hearts(e.tier === 'jackpot' ? 8 : 5);
     // Particles: sparkles from every lit cell, more for bigger wins.
     if (here) {
       const per = { win: 2, nice: 6, big: 10, jackpot: 14 }[e.tier] || 2;
@@ -451,7 +472,7 @@ export function createUI(
     if (e.machineId !== activeId()) return;
     winShow.setFeatureText(`${e.retrigger ? '+' : ''}${e.count} free spins!`);
     sound.play('freeSpins');
-    banner(e.retrigger ? `+${e.count} FREE SPINS!` : `${e.count} FREE SPINS!`, 'free');
+    celebrate.start({ kind: 'free', titles: [e.retrigger ? `+${e.count} FREE SPINS!` : `${e.count} FREE SPINS!`] });
     fx.confetti(50, el.stage);
     fx.burstAt(el.machine, { count: 30, palette: fx.colors.party, speed: 220 });
     if (!lessMotion()) replayClass(el.hamster, 'hop');
@@ -459,8 +480,10 @@ export function createUI(
   });
   game.on('freeSpinsEnded', (e) => {
     if (e.machineId !== activeId()) return;
-    banner('Free spins won', e.won.gt(0) ? 'big' : 'free', e.won);
-    if (e.won.gt(0)) coinBurst(16);
+    if (e.won.gt(0)) {
+      celebrate.start({ kind: 'free', titles: ['FREE SPINS WIN'], amount: e.won, sub: `${e.spins} free spins` });
+      coinBurst(16);
+    } else banner('Free spins over', 'free');
     say(`${e.spins} free spins paid +${formatCoins(e.won)} coins!`, 3500);
   });
 
@@ -479,10 +502,13 @@ export function createUI(
     const pot = md.jackpot!.pots.find((p) => p.id === e.pot)!;
     if (prize) prize.landedAt = performance.now();
     sound.play('pot');
-    banner(`${pot.name.toUpperCase()} JACKPOT!`, 'jackpot', e.amount);
+    const grand = pot === md.jackpot!.pots[md.jackpot!.pots.length - 1];
+    celebrate.start(grand
+      ? { kind: 'grand', titles: ['JACKPOT!', 'GRAND JACKPOT!'], amount: e.amount }
+      : { kind: 'pot', titles: [`${pot.name.toUpperCase()} JACKPOT!`], amount: e.amount });
     coinBurst(30);
     fx.fountain(el.wheel, 60);
-    fx.confetti(pot === md.jackpot!.pots[md.jackpot!.pots.length - 1] ? 160 : 80);
+    fx.confetti(grand ? 160 : 80);
     if (!lessMotion()) {
       replayClass(el.stage, 'shake-stage');
       replayClass(el.hamster, 'hop');
@@ -546,10 +572,13 @@ export function createUI(
 
   game.on('deliveryStarted', (e) => {
     sound.play('deliver');
+    const w = el.wheel.getBoundingClientRect();
+    fx.dust(w.left + w.width / 2, w.bottom + 30, 10, 40); // it scoots off in a puff of bedding
     say(e.source === 'auto' ? "Out of coins! I'll go on a delivery by myself." : 'Off I scoot through the tube! Back soon.', 2200);
   });
   game.on('deliveryFinished', (e) => {
     sound.play('back');
+    coinBurst(6, el.road); // the pay flies out of the delivery tube into your coins
     say(`Back! Delivery paid +${formatCoins(e.reward)} coins.`);
   });
 
@@ -558,7 +587,12 @@ export function createUI(
     sound.play(def.effect.type === 'unlockSymbol' ? 'unlock' : def.effect.type === 'luck' ? 'luck' : 'buy');
     const line = UPGRADE_LINES[def.effect.type];
     if (line) say(line(e.level, game, def), def.effect.type === 'unlockSymbol' ? 5000 : 2600);
-    fx.sparkleOver(shop.elementFor(e.id), { count: 10 + Math.min(20, e.count * 2) });
+    const tile = shop.elementFor(e.id);
+    fx.sparkleOver(tile, { count: 10 + Math.min(20, e.count * 2) });
+    // A ring of sparks from the button, and the new level floating up from it.
+    const button = tile && tile.querySelector('.buy-btn');
+    fx.ringAt(button, { count: 20, speed: 260, palette: [fx.colors.gold[0], '#ffffff', getComputedStyle(document.documentElement).getPropertyValue('--buy').trim()] });
+    if (!lessMotion()) popText(button, game.isMaxed(e.id) ? 'MAX!' : `LV ${e.level}!`, game.isMaxed(e.id) ? 'gold' : '');
     // A new symbol on the reels: confetti over the machine.
     if (def.effect.type === 'unlockSymbol') fx.confetti(40, el.machine);
   });
@@ -580,9 +614,23 @@ export function createUI(
   });
 
   game.on('treeNodeBought', (e) => {
-    sound.play('plant');
+    sound.play('sprout');
     const node = nodeEls.get(e.id);
-    if (node) replayClass(node, 'bought');
+    if (node) {
+      // The trait sprouts: the node springs up out of the ground and leaves fly.
+      replayClass(node, 'sprout');
+      const css = getComputedStyle(document.documentElement);
+      fx.burstAt(node, { count: 22, palette: [css.getPropertyValue('--luck').trim(), css.getPropertyValue('--luck-dark').trim(), '#bff0a8'], speed: 200, gravity: 360, size: 4, twinkle: false });
+    }
+    // The Plant button you pressed (the node may be scrolled out of sight on a phone):
+    // a ring of sparks, and the word floating up from it.
+    const button = el.treeDetail.querySelector('.buy-btn');
+    fx.ringAt(button, { count: 18, speed: 240, palette: [fx.colors.heirloom[0], '#ffffff'] });
+    if (!lessMotion()) {
+      const level = game.getTreeLevel(e.id);
+      popText(button || node, game.isTreeMaxed(e.id) && level > 1 ? 'MAX!' : level > 1 ? `LV ${level}!` : 'Planted!', 'seed');
+      popText(el.bcHeld, `−${formatWhole(e.cost)}`, 'seed');
+    }
     const line = TREE_LINES[game.getTreeNodeDef(e.id)!.effect.type];
     if (line) say(line(e.level));
   });
@@ -592,14 +640,31 @@ export function createUI(
     shownCoins = game.state.coins; // jump, don't roll down from millions
     retireArmed = 0;
     lastRetired = e;
+    celebrate.close();
     sound.play('retire');
-    floatText(`+${formatWhole(e.seedsGained)} Heirloom Seeds`, true);
-    // The Big Cage page opens now (renderBigCage); the new pup says hello when it closes.
+    // The old life closes like the end of a cartoon: a circle shrinks onto the
+    // hamster, then the Big Cage page opens (renderBigCage waits for it), and its
+    // seed count rolls up from what the family held before.
+    if (!lessMotion()) {
+      heldRoll = { from: game.state.seeds.sub(e.seedsGained), at: 0 };
+      sound.play('whoosh');
+      iris.close(el.hamster);
+      bigCageAt = performance.now() + IRIS_MS + 150;
+    }
   });
 
   game.on('bigCageLeft', (e) => {
     showMachine();
     sound.play('machine');
+    // …and the new life opens from the hamster, who hops about with hearts and confetti.
+    if (!lessMotion()) {
+      iris.open(el.hamster);
+      setTimeout(() => {
+        replayClass(el.hamster, 'hop');
+        hearts(6);
+        fx.confetti(60, el.stage);
+      }, IRIS_MS * 0.6);
+    } else iris.clear();
     say(lastRetired
       ? `Hi, I'm ${e.name}! ${lastRetired.oldName} left me ${formatWhole(game.state.seeds)} Heirloom Seeds to hold. Let's go!`
       : `Hi, I'm ${e.name}! Let's go!`, 6000);
@@ -609,12 +674,24 @@ export function createUI(
   // Machine Stars (M8): a rebuilt machine gets a star, a gold trim and a burst of sparkles.
   game.on('machineRebuilt', (e) => {
     const md = game.data.machines.find((m) => m.id === e.id)!;
-    sound.play('unlock');
+    const st = game.data.stars;
+    sound.play('star');
     if (e.id === activeId()) {
       showMachine();
       fx.burstAt(el.machine, { count: 40, palette: fx.colors.gold, speed: 240 });
     }
-    const st = game.data.stars;
+    // Once the celebration fades, the new star pops onto the marquee.
+    if (e.id === activeId()) {
+      setTimeout(() => {
+        replayClass(el.machineStars, 'new');
+        const stars = el.machineStars.querySelectorAll('img');
+        fx.burstAt(stars[stars.length - 1], { count: 16, palette: fx.colors.gold, speed: 160 });
+      }, 2800);
+    }
+    celebrate.start({
+      kind: 'star', icon: 'star', titles: [`STAR ${e.stars}!`],
+      sub: `${md.name}: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck per star`,
+    });
     say(`${md.name} is good as new, with star ${e.stars}! Every star: +${Math.round(st.payoutPerStar * 100)}% payouts and +${st.luckPerStar} Luck on it, for good.`, 6000);
   });
 
@@ -1004,6 +1081,7 @@ export function createUI(
     el.luckBadge.title = `Luck ${luck.total} = Hamster Luck ${luck.hamster} + Machine Luck ${luck.machine}: fewer Wood Shavings, more wins`;
     if (luck.total > lastLuck) {
       replayClass(el.luckBadge, 'up');
+      if (!lessMotion()) popText(el.luckBadge, `Luck ${luck.total}!`, 'luck');
       fx.sparkleOver(el.luckBadge, { count: 14, palette: [fx.colors.gold[0], '#ffffff', getComputedStyle(document.documentElement).getPropertyValue('--luck').trim()] });
     }
     lastLuck = luck.total;
@@ -1133,6 +1211,7 @@ export function createUI(
       fitRig();
     }
     el.machine.classList.toggle('spinning', machine.spinning);
+    el.machine.classList.toggle('teasing', reels.teasing);
     el.machine.classList.toggle('pulled', machine.spinning && game.getSpinProgress() < 0.3);
     renderMachineTags();
 
@@ -1153,6 +1232,10 @@ export function createUI(
     el.spinBtn.classList.toggle('busy', machine.spinning);
     el.spinBtn.classList.toggle('free', !!free);
     el.spinBtn.classList.toggle('poor', !free && (delivering || spinBet === null));
+    // No auto-spin yet and the hamster's been idle a while (or never spun): Spin glows to say "tap me".
+    const idle = !machine.spinning && !busy && !delivering && spinBet !== null && !game.getAutoInterval()
+      && (s.stats.spins === 0 || now - lastManualSpinAt > 8000);
+    el.spinBtn.classList.toggle('attract', idle);
     renderBet();
     const reward = formatCoins(game.getDeliveryReward());
     const trip = formatSeconds(game.getDeliveryDuration());
@@ -1172,6 +1255,7 @@ export function createUI(
     renderGamble(now);
     renderPrize(now);
     winShow.render(now);
+    celebrate.render(now);
 
     // Wheel: fast during a spin, steady with auto-spin, still when resting.
     // Rotation uses GAME time, so it speeds up with the debug speed buttons.
@@ -1186,6 +1270,14 @@ export function createUI(
       fx.dust(r.left + r.width / 2, r.bottom + 30, 3, r.width * 0.3);
     }
     fx.motes(el.wall, 0.8, realDt);
+    // Free spins turn the cage to night: a purple glow at the edges and twinkling stars.
+    el.wall.classList.toggle('free-mode', !!free);
+    if (free) fx.twinkles(el.wall, 18, realDt, [fx.colors.gold[0], '#ffffff', fx.colors.gold[2], getComputedStyle(el.wall).getPropertyValue('--soft').trim()]);
+    // Out on a delivery: the hamster kicks up a little dust as it runs down the tube.
+    if (delivering && Math.random() < realDt * 5) {
+      const r = el.roadHamster.getBoundingClientRect();
+      fx.dust(r.left + 4, r.bottom - 4, 1, 4);
+    }
     fx.frame(realDt);
 
     // Hamster: two-frame run cycle (real time, purely visual).
@@ -1193,6 +1285,18 @@ export function createUI(
     const fur = furColors(game);
     applySprite(el.hamster, frame, 48, fur);
     el.hamster.classList.toggle('away', delivering);
+    // Resting (the wheel still): the hamster breathes; left alone long enough, it dozes off (Zzz).
+    const resting = speed === 0 && !delivering;
+    el.hamster.classList.toggle('idle', resting);
+    const sleepy = resting && !interval && !machine.spinning && now - lastManualSpinAt > 25000;
+    if (sleepy && now - lastZ > 1300 && !lessMotion()) {
+      lastZ = now;
+      const z = document.createElement('span');
+      z.className = 'zzz';
+      z.textContent = 'z';
+      el.hamster.parentElement!.appendChild(z);
+      z.addEventListener('animationend', () => z.remove());
+    }
 
     // Delivery tube
     const p = game.getDeliveryProgress();
@@ -1224,28 +1328,42 @@ export function createUI(
     payouts.render(now);
     renderFamily(now);
     renderCapsules(now);
-    renderBigCage();
+    renderBigCage(now);
   }
 
   // The Big Cage page (M8): open while the family is between lives (also after
   // a reload). The Family Tree moves into it (one tree, two homes), because the
   // Big Cage is the only place to plant; it moves back when the new life starts.
-  function renderBigCage(): void {
+  function renderBigCage(now: number): void {
     const s = game.state;
-    if (s.bigCage && !el.bigCage.open) {
+    if (s.bigCage && !el.bigCage.open && now >= bigCageAt) {
       el.bcTreeHome.appendChild(el.treeBox);
       el.bigCage.showModal();
       el.bigCage.scrollTop = 0;
+      // The particles move into the dialog while it's open (a dialog sits above
+      // the whole page, canvas included), and Heirloom Seeds rain down in it.
+      el.bigCage.appendChild(fx.canvas);
+      if (heldRoll) heldRoll.at = now + 350;
+      setTimeout(() => fx.rain('heirloom', el.bigCage, lastRetired ? Math.min(40, 12 + lastRetired.seedsGained.toNumber()) : 10, { scale: 2, floor: false }), 300);
     } else if (!s.bigCage && el.bigCage.open) {
       el.bigCage.close();
       el.treeHome.appendChild(el.treeBox);
+      document.body.appendChild(fx.canvas);
+      heldRoll = null;
     }
-    if (!s.bigCage) return;
+    if (!s.bigCage || !el.bigCage.open) return;
     const name = game.getPupName();
     setText(el.bcSub, lastRetired
       ? `${lastRetired.oldName} retired and left the family +${formatWhole(lastRetired.seedsGained)} Heirloom Seeds. ${name} (generation ${s.generation}) is next.`
       : `${name} (generation ${s.generation}) is waiting to start.`);
-    setHTML(el.bcHeld, seedLabel(formatWhole(s.seeds)));
+    // Held seeds roll up from what the family had before this retirement.
+    let held = s.seeds;
+    if (heldRoll) {
+      const t = Math.max(0, Math.min(1, (now - heldRoll.at) / 1200));
+      held = heldRoll.from.add(s.seeds.sub(heldRoll.from).mul(1 - (1 - t) * (1 - t))).floor();
+      if (t >= 1) heldRoll = null;
+    }
+    setHTML(el.bcHeld, seedLabel(formatWhole(held)));
     const per = game.getHeldSeedBonusPerSeed();
     setText(el.bcBonus, `${bonusText(s.seeds.mul(per))} payouts`);
     const stars = Object.values(s.stars).reduce((a, b) => a + b, 0);
@@ -1268,14 +1386,24 @@ export function createUI(
     if (capsulesShown) capsules.render(now);
   }
 
-  const capsules = createCapsulesView(game, { say, sound, settings, onSettingsChange });
+  const capsules = createCapsulesView(game, { say, sound, fx, settings, onSettingsChange });
   const backupView = createBackupView(game, backup);
   const shop = createShopView(game, { settings, onSettingsChange });
   const payouts = createPayoutsView(game, { settings, onSettingsChange });
+  setText($('app-version'), version);
   buildTree();
   buildMachineTags();
   buildSettings();
   applySettings();
   showMachine();
-  return { render };
+  // The cage "opens" as the page loads (1.0): the HUD drops in, the wheel rolls
+  // in, the machine lands with a bounce, the tray slides up (style.css .intro).
+  const app = document.querySelector<HTMLElement>('.app');
+  if (app && !lessMotion()) {
+    app.classList.add('intro');
+    setTimeout(() => app.classList.remove('intro'), 1800);
+  }
+  // celebrate: for trying the celebrations from the console, e.g.
+  // hamster.ui.celebrate.start({ kind: 'jackpot', titles: ['BIG WIN!', 'JACKPOT!'], amount: hamster.game.state.coins })
+  return { render, celebrate };
 }

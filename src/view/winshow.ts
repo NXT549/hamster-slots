@@ -45,6 +45,7 @@ interface WinShowParts {
   fx: Fx;
   sound: Sound;
   lessMotion: () => boolean;
+  quiet?: () => boolean; // true: no ticks (a celebration is counting up with its own)
 }
 
 // Real seconds the meter takes to count up, by win tier (see WIN_FX in ui.ts).
@@ -53,7 +54,7 @@ const HOLD_ALL = 0.7; // the "everything lit" view before the lines take turns (
 const LINE_SECONDS = 1.0; // one line's turn
 const FEATURE_SECONDS = 1.4; // the scatters' turn
 
-export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, fx, sound, lessMotion }: WinShowParts) {
+export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, fx, sound, lessMotion, quiet = () => false }: WinShowParts) {
   let show: Show | null = null; // { steps, total, countFor, start, step, stepStart, skipped, featureText }
   let lastTick = 0;
 
@@ -170,7 +171,7 @@ export function createWinShow({ game, reels, meter, meterValue, label, reelsEl, 
     meter.classList.toggle('counting', t < 1);
     if (t < 1 && now - lastTick > 90) {
       lastTick = now;
-      sound.play('tick');
+      if (!quiet()) sound.play('tick');
     }
     if (show.skipped || show.steps.length < 2) return; // one line (or skipped): nothing to cycle
     // After the count-up and a short hold, the turns begin, and loop.

@@ -126,6 +126,21 @@ export function createSound({ volume = 0.6, muted = false }: { volume?: number; 
       note(200, 0, 0.1, { type: 'triangle', gain: 0.12, to: 300 });
       [NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6, NOTE.G6].forEach((f, i) => note(f, 0.08 + i * 0.07, 0.22, { type: 'triangle', gain: 0.12 }));
     },
+    // 1.0: the celebrations, planting, stars, the move to the Big Cage.
+    slam: () => { // a title slamming in: a soft thump and a bright chord
+      note(120, 0, 0.16, { type: 'triangle', gain: 0.2, to: 60 });
+      chord([NOTE.C6, NOTE.E6, NOTE.G6], 0.03, 0.22, { type: 'square', gain: 0.03 });
+    },
+    rollup: (t = 0) => note(520 + t * 900, 0, 0.035, { type: 'square', gain: 0.03 }), // the big count-up, climbing
+    star: () => { // a Machine Star: a twinkly run up and a shimmering chord
+      [NOTE.G5, NOTE.C6, NOTE.E6, NOTE.G6, NOTE.C6 * 2, NOTE.E6 * 2].forEach((f, i) => note(f, i * 0.06, 0.3, { gain: 0.1 }));
+      chord([NOTE.C6, NOTE.E6, NOTE.G6], 0.4, 1, { type: 'triangle', gain: 0.06 });
+    },
+    sprout: () => { // a trait sprouting: a springy "boing" and a leafy chime
+      note(260, 0, 0.18, { type: 'triangle', gain: 0.14, to: 620 });
+      [NOTE.E6, NOTE.G6].forEach((f, i) => note(f, 0.12 + i * 0.07, 0.2, { gain: 0.1 }));
+    },
+    whoosh: () => note(900, 0, 0.45, { type: 'triangle', gain: 0.08, to: 110 }), // the iris closing on the old life
   };
 
   function play(name: string, ...args: unknown[]): void {

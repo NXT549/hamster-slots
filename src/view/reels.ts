@@ -89,6 +89,7 @@ export function createReels(
   let spinQuick = false; // quick reels, decided when the spin started
   let teaseFrom: number | null = null; // anticipation: the reel after which the others tease (null = none)
   let teased = false; // onTease() already called for this spin
+  let teasingNow = false; // a reel is teasing right now (the machine's heartbeat, ui.ts)
   let buildKey = '';
 
   const md = () => game.getMachineData();
@@ -282,10 +283,14 @@ export function createReels(
   function drawLine(line: number[], index: number, badge: boolean): void {
     const pts = reels.map((reel, i) => [reel.col.offsetLeft + reel.col.offsetWidth / 2, windowRow(line[i]) * CELL + CELL / 2]);
     const points = pts.map(([x, y]) => `${x},${y}`).join(' ');
+    // The line draws itself across the reels, left to right (1.0): a dash as
+    // long as the whole line slides into place (style.css .win-lines, "trace").
+    const length = Math.ceil(pts.reduce((sum, [x, y], i) => (i ? sum + Math.hypot(x - pts[i - 1][0], y - pts[i - 1][1]) : 0), 0));
     for (const cls of ['under', 'over']) {
       const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
       poly.setAttribute('points', points);
       poly.setAttribute('class', `${cls} ${lineClass(index)}`);
+      poly.style.setProperty('--len', `${length}px`);
       svg!.appendChild(poly);
     }
     // Many-line machines have no side tags, so the drawn line gets its number.
@@ -333,6 +338,7 @@ export function createReels(
       const t = machine.spinning ? Math.min(1, progress / reel.stop) : 1;
       reel.strip.style.transform = `translateY(${stripOffset(reel.from, reel.to, t, spinQuick ? OVERSHOOT / 2 : OVERSHOOT)}px)`;
       reel.col.classList.toggle('moving', t < 1);
+      reel.col.classList.toggle('fast', t < 0.7 && !spinQuick); // a motion blur while it races (style.css)
       // A teasing reel shimmers once every reel before it has landed.
       const tease = !!reel.tease && t < 1 && machine.spinning && teaseFrom !== null && progress >= reels[teaseFrom].stop;
       reel.col.classList.toggle('tease', tease);
@@ -346,10 +352,11 @@ export function createReels(
       teased = true;
       onTease();
     }
+    teasingNow = teasing;
   }
 
   build();
-  return { build, startSpin, showWin, showFeature, clearWin, render, litCells, cellsFor, reelElement };
+  return { build, startSpin, showWin, showFeature, clearWin, render, litCells, cellsFor, reelElement, get teasing() { return teasingNow; } };
 }
 
 // What createReels gives back (the win show and ui.ts use it).
