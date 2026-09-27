@@ -1,6 +1,6 @@
 {
   "name": "hamster-slots",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "A cute pixel-art idle slot machine powered by a hamster on a wheel.",
   "type": "module",

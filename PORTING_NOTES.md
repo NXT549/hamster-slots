@@ -553,6 +553,11 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Tokens stay earn-only** (no real money, ever). The capsule pool grows from 18 to 24 skins, so a full collection takes ~151 pulls instead of ~110.
 - **The simulator's bot** opens a capsule whenever it can and wears its rarest skin in every slot; `--no-capsules` plays without (for before/after).
 
+**D130 — 1.1.0: released before the user's own playtest** (the user, 2026-09-27: "i wana push 1.1.0 rn so my friend can play it and let me know what they think").
+- 1.1.0 = M9 (three machines, the seed jar, the Maze ×1.5) + M10 (Wardrobe buffs, hats) + the phone paytable fix (a 1.0 bug). The release commit moved the CHANGELOG's `[Unreleased]` to `[1.1.0]`, set 1.1.0 in package.json and package-lock, and `main` was fast-forwarded to it (the deploy workflow puts it on the Pages link). A friend's play is the first playtest of all of it; their feedback goes in Playtest notes.
+- Before releasing, the user was told: no person had played M9/M10 yet; the seed jar caps held seeds at +100% (a nerf only for families past 67 seeds, which nobody on 1.0 could have reached in its few hours live); saves go v9 → v10 on load, and rolling back to 1.0 would still load them but drop the new machines and hats, so problems are fixed forward (1.1.1).
+- The tag `v1.1.0` is made on `main`; this session's git proxy refuses tag pushes (HTTP 403, as for `v1.0.0`), so the user pushes the tags or makes GitHub Releases.
+
 ---
 
 ## Balance log
