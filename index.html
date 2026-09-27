@@ -118,6 +118,8 @@
         </div>
 
         <img class="prop prop-bowl" data-sprite="bowl" data-size="48" alt="">
+        <!-- M11: the casino's boosts and charms running now, with the time (or spins) left -->
+        <div class="boost-badges" id="boost-badges"></div>
         <!-- A little capsule-toy machine in the corner of the cage (wide screens only).
              It appears with the Capsules tab and opens it when clicked. -->
         <button class="stage-gacha hidden" id="stage-gacha" aria-label="Open the Capsule Machine">
@@ -161,6 +163,8 @@
         <button class="tab hidden" role="tab" data-tab="family" id="family-tab">Family</button>
         <!-- Hidden until the Hamster Diary has paid for a first capsule -->
         <button class="tab hidden" role="tab" data-tab="capsules" id="capsules-tab">Capsules</button>
+        <!-- M11: hidden until the family's first retirement opens the Hamster Casino -->
+        <button class="tab hidden" role="tab" data-tab="casino" id="casino-tab">Casino</button>
         <button class="tab" role="tab" data-tab="info">Info</button>
       </nav>
 
@@ -260,6 +264,89 @@
         <div class="subpanel" data-sub="diary">
           <p class="note subpanel-note" id="diary-note"></p>
           <div class="diary" id="diary"></div>
+        </div>
+      </div>
+
+      <!-- M11, the Hamster Casino (casino.ts): chips, four tables and the Prize Counter.
+           Chips only buy prizes; every table keeps a small house edge (its note says how much). -->
+      <div class="tab-panel hidden" id="tab-casino">
+        <div class="subtab-row">
+          <nav class="subtabs" id="casino-subtabs">
+            <button class="subtab" data-sub="roulette">Roulette</button>
+            <button class="subtab" data-sub="blackjack">Blackjack</button>
+            <button class="subtab" data-sub="derby">Derby</button>
+            <button class="subtab" data-sub="drop">Seed Drop</button>
+            <button class="subtab" data-sub="prizes">Prizes</button>
+          </nav>
+        </div>
+        <!-- Your chips, and the bet (a chip size: Roulette puts one on a spot per tap) -->
+        <div class="chip-bar">
+          <div class="chip-count"><img data-sprite="chip" data-size="24" alt=""><span id="chip-count">0</span><span class="note">chips</span></div>
+          <div class="casino-bet" id="casino-bet">
+            <span class="casino-bet-label">Bet</span>
+            <button class="btn btn-card bet-btn" id="cbet-down" aria-label="A smaller bet">−</button>
+            <span class="cbet-value" id="cbet-value"></span>
+            <button class="btn btn-card bet-btn" id="cbet-up" aria-label="A bigger bet">+</button>
+          </div>
+        </div>
+
+        <div class="subpanel" data-sub="roulette">
+          <div class="felt">
+            <div class="roulette-top">
+              <canvas class="roulette-wheel" id="roulette-wheel" width="96" height="96"></canvas>
+              <div class="roulette-side">
+                <div class="casino-result" id="roulette-result"></div>
+                <div class="roulette-history" id="roulette-history"></div>
+              </div>
+            </div>
+            <div class="roulette-board" id="roulette-board"></div>
+            <div class="table-buttons">
+              <button class="btn btn-soft" id="roulette-clear">Clear</button>
+              <button class="btn btn-primary" id="roulette-spin">Spin</button>
+            </div>
+          </div>
+          <p class="note table-note" id="roulette-note"></p>
+        </div>
+        <div class="subpanel" data-sub="blackjack">
+          <div class="felt">
+            <div class="bj-row"><span class="bj-label">Dealer <b class="num" id="bj-dealer-total"></b></span><div class="bj-cards" id="bj-dealer"></div></div>
+            <div class="casino-result" id="bj-result"></div>
+            <div class="bj-row"><span class="bj-label">You <b class="num" id="bj-player-total"></b></span><div class="bj-cards" id="bj-player"></div></div>
+            <div class="table-buttons">
+              <button class="btn btn-primary" id="bj-deal">Deal</button>
+              <button class="btn btn-soft" id="bj-hit">Hit</button>
+              <button class="btn btn-gold" id="bj-stand">Stand</button>
+              <button class="btn btn-card" id="bj-double">Double</button>
+            </div>
+            <div class="table-hint" id="bj-hint"></div>
+          </div>
+          <p class="note table-note" id="bj-note"></p>
+        </div>
+        <div class="subpanel" data-sub="derby">
+          <div class="felt">
+            <div class="derby-track" id="derby-track"></div>
+            <div class="casino-result" id="derby-result"></div>
+            <div class="table-buttons"><button class="btn btn-primary" id="derby-run">Race!</button></div>
+          </div>
+          <p class="note table-note" id="derby-note"></p>
+        </div>
+        <div class="subpanel" data-sub="drop">
+          <div class="felt">
+            <div class="drop-board" id="drop-board"></div>
+            <div class="casino-result" id="drop-result"></div>
+            <div class="table-buttons"><button class="btn btn-primary" id="drop-btn">Drop a seed</button></div>
+          </div>
+          <p class="note table-note" id="drop-note"></p>
+        </div>
+        <div class="subpanel" data-sub="prizes">
+          <!-- The cashier: chips for coins -->
+          <div class="cashier">
+            <div class="cashier-head"><b>Cashier</b><span class="note" id="chip-price"></span></div>
+            <div class="chip-buy" id="chip-buy"></div>
+            <div class="note" id="chip-note"></div>
+          </div>
+          <p class="note subpanel-note">Spend your chips here. Boosts run while you play (not while you're away), and buying one again adds more time. The skins are only sold here.</p>
+          <div class="prize-grid" id="prize-grid"></div>
         </div>
       </div>
 

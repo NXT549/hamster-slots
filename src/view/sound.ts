@@ -144,6 +144,8 @@ export function createSound({ volume = 0.6, muted = false }: { volume?: number; 
     // M9: hold & spin.
     acorn: (n = 1) => [0, 0.05, 0.1].slice(0, Math.min(3, n)).forEach((at, i) => note(NOTE.G6 * (1 + i * 0.12), at, 0.09, { type: 'square', gain: 0.05 })), // acorns clinking into place
     respin: () => note(420, 0, 0.18, { type: 'triangle', gain: 0.06, to: 300 }), // a respin that lands nothing
+    chip: () => [0, 0.035].forEach((at, i) => note(1500 - i * 300, at, 0.03, { type: 'square', gain: 0.04 })), // M11: chips clacking on the felt
+    peg: (i = 0) => note(700 + (i % 4) * 90, 0, 0.04, { type: 'triangle', gain: 0.05 }), // M11: a seed bouncing off a peg
   };
 
   function play(name: string, ...args: unknown[]): void {

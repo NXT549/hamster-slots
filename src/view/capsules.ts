@@ -286,7 +286,8 @@ export function createCapsulesView(
       tile.classList.toggle('locked', !owned);
       tile.classList.toggle('wearing', wearing);
       tile.disabled = !owned;
-      setText(tile.querySelector('.skin-state')!, wearing ? 'Wearing' : owned ? 'Tap to wear' : 'Not found yet');
+      const casinoOnly = !!game.getSkinDef(id)!.casino; // M11: sold at the casino's Prize Counter, never in capsules
+      setText(tile.querySelector('.skin-state')!, wearing ? 'Wearing' : owned ? 'Tap to wear' : casinoOnly ? 'Casino prize' : 'Not found yet');
     }
     renderWardrobeTotal();
 

@@ -496,7 +496,7 @@ export interface Card {
 export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug' | 'casino';
 export type ChipSource = 'buy' | 'spins' | 'retire' | 'bet' | 'win' | 'prize' | 'refund' | 'debug';
 // One roulette bet (M11): a kind, which one (dozen / column / number), and the chips on it.
-export interface RouletteBet { kind: RouletteKind; pick: number; amount: Money }
+export interface RouletteBet { kind: RouletteKind; pick: number; amount: Money | number }
 export type GambleEndReason = 'collect' | 'lose' | 'max' | 'spin' | 'expired' | 'switch' | 'retire';
 
 export interface GameEvents {
@@ -536,7 +536,7 @@ export interface GameEvents {
   offlineEarned: { awaySeconds: number; seconds: number; coins: Money };
   // M11: the casino
   chipsChanged: { chips: Money; amount: Money; source: ChipSource };
-  rouletteSpun: { pocket: number; bets: (RouletteBet & { returned: Money })[]; staked: Money; returned: Money };
+  rouletteSpun: { pocket: number; bets: { kind: RouletteKind; pick: number; amount: Money; returned: Money }[]; staked: Money; returned: Money };
   blackjackChanged: { hand: BlackjackHand };
   blackjackEnded: { outcome: BjOutcome; bet: Money; returned: Money };
   derbyRun: { racer: string; winner: string; bet: Money; returned: Money };

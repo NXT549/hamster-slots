@@ -266,6 +266,22 @@ const coin = [
   '....VVVV....',
 ];
 
+// M11: a Casino Chip (red, with the white edge marks every casino chip has).
+const chip = [
+  '....XXXX....',
+  '..XXrwwrXX..',
+  '.XrrrwwrrrX.',
+  '.XrRRRRRRrX.',
+  'XrrRweeeRrrX',
+  'XwwReeeeRwwX',
+  'XwwReeeeRwwX',
+  'XrrReeeRRRRX',
+  '.XrRRRRRRRX.',
+  '.XRRRwwRRRX.',
+  '..XXRwwRXX..',
+  '....XXXX....',
+];
+
 const token = [
   '....ZZZZ....',
   '..ZZppppZZ..',
@@ -1589,7 +1605,7 @@ const cheeseIcon = [
 ];
 
 export const SPRITES: Record<string, string[]> = {
-  seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple, hamster, hamster2, coin, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
+  seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple, hamster, hamster2, coin, chip, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
   cheeks, wheel, oilcan, gear, reel, paylinesIcon, heart, star, bolt, scooter, backpack, parcel, pouch, goldenIcon, carrotIcon,
   machineClunky, machineStacker, machineBonanza, machinePalace, bottle, bowl, bedding,
   highRollerIcon, flame, wildIcon, ballIcon, pouchPolish,

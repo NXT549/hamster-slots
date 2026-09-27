@@ -29,6 +29,7 @@ export function createDebugPanel(
     </div>
     <div class="row"><span class="row-label">Capsules</span>
       <button data-tokens="10">+10 tokens</button><button data-tokens="100">+100 tokens</button><button id="dbg-skins">Every skin</button>
+      <button data-chips="1000">+1,000 chips</button>
     </div>
     <div class="row"><span class="row-label">Bonus features (on the machine you're running)</span>
       <button id="dbg-free">+5 free spins</button>
@@ -68,6 +69,9 @@ export function createDebugPanel(
   // Plant without retiring (M8: planting only happens in the Big Cage).
   panel.querySelector('#dbg-cage')!.addEventListener('click', () => {
     if (!game.openBigCage()) setStatus('Already in the Big Cage, or a gamble is under way.');
+  });
+  panel.querySelectorAll<HTMLElement>('[data-chips]').forEach((b) => {
+    b.addEventListener('click', () => game.addChips(Number(b.dataset.chips))); // M11 (the casino)
   });
   panel.querySelectorAll<HTMLElement>('[data-tokens]').forEach((b) => {
     b.addEventListener('click', () => game.addTokens(Number(b.dataset.tokens)));

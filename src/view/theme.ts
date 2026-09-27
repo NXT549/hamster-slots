@@ -37,7 +37,7 @@ export const FRAME_SPRITES = ['frameCard', 'framePaper', 'frameTab', 'frameButto
 // colours, because mix() works on hex colours (tests/art.test.js checks).
 export const THEME_TOKENS = [
   ...new Set([...Object.values(BUTTONS).flat(), '--buy-dark', '--buy', '--gold-dark', '--gold', '--heirloom-dark', '--heirloom',
-    '--soft-dark', '--soft', '--kraft', '--kraft-dark', '--kraft-edge']),
+    '--soft-dark', '--soft', '--kraft', '--kraft-dark', '--kraft-edge', '--felt', '--felt-dark', '--felt-light', '--felt-edge']),
 ];
 
 export function applyTheme(root: HTMLElement = document.documentElement): void {
@@ -56,6 +56,8 @@ export function applyTheme(root: HTMLElement = document.documentElement): void {
   set('--frame-paper-selected', edged('framePaper', '--soft-dark', '--soft'));
   set('--frame-tab', url('frameTab'));
   set('--frame-tab-card', url('frameTab', { 1: token('--kraft'), 2: token('--kraft-dark'), 3: token('--kraft-edge') }));
+  // M11: the casino's tables, green card-table felt (the tray's frame, repainted).
+  set('--frame-felt', url('frameCard', { U: token('--felt-edge'), x: token('--felt-light'), n: token('--felt'), N: token('--felt-dark') }));
   set('--bubble-tail', url('bubbleTail'));
   set('--tile-bedding', url('bedding'));
 

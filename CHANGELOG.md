@@ -8,6 +8,24 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+**The Hamster Casino opens: roulette, blackjack, a hamster derby and Seed Drop.**
+
+### Added
+
+- **The Hamster Casino** (a new Casino tab). It opens when your family retires for the first time, with **250 chips** to start.
+- **Casino Chips:** your hamster earns a chip every 2 paid spins, and the family gets 250 more whenever a hamster retires. You can also buy chips with coins at the cashier. Chips are pretend like the coins, and they only buy prizes: they never turn back into coins.
+- **Hamster Roulette:** tap the board to put chips on numbers, colours, dozens or columns, then spin. The hamster rolls round the wheel in its ball and drops into a pocket.
+- **Blackjack** against the hamster dealer: hit, stand or double down. A tip tells you the best play for every hand.
+- **The Hamster Derby:** back one of five hamsters and watch them race. The favourite wins most often; Wobbles, the long shot, pays ×13.6.
+- **Seed Drop:** drop seeds down the pegs into the bins. The edge bins pay ×12, if you're lucky.
+- **Every table says what it pays and what it gives back on average.** Like a real casino, the house keeps a small edge (you get back 95–99% of your chips on average).
+- **The Prize Counter:** Golden Hour (every machine pays +50% for a while), Turbo Wheel (faster spins for a while), the Lucky Charm (+15 Luck for your next 100 paid spins), Token Bags, and three skins you can only get here: the **Dealer's Visor**, the **Tuxedo** fur and the **Casino Night** room. Boosts only count down while you play, and the ones running show on the cage.
+- 5 new diary stickers for the casino.
+
+### Changed
+
+- On a phone, the cage steps aside while the Casino tab is open, so the tables get the whole screen. Any other tab brings it back.
+
 ## [1.2.0] - 2026-09-27
 
 **A new look: everything fits on one screen, and a family tree that grows as you plant.**

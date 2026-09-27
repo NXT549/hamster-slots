@@ -76,6 +76,10 @@
   --cheese: #ffd35c;        --cheese-dark: #e8a93a;    --cheese-light: #fff3b8;   --cheese-rind: #f79a3e;   --cheese-rind-dark: #d9722a;
   --acorn-cell: #3a2a20;    /* an empty hold & spin cell */
   --reel-bg: #fffdf8;
+  /* M11, the Hamster Casino: the tables' felt, and the roulette wheel's colours */
+  --felt: #3f8f5f;          --felt-dark: #2a6a44;      --felt-light: #5aa877;     --felt-edge: #1d4a30;
+  --pocket-red: #e0524f;    --pocket-black: #3b2f2b;   --pocket-green: #3f8f45;
+  --wheel-wood: #a8764a;    --wheel-wood-dark: #7a5230; --chip-red: #ef6f6c;
   /* paylines: one colour per line (line 1 … line 10; line 11 on reuses them) */
   --line-1: #ffbe2e; --line-2: #ff7fa3; --line-3: #4fb8e6; --line-4: #6fcb74; --line-5: #b08af0;
   --line-6: #ff8a4c; --line-7: #3fc7b4; --line-8: #e86ad0; --line-9: #8fb83a; --line-10: #6a8cf0;
@@ -150,6 +154,12 @@ body {
     grid-template-areas: "hud hud" "stage tray";
   }
 }
+/* M11: stacked (a phone), the casino's tables get the whole screen under the HUD: the
+   cage steps aside while the Casino tab is open, and comes back with any other tab. */
+@media not ((min-width: 960px) or ((min-width: 700px) and (orientation: landscape))) {
+  .app.at-casino { grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "hud" "tray"; }
+  .app.at-casino .stage { display: none; }
+}
 .hidden { display: none !important; }
 .note { font-size: 13px; color: var(--ink-soft); font-weight: 600; }
 .sprite { image-rendering: pixelated; display: block; }
@@ -171,7 +181,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
    would pick up the tray's cardboard frame. Later rules pick other frames. */
 .tray, .tile, .machine-card, .dialog, .capsule-card, .retire-card, .tree-detail, .bt-icon, .skin-tile,
 .diary-row, .reveal-card, .tag, .bubble, .bc-bubble, .machine-tag, .line-card, .dialog-card, .gamble,
-.btn, .buy-btn, .seg-btn, .icon-btn, .tab, .subtab {
+.btn, .buy-btn, .seg-btn, .icon-btn, .tab, .subtab, .felt, .boost-badge {
   --frame: var(--frame-paper);
   --fw: 8px;
   border-style: solid;
@@ -1520,6 +1530,147 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   font-family: var(--font-num); font-weight: 900; font-size: 30px; color: var(--gold-dark);
 }
 
+/* ── M11: the Hamster Casino (casino.ts) ─────────────── */
+/* The chips you have, and buying more with coins */
+.chip-bar { display: flex; align-items: center; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; margin: 0 2px 8px; }
+.chip-count { display: flex; align-items: center; gap: 6px; }
+.chip-count > span:first-of-type { font-family: var(--font-num); font-weight: 900; font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
+/* The bet: − and + through the chip sizes, like the machine's bet box */
+.casino-bet { display: flex; align-items: center; gap: 4px; }
+.casino-bet-label { font-family: var(--font-display); font-weight: 500; font-size: 15px; margin-right: 2px; }
+.casino-bet .bet-btn { --fw: 6px; width: 32px; height: 32px; padding: 0 0 2px; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+.casino-bet .bet-btn:disabled { opacity: 0.5; cursor: default; }
+.cbet-value { min-width: 64px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; font-family: var(--font-num); font-weight: 900; font-size: 17px; }
+.cbet-value.dim { color: var(--danger-dark); }
+/* The cashier (on the Prize Counter): chips for coins */
+.cashier { display: flex; flex-direction: column; gap: 6px; margin: 0 2px 12px; padding-bottom: 10px; border-bottom: 3px solid var(--kraft-dark); }
+.cashier-head { display: flex; align-items: baseline; gap: 8px; }
+.cashier-head b { font-family: var(--font-display); font-weight: 500; font-size: 17px; }
+.cashier-head .note { display: inline-flex; align-items: center; gap: 3px; }
+.chip-buy { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip-buy-btn { --fw: 6px; font-family: var(--font-num); font-weight: 900; font-size: 13px; padding: 0 5px 1px; display: inline-flex; align-items: center; gap: 3px; }
+.chip-buy-btn img { width: 12px; height: 12px; }
+.chip-buy-btn:disabled { filter: saturate(0.3); opacity: 0.7; cursor: default; }
+/* A table: green card-table felt in a pixel frame */
+.felt {
+  --frame: var(--frame-felt); --fw: 12px;
+  display: flex; flex-direction: column; gap: 8px; padding: 2px 4px 4px; color: var(--paper);
+}
+.felt .note { color: color-mix(in srgb, var(--paper) 80%, var(--felt)); }
+.casino-result {
+  min-height: 24px; text-align: center; font-size: 15px; font-family: var(--font-body); font-weight: 800;
+  display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap;
+}
+.casino-result b { font-family: var(--font-display); font-weight: 500; }
+.casino-result b.num { font-family: var(--font-num); font-weight: 900; }
+.casino-result.win { color: var(--gold); }
+.casino-result.lose { color: color-mix(in srgb, var(--paper) 70%, var(--felt)); }
+.casino-result.pop { animation: pop 0.3s ease-out 2; }
+.casino-result img { width: 24px; height: 24px; }
+.table-buttons { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.table-buttons .btn { font-size: 15px; padding: 0 10px 2px; display: inline-flex; align-items: center; gap: 4px; }
+.table-buttons .btn img { width: 12px; height: 12px; }
+.table-buttons .btn:disabled { filter: saturate(0.3); opacity: 0.7; cursor: default; }
+.table-hint { min-height: 18px; text-align: center; font-size: 13px; }
+.table-note { margin: 8px 2px 0; }
+
+/* Roulette: the wheel (a 96 px canvas at 2×) beside the result, then the board */
+.roulette-top { display: flex; align-items: center; justify-content: center; gap: 8px 12px; flex-wrap: wrap; }
+.roulette-wheel { flex: none; width: 192px; height: 192px; image-rendering: pixelated; }
+.roulette-side { flex: 1 1 150px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.roulette-history { display: flex; gap: 3px; flex-wrap: wrap; min-height: 22px; justify-content: center; }
+.rh { min-width: 22px; height: 20px; padding: 0 3px; display: inline-flex; align-items: center; justify-content: center; clip-path: var(--notch);
+  font-family: var(--font-num); font-weight: 900; font-size: 12px; color: var(--paper); }
+.rh:first-child { box-shadow: inset 0 0 0 2px var(--gold); }
+.rh-red { background: var(--pocket-red); } .rh-black { background: var(--pocket-black); } .rh-green { background: var(--pocket-green); }
+/* The board: 0, then 12 columns of three numbers, "2:1" column bets, the dozens, the even-money bets */
+.roulette-board { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); grid-auto-rows: 30px; gap: 2px; }
+.rspot {
+  position: relative; min-width: 0; padding: 0; border: 2px solid color-mix(in srgb, var(--paper) 55%, var(--felt)); cursor: pointer;
+  font-family: var(--font-num); font-weight: 900; font-size: 12px; color: var(--paper); background: var(--felt-dark);
+}
+.rspot.red { background: var(--pocket-red); }
+.rspot.black { background: var(--pocket-black); }
+.rspot.green { background: var(--pocket-green); }
+.rspot.outside { font-family: var(--font-display); font-weight: 500; font-size: 12px; }
+.rspot:hover { filter: brightness(1.12); }
+.rspot:active { transform: translateY(1px); }
+.rspot.won { box-shadow: inset 0 0 0 2px var(--gold); }
+.rspot-chip {
+  position: absolute; right: -3px; top: -5px; z-index: 1; min-width: 18px; height: 16px; padding: 0 3px; clip-path: var(--notch);
+  background: var(--chip-red); color: var(--paper); font-family: var(--font-num); font-weight: 900; font-size: 10px; line-height: 16px;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2); pointer-events: none;
+}
+/* Blackjack: the dealer's cards above, yours below */
+.bj-row { display: flex; align-items: center; gap: 10px; min-height: 62px; }
+.bj-label { flex: none; width: 66px; font-family: var(--font-display); font-weight: 500; font-size: 15px; display: flex; flex-direction: column; }
+.bj-label .num { font-family: var(--font-num); font-weight: 900; font-size: 20px; color: var(--gold); }
+.bj-cards { display: flex; gap: 6px; flex-wrap: wrap; }
+.bj-card {
+  width: 40px; height: 56px; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px;
+  background: var(--reel-bg); border: var(--outline-thin) solid var(--outline-ink); border-radius: 5px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+.bj-card .bj-rank { position: absolute; left: 4px; top: 1px; font-family: var(--font-num); font-weight: 900; font-size: 18px; line-height: 1.1; } /* numbers: the clean font */
+.bj-card.red .bj-rank { color: var(--pocket-red); }
+.bj-card.black .bj-rank { color: var(--pocket-black); }
+.bj-card.back { background: none; border-color: transparent; box-shadow: none; padding: 0; align-items: center; }
+.bj-card.deal { animation: deal-in 0.25s ease-out; }
+@keyframes deal-in { from { transform: translateY(-14px) rotate(-6deg); opacity: 0; } }
+/* The Derby: a lane per hamster; tap one to back it */
+.derby-track { display: flex; flex-direction: column; gap: 4px; }
+.derby-lane {
+  display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 6px; padding: 2px 4px; cursor: pointer; text-align: left;
+  background: color-mix(in srgb, var(--felt-dark) 70%, transparent); border: 2px solid transparent; color: var(--paper); clip-path: var(--notch);
+}
+.derby-lane.picked { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 22%, var(--felt-dark)); }
+.derby-lane.winner { box-shadow: inset 0 0 0 2px var(--gold); }
+.derby-name { display: flex; flex-direction: column; line-height: 1.1; }
+.derby-name b { font-family: var(--font-display); font-weight: 500; font-size: 14px; }
+.derby-name .note { font-size: 11px; }
+.derby-run { position: relative; height: 26px; border-bottom: 2px dashed color-mix(in srgb, var(--paper) 35%, var(--felt)); }
+.derby-finish { position: absolute; right: 0; top: 0; bottom: 0; width: 4px;
+  background: repeating-linear-gradient(to bottom, var(--paper) 0 4px, var(--pocket-black) 4px 8px); }
+.derby-runner { position: absolute; bottom: 0; left: 0; }
+/* Seed Drop: rows of pegs over a row of bins */
+.drop-board { position: relative; height: 230px; overflow: hidden; }
+.peg { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--paper); box-shadow: 1px 1px 0 var(--felt-edge); }
+.bin {
+  position: absolute; bottom: 4px; width: 9%; margin-left: -4.5%; height: 28px; display: flex; align-items: center; justify-content: center;
+  background: var(--felt-dark); clip-path: var(--notch); font-size: 11px; color: var(--paper);
+}
+.bin.good { background: color-mix(in srgb, var(--gold) 35%, var(--felt-dark)); }
+.bin.top { background: var(--gold); color: var(--ink); }
+.bin .num { font-family: var(--font-num); font-weight: 900; }
+.bin.hit { animation: bin-hit 0.5s ease-out; }
+@keyframes bin-hit { 30% { transform: translateY(-6px); filter: brightness(1.4); } }
+.drop-seed { position: absolute; margin: -12px 0 0 -12px; z-index: 2; pointer-events: none; }
+/* The Prize Counter */
+.prize-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.prize-tile { padding: 2px 4px 4px; }
+.prize-tile.running { --frame: var(--frame-paper-gold); }
+.prize-head { display: flex; gap: 8px; align-items: center; }
+.prize-icon { flex: none; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; }
+.prize-desc { font-size: 12px; }
+.prize-state { font-size: 12px; min-height: 1em; }
+.prize-bar { height: 6px; background: var(--paper-2); clip-path: var(--notch); overflow: hidden; }
+.prize-fill { height: 100%; width: 0; background: var(--gold-dark); }
+.prize-btn { display: flex; align-items: center; justify-content: center; gap: 4px; font-family: var(--font-num); font-weight: 900; min-height: 36px; }
+.prize-btn:disabled { --frame: var(--frame-btn-off); color: var(--ink-soft); }
+.prize-btn img { width: 24px; height: 24px; }
+/* The boosts running now, on the cage's top-right corner */
+.boost-badges { position: absolute; right: 12px; top: 12px; z-index: 6; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; pointer-events: none; }
+.boost-badges:empty { display: none; }
+.boost-badge { --frame: var(--frame-paper-gold); --fw: 6px; display: flex; align-items: center; gap: 3px; padding: 0 4px 0 2px; font-size: 13px; }
+.boost-badge .num { font-family: var(--font-num); font-weight: 900; }
+@container tray (max-width: 420px) {
+  .table-buttons .btn { font-size: 14px; padding: 0 6px 2px; }
+  .roulette-board { grid-auto-rows: 26px; gap: 1px; }
+  .rspot { font-size: 11px; border-width: 1px; }
+  .rspot.outside { font-size: 10px; }
+  .derby-lane { grid-template-columns: 76px 1fr; }
+  .bj-label { width: 54px; }
+}
+
 /* ── Debug panel (` key) ─────────────────────────────── */
 .debug {
   position: fixed; left: 12px; bottom: 12px; width: 350px; max-height: calc(100vh - 24px); overflow: auto; z-index: 10;
@@ -1556,6 +1707,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .less-motion .pop-text { animation: banner-fade 0.9s forwards; }
 .less-motion .bt-node.sprout, .less-motion .marquee-stars.new img, .less-motion .big-cage[open] *, .less-motion .reveal-rays,
 .less-motion .bc-scene.rumble, .less-motion .upgrade-detail { animation: none !important; }
+.less-motion .bj-card.deal, .less-motion .bin.hit, .less-motion .casino-result.pop { animation: none; }
 .less-motion .big-cage .bc-summary, .less-motion .big-cage .tree-detail, .less-motion .big-cage .bc-foot { transition: none; }
 .less-motion .win-banner { animation-name: banner-fade; }
 .less-motion .celebration, .less-motion .cel-rays, .less-motion .cel-flash, .less-motion .cel-title.slam,
@@ -1632,4 +1784,5 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 }
 @container tray (max-width: 380px) {
   .tab { font-size: 13px; padding: 0 3px 3px; }
+  .tabs:has(#casino-tab:not(.hidden)) .tab { padding: 0 2px 3px; } /* five tabs (M11) */
 }

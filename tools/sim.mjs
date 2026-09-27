@@ -25,6 +25,8 @@ const HELP = `node tools/sim.mjs [options]
   --first-minutes N      play the first life for exactly N minutes (no early retire)
   --bankroll N           a bet is only used if you hold N spins' worth of coins (default 40)
   --no-capsules          never open capsules (to measure the game without the M10 wardrobe buffs)
+  --casino               spend the casino chips it earns on boosts, best first (M11; it never buys
+                         chips or plays a table): the most the casino can speed a life up
   --plant S              at the Big Cage, plant a trait if it costs at most S x the
                          seeds held (or 1 seed); hold the rest for their bonus   (default 0.25)
   --data FILE            another data.json to try                               (default data.json)
@@ -33,7 +35,7 @@ const HELP = `node tools/sim.mjs [options]
 // ───────────────────────── Options ─────────────────────────
 
 function parseArgs(argv) {
-  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true };
+  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true, casino: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -49,6 +51,7 @@ function parseArgs(argv) {
     else if (a === '--data') opts.data = next();
     else if (a === '--verbose') opts.verbose = true;
     else if (a === '--no-capsules') opts.capsules = false;
+    else if (a === '--casino') opts.casino = true;
     else { console.log(`Unknown option ${a}\n\n${HELP}`); process.exit(1); }
   }
   if (!['idle', 'active'].includes(opts.player)) { console.log('--player must be idle or active'); process.exit(1); }
@@ -188,6 +191,18 @@ function dressUp(g) {
   }
 }
 
+// M11: with --casino the bot spends the chips it earns (a chip every few paid spins,
+// more when it retires) on the boosts and charms, in data.json's order, whenever one
+// fits. It never buys chips with coins and never plays a table.
+function useCasino(g) {
+  if (!opts.casino || !data.casino) return 0;
+  let bought = 0;
+  for (const p of data.casino.prizes.filter((x) => x.kind === 'boost' || x.kind === 'charm')) {
+    while (g.canBuyPrize(p.id)) { g.buyPrize(p.id); bought++; }
+  }
+  return bought;
+}
+
 // Just before retiring, coins are "use it or lose it" (the new pup starts over),
 // so the bot spends them finishing machines, cheapest machine first, and rebuilds
 // each finished one for a Machine Star (again and again while the coins last).
@@ -215,7 +230,7 @@ function playSeed(seed) {
   let t = 0;
 
   const startLife = () => {
-    life = { generation: g.state.generation, start: t, marks: {}, income: {}, luck: {}, hit: {}, seeds: 0, planted: [], freeSpins: 0, pots: 0, holds: 0, stars: 0, held: 0 };
+    life = { generation: g.state.generation, start: t, marks: {}, income: {}, luck: {}, hit: {}, seeds: 0, planted: [], freeSpins: 0, pots: 0, holds: 0, stars: 0, held: 0, boosts: 0 };
   };
   const mark = (name) => { if (!(name in life.marks)) life.marks[name] = (t - life.start) / 60; };
 
@@ -276,7 +291,7 @@ function playSeed(seed) {
       const ok = top.kind === 'machine' ? g.buyMachine(top.id) : g.buyUpgrade(top.id);
       if (ok) { ranking = null; nextMachineCheck = 0; }
     }
-    if (t >= nextMachineCheck) { chooseMachine(g); chooseBet(g); dressUp(g); nextMachineCheck = t + 10; }
+    if (t >= nextMachineCheck) { chooseMachine(g); chooseBet(g); dressUp(g); life.boosts += useCasino(g); nextMachineCheck = t + 10; }
 
     // When the Family tab (first seed pending) and the Capsules tab (10 tokens) would appear.
     if (num(g.getPendingSeeds()) >= 1 && num(g.state.seedsEarned) === 0) mark('seed1');
@@ -354,7 +369,7 @@ const seeds = Array.from({ length: opts.seeds }, (_, i) => i + 1);
 const results = seeds.map((s) => playSeed(s));
 const runs = results.map((r) => r.lives);
 
-console.log(`Hamster Slots balance sim · ${opts.player} player · ${opts.seeds} seeds · retire at max(3, ${opts.retire} × seeds earned), max ${opts.minutes} min a life`);
+console.log(`Hamster Slots balance sim · ${opts.player} player · ${opts.seeds} seeds · retire at max(3, ${opts.retire} × seeds earned), max ${opts.minutes} min a life${opts.casino ? ' · spends casino chips on boosts' : ''}`);
 console.log(`(times are minutes into the life; ranges are over seeds; income is the bot's expected coins/s)\n`);
 
 // Which milestones to report: everything that happened in any life, in a sensible order.
@@ -393,6 +408,7 @@ for (let i = 0; i < maxLives; i++) {
   if (lives.some((l) => l.held || l.totalStars)) {
     parts.push(`held after ${range(lives.map((l) => l.held)).replace(/\.0/g, '')} (+${Math.round(median(lives.map((l) => l.bonus)) * 100)}%) · stars ${range(lives.map((l) => l.totalStars)).replace(/\.0/g, '')}`);
     if (opts.capsules && lives.some((l) => l.skins)) parts.push(`skins found ${range(lives.map((l) => l.skins)).replace(/\.0/g, '')}`);
+    if (opts.casino) parts.push(`casino boosts bought ${range(lives.map((l) => l.boosts)).replace(/\.0/g, '')}`);
   }
   if (lives.some((l) => l.freeSpins || l.pots || l.holds)) {
     parts.push(`free-spin triggers ${median(lives.map((l) => l.freeSpins / (l.length / 60)))?.toFixed(1)}/h · pots ${median(lives.map((l) => l.pots / (l.length / 60)))?.toFixed(1)}/h`

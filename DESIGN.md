@@ -327,6 +327,7 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's
 9. **Machine Stars and the M8 traits only ever add** (M8): a star multiplies a machine's payouts and adds Machine Luck; Golden Pouches raise the pots' seeds; the EV stays exact with them (the tests compare the game's EV with `spinExpectation` / `jackpotStats`).
 8. **The auto-spin interval is never shorter than the spin time + the rest** (0.8 s; milestone 7), on every machine and Wheel Training level, with or without Quick Paws.
 10. **Ways, hold & spin and the cheese wheel are exact** (M9): the ways EV and hit rate match every grid of a small test machine added up by brute force (to 1e-9) and sampled Maze spins; hold & spin's trigger is exactly the binomial tail and its average matches a Monte Carlo of the bonus; the wheel's EV matches sampling. The time a hold & spin takes is counted in the machine's coins per second.
+11. **The casino keeps a small house edge and can't farm anything** (M11, §27): every casino bet gives back between 94% and 99.5% on average (each game's return is exact and matches play), and chips never turn into coins or count as coins earned. **Every rule above holds with every casino boost on:** the Lucky Charm is Luck (so it raises the hit rate and the EV), Turbo Wheel keeps the rest floor, deliveries stay below auto-spin, and free spins still end with the charm on top of the whole tree, max Luck, every Bouncy Ball and the best wardrobe.
 
 ## 10. Balance targets (what "good" looks like)
 
@@ -405,7 +406,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | 8 | The Big Cage (rebirth rework) *(done; §22; released in 1.0.0)* | The user's "use the rebirth system more… a reason to both rebirth and hold heirloom seeds" and "when you rebirth it takes you to a fully in-depth page of just the upgrades". So: retiring opens a **full-screen Big Cage page** between lives, and it's the **only place to plant** (the Family tab keeps the retire card and a read-only tree). **Held seeds give +X% income each** (planting spends them, so plant-or-hold is a real choice); a "Retire now: +N seeds → +X%" preview. A **bigger tree**: start with High Roller steps, keep symbol unlocks / Machine Luck / a machine, free-spin luck, bigger pot seeds. **Machine rebirths ("Rebuild")**: a fully upgraded machine can be rebuilt for a permanent **Machine Star** (+payouts and +Machine Luck on that machine, a gold trim), kept through retirement. Numbers from the simulator. Save v8. It should also fix M7's known issue: lives from generation ~9 get short again (§10). |
 | **9** | **More machines** *(done; with the seed jar; released in 1.1.0; §24)* | The user's "more slot machines". The user picked (2026-09-27) three late-game machines, each with a new pokie mechanic and exact EV: the **Hamster Maze** (**243 ways**: wins on any row, reel to reel), the **Acorn Vault** (**hold & spin**: 6+ Golden Acorns lock in place with 3 respins; fill it for the Grand) and **The Big Cheese** (a **multiplier wheel** on every full line). Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers; save v10. (The early machine between Old Clunky and the Snack Stacker wasn't picked.) Plus the **seed jar** (the user's pick for the short late lives): held seeds pay up to +100%, Family Fortune makes the jar bigger (§13). |
 | **10** | **Wardrobe buffs** *(done; released in 1.1.0; §25)* | The user's "hats & skins which both give unique changes and improvements" (was M7): **every skin gives a buff while worn** (fur → payouts, wheel → faster spins, machine → cheaper spins, room → offline earnings; rarer = stronger, the user's "gentle" sizes), **6 hats** as a 5th capsule category (drawn on the hamster; +Luck), **a twist on every Epic**, the Wardrobe as a loadout (one per slot, the total shown). The user chose "what you wear gives the buff" and "hats come from capsules" (reversing D39: tokens were cosmetic only), then (2026-09-27) gentle buffs, hats for Luck, Epic twists, one per slot. |
-| **11** | **Hamster Casino** *(next: plan it with the user first)* | The user's "minigames or side games… roulette, blackjack etc in a hamster casino". A casino room (a new tab) with side games: **roulette** (the hamster in a ball on the wheel), **blackjack**, and hamster ones (a derby race, a seed drop). Played with **Casino Chips**, which never count as coins earned (they can't farm seeds, like rule 4). A **Prize Counter** for hats, timed boosts and luck charms. Honest odds on screen. Each game is its own headless logic module (rule 1), not more code in game.ts. |
+| **11** | **Hamster Casino** *(built on the branch, waiting for the user's playtest; §27)* | The user's "minigames or side games… roulette, blackjack etc in a hamster casino". A casino room (a new tab) with side games: **roulette** (the hamster in a ball on the wheel), **blackjack**, and hamster ones (a derby race, a seed drop). Played with **Casino Chips**, which never count as coins earned (they can't farm seeds, like rule 4). A **Prize Counter** for hats, timed boosts and luck charms. Honest odds on screen. Each game is its own headless logic module (rule 1), not more code in game.ts. **The user's picks** (2026-09-27): all four games, chips earned *and* bought, every kind of prize, a small house edge. |
 | 12 | Your own casino (late game) | The user's "late game you can eventually start your own casino". The family opens **its own casino**: put machines you own on the floor, hamster guests play them, and you earn the **house edge** while idle; decor, staff, more rooms, a new late-game currency/layer. Unlocked far into the game (e.g. every machine owned and several generations). Planned in detail when we get there. |
 | 13 | Delivery depth | Only if playtests say deliveries are fun: routes (short/safe vs long/lucrative), helper hamsters. (The scooter, backpack and auto-delivery are now Family Tree traits.) |
 | 14 | Release prep (toward 1.0.0) *(done: moved up after M8 and released as 1.0.0 on 2026-09-27, §23)* | The user's "I want a full release before trying to make the game longer" (2026-09-27): **1.0 = M1–M8, polished**, with the user's "cool animations and effects" (celebrations, reel and win-show effects, little touches, the big moments between lives) and the release basics (icons, a link card, the version in the Menu, a crash screen, a README). Then 1.0.0, the full public release (AGENTS → Git and releases); M9 onwards come after it as updates. Still before each store release: the store-rule checks below. *Was "Port-prep freeze" for the Godot rebuild (D106).* |
@@ -429,7 +430,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 
 ### Things to keep in mind for release (itch.io, Steam, mobile)
 
-- Slot-machine visuals can trigger "simulated gambling" age-rating flags on some stores, even with fake coins only. Check the target stores' rules before each store release (itch.io, Steam, and especially the Apple and Google app stores, which have their own rules for simulated gambling; PORTING_NOTES → Platform notes). **The double-or-nothing gamble (§19) and bet sizes (§18) make it look even more like real gambling**, so check them in particular. The planned card gamble (M7), casino table games like roulette and blackjack (M11) and running your own casino (M12) push further in that direction: decide before M11 whether the release version keeps them.
+- Slot-machine visuals can trigger "simulated gambling" age-rating flags on some stores, even with fake coins only. Check the target stores' rules before each store release (itch.io, Steam, and especially the Apple and Google app stores, which have their own rules for simulated gambling; PORTING_NOTES → Platform notes). **The double-or-nothing gamble (§19) and bet sizes (§18) make it look even more like real gambling**, so check them in particular. The planned card gamble (M7), casino table games like roulette and blackjack (M11) and running your own casino (M12) push further in that direction: decide before a store release whether it keeps them. (M11 makes that easy: `casino.enabled: false` in data.json leaves the whole casino out of a build.)
 - The Capsule Machine (§14) is a gacha. Loot-box laws target boxes bought with real money, and ours never are, but store ratings may still flag it. Always show the odds in-game.
 
 ---
@@ -1487,3 +1488,82 @@ A tap anywhere on the scene (or **Tap to skip**) jumps to the grown tree. With M
 - Are the small tiles and the detail card easy to use? Do you miss the descriptions on the tiles?
 - Does the rebirth animation feel like a moment, or too long after a few lives? Is it fun to watch the tree grow as you plant, and to fill it with blossoms?
 - Is it clear which trait needs which (a trait right above the one it needs)? Is the sapling a nice start, or a letdown after the first retirement?
+
+## 27. The Hamster Casino (milestone 11)
+
+> **Status: built on the branch `claude/nice-hopper-r35bkf`, waiting for the user's playtest** (2026-09-27; PORTING_NOTES D135–D136). `package.json` says `1.3.0-rc.1`. Merging into `main` (and releasing 1.3.0) waits for the user's OK.
+
+*"roulette, blackjack etc in a hamster casino"* (the user's M6 feedback), planned with the user after *"continue with the project plan"* (2026-09-27). **The user's picks:** the games → **all four** (Hamster Roulette, Blackjack, Seed Drop, the Hamster Derby) · where chips come from → **both** (earned by playing, and bought with coins) · the Prize Counter → **all of it** (timed boosts, Luck charms, Hamster Tokens, casino-only cosmetics) · the odds → **a small house edge**.
+
+### Opening the casino
+
+- **The Casino tab appears with the family's second hamster:** the first retirement opens the casino and gives the family **250 chips** to play with (the hamster says so). It's closed in the Big Cage (time stands still there).
+- **On a phone** (the cage stacked over the tray) the cage steps aside while the Casino tab is open, so the tables get the whole screen under the HUD; any other tab brings it back. Beside the cage (a wide screen) nothing moves.
+
+### Casino Chips
+
+- **Earned** by playing: **a chip every 2 paid spins** (manual or auto, on any machine; free spins don't count), and **250 when a hamster retires**.
+- **Bought** at the **cashier** (on the Prizes sub-tab): 100, 1,000 or 10,000 at a time. **A chip costs 0.5 s of the family's best earnings per second**: the best machine you own, at its biggest unlocked bet, with auto-spin (or a spin at a time before Wheel Training), without boosts. "The family's best" is the best of now and every earlier life (noted when a hamster retires and when chips are bought), so **chips never get cheaper** when a new pup starts over earning little. Never less than 1 coin. Switching to a cheap machine or lowering the bet doesn't lower the price.
+- **Chips only buy prizes.** They never turn back into coins and never count as coins earned (so they can't farm Heirloom Seeds). The family keeps them when a hamster retires. They're as pretend as the coins.
+
+### The tables
+
+**A bet is a chip size:** 10, 20, 50, 100, 200, 500 or 1,000 chips (− and + beside the chips count), so every payout is a whole number of chips. **Every game is decided the moment you play it** (the logic: one module per game, rule 1); the wheel, the cards, the race and the seed only show it (like the jackpot wheel, D92), and the chips counter waits for them, so a win lands when the ball does.
+
+| Game | How it plays | Pays (your bet included) | Gives back on average |
+|---|---|---|---|
+| **Hamster Roulette** | A real single-zero wheel: 0–36 in the real pocket order. Tap spots on the board to put chips on them (as many spots as you like, up to 1,000 on each), then **Spin**: the hamster rolls round in its ball and drops into a pocket. The chips stay on the board for the next spin (**Clear** takes them off). | red/black, odd/even, 1–18/19–36 **×2** · a dozen or a column **×3** · one number **×36** | **97.3%** (36/37: the green 0 is the house's edge) |
+| **Blackjack** | Against the hamster dealer: get closer to 21 without going over. **Hit**, **Stand**, or **Double** (bet ×2, one more card) on your first two cards. The dealer peeks for a blackjack, draws to 17 and stands on every 17. Every card is a fresh draw (an endless deck, like the card gamble); no splitting, no insurance. **A tip says the best play** for every hand. | a blackjack **×2.5** (3 to 2) · a win **×2** · a tie **×1** | **98.9%** playing the tips (perfect play) |
+| **The Hamster Derby** | Five hamsters race. Tap one to back it, then **Race!** | Nutmeg ×2.8 (wins 34%) · Biscuit ×3.7 (26%) · Pepper ×4.8 (20%) · Tofu ×7.3 (13%) · Wobbles ×13.6 (7%, the long shot) | **94.9–96.2%** |
+| **Seed Drop** | A seed falls down 8 rows of pegs, bouncing left or right at every one, into one of 9 bins. Drop several at once. | ×12 · ×3 · ×1.2 · ×0.7 · ×0.4 · ×0.7 · ×1.2 · ×3 · ×12 (an edge bin: 1 seed in 256) | **95.9%** |
+
+Every table's note says its pays and what it gives back. The returns are exact (worked out in the logic, `getCasinoOdds()`), and the tests check them against play: 37,000 roulette spins, 60,000 blackjack hands played by the tips, 20,000 races, 25,600 drops.
+
+### The Prize Counter
+
+| Prize | Chips | What it does |
+|---|---|---|
+| **Golden Hour** | 250 | every machine pays **+50%** for 90 s of play (a payout group of its own: it multiplies everything else); up to 10 min at once |
+| **Turbo Wheel** | 200 | spins take **20% less time** for 2 min of play (auto-spin too, still never faster than the spin + the rest); up to 10 min |
+| **Lucky Charm** | 200 | **+15 Luck** (Hamster Luck: every machine) for the next **100 paid spins**; up to 500 |
+| **Token Bag** | 400 | a **Hamster Token** |
+| **Dealer's Visor** | 2,500 | a hat (Rare): +6 Luck, like the other rare hats |
+| **Tuxedo** | 3,500 | a fur (Rare): +10% payouts |
+| **Casino Night** | 3,500 | a room (Rare): red velvet and gold, +10% offline earnings |
+
+- **Boosts count down in play time:** not while the game is closed (time away pays as if no boost were on) and not in the Big Cage; they keep running into the next life. **A charm counts paid spins.** Buying one again adds more, up to its max (so no chips are wasted). The boosts running now show as little tags on the cage's top-right corner.
+- **The three skins are only sold here** (never in a capsule); the Wardrobe marks them "Casino prize" until you have them, and they don't count for the diary's "from capsules" stickers.
+- **5 new diary stickers** (13 tokens): Lucky Number (win on one number), Blackjack!, Photo Finish (win on Wobbles), Edge of the Board (an edge bin), Prize Winner (buy a prize).
+
+### The rules still hold (tested, `tests/logic/casino.test.js`)
+
+- **Every casino bet keeps a small house edge** (94–99.5% back), and chips never pay coins, so the tables can't be farmed. The machines' RTP only goes up with a boost.
+- **Rule 4 with every boost on:** delivery coins/s stays below auto-spin profit/s at Wheel Training 1; the Lucky Charm is Luck, so it raises both the hit rate and the EV; the auto-spin interval never beats the spin time + the rest with Turbo Wheel; **free spins always end** with the charm on top of the whole tree, max Luck, every Bouncy Ball and the best wardrobe.
+
+### Balance
+
+The casino changes nothing unless chips go into boosts. `node tools/sim.mjs --casino` has the bot spend **every chip it earns** on the boosts and the charm (it never buys chips and never plays a table): **the most the casino can speed a family up**. Over 12 lives, 5 seeds (the full tables are in PORTING_NOTES → Playtest notes, M11):
+
+| | idle | idle, `--casino` | active | active, `--casino` |
+|---|---|---|---|---|
+| **12 lives in all** | 5.0–5.9 h | 4.4–5.6 h | 3.4–3.6 h | 3.1–3.5 h |
+| Gen 1 (no casino yet) | 46–76 min | the same | 29–40 min | the same |
+| Gen 2 | 32–47 min | 33–46 min | 23–30 min | 24–29 min |
+| Gen 6 | 25–48 min | 20–33 min | 16–27 min | 17–22 min |
+| Gen 10 | 5.4–11.3 min | 2.6–11.2 min | 3.5–8.6 min | 2.8–7.4 min |
+| Gen 12 | 3.7–9.6 min | 2.8–5.9 min | 2.7–4.7 min | 1.6–3.2 min |
+
+So **at most 5–12% less time in all**, but **up to a third off the short late lives** (the 250 chips for retiring buy a Golden Hour at the start of each one), which were already the open problem (§10). A real player's lives shrink less: chips played at the tables lose a little on average, and chips spent on tokens or skins speed nothing up. If the playtest finds the late lives too short, the levers are all data: Golden Hour's +50%, the chips for retiring, a chip every 2 spins.
+
+### Save v11
+
+The family's casino: its chips, the best earnings noted (a chip's price), the spins towards the next chip, the boosts and charms running, and a blackjack hand still being played (a finished one isn't saved: it's paid). Nine new stats (games played, chips bought and earned, the biggest casino win, numbers hit, blackjacks, long-shot wins, edge bins, prizes bought). An older save starts with no chips; its family can play at once if it has retired before.
+
+### Questions the playtest must answer
+
+- Which table do you play most? Is any of them dull, or hard to follow?
+- Chips: too slow to earn, or too many? Is buying them worth it?
+- Are the prizes worth their chips? Is Golden Hour too strong, or not worth it?
+- On a phone: is it fine that the cage steps aside while you're at the casino?
+- A small house edge: does losing a little on average feel fair, or does it put you off playing?
+

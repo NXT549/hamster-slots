@@ -14,6 +14,7 @@ import { createWinShow } from './winshow.ts';
 import { formatCoins, formatWhole, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle, popText } from './dom.ts';
 import { furColors, applyStageSkins, hatOf } from './skins.ts';
 import { createCapsulesView } from './capsules.ts';
+import { createCasinoView } from './casino.ts';
 import { createBackupView } from './backup.ts';
 import { createShopView } from './shop.ts';
 import { createBigCage } from './bigcage.ts';
@@ -125,6 +126,7 @@ export function createUI(
     familyCount: $('family-count'), familyTraits: $('family-traits'), heirloomJar: $('heirloom-jar'),
     machineStars: $('machine-stars'),
     capsulesTab: $('capsules-tab'), stageGacha: $('stage-gacha'), tray: document.querySelector<HTMLElement>('.tray')!,
+    casinoTab: $('casino-tab'), casinoPanel: $('tab-casino'),
     muteBtn: $('mute-btn'), volume: $<HTMLInputElement>('volume'), statsBtn: $('stats-btn'), backupBtn: $('backup-btn'), stats: $<HTMLDialogElement>('stats'), statsList: $('stats-list'),
     welcome: $<HTMLDialogElement>('welcome'), welcomeText: $('welcome-text'), welcomeCoins: $('welcome-coins'),
   };
@@ -201,6 +203,11 @@ export function createUI(
   };
   let capsulesShown = capsulesUnlocked();
   let capsulesNew = false;
+
+  // M11: the Casino tab appears once the family's first retirement has opened the casino.
+  // (A family from an older save that retired before gets it announced once too: it has no chips yet.)
+  let casinoShown = game.isCasinoUnlocked() && (game.state.stats.chipsEarned.gt(0) || game.state.stats.chipsBought.gt(0));
+  let casinoNew = false;
 
   // Fill every <img data-sprite="…"> in the HTML with its pixel art. Hamster
   // sprites get the equipped fur colours and hat (M10); call again after a change.
@@ -746,6 +753,9 @@ export function createUI(
     }
     if (name === 'family') familyNew = false;
     if (name === 'capsules') capsulesNew = false;
+    if (name === 'casino') casinoNew = false;
+    // M11: on a phone the casino's tables need the room, so the cage steps aside while it's open (style.css).
+    document.querySelector('.app')!.classList.toggle('at-casino', name === 'casino');
   }
   for (const tab of document.querySelectorAll<HTMLElement>('.tab')) {
     tab.addEventListener('click', () => openTab(tab.dataset.tab!));
@@ -1339,7 +1349,21 @@ export function createUI(
     payouts.render(now);
     renderFamily(now);
     renderCapsules(now);
+    renderCasino(now);
     bigCage.render(now);
+  }
+
+  function renderCasino(now: number): void {
+    if (!casinoShown && game.isCasinoOpen()) {
+      casinoShown = true;
+      casinoNew = true;
+      const chips = game.state.casino.chips;
+      say(chips.gt(0) ? `The Hamster Casino is open! The family got ${formatWhole(chips)} chips to play with. Peek at the Casino tab.`
+        : `The Hamster Casino is open! I earn a chip every ${game.data.casino!.chipsPerSpins.spins} paid spins. Peek at the Casino tab.`, 6000);
+    }
+    el.casinoTab.classList.toggle('hidden', !casinoShown);
+    el.casinoTab.classList.toggle('alert', casinoNew);
+    casinoView.render(now, casinoShown && !el.casinoPanel.classList.contains('hidden'));
   }
 
   function renderCapsules(now: number): void {
@@ -1356,6 +1380,7 @@ export function createUI(
   }
 
   const capsules = createCapsulesView(game, { say, sound, fx, settings, onSettingsChange });
+  const casinoView = createCasinoView(game, { say, sound, fx, lessMotion, settings, onSettingsChange });
   const backupView = createBackupView(game, backup);
   const shop = createShopView(game, { settings, onSettingsChange });
   const payouts = createPayoutsView(game, { settings, onSettingsChange });

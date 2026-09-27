@@ -585,6 +585,22 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - Not checked before the release (the user said to go ahead): Firefox and Safari, and a real phone's touch (the user is playing it on their phone now: that's the first real check). Problems are fixed forward (1.2.1).
 - The tag `v1.2.0` is made on `main` locally; tag pushes are refused (HTTP 403, as for `v1.1.0`), so the user publishes the GitHub Release `v1.2.0` on the "Release 1.2.0" commit.
 
+**D135 — M11, the Hamster Casino: the user's picks** (the user, 2026-09-27: "continue with the project plan", so the next roadmap row, M11; AGENTS.md says to plan a new system with the user first).
+- Asked four questions before building: which games (the roadmap's four, or some), where chips come from, what the Prize Counter sells, and how honest the odds are. **The user picked:** all four games (Hamster Roulette, Blackjack, Seed Drop, the Hamster Derby) · chips **both** earned by playing and bought with coins · the Prize Counter: **all of it** (timed boosts, Luck charms, Hamster Tokens, casino-only cosmetics) · the odds: **a small house edge** (the other choices were exactly fair, like the card gamble, or a player's edge).
+- **Chips only ever buy prizes.** With a house edge, chips that turned back into coins would just be a slow coin sink, and with a player's edge they'd farm coins (and Heirloom Seeds): so they never do either. That keeps the card gamble the only place coins can be bet (and it stays exactly fair, rule 4).
+- How it's built: D136. The balance before/after: Playtest notes, M11.
+
+**D136 — M11, the Hamster Casino: how it's built** (DESIGN §27).
+- **A logic module per game** (the roadmap's plan): `roulette.ts`, `blackjack.ts`, `derby.ts`, `seeddrop.ts`, each with its rules and its **exact** return (roulette 36/37; blackjack worked out by recursion over every hand with perfect play, 98.91%; the derby by chance × pays; Seed Drop by the binomial). **`casino.ts`** holds the chips, the games' actions, the prizes and the boosts, and plugs into game.ts through a small host (`createCasino`: the state, the data, the RNG, events, coins, tokens, the diary), so game.ts only gains the hooks (a paid spin, retiring, the tick, the effects) and the API. The games use the game's seeded RNG, so a seed replays every pocket, card, race and bounce (the tests and the golden run rely on it).
+- **Rules:** a single-zero wheel with the real pocket order (the view draws it in that order); blackjack with an endless deck like the card gamble (so its odds are exact and never depend on earlier cards), the dealer peeking and standing on 17, double down, no splits (they'd add a second hand on a small table, and splitting's +0.5% isn't worth the rules to learn). **Bets are whole multiples of 10 chips** (10–1,000), so every payout (×2.8, ×0.7, 3 to 2 …) is a whole number of chips.
+- **The pays are data** (`casino` in data.json, rule 2): roulette's ×2/×3/×36, blackjack's 3 to 2, each racer's weight and pay, the Seed Drop bins. The tests demand that every bet keeps a small house edge (between 94% and 99.5% back).
+- **A chip's price follows the family's best earnings** (0.5 s of the best machine's auto profit at the biggest bet, no boosts), and never falls: the best is remembered when a hamster retires and when chips are bought (`casino.bestIncome`). *Rejected:* a price per spin of the best machine (spin costs are fixed while payouts grow with the family, so chips would get cheaper and cheaper, and boosts permanent, in the late game); the income right now (chips would be cheap at the start of every life, to hoard for later).
+- **Boosts are effects**, like a worn skin's (M10): a boost or charm under way adds its effect at level 1 in `effectsOfType`, scope `boost`, so every rule that reads an effect type (payouts, Luck, spin speed) picks it up by itself. Golden Hour's payout bonus is a **group of its own** (it multiplies the rest, like the wardrobe's). Offline earnings and a chip's price are worked out **without boosts** (`withoutBoosts`); boosts count down in the tick (play time only), charms per paid spin.
+- **The view** (`src/view/casino.ts`): the chips counter lags behind the real chips while a game shows (a win lands when the ball, the cards, the winner or the seed does). The roulette wheel is painted pixel by pixel on a 96×96 canvas shown at 2× (crisp pixels, token colours); the cards and the race are HTML; Seed Drop's seeds are sprites moved along their path each frame (several at once). **On a phone the cage steps aside while the Casino tab is open** (`.app.at-casino`): stacked, the tray had ~210 px for a table (less on a small phone), which fit none of them. *Rejected:* a smaller wheel (1× is too small to read, 1.5× isn't a whole-number scale), a full-screen casino page like the Big Cage (the tab keeps it one tap away, as the user's other tabs are).
+- **The skins** are ordinary skins with `casino: true` (never in the capsule pool; not counted by the diary's "from capsules" stickers). **Save v11** adds the family's casino and nine stats; its migration only bumps the version (sanitizeState fills the rest in), with new fixtures migrated from v10's (D122).
+- **`casino.enabled: false`** in data.json leaves the whole casino out (no tab, no chips): a store build can drop it if a store's simulated-gambling rules need that (DESIGN §11).
+- `package.json` says **1.3.0-rc.1** until the user OKs it (then 1.3.0: new features).
+
 
 
 
@@ -676,6 +692,10 @@ Every `data.json` change: date · value · old → new · why.
 | 2026-09-27 | Hats (new capsule skins) | — → Party Hat, Beanie, Flower Crown (common) · Top Hat, Cowboy Hat (rare) · Crown (epic) + No Hat (starter) | Capsule pool 18 → 24; a full collection ~110 → ~151 pulls (2,000 seeds). |
 | 2026-09-27 | Diary | 38 stickers / 119 tokens → 39 / 122 | + Hat Trick (find 3 hats, 3). |
 | 2026-09-27 | Diary | 34 stickers / 102 tokens → 38 / 119 · Full Cage "own every machine" → "own four machines" (its target was always 4) | + A-maze-ing (50 ways at once, 3), Nut Hoarder (the Grand, 5), The Big Cheese (a ×10 wedge, 4), Whole Arcade (own all seven, 5). |
+| 2026-09-27 | `schemaVersion` | 11 → 12 | M11: added the `casino` block and the three casino skins (`casino: true`). |
+| 2026-09-27 | The casino (new, M11) | — → opens at generation 2 · a chip every 2 paid spins · 250 a retirement · a chip = 0.5 s of the family's best earnings (at least 1 coin) · bets 10–1,000 · roulette ×2 / ×3 / ×36 · blackjack pays 3 to 2 · derby Nutmeg 34%/×2.8, Biscuit 26%/×3.7, Pepper 20%/×4.8, Tofu 13%/×7.3, Wobbles 7%/×13.6 · Seed Drop 8 rows, bins ×12 ×3 ×1.2 ×0.7 ×0.4 … | The user's "small house edge" (D135): every bet gives back 94.9–98.9% (roulette 97.3%, blackjack 98.9% with perfect play, the derby 94.9–96.2%, Seed Drop 95.9%). Starting guesses for the chip amounts: a Golden Hour every ~500 paid spins. |
+| 2026-09-27 | Prizes (new, M11) | — → Golden Hour 250 (+50% payouts, 90 s, up to 10 min) · Turbo Wheel 200 (spins ×0.8, 2 min, up to 10 min) · Lucky Charm 200 (+15 Luck, 100 paid spins, up to 500) · Token Bag 400 (1 token) · Dealer's Visor 2,500 (hat, +6 Luck) · Tuxedo 3,500 (fur, +10%) · Casino Night 3,500 (room, +10% offline) | The skins are Rare-sized buffs, like the capsule ones. Simulator, every chip into boosts (`--casino`): 12 lives 5–12% sooner, the late lives up to a third shorter (Playtest notes, M11). |
+| 2026-09-27 | Diary | 39 stickers / 122 tokens → 44 / 135 | + Lucky Number (3), Blackjack! (2), Photo Finish (3), Edge of the Board (3), Prize Winner (2). |
 
 ---
 
@@ -686,6 +706,31 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-09-27 · M11 · the Hamster Casino (automated checks, not a real playtest)**
+- **Played in Chromium** at 1280×800 and 390×844, a family on its second hamster: the tab appears with the hamster's "The Hamster Casino is open!"; roulette (three spots, a spin: the ball rolls and drops, the spots that won light up, the history chip), blackjack (deal, stand: the dealer turns its cards one by one, then the result), the derby (backing Pepper, the race), Seed Drop (four seeds falling at once, each bin bouncing as a seed lands), the Prize Counter (Golden Hour and the Lucky Charm bought: the tags on the cage, the Luck badge +15). No console errors, no page scrolling at either size. On the phone, the cage steps aside while the tab is open (the tray's panel goes from 292 px to 709 px tall; 505 px at 360×640) and comes back with any other tab. Motion "Less": a spin lands at once. A reload in the middle of a hand: the same cards, still in play; Stand finishes it. The Wardrobe says "Casino prize" on the three casino skins.
+- **Tests:** 2,025 pass (98 new in `tests/logic/casino.test.js`: the four games' rules and exact returns, checked against 37,000 spins, 60,000 hands, 20,000 races and 25,600 drops; chips, the price, prizes, boosts, time away, the Big Cage; the rules with every boost on; save v11). The golden run re-recorded for the new feature: with M11's fields left out, all 35 old checkpoints play exactly the same; a new casino session plays every table.
+- **The simulator, 12 lives, 5 seeds** (`node tools/sim.mjs --lives 12`, then the same with `--casino`: the bot spends every chip it earns on boosts, never buys chips, never plays a table):
+
+| Life | idle | idle `--casino` | active | active `--casino` |
+|---|---|---|---|---|
+| Gen 1 | 46.3–75.9 min | 46.3–75.9 | 29.2–40.3 | 29.2–40.3 |
+| Gen 2 | 32.0–47.0 | 33.4–45.6 | 22.7–29.7 | 24.0–28.5 |
+| Gen 3 | 38.3–47.0 | 32.5–46.0 | 21.0–32.6 | 19.6–25.2 |
+| Gen 4 | 35.2–56.7 | 32.6–49.9 | 24.9–33.0 | 25.5–29.4 |
+| Gen 5 | 29.9–54.6 | 22.1–52.4 | 18.9–34.8 | 19.2–30.5 |
+| Gen 6 | 24.8–48.2 | 20.4–33.1 | 16.1–27.2 | 17.4–22.0 |
+| Gen 7 | 9.0–24.3 | 15.2–24.9 | 7.8–18.2 | 8.7–16.1 |
+| Gen 8 | 11.1–17.0 | 12.6–16.8 | 7.1–12.3 | 6.3–12.8 |
+| Gen 9 | 6.2–18.2 | 9.1–16.3 | 6.0–13.3 | 5.9–10.6 |
+| Gen 10 | 5.4–11.3 | 2.6–11.2 | 3.5–8.6 | 2.8–7.4 |
+| Gen 11 | 3.2–9.0 | 2.5–7.3 | 2.2–6.7 | 1.8–4.5 |
+| Gen 12 | 3.7–9.6 | 2.8–5.9 | 2.7–4.7 | 1.6–3.2 |
+| **In all** | **5.0–5.9 h** | **4.4–5.6 h** | **3.4–3.6 h** | **3.1–3.5 h** |
+| Boosts bought a life | — | 1–3 | — | 1–3 |
+
+  The whole Family Tree: 4.7–5.8 h → 4.4–5.6 h (idle), 3.4–3.6 h → 3.0–3.5 h (active). Without `--casino` the game plays exactly as before (the bot's chips just pile up).
+- **Not yet checked:** how the tables *feel* and sound (the chip clack, the pegs), Firefox and Safari (the canvas wheel, `:has()` in the five-tab rule), a real phone's touch on the roulette board's small spots.
 
 **2026-09-27 · M15 · the growing tree (D133; automated checks, not a real playtest)**
 - Filmed at 1280×800 and 390×844: a new family's sapling (only Family Pride shows); planting it (the trunk shoots up to the first level, both limbs grow out, the 7 new traits sprout); Lucky Whiskers, Speedy Scooter and Big Backpack (the second and third levels' limbs grow out to just their traits); the whole tree planted (18 traits, a full canopy in bloom); retiring again (the full tree grows back from the seed in the animation). No console errors. Motion "Less" and a reload: the tree is there at once, the hidden traits hidden.
