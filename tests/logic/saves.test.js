@@ -341,9 +341,9 @@ describe('save migration: v8 -> v9 (M8: the Big Cage, Machine Stars)', () => {
   check('v8 -> v9: the tree, the seeds held and the spin in progress are kept',
     g2.getTreeLevel('familyPride') === 1 && g2.getTreeLevel('familyFortune') === 1 && num(g2.state.seeds) === num(g.state.seeds)
     && g2.state.machines[0].spinning === g.state.machines[0].spinning);
-  check('v8 -> v9: the heirloom bonus counts the seeds held (with Family Fortune)',
-    near(num(g2.getHeirloomBonus()), num(g2.state.seeds) * g2.getHeldSeedBonusPerSeed(), 1e-9)
-    && near(g2.getHeldSeedBonusPerSeed(), data.retirement.payoutBonusPerSeedHeld + nodes.find((n) => n.id === 'familyFortune').effect.perLevel, 1e-12));
+  check('v8 -> v9: the heirloom bonus counts the seeds held (up to the seed jar, which Family Fortune makes bigger)',
+    near(num(g2.getHeirloomBonus()), Math.min(num(g2.state.seeds) * data.retirement.payoutBonusPerSeedHeld, g2.getSeedJar()), 1e-9)
+    && near(g2.getSeedJar(), data.retirement.seedJar + nodes.find((n) => n.id === 'familyFortune').effect.perLevel, 1e-12));
   const rest = { ...v9 };
   check('v8 -> v9: nothing else changes', deepEqual({ ...rest, saveVersion: 8, stars: undefined, bigCage: undefined, stats: { ...rest.stats, rebuilds: undefined, bestStars: undefined, mostSeedsHeld: undefined } },
     { ...v8, stars: undefined, bigCage: undefined, stats: { ...v8.stats, rebuilds: undefined, bestStars: undefined, mostSeedsHeld: undefined } }));

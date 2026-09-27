@@ -80,7 +80,7 @@ const TREE_LINES: Record<string, (level: number) => string> = {
   deliveryPayoutBonus: () => 'A bigger backpack means bigger deliveries!',
   autoDelivery: () => "Out of coins? I'll head off on a delivery by myself.",
   // M8
-  heldSeedBonus: () => 'The savings jar is growing! Every seed we hold pays more now.',
+  seedJar: () => 'A bigger seed jar! Our held seeds can pay more now.',
   luck: () => 'A lucky family! More Luck on every machine.',
   startingMachineLevel: () => 'Every machine will start with a head start!',
   startingMachine: () => 'We keep the Snack Stacker! Every pup starts with it.',
@@ -124,6 +124,7 @@ export function createUI(
     heirloomPerSeed: $('heirloom-per-seed'), retireBtn: $<HTMLButtonElement>('retire-btn'), retireBonus: $('retire-bonus'),
     tree: $('tree'), treeDetail: $('tree-detail'), treeBox: $('tree-box'), treeHome: $('tree-home'),
     bigCage: $<HTMLDialogElement>('big-cage'), bcSub: $('bc-sub'), bcHeld: $('bc-held'), bcBonus: $('bc-bonus'), bcStars: $('bc-stars'),
+    bcJar: $('bc-jar'), bcJarFill: $('bc-jar-fill'), bcJarText: $('bc-jar-text'), heirloomJar: $('heirloom-jar'),
     bcExplain: $('bc-explain'), bcTreeHome: $('bc-tree-home'), bcStart: $<HTMLButtonElement>('bc-start'),
     machineStars: $('machine-stars'),
     capsulesTab: $('capsules-tab'), stageGacha: $('stage-gacha'), tray: document.querySelector<HTMLElement>('.tray')!,
@@ -1045,7 +1046,12 @@ export function createUI(
     setText(el.seedNext, `Family lifetime coins: ${formatCoins(prog.earned)} · next seed at ${formatCoins(prog.nextAt)}`);
     const perSeed = game.getHeldSeedBonusPerSeed();
     setText(el.heirloomPerSeed, String(Math.round(perSeed * 1000) / 10));
-    setText(el.retireBonus, `Heirloom bonus: ${bonusText(s.seeds.mul(perSeed))} now → ${bonusText(s.seeds.add(pending).mul(perSeed))} with the new seeds held`);
+    setText(el.heirloomJar, `${Math.round(game.getSeedJar() * 100)}`);
+    // The seed jar (M9): past a full jar, more seeds held add nothing (plant them).
+    const after = game.getHeirloomBonusFor(s.seeds.add(pending));
+    const jarFull = s.seeds.add(pending).gte(game.getSeedJarSeeds());
+    setText(el.retireBonus, `Heirloom bonus: ${bonusText(game.getHeirloomBonus())} now → ${bonusText(after)} with the new seeds held`
+      + (jarFull ? ' (the seed jar is full: plant the extra seeds, or grow the jar with Family Fortune)' : ''));
     el.retireBtn.disabled = !game.canRetire(); // also not while the jackpot wheel turns or a gamble is on
     setText(el.retireBtn, now < retireArmed ? `Tap again to retire ${name}` : 'Retire to the Big Cage');
 
@@ -1078,10 +1084,13 @@ export function createUI(
     // M8: you plant in the Big Cage (between lives), and a planted seed stops paying its held bonus.
     const inCage = game.state.bigCage;
     const held = game.state.seeds;
-    const per = game.getHeldSeedBonusPerSeed();
-    const perAfter = def.effect.type === 'heldSeedBonus' && !maxed ? Number(game.previewTreeNode(def.id).next) : per;
+    // What planting does to the heirloom bonus: the seeds it spends stop paying,
+    // unless the jar stays full (M9); Family Fortune also makes the jar bigger.
+    const nowBonus = game.getHeirloomBonus();
+    const afterBonus = game.getHeirloomBonusFor(held.sub(cost).max(0), def.effect.type === 'seedJar' ? { [def.id]: level + 1 } : undefined);
+    const change = afterBonus.eq(nowBonus) ? `heirloom bonus stays ${bonusText(nowBonus)} (the seed jar is still full)` : `heirloom bonus ${bonusText(nowBonus)} → ${bonusText(afterBonus)}`;
     const trade = inCage && unlocked && !maxed && held.gte(cost)
-      ? `<div class="note">Planting spends ${formatWhole(cost)} of your ${formatWhole(held)} seeds held: heirloom bonus ${bonusText(held.mul(per))} → ${bonusText(held.sub(cost).mul(perAfter))}.</div>`
+      ? `<div class="note">Planting spends ${formatWhole(cost)} of your ${formatWhole(held)} seeds held: ${change}.</div>`
       : !inCage && !maxed ? '<div class="note">You plant in the Big Cage, when you retire.</div>' : '';
     const fill = maxed || affordable || !unlocked || !inCage ? 0 : Math.min(100, divide(game.state.seeds, cost).toNumber() * 100);
     const buttonClass = maxed ? 'maxed' : affordable ? '' : 'poor';
@@ -1498,10 +1507,19 @@ export function createUI(
     }
     setHTML(el.bcHeld, seedLabel(formatWhole(held)));
     const per = game.getHeldSeedBonusPerSeed();
-    setText(el.bcBonus, `${bonusText(s.seeds.mul(per))} payouts`);
+    const jar = game.getSeedJar();
+    const jarSeeds = game.getSeedJarSeeds();
+    setText(el.bcBonus, `${bonusText(game.getHeirloomBonus())} payouts`);
+    // The seed jar (M9): how full it is, as a bar and in seeds.
+    const fillShare = jarSeeds > 0 ? Math.min(1, s.seeds.toNumber() / jarSeeds) : 0;
+    el.bcJarFill.style.width = `${(fillShare * 100).toFixed(1)}%`;
+    el.bcJar.classList.toggle('full', fillShare >= 1);
+    setText(el.bcJarText, fillShare >= 1
+      ? `Full: +${Math.round(jar * 100)}% (${formatWhole(jarSeeds)} seeds). Seeds past that add nothing: plant them.`
+      : `${formatWhole(s.seeds)} of ${formatWhole(jarSeeds)} seeds · up to +${Math.round(jar * 100)}%`);
     const stars = Object.values(s.stars).reduce((a, b) => a + b, 0);
     setHTML(el.bcStars, stars > 0 ? `${iconHTML('star', 16)}${stars}` : 'none yet');
-    setText(el.bcExplain, `Every seed you hold gives +${Math.round(per * 1000) / 10}% payouts. Planting a seed gives that up, but the trait is the family's forever. `
+    setText(el.bcExplain, `Every seed you hold gives +${Math.round(per * 1000) / 10}% payouts, until the seed jar is full (Family Fortune makes it bigger). Planting a seed gives that up, but the trait is the family's forever. `
       + 'Coins, upgrades and machines start over; the seeds, the tree and Machine Stars stay. Time stands still until you start the new life.');
     setText(el.bcStart, `Start ${name}'s life`);
   }

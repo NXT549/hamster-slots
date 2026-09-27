@@ -115,7 +115,7 @@ export type Effect =
   | { type: 'jackpotGrowth'; perLevel: number }
   | { type: 'bothWays' }
   // M8 (The Big Cage): Family Tree traits
-  | { type: 'heldSeedBonus'; perLevel: number } // each Heirloom Seed you HOLD pays this much more
+  | { type: 'seedJar'; perLevel: number } // the seed jar holds this much more heirloom bonus (M9: Family Fortune)
   | { type: 'startingMachineLevel'; upgradeType: string; levels: number } // every machine starts with levels of its upgrade of this effect type
   | { type: 'startingMachine'; machine: string } // every pup starts owning this machine
   | { type: 'potSeedBonus'; perLevel: number } // jackpot pots start (and restart) bigger
@@ -209,6 +209,7 @@ export interface GameData {
     seedDivisor: number;
     seedExponent: number;
     payoutBonusPerSeedHeld: number; // M8: every seed you HOLD (not planted) adds this to payouts
+    seedJar?: number; // M9: the most the held seeds can add (1 = +100%); Family Fortune adds to it
     pupNames: string[];
   };
   // M8: Machine Stars, for rebuilding a machine with every upgrade maxed.

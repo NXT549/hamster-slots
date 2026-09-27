@@ -157,12 +157,12 @@
         { "id": "blank", "name": "Wood Shaving", "weight": 70, "blank": true }
       ],
       "payouts": {
-        "seed": { "3": 60000, "4": 120000, "5": 240000 },
-        "carrot": { "3": 90000, "4": 200000, "5": 440000 },
-        "corn": { "3": 140000, "4": 340000, "5": 900000 },
-        "blueberry": { "3": 220000, "4": 600000, "5": 1800000 },
-        "strawberry": { "3": 2000000, "4": 14000000, "5": 100000000 },
-        "golden": { "3": 8000000, "4": 80000000, "5": 1200000000 }
+        "seed": { "3": 90000, "4": 180000, "5": 360000 },
+        "carrot": { "3": 135000, "4": 300000, "5": 660000 },
+        "corn": { "3": 210000, "4": 510000, "5": 1350000 },
+        "blueberry": { "3": 330000, "4": 900000, "5": 2700000 },
+        "strawberry": { "3": 3000000, "4": 21000000, "5": 150000000 },
+        "golden": { "3": 12000000, "4": 120000000, "5": 1800000000 }
       }
     },
     {
@@ -786,6 +786,7 @@
     "seedDivisor": 1300,
     "seedExponent": 0.5,
     "payoutBonusPerSeedHeld": 0.015,
+    "seedJar": 1,
     "pupNames": ["Pip", "Nibbles", "Biscuit", "Hazel", "Mochi", "Peanut", "Waffles", "Clover", "Pudding", "Sesame", "Truffle", "Button"]
   },
   "stars": { "max": 5, "payoutPerStar": 0.1, "luckPerStar": 2 },
@@ -814,13 +815,13 @@
       {
         "id": "familyFortune",
         "name": "Family Fortune",
-        "description": "The family's savings jar. Every Heirloom Seed you hold pays a little more.",
+        "description": "A bigger seed jar: the Heirloom Seeds you hold can pay more before the jar is full.",
         "branch": "roots",
         "requires": ["familyPride"],
         "baseCost": 3,
         "growthRate": 1.5,
         "maxLevel": null,
-        "effect": { "type": "heldSeedBonus", "perLevel": 0.005 }
+        "effect": { "type": "seedJar", "perLevel": 0.25 }
       },
       {
         "id": "luckyWhiskers",

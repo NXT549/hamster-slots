@@ -150,13 +150,14 @@ function rankPurchases(g) {
   return options.sort((a, b) => a.time - b.time);
 }
 
-// At the Big Cage (M8), plant or hold. Every seed held adds to payouts, so
-// planting gives that up. The bot plants a trait (cheapest first) when it costs
-// at most --plant × the seeds held (or just 1 seed), and buys Family Fortune
-// (more per held seed) only when it raises the family's bonus. The rest is held.
+// At the Big Cage (M8), plant or hold. Every seed held adds to payouts (up to the
+// seed jar, M9), so planting gives that up. The bot plants a trait (cheapest
+// first) when it costs at most --plant × the seeds held (or just 1 seed), and buys
+// Family Fortune (a bigger jar) only when it raises the family's bonus. The rest
+// is held.
 function plantTree(g) {
   const nodes = data.familyTree.nodes;
-  const isSink = (n) => n.effect.type === 'heldSeedBonus';
+  const isSink = (n) => n.effect.type === 'seedJar';
   for (;;) {
     const held = num(g.state.seeds);
     const cost = (n) => num(g.getTreeCost(n.id));
@@ -165,8 +166,8 @@ function plantTree(g) {
       .sort((a, b) => cost(a) - cost(b))[0];
     if (pick) { g.buyTreeNode(pick.id); continue; }
     const sink = nodes.find((n) => isSink(n) && g.canBuyTreeNode(n.id));
-    const per = g.getHeldSeedBonusPerSeed();
-    if (sink && (held - cost(sink)) * (per + sink.effect.perLevel) > held * per) { g.buyTreeNode(sink.id); continue; }
+    const after = sink && num(g.getHeirloomBonusFor(held - cost(sink), { [sink.id]: g.getTreeLevel(sink.id) + 1 }));
+    if (sink && after > num(g.getHeirloomBonus()) + 1e-12) { g.buyTreeNode(sink.id); continue; }
     return;
   }
 }

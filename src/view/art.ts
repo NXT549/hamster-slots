@@ -1646,7 +1646,7 @@ const TREE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'heart', shiftWeight: 'goldenIcon', fullLineMultiplier: 'star', startingLevel: 'wheel',
   spinSpeed: 'bolt', deliveryTime: 'scooter', deliveryPayoutBonus: 'backpack', autoDelivery: 'parcel',
   // M8
-  heldSeedBonus: 'pouch', luck: 'clover', startingMachineLevel: 'seedPacket', startingMachine: 'snackIcon',
+  seedJar: 'pouch', luck: 'clover', startingMachineLevel: 'seedPacket', startingMachine: 'snackIcon',
   symbolWeight: 'ballIcon', potSeedBonus: 'pouchPolish',
 };
 export function treeIcon(def: { id: string; effect: { type: string } }): string | null {

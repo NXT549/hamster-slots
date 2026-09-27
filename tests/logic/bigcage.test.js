@@ -6,7 +6,7 @@ import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
   spinExpectation, jackpotStats, freeSpinStats, data, near, deepEqual, num, newGame,
-  clunky, bonanza, palace, nodes, upgrade, land, soldOn, plant,
+  clunky, bonanza, palace, nodes, upgrade, land, soldOn, plant, createGame, createRng,
 } from './helpers.js';
 
 const node = (id) => nodes.find((n) => n.id === id);
@@ -26,18 +26,56 @@ describe('held seeds: the heirloom bonus counts the seeds you keep', () => {
   g.buyTreeNode('familyPride'); // 1 seed: +25%, and one held seed's bonus is gone
   check(`planting spends the seed's bonus: Family Pride (1 seed) → 1 + 0.25 + 9 × ${per}`,
     near(num(g.getPayoutMultiplier()), 1 + node('familyPride').effect.perLevel + 9 * per, 1e-9));
+  // M9: Family Fortune makes the seed jar bigger (it no longer changes the pay per seed).
   const fortune = node('familyFortune').effect.perLevel;
+  const jar = data.retirement.seedJar;
   const cost = num(g.getTreeCost('familyFortune'));
   const preview = g.previewTreeNode('familyFortune');
-  check('Family Fortune previews the bonus per held seed', near(preview.now, per, 1e-12) && near(preview.next, per + fortune, 1e-12));
+  check('Family Fortune previews the seed jar', near(preview.now, jar, 1e-12) && near(preview.next, jar + fortune, 1e-12));
   g.buyTreeNode('familyFortune');
   const held = 9 - cost;
-  check(`Family Fortune: every held seed pays ${((per + fortune) * 100).toFixed(1)}%`,
-    near(g.getHeldSeedBonusPerSeed(), per + fortune, 1e-12) && near(num(g.getHeirloomBonus()), held * (per + fortune), 1e-9));
+  check(`Family Fortune: the jar holds +${Math.round((jar + fortune) * 100)}%, and every held seed still pays ${per * 100}%`,
+    near(g.getSeedJar(), jar + fortune, 1e-12) && near(g.getHeldSeedBonusPerSeed(), per, 1e-12) && near(num(g.getHeirloomBonus()), held * per, 1e-9));
   check('the diary counts the most seeds ever held', g.state.stats.mostSeedsHeld === 10);
   const rich = newGame(202);
   rich.addSeeds(30);
   check('Nest Egg: holding 25 seeds earns the sticker', rich.state.diary.nestEgg === true && rich.state.stats.mostSeedsHeld === 30);
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('the seed jar: held seeds pay up to a limit, Family Fortune makes it bigger (M9)', () => {
+  const per = r.payoutBonusPerSeedHeld;
+  const jar = r.seedJar;
+  const fortune = node('familyFortune').effect.perLevel;
+  const g = newGame(210);
+  check(`the jar holds +${jar * 100}%: ${Math.ceil(jar / per)} seeds fill it`, near(g.getSeedJar(), jar, 1e-12) && g.getSeedJarSeeds() === Math.ceil(jar / per));
+  g.addSeeds(g.getSeedJarSeeds() - 1);
+  check('one seed short of full: every seed still pays', near(num(g.getHeirloomBonus()), (g.getSeedJarSeeds() - 1) * per, 1e-9));
+  g.addSeeds(1000);
+  check('past a full jar, more seeds add nothing', near(num(g.getHeirloomBonus()), jar, 1e-12)
+    && near(num(g.getPayoutMultiplier()), 1 + jar, 1e-9));
+  check('getHeirloomBonusFor gives the same answer for any number of seeds',
+    [0, 10, 66, 67, 5000].every((n) => near(num(g.getHeirloomBonusFor(n)), Math.min(n * per, jar), 1e-12)));
+  // Planting from a jar that stays full costs no bonus at all.
+  g.openBigCage();
+  const before = num(g.getPayoutMultiplier());
+  const pride = g.previewTreeNode('familyPride');
+  check('Family Pride\'s preview: +25% and the jar stays full', near(num(pride.next), 1 + node('familyPride').effect.perLevel + jar, 1e-9) && near(before, 1 + jar, 1e-9));
+  g.buyTreeNode('familyPride');
+  check('planting from a full jar keeps the whole heirloom bonus', near(num(g.getHeirloomBonus()), jar, 1e-12));
+  g.buyTreeNode('familyFortune');
+  check(`Family Fortune: the jar holds +${(jar + fortune) * 100}% and the bonus fills it`,
+    near(g.getSeedJar(), jar + fortune, 1e-12) && near(num(g.getHeirloomBonus()), jar + fortune, 1e-12)
+    && g.getSeedJarSeeds() === Math.ceil((jar + fortune) / per));
+  check('the overrides ask "what if Family Fortune were one level higher?"',
+    near(num(g.getHeirloomBonusFor(1e6, { familyFortune: 3 })), jar + 3 * fortune, 1e-12));
+  g.leaveBigCage();
+  // Data without a jar (an older data.json) keeps the old, uncapped bonus.
+  const noJar = structuredClone(data);
+  delete noJar.retirement.seedJar;
+  const u = createGame(noJar, createRng(1));
+  u.addSeeds(1000);
+  check('no seedJar in the data: every held seed pays, no limit', near(num(u.getHeirloomBonus()), 1000 * per, 1e-9) && u.getSeedJar() === Infinity);
 });
 
 // ─────────────────────────────────────────────────────────────

@@ -1158,6 +1158,12 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .bc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-soft); }
 .bc-value, .bc-stat .seed-amount { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; font-size: 17px; }
 .bc-value { color: var(--luck-dark); }
+/* The seed jar (M9): a full-width row under the three numbers, with a fill bar */
+.bc-jar { grid-column: 1 / -1; }
+.bc-jar-bar { width: min(320px, 90%); height: 8px; background: var(--paper); overflow: hidden; clip-path: var(--notch); }
+.bc-jar-fill { display: block; height: 100%; width: 0; background: var(--heirloom-dark); transition: width 0.4s; }
+.bc-jar.full .bc-jar-fill { background: var(--gold); }
+.bc-jar-text { font-size: 12px; color: var(--ink-soft); }
 .bc-stat img { width: 16px; height: 16px; }
 .bc-explain { margin: 4px 2px 12px; line-height: 1.45; }
 #bc-tree-home .tree-box { margin-bottom: 4px; }
@@ -1179,6 +1185,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .big-cage[open] .bc-stat:nth-child(1) { animation-delay: 0.25s; }
 .big-cage[open] .bc-stat:nth-child(2) { animation-delay: 0.35s; }
 .big-cage[open] .bc-stat:nth-child(3) { animation-delay: 0.45s; }
+.big-cage[open] .bc-stat:nth-child(4) { animation-delay: 0.55s; }
 .big-cage[open] .bc-explain { animation: fade-in 0.5s ease-out 0.5s backwards; }
 .big-cage[open] #bc-tree-home { animation: rise-in 0.5s ease-out 0.6s backwards; }
 .big-cage[open] .bc-foot { animation: rise-in 0.4s ease-out 0.8s backwards; }

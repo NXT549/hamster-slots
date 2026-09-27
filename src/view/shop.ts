@@ -53,7 +53,7 @@ function effectFormats(game: Game): Record<string, (def: Def) => [string, Format
     extraFreeSpins: () => ['Free spins a trigger', String],
     jackpotGrowth: () => ['Pot growth', (v) => `×${v.toFixed(2)}`],
     // M8 Family Tree traits
-    heldSeedBonus: () => ['Per seed held', (v) => `+${Number((v * 100).toFixed(2))}%`],
+    seedJar: () => ['Seed jar holds', (v) => `+${Math.round(v * 100)}%`],
     startingMachineLevel: (def) => {
       const type = effectAs(def, 'startingMachineLevel').upgradeType;
       return [type === 'luck' ? 'Free Machine Luck levels' : type === 'unlockSymbol' ? 'Free symbol unlocks' : 'Free levels', (v) => `Lv ${v}`];

@@ -5141,31 +5141,31 @@
     "events": {
      "bigCageLeft": 2,
      "capsuleOpened": 37,
-     "coinsChanged": 132,
-     "deliveryFinished": 1,
-     "deliveryStarted": 1,
+     "coinsChanged": 124,
+     "deliveryFinished": 2,
+     "deliveryStarted": 2,
      "offlineEarned": 1,
      "retired": 2,
      "seedsChanged": 16,
      "skinEquipped": 21,
-     "spinResolved": 93,
-     "spinStarted": 94,
+     "spinResolved": 86,
+     "spinStarted": 86,
      "stickerEarned": 10,
      "tokensChanged": 70,
      "treeNodeBought": 14,
      "upgradeBought": 6
     },
     "label": "third generation, 5 min",
-    "paid": 1321.28,
-    "rng": 1297307370,
+    "paid": 1244.19,
+    "rng": 2057025434,
     "save": {
      "activeMachine": 0,
-     "autoTimer": 0.6966666666666369,
+     "autoTimer": 3.1533333333333196,
      "bigCage": false,
      "capsules": {
       "sincePity": 2
      },
-     "coins": "279.86",
+     "coins": "271.9",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -5196,14 +5196,14 @@
          "blank"
         ],
         [
-         "blank"
+         "seed"
         ]
        ],
        "spinBet": 1,
        "spinFree": false,
        "spinSource": "auto",
-       "spinTimer": 1.7166666666666694,
-       "spinning": true,
+       "spinTimer": 0,
+       "spinning": false,
        "streak": 0,
        "typeId": "clunky",
        "upgrades": {
@@ -5213,7 +5213,7 @@
       }
      ],
      "run": {
-      "coinsEarned": "1672.16",
+      "coinsEarned": "1631.8",
       "playTime": 300.0000000000558
      },
      "saveVersion": 10,
@@ -5248,7 +5248,7 @@
      },
      "stars": {},
      "stats": {
-      "autoSpins": 94,
+      "autoSpins": 86,
       "bestGambleRun": 0,
       "bestLuck": 20,
       "bestStars": 0,
@@ -5256,13 +5256,13 @@
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 1,
-      "biggestWin": "60.24",
+      "biggestWin": "59.77",
       "capsulesOpened": 37,
-      "coinsEarned": "2021874.66",
-      "coinsSpent": "422.3",
-      "coinsWon": "1321.28",
-      "deliveries": 1,
-      "deliveryCoins": "44.62",
+      "coinsEarned": "2021834.3",
+      "coinsSpent": "389.9",
+      "coinsWon": "1244.19",
+      "deliveries": 2,
+      "deliveryCoins": "88.54",
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -5277,16 +5277,16 @@
       "manualSpins": 0,
       "mostLinesWon": 1,
       "mostSeedsHeld": 36,
-      "offlineCoins": "508.76",
+      "offlineCoins": "501.57",
       "playTime": 1199.9999999992374,
       "rebuilds": 0,
-      "spins": 94,
+      "spins": 86,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "tokensEarned": "31",
       "upgradesBought": 6,
       "wildWins": 0,
-      "wins": 26
+      "wins": 25
      },
      "tokens": "19",
      "tree": {
@@ -5515,7 +5515,7 @@
      "upgradeBought": 22
     },
     "label": "played the maze",
-    "paid": 170521050000,
+    "paid": 255781575000,
     "rng": 2165509736,
     "save": {
      "activeMachine": 1,
@@ -5524,7 +5524,7 @@
      "capsules": {
       "sincePity": 0
      },
-     "coins": "64549289516358.91",
+     "coins": "64613668091358.91",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -5657,7 +5657,7 @@
       }
      ],
      "run": {
-      "coinsEarned": "170521050000",
+      "coinsEarned": "255781575000",
       "playTime": 240.00000000008313
      },
      "saveVersion": 10,
@@ -5677,11 +5677,11 @@
       "bestWays": 6,
       "bestWheel": 0,
       "biggestBet": 10,
-      "biggestWin": "123930000000",
+      "biggestWin": "185895000000",
       "capsulesOpened": 0,
-      "coinsEarned": "170521050000",
+      "coinsEarned": "255781575000",
       "coinsSpent": "688748.8",
-      "coinsWon": "170521050000",
+      "coinsWon": "255781575000",
       "deliveries": 0,
       "deliveryCoins": "0",
       "freeSpinCoins": "0",
@@ -5737,7 +5737,7 @@
      "upgradeBought": 22
     },
     "label": "played the vault",
-    "paid": 528221662500,
+    "paid": 613482187500,
     "rng": 355758117,
     "save": {
      "activeMachine": 2,
@@ -5746,7 +5746,7 @@
      "capsules": {
       "sincePity": 0
      },
-     "coins": "64956477280859.3",
+     "coins": "65020855855859.3",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -5909,7 +5909,7 @@
       }
      ],
      "run": {
-      "coinsEarned": "528221662500",
+      "coinsEarned": "613482187500",
       "playTime": 479.9999999998921
      },
      "saveVersion": 10,
@@ -5929,11 +5929,11 @@
       "bestWays": 6,
       "bestWheel": 0,
       "biggestBet": 10,
-      "biggestWin": "123930000000",
+      "biggestWin": "185895000000",
       "capsulesOpened": 0,
-      "coinsEarned": "528221662500",
+      "coinsEarned": "613482187500",
       "coinsSpent": "13817998.4",
-      "coinsWon": "528221662500",
+      "coinsWon": "613482187500",
       "deliveries": 0,
       "deliveryCoins": "0",
       "freeSpinCoins": "0",
@@ -5989,7 +5989,7 @@
      "upgradeBought": 22
     },
     "label": "played the cheese",
-    "paid": 2193674130750,
+    "paid": 2278934655750,
     "rng": 1009407981,
     "save": {
      "activeMachine": 3,
@@ -5998,7 +5998,7 @@
      "capsules": {
       "sincePity": 0
      },
-     "coins": "65840705036611.7",
+     "coins": "65905083611611.7",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -6187,7 +6187,7 @@
       }
      ],
      "run": {
-      "coinsEarned": "2193674130750",
+      "coinsEarned": "2278934655750",
       "playTime": 719.9999999996738
      },
      "saveVersion": 10,
@@ -6209,9 +6209,9 @@
       "biggestBet": 10,
       "biggestWin": "472828752000",
       "capsulesOpened": 0,
-      "coinsEarned": "2193674130750",
+      "coinsEarned": "2278934655750",
       "coinsSpent": "92593496",
-      "coinsWon": "2193674130750",
+      "coinsWon": "2278934655750",
       "deliveries": 0,
       "deliveryCoins": "0",
       "freeSpinCoins": "0",
@@ -6268,7 +6268,7 @@
      "upgradeBought": 22
     },
     "label": "hold & spin, saved halfway",
-    "paid": 2193674130750,
+    "paid": 2278934655750,
     "rng": 3401291967,
     "save": {
      "activeMachine": 2,
@@ -6277,7 +6277,7 @@
      "capsules": {
       "sincePity": 0
      },
-     "coins": "65840705036611.7",
+     "coins": "65905083611611.7",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -6528,7 +6528,7 @@
       }
      ],
      "run": {
-      "coinsEarned": "2193674130750",
+      "coinsEarned": "2278934655750",
       "playTime": 724.9999999996693
      },
      "saveVersion": 10,
@@ -6550,9 +6550,9 @@
       "biggestBet": 10,
       "biggestWin": "472828752000",
       "capsulesOpened": 0,
-      "coinsEarned": "2193674130750",
+      "coinsEarned": "2278934655750",
       "coinsSpent": "92593496",
-      "coinsWon": "2193674130750",
+      "coinsWon": "2278934655750",
       "deliveries": 0,
       "deliveryCoins": "0",
       "freeSpinCoins": "0",
@@ -6611,7 +6611,7 @@
      "upgradeBought": 22
     },
     "label": "hold & spin played out",
-    "paid": 2234780449500,
+    "paid": 2320040974500,
     "rng": 851220387,
     "save": {
      "activeMachine": 2,
@@ -6620,7 +6620,7 @@
      "capsules": {
       "sincePity": 0
      },
-     "coins": "65894141537009.3",
+     "coins": "65958520112009.3",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -6809,7 +6809,7 @@
       }
      ],
      "run": {
-      "coinsEarned": "2251470199500",
+      "coinsEarned": "2336730724500",
       "playTime": 784.9999999996147
      },
      "saveVersion": 10,
@@ -6831,9 +6831,9 @@
       "biggestBet": 10,
       "biggestWin": "472828752000",
       "capsulesOpened": 0,
-      "coinsEarned": "2251470199500",
+      "coinsEarned": "2336730724500",
       "coinsSpent": "94530598.4",
-      "coinsWon": "2234780449500",
+      "coinsWon": "2320040974500",
       "deliveries": 0,
       "deliveryCoins": "0",
       "freeSpinCoins": "0",

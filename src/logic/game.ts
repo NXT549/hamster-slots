@@ -258,14 +258,34 @@ export function createGame(initialData: GameData, rng: Rng) {
   // seed in the Family Tree spends it, so you give up its bonus for the trait:
   // plant or hold is a real choice (the user's "a reason to both rebirth and hold
   // heirloom seeds"). Family Fortune makes every held seed worth more.
-  function getHeldSeedBonusPerSeed(overrides?: Overrides): number {
-    let per = (data.retirement && data.retirement.payoutBonusPerSeedHeld) || 0;
-    for (const { effect, level } of effectsOfType('heldSeedBonus', overrides)) per += effect.perLevel * level;
-    return per;
+  function getHeldSeedBonusPerSeed(): number {
+    return (data.retirement && data.retirement.payoutBonusPerSeedHeld) || 0;
+  }
+
+  // The seed jar (M9, the user's pick): held seeds pay up to this much, no more
+  // (1 = +100% payouts). Family Fortune makes the jar bigger. Without a cap, the
+  // bonus grew with every seed and late lives shrank to a minute (PORTING_NOTES D128).
+  function getSeedJar(overrides?: Overrides): number {
+    let jar = (data.retirement && data.retirement.seedJar) || Infinity;
+    for (const { effect, level } of effectsOfType('seedJar', overrides)) jar += effect.perLevel * level;
+    return jar;
+  }
+
+  // How many held seeds fill the jar (more add nothing).
+  function getSeedJarSeeds(overrides?: Overrides): number {
+    const per = getHeldSeedBonusPerSeed();
+    return per > 0 ? Math.ceil(getSeedJar(overrides) / per - 1e-9) : 0;
+  }
+
+  // The heirloom bonus `seeds` held seeds would give: +per each, up to the jar.
+  function getHeirloomBonusFor(seeds: Money | number, overrides?: Overrides): Money {
+    const bonus = money(seeds).mul(getHeldSeedBonusPerSeed());
+    const jar = getSeedJar(overrides);
+    return Number.isFinite(jar) ? bonus.min(jar) : bonus;
   }
 
   function getHeirloomBonus(overrides?: Overrides): Money {
-    return state.seeds.mul(getHeldSeedBonusPerSeed(overrides));
+    return getHeirloomBonusFor(state.seeds, overrides);
   }
 
   // Oiled Lever / Smooth Gears: base spin cost × perLevel ^ level
@@ -640,7 +660,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       return { open: effectAs(def, 'unlockSymbol').symbols.filter((id) => !isSymbolLocked(id, o)).length, hitRate: v.hitRate, win: getPayoutMultiplier(o).mul(getStarMultiplier()).mul(v.ev) };
     },
     // M8 traits
-    heldSeedBonus: (def, o) => getHeldSeedBonusPerSeed(o),
+    seedJar: (def, o) => getSeedJar(o),
     startingMachineLevel: (def, o) => {
       const e = effectAs(def, 'startingMachineLevel');
       let levels = 0;
@@ -2012,7 +2032,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     getFeatureOdds, canGamble, getGambleInfo, getCardHistory,
 
     // queries: retirement + family tree
-    getPendingSeeds, canRetire, getSeedProgress, getPupName, getHeldSeedBonusPerSeed,
+    getPendingSeeds, canRetire, getSeedProgress, getPupName, getHeldSeedBonusPerSeed, getSeedJar, getSeedJarSeeds, getHeirloomBonusFor,
     getTreeNodeDef, getTreeLevel, getTreeCost, isTreeMaxed, isTreeNodeUnlocked, canBuyTreeNode, previewTreeNode,
     getStartingLevel,
 

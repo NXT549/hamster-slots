@@ -21,6 +21,7 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ### Changed
 
+- **The seed jar.** Heirloom Seeds you hold still give +1.5% payouts each, but only until the jar is full: up to +100% (67 seeds). **Family Fortune** now makes the jar bigger (+25% a level) instead of making every seed pay a little more. The Big Cage shows how full your jar is; once it's full, plant the extra seeds. Late in the game, when a family has thousands of seeds, lives no longer shrink to a minute.
 - Once you own more than four machines, the machine tags on the cage show just each machine's picture, so they fit in one row.
 
 ### Fixed
