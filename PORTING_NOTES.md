@@ -605,7 +605,8 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - 1.3.0 = M11 (DESIGN §27, D135–D136): the Casino tab with four tables, chips (earned and bought), the Prize Counter, and the phone layout that gives the casino the screen. **Save v11:** every older save migrates when it loads (no chips, no boosts, the casino stats at 0; a family that retired before can play at once and is told the casino is open), so nobody's progress changes; data schema 12.
 - Released without a playtest of the casino first (the user's call): the automated checks are in Playtest notes (M11), and fixes go out as 1.3.x. Not checked before the release: Firefox and Safari, a real phone's touch on the roulette board, how the tables feel and sound.
 - The release commit moved the CHANGELOG's `[Unreleased]` to `[1.3.0]`, set 1.3.0 in package.json and package-lock (from 1.3.0-rc.1) and marked it released in the docs; `main` (already in the branch: 1.2.0 was released from it) was fast-forwarded to it, and the deploy workflow puts it on the Pages link.
-- The tag `v1.3.0` is made on `main` locally; tag pushes are refused (HTTP 403), so the user publishes the GitHub Release `v1.3.0` on the "Release 1.3.0" commit.
+- The deploy run (Actions run 8) passed; the live page serves the new build, which says 1.3.0 and has the Casino tab (checked with curl; a headless browser can't open the live site from the sessions, whose proxy certificate it doesn't trust, so the browser checks were done on the same build locally).
+- The tag `v1.3.0` is made on `main` locally; tag pushes are cut off by the sessions' git proxy (as for `v1.1.0` and `v1.2.0`, tried five times), so the user publishes the GitHub Release `v1.3.0` on the "Release 1.3.0" commit (`3f9e07b`).
 
 
 
