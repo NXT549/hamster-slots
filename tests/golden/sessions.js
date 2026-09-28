@@ -374,6 +374,15 @@ function casino() {
 }
 
 
+// A debug amount of coins worked out from the seed curve (what the next seed needs,
+// times a few), rounded to 3 significant digits before it goes into the game. The
+// curve uses Math.pow, which can differ in its last bit between Node versions
+// (Node 22 and Node 24 do), and at 1e14 coins that last bit is worth more than a
+// cent: without the rounding, the recording would depend on the Node that made it.
+function seedCoinsToAdd(g, times) {
+  return Number(g.getSeedProgress().nextAt.mul(times).toNumber().toPrecision(3));
+}
+
 // 1.4.0: The Great Migration. A family plants its whole tree and migrates from a
 // life (its pending seeds count); the whiskers buy perks; a few quick lives in the
 // new colony, then a Colony Trial played and beaten; Moving Day with every upgrade
@@ -416,19 +425,19 @@ function migration() {
   checkpoint(s, 'the new colony\'s first life');
   // A few quick lives, until trials open; then a trial for the next life.
   while (g().state.generation < data.colony.trialGeneration) {
-    g().addCoins(g().getSeedProgress().nextAt.mul(4), true);
+    g().addCoins(seedCoinsToAdd(g(), 4), true);
     g().retire();
     plantAll(g());
     g().leaveBigCage();
   }
-  g().addCoins(g().getSeedProgress().nextAt.mul(4), true);
+  g().addCoins(seedCoinsToAdd(g(), 4), true);
   g().retire();
   plantAll(g());
   g().startTrial('tiredPaws');
   g().leaveBigCage();
   play(s, 2 * 60, { buyEvery: 5 });
   checkpoint(s, 'a trial under way');
-  g().addCoins(g().getSeedProgress().nextAt.mul(50), true);
+  g().addCoins(seedCoinsToAdd(g(), 50), true);
   play(s, 30);
   checkpoint(s, 'the trial beaten');
   // Moving Day, with every upgrade.
@@ -442,7 +451,7 @@ function migration() {
   g().setAuto({ retire: true, share: data.colony.autoRetire.shares[0], plant: true });
   waitIdle(s);
   if (g().getGambleInfo()) g().collectGamble();
-  g().addCoins(g().getSeedProgress().nextAt.mul(20), true);
+  g().addCoins(seedCoinsToAdd(g(), 20), true);
   play(s, 20);
   checkpoint(s, 'the elders retired a hamster');
   // Saved and loaded, then played on.
