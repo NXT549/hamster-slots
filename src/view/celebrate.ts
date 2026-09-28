@@ -15,8 +15,10 @@
 // With Motion "Less" there are no rays turning, no slams and no flying coins,
 // and the amount shows straight away.
 
-import { formatCoins } from './dom.ts';
+import { formatCoins, mix } from './dom.ts';
 import { spriteImg } from './art.ts';
+import { canDraw, titleLetters, titleWidth } from './pixelfont.ts';
+import type { TitleRamp } from './pixelfont.ts';
 import type { Fx } from './fx.ts';
 import type { Sound } from './sound.ts';
 import type { Money } from '../logic/money.ts';
@@ -60,7 +62,7 @@ export function createCelebration({ host, fx, sound, lessMotion }: { host: HTMLE
   // (not the buttons below them, so Spin always works).
   const root = document.createElement('div');
   root.className = 'celebration hidden';
-  root.innerHTML = '<div class="cel-rays"></div><div class="cel-flash"></div>'
+  root.innerHTML = '<div class="cel-rays"></div><div class="cel-rays cel-rays2"></div><div class="cel-glow"></div><div class="cel-flash"></div>'
     + '<div class="cel-body"><div class="cel-icon"></div><div class="cel-title"></div><div class="cel-amount"></div><div class="cel-sub"></div></div>';
   host.appendChild(root);
   const q = (cls: string) => root.querySelector<HTMLElement>(cls)!;
@@ -71,14 +73,40 @@ export function createCelebration({ host, fx, sound, lessMotion }: { host: HTMLE
   const small = () => host.clientWidth < 600;
   const coinScale = () => (small() ? 1 : 2);
 
+  // 1.5.0: the titles are pixel art (pixelfont.ts), each in a metal of its own: gold,
+  // HUGE WIN in orange, free spins in blue, the smaller pots in their plaques' colours.
+  // The ramp is worked out from two theme tokens (a colour and its dark), like the buttons.
+  const css = getComputedStyle(document.documentElement);
+  const tok = (name: string) => css.getPropertyValue(name).trim();
+  function rampOf(face: string, dark: string): TitleRamp {
+    const base = tok(face);
+    const deep = tok(dark);
+    const ink = tok('--outline-ink');
+    return {
+      hilite: mix(base, '#ffffff', 0.8), light: mix(base, '#ffffff', 0.45), base, shade: mix(base, deep, 0.55), deep,
+      edge: mix(deep, ink, 0.55), ink: mix(ink, '#000000', 0.25),
+    };
+  }
+  function titleRamp(text: string, kind: CelebrationKind): TitleRamp {
+    if (kind === 'free') return rampOf('--soft', '--soft-dark');
+    if (/HUGE/.test(text)) return rampOf('--primary', '--primary-dark');
+    if (/^MINI\b/.test(text)) return rampOf('--soft', '--soft-dark');
+    if (/^MINOR\b/.test(text)) return rampOf('--buy', '--buy-dark');
+    if (/^MAJOR\b/.test(text)) return rampOf('--token', '--token-dark');
+    return rampOf('--gold', '--gold-dark');
+  }
   // The title, one <span> per letter, so they can bob in a wave (style.css).
   function setTitle(text: string): void {
-    parts.title.replaceChildren(...[...text].map((ch, i) => {
+    const kind = show ? show.opts.kind : 'big';
+    // As big as it can be (bigger for a jackpot), but never wider than the cage.
+    const want = small() ? 3 : kind === 'jackpot' || kind === 'grand' ? 6 : 5;
+    const scale = Math.max(2, Math.min(want, Math.floor((host.clientWidth * 0.94) / Math.max(1, titleWidth(text)))));
+    parts.title.replaceChildren(...(canDraw(text) ? titleLetters(text, titleRamp(text, kind), scale) : [...text].map((ch, i) => {
       const span = document.createElement('span');
       span.textContent = ch === ' ' ? ' ' : ch;
       span.style.setProperty('--i', String(i));
       return span;
-    }));
+    })));
     // Restart the slam (removing and re-adding a class replays a CSS animation).
     parts.title.classList.remove('slam');
     void parts.title.offsetWidth;

@@ -32,6 +32,7 @@ interface Particle {
   spin?: number; // a sprite coin turning over: how fast (turns a second)
   phase?: number; // where in its turn it is
   floor?: number; // bounces once off this y (a coin landing on the bedding)
+  glint?: number; // 1.5.0: a four-pointed star, its arms this long at their longest (it swells and fades)
 }
 
 // The colour lists particles pick from (read from the theme tokens).
@@ -111,6 +112,10 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
 
   // A burst of sparkles flying out from a point.
   function burst(x: number, y: number, { count = 12, palette = colors.gold, speed = 160, gravity = 260, life = 0.7, size = 3, twinkle = true }: BurstOptions = {}) {
+    // (1.5.0) A couple of star glints flash where the burst starts.
+    for (let i = 0; i < Math.min(3, Math.ceil(count / 10)); i++) {
+      add({ x: x + between(-10, 10), y: y + between(-10, 10), vx: 0, vy: 0, life: between(0.3, 0.5), max: 0, size: 2, color: '#ffffff', gravity: 0, drag: 0, glint: pick([6, 8, 10]) });
+    }
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const v = speed * between(0.35, 1);
@@ -133,9 +138,25 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
     if (!el) return;
     const r = el.getBoundingClientRect();
     for (let i = 0; i < count; i++) {
+      // (1.5.0) Every third one is a star glint: it swells into a four-pointed star and fades.
+      const star = i % 3 === 0;
       add({
-        x: between(r.left, r.right), y: between(r.top, r.bottom), vx: between(-20, 20), vy: between(-60, -20),
-        life: between(0.4, 0.8), max: 0, size: pick([2, 3, 3, 4]), color: pick(palette), gravity: 40, drag: 1, twinkle: true,
+        x: between(r.left, r.right), y: between(r.top, r.bottom), vx: between(-20, 20), vy: star ? between(-25, -8) : between(-60, -20),
+        life: star ? between(0.5, 0.9) : between(0.4, 0.8), max: 0, size: pick([2, 3, 3, 4]), color: star ? '#ffffff' : pick(palette),
+        gravity: star ? 0 : 40, drag: 1, twinkle: !star, glint: star ? pick([2, 3, 3, 4]) * 2 : undefined,
+      });
+    }
+  }
+
+  // 1.5.0: star glints twinkling over an element: they swell into four-pointed stars and fade
+  // (the shine on a jackpot, a new trait, a star on a machine).
+  function glints(el: Element | null | undefined, count = 6, palette: string[] = ['#ffffff', colors.gold[0], '#fff3b8']) {
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    for (let i = 0; i < count; i++) {
+      add({
+        x: between(r.left, r.right), y: between(r.top, r.bottom), vx: 0, vy: between(-12, -2),
+        life: between(0.45, 0.9), max: 0, size: 2, color: pick(palette), gravity: 0, drag: 0, glint: pick([4, 6, 6, 8, 10]),
       });
     }
   }
@@ -251,6 +272,16 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
   }
   const coinRain = (el: Element | null | undefined, count = 20, opts: { scale?: number } = {}) => rain('coin', el, count, opts);
 
+  // 1.5.0: coins clinking down into a machine's coin tray (x, y: the tray; w: how wide):
+  // they drop out of the machine, tumble and bounce once in the tray.
+  function coinDrop(x: number, y: number, w: number, count = 6, scale = 1) {
+    for (let i = 0; i < count; i++) {
+      addSprite('coin', x + between(-w / 2, w / 2), y - between(16, 44), between(-12, 12), between(20, 90), {
+        scale, life: between(0.8, 1.2), gravity: 900, drag: 0.1, spin: between(2, 4), floor: y,
+      });
+    }
+  }
+
   // Sprites flying out from a point in every direction (a star, seeds, clovers).
   function spriteBurst(name: string, x: number, y: number, { count = 10, speed = 260, scale = 2, life = 1.1, gravity = 300, spin = 0 }: { count?: number; speed?: number; scale?: number; life?: number; gravity?: number; spin?: number } = {}) {
     for (let i = 0; i < count; i++) {
@@ -317,6 +348,21 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
       // Twinkling sparkles blink as they fade; others fade out at the end.
       if (p.twinkle && t < 0.5 && Math.floor(p.life * 20) % 2) continue;
       ctx.globalAlpha = p.fade ? Math.min(1, t * 2, (1 - t) * 4) : Math.min(1, t * 3);
+      if (p.glint) {
+        // A four-pointed star: it swells to its full size and shrinks away (glowing: 'lighter').
+        const t2 = 1 - p.life / p.max; // 0 → 1
+        const arm = Math.max(1, Math.round(p.glint * Math.sin(Math.PI * Math.min(1, t2)) / 2) * 2);
+        const cx = Math.round(p.x);
+        const cy = Math.round(p.y);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = p.color;
+        ctx.fillRect(cx - arm, cy - 1, arm * 2 + 2, 2);
+        ctx.fillRect(cx - 1, cy - arm, 2, arm * 2 + 2);
+        if (arm >= 4) ctx.fillRect(cx - 2, cy - 2, 4, 4); // a brighter heart
+        ctx.globalCompositeOperation = 'source-over';
+        continue;
+      }
       if (p.sprite) {
         // A spinning coin is squashed sideways as it turns (whole sprite pixels only).
         const cols = p.spin ? Math.max(1, Math.round(Math.abs(Math.cos(p.phase!)) * p.sprite.width)) : p.sprite.width;
@@ -340,8 +386,8 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
   }
 
   return {
-    frame, readColors, burst, burstAt, sparkleOver, confetti, fountain, dust, embers, motes, centerOf,
-    coinFountain, coinRain, rain, spriteBurst, ring, ringAt, twinkles,
+    frame, readColors, burst, burstAt, sparkleOver, glints, confetti, fountain, dust, embers, motes, centerOf,
+    coinFountain, coinRain, coinDrop, rain, spriteBurst, ring, ringAt, twinkles,
     canvas, // the one canvas: ui.ts lends it to an open dialog (the Big Cage), which sits above the page
     get colors() { return colors; },
     get count() { return parts.length; },

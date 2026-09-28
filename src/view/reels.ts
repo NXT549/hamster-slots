@@ -22,6 +22,7 @@
 // the last reel stops they all pop open into that symbol, just before the win shows.
 
 import { symbolImg } from './art.ts';
+import { replayClass } from './dom.ts';
 import type { Game } from '../logic/game.ts';
 import type { Grid, Cell } from '../logic/types.ts';
 
@@ -69,10 +70,19 @@ const fillersFor = (stopSeconds: number) => Math.min(40, Math.round(6 + stopSeco
 
 const easeOutQuad = (t: number) => 1 - (1 - t) * (1 - t);
 
-// Strip offset for a spin progress t (0 → 1): a fast slide that decelerates,
-// overshoots slightly, then settles. That settle is the little "clunk" of landing.
-function stripOffset(from: number, to: number, t: number, overshoot: number): number {
+// 1.5.0: before a reel drops it winds up: a little hitch upwards, like a real reel
+// catching (a share of its travel, and how far it rises in px). Quick reels skip it.
+const WINDUP = 0.07;
+const WINDUP_PX = 12;
+
+// Strip offset for a spin progress t (0 → 1): a wind-up, then a fast slide that
+// decelerates, overshoots slightly, then settles. That settle is the little "clunk" of landing.
+function stripOffset(from: number, to: number, t: number, overshoot: number, windup: boolean): number {
   if (t >= 1) return to;
+  if (windup) {
+    if (t < WINDUP) return from - WINDUP_PX * Math.sin((t / WINDUP) * Math.PI);
+    t = (t - WINDUP) / (1 - WINDUP);
+  }
   const split = 0.85;
   if (t < split) return from + (to + overshoot - from) * easeOutQuad(t / split);
   return to + overshoot * (1 - easeOutQuad((t - split) / (1 - split)));
@@ -237,8 +247,9 @@ export function createReels(
       const showingNow = reel.ids.slice(1, 1 + VISIBLE);
       // Later reels travel further, so they stop later. Quick reels just drop in.
       const fillers = Array.from({ length: spinQuick ? 1 : fillersFor(stopPoint(i, reels.length, false) * seconds) }, randomSymbol);
-      const ids = [randomSymbol(), ...visibleColumn(grid, i), ...fillers, ...showingNow];
-      setStrip(reel, ids, -(ids.length - VISIBLE) * CELL, -CELL);
+      // (one more symbol under the ones showing now: the wind-up lifts the strip a little)
+      const ids = [randomSymbol(), ...visibleColumn(grid, i), ...fillers, ...showingNow, randomSymbol()];
+      setStrip(reel, ids, -(ids.length - VISIBLE - 1) * CELL, -CELL);
       reel.landed = false;
       reel.stop = stopPoint(i, reels.length, spinQuick);
       reel.tease = false;
@@ -375,7 +386,7 @@ export function createReels(
     let teasing = false;
     reels.forEach((reel, i) => {
       const t = machine.spinning ? Math.min(1, progress / reel.stop) : 1;
-      reel.strip.style.transform = `translateY(${stripOffset(reel.from, reel.to, t, spinQuick ? OVERSHOOT / 2 : OVERSHOOT)}px)`;
+      reel.strip.style.transform = `translateY(${stripOffset(reel.from, reel.to, t, spinQuick ? OVERSHOOT / 2 : OVERSHOOT, !spinQuick)}px)`;
       reel.col.classList.toggle('moving', t < 1);
       reel.col.classList.toggle('fast', t < 0.7 && !spinQuick); // a motion blur while it races (style.css)
       // A teasing reel shimmers once every reel before it has landed.
@@ -384,6 +395,7 @@ export function createReels(
       if (tease) teasing = true;
       if (t >= 1 && reel.landed === false) {
         reel.landed = true;
+        replayClass(reel.col, 'landed'); // (1.5.0) a flash of light as it lands
         onLand(i);
       }
     });

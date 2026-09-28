@@ -466,6 +466,13 @@ export function createUI(
       fx.confetti(90, el.stage);
       fx.fountain(el.machine, 40);
     }
+    // (1.5.0) Coins clink down into the machine's coin tray, and bigger wins make it shine.
+    if (here && e.tier !== 'win') {
+      const r = el.machine.getBoundingClientRect();
+      const zoom = parseFloat(el.rig.style.zoom || '1') || 1;
+      fx.coinDrop(r.left + r.width / 2, r.bottom - 14 * zoom, Math.min(60, r.width * 0.3), { nice: 4, big: 8, jackpot: 14 }[e.tier] || 3, 1);
+      if (e.tier !== 'nice') fx.glints(el.machine, e.tier === 'jackpot' ? 14 : 8);
+    }
     // Hot Streak: a rising chime for every win in a row (once it's worth something).
     if (!e.free && e.streak >= 2 && game.getStreakMultiplier() > 1) sound.play('streak', e.streak);
     // Lucky Pennies (1.3.1): this win paid double.
