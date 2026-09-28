@@ -22,6 +22,8 @@ import { createColonyView } from './colony.ts';
 import { createPayoutsView } from './payouts.ts';
 import { createFx } from './fx.ts';
 import { createCelebration, createIris, IRIS_MS } from './celebrate.ts';
+import { createCageScene } from './cage.ts';
+import { createCabinet } from './cabinet.ts';
 import { effectAs } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
@@ -150,6 +152,14 @@ export function createUI(
     muteBtn: $('mute-btn'), volume: $<HTMLInputElement>('volume'), statsBtn: $('stats-btn'), backupBtn: $('backup-btn'), stats: $<HTMLDialogElement>('stats'), statsList: $('stats-list'),
     welcome: $<HTMLDialogElement>('welcome'), welcomeText: $('welcome-text'), welcomeCoins: $('welcome-coins'),
   };
+  // 1.5.0: the cage, the room and the bedding, painted as pixel art behind everything (cage.ts).
+  const wheelUnit = document.querySelector<HTMLElement>('.wheel-unit')!;
+  const cage = createCageScene(el.stage, {
+    wall: el.wall, floor: document.querySelector<HTMLElement>('.floor')!,
+    standing: () => [wheelUnit, el.machine], // their shadows in the bedding
+  });
+  // …and every machine's cabinet, painted to fit it, with bulbs round its sign (cabinet.ts).
+  const cabinet = createCabinet(el.machine, { starred: () => game.getStars() > 0 });
 
   let lastSpinSource: SpinSource = 'manual'; // spins you pulled yourself clunk louder
   let lastManualSpinAt = performance.now(); // for the sleepy "Zzz" hint
@@ -253,6 +263,8 @@ export function createUI(
   function applySkins() {
     paintStaticSprites();
     applyStageSkins(game, el.stage);
+    cage.invalidate(); // a room skin repaints the cage
+    cabinet.invalidate(); // …and a machine skin Old Clunky
   }
   applySkins();
 
@@ -367,6 +379,7 @@ export function createUI(
     winShow.stop(); // a different machine: the last one's win show and meter are gone
     reels.build();
     rigFitKey = ''; // a different machine is a different width
+    cabinet.invalidate(); // …with a cabinet of its own
   }
 
   // The Menu's segmented settings (Motion, Reels, Numbers).
@@ -1038,6 +1051,9 @@ export function createUI(
     const zoom = Math.max(0.3, Math.min(1, availableW / rig.width, availableH / height));
     el.rig.style.zoom = String(zoom);
     el.rig.style.setProperty('--rig-zoom', String(zoom));
+    // The shadows under the wheel and the machine follow them (again once a switch-in has settled).
+    cage.invalidate();
+    setTimeout(() => cage.invalidate(), 450);
   }
 
   function renderFamily(now: number): void {
@@ -1365,6 +1381,7 @@ export function createUI(
     el.machine.classList.toggle('spinning', machine.spinning);
     el.machine.classList.toggle('teasing', reels.teasing);
     el.machine.classList.toggle('pulled', machine.spinning && game.getSpinProgress() < 0.3);
+    cabinet.render(now, { spinning: machine.spinning, winning: el.machine.classList.contains('winning'), teasing: reels.teasing, still: lessMotion() });
     renderMachineTags();
 
     // Spin + deliver buttons. During free spins, Spin just counts them down.
@@ -1441,8 +1458,11 @@ export function createUI(
       fx.dust(r.left + r.width / 2, r.bottom + 30, 3, r.width * 0.3);
     }
     fx.motes(el.wall, 0.8, realDt);
-    // Free spins turn the cage to night: a purple glow at the edges and twinkling stars.
+    // Free spins turn the cage to night: the room fades to its night painting (the lamp
+    // on, the moon in the window), a purple glow at the edges and twinkling stars.
     el.wall.classList.toggle('free-mode', !!free);
+    cage.setNight(!!free);
+    cage.render();
     if (free) fx.twinkles(el.wall, 18, realDt, [fx.colors.gold[0], '#ffffff', fx.colors.gold[2], getComputedStyle(el.wall).getPropertyValue('--soft').trim()]);
     // Out on a delivery: the hamster kicks up a little dust as it runs down the tube.
     if (delivering && Math.random() < realDt * 5) {
@@ -1552,7 +1572,10 @@ export function createUI(
   const app = document.querySelector<HTMLElement>('.app');
   if (app && !lessMotion()) {
     app.classList.add('intro');
-    setTimeout(() => app.classList.remove('intro'), 1800);
+    setTimeout(() => {
+      app.classList.remove('intro');
+      cage.invalidate(); // the wheel and the machine have landed: their shadows go under them
+    }, 1800);
   }
   // celebrate: for trying the celebrations from the console, e.g.
   // hamster.ui.celebrate.start({ kind: 'jackpot', titles: ['BIG WIN!', 'JACKPOT!'], amount: hamster.game.state.coins })

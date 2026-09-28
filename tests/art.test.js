@@ -10,6 +10,8 @@ import { check } from './check.js';
 import { SPRITES, PALETTE, SYMBOL_SPRITES, CAPSULE_SPRITES, MACHINE_SPRITES, upgradeIcon, treeIcon, perkIcon } from '../src/view/art.ts';
 import { SKIN_ART, SKIN_TOKENS } from '../src/view/skins.ts';
 import { FRAME_SPRITES, THEME_TOKENS } from '../src/view/theme.ts';
+import { CAGE_TOKENS, cageLayout } from '../src/view/cage.ts';
+import { CABINET_TOKENS } from '../src/view/cabinet.ts';
 
 const data = JSON.parse(readFileSync(new URL('../data.json', import.meta.url), 'utf8'));
 
@@ -92,4 +94,22 @@ check('no art for skins that are not in data.json', Object.keys(SKIN_ART).every(
 for (const name of THEME_TOKENS) {
   const match = rootBlock.match(new RegExp(`${name}:\\s*([^;]+);`));
   check(`theme token ${name} is a #rrggbb colour in style.css :root`, !!match && /^#[0-9a-f]{6}$/i.test(match[1].trim()), match && match[1]);
+}
+
+// 1.5.0: the painted cage (cage.ts) and the machine cabinets (cabinet.ts) read their
+// colours from theme tokens. A token missing from style.css :root would paint magenta.
+for (const name of new Set([...CAGE_TOKENS, ...CABINET_TOKENS])) {
+  check(`painted-scene token ${name} is a theme token in style.css :root`, rootBlock.includes(`${name}:`));
+}
+// The cage's layout at the sizes the stage really gets (a phone to a big screen): the
+// back wall sits inside the stage, the tray's front below it, and the room's window,
+// shelf and portrait inside the back wall, never overlapping each other.
+for (const [W, H, wallB, floorT] of [[374, 360, 250, 276], [520, 420, 300, 326], [815, 724, 584, 610], [1100, 900, 740, 766], [300, 260, 180, 198]]) {
+  const L = cageLayout(W, H, wallB, floorT);
+  const tag = `cage layout ${W}×${H}`;
+  check(`${tag}: the back wall is inside the stage`, L.back.l > 0 && L.back.r < L.w && L.back.top > 0 && L.back.floor < L.wallB && L.wallB <= L.floorT && L.floorT <= L.h);
+  const parts = [L.window, L.shelf, L.portrait].filter(Boolean);
+  check(`${tag}: the window, shelf and portrait are on the back wall`, parts.every((r) => r.x > L.back.l && r.x + r.w < L.back.r && r.y > L.back.top && r.y + r.h < L.back.floor));
+  const overlap = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  check(`${tag}: nothing on the wall overlaps`, parts.every((a, i) => parts.every((b, j) => i === j || !overlap(a, b))));
 }

@@ -75,7 +75,10 @@
   --vault: #cfd5da;         --vault-dark: #8f989f;     --vault-light: #eef1f3;    --vault-rivet: #7f878d;
   --cheese: #ffd35c;        --cheese-dark: #e8a93a;    --cheese-light: #fff3b8;   --cheese-rind: #f79a3e;   --cheese-rind-dark: #d9722a;
   --acorn-cell: #3a2a20;    /* an empty hold & spin cell */
-  --reel-bg: #fffdf8;
+  --reel-bg: #fffdf8;        --reel-shade: #b9a58f;   /* the reels' drum: shaded towards the top and bottom */
+  /* 1.5.0: the cabinets' chrome (Old Clunky's trim, bezels, the levers) and their bulbs */
+  --chrome: #cfd6dc;        --chrome-light: #f4f7f9;   --chrome-dark: #8d979f;
+  --bulb-on: #fff1b0;       --bulb-off: #8a6a3a;
   /* M11, the Hamster Casino: the tables' felt, and the roulette wheel's colours */
   --felt: #3f8f5f;          --felt-dark: #2a6a44;      --felt-light: #5aa877;     --felt-edge: #1d4a30;
   --pocket-red: #e0524f;    --pocket-black: #3b2f2b;   --pocket-green: #3f8f45;
@@ -99,6 +102,18 @@
   --bark: #a8764a;          --bark-light: #c9955c;     --bark-dark: #7a5230;     --bark-ink: #4a3428;
   --leaf: #5db85f;          --leaf-light: #9fdc86;     --leaf-dark: #3a8a42;     --leaf-ink: #2c6634;
   --blossom: #ffb3c1;
+  /* 1.5.0, The Glow Up: the painted cage and the room around it (cage.ts; tests/art.test.js
+     checks every colour it reads is here). Room skins still recolour the wall, the wire
+     and the tray (--wall-*, --wire*, --floor*). */
+  --bedding-light: #fbe7c6; --bedding-shade: #e3b27a;  --bedding-deep: #c99a62;   --bedding-ink: #a8764a;
+  --seed-body: #6a6158;     --seed-stripe: #d6cfc3;
+  --wood: #c9955c;          --wood-light: #e7c08e;     --wood-dark: #9c6b3a;     --wood-ink: #6b4526;
+  --curtain: #93cfe8;       --curtain-light: #cbecf8;  --curtain-dark: #5ea6c8;
+  --pot: #e2835c;           --pot-light: #f4ac8a;      --pot-dark: #b35d3c;
+  --book-1: #6f86e0;        --book-2: #ef6f6c;         --book-3: #7fcbb8;
+  --sun-shaft: #fff6d8;     --lamp: #ffe29a;           --night: #262958;
+  --night-sky-top: #1c1f4a; --night-sky-bottom: #3e4180; --moon: #fff3c4;      --star: #fffdf8;
+  --fur: #f2b37b;           --fur-shade: #d98f55;      --fur-ink: #9d5f37;       --cream: #fde8d0;
   /* shape + type */
   --radius: 22px;
   --radius-sm: 12px;
@@ -235,41 +250,29 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   position: relative; overflow: hidden;
   border-radius: 30px 30px 18px 18px;
   box-shadow: var(--lift), 0 0 0 3px var(--wire-dark);
+  background: var(--wall-top); /* until the painting is ready */
   /* A column: the wall takes the room that's left (wide screens), and the machine
      rig stands at its bottom. ui.ts fitRig() zooms the rig to fit. */
   display: flex; flex-direction: column; min-height: 0;
   container: stage / inline-size; /* the props only show when the cage is wide enough */
 }
+/* 1.5.0: the cage, the room and the bedding are one pixel-art painting behind everything
+   (cage.ts), 2 screen pixels per painted pixel. The bands below (wall, bedding, floor)
+   only lay the game out on top of it. A second painting (the room at night) fades in
+   during free spins; the sky outside the window is a layer behind both, so it can drift. */
+.cage-canvas { position: absolute; left: 0; top: 0; z-index: 0; image-rendering: pixelated; pointer-events: none; }
+.cage-night { opacity: 0; transition: opacity 0.9s ease-in-out; }
+.stage.night .cage-night { opacity: 1; }
+.cage-sky { position: absolute; z-index: 0; overflow: hidden; pointer-events: none; }
+.cage-sky > div { position: absolute; inset: 0; image-rendering: pixelated; background-repeat: no-repeat; }
+.cage-sky-clouds { background-repeat: repeat-x !important; animation: cloud-drift 90s linear infinite; }
+@keyframes cloud-drift { from { background-position: 0 0; } to { background-position: var(--drift, 200px) 0; } }
 .wall {
   flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end;
   position: relative; z-index: 2; padding: 26px 20px 0;
-  background:
-    /* the top rail of the cage */
-    linear-gradient(var(--wire-light) 0 2px, var(--wire) 2px 6px, var(--wire-dark) 6px 7px, transparent 7px) 0 0 / 100% 100% no-repeat,
-    /* vertical wire bars: 2px of wire and a 1px shadow, every 22px */
-    repeating-linear-gradient(90deg, transparent 0 19px, var(--wire) 19px 21px, var(--wire-dark) 21px 22px),
-    /* the room's wall behind the cage */
-    repeating-linear-gradient(90deg, var(--wall-stripe) 0 44px, transparent 44px 88px),
-    linear-gradient(var(--wall-top), var(--wall-bottom));
 }
-.wall::after { /* a soft shadow where things stand in the bedding */
-  content: ""; position: absolute; left: 50%; bottom: -10px; width: min(620px, 86%); height: 18px;
-  transform: translateX(-50%); pointer-events: none; z-index: 0;
-  background: radial-gradient(closest-side, rgba(74, 52, 40, 0.22), transparent);
-}
-.bedding {
-  flex: none; position: relative; z-index: 1; height: 26px; margin-top: -2px;
-  background: var(--tile-bedding) 0 0 / 48px 48px repeat, var(--bedding);
-  image-rendering: pixelated;
-  box-shadow: inset 0 -3px 0 rgba(74, 52, 40, 0.12);
-}
-.floor {
-  flex: none; position: relative; z-index: 1; padding: 14px 20px 12px; color: var(--floor-ink);
-  /* the front of the plastic base: a light rim, then the plastic with a soft shine */
-  background:
-    linear-gradient(color-mix(in srgb, var(--floor) 55%, white) 0 4px, var(--floor-dark) 4px 7px, transparent 7px),
-    linear-gradient(color-mix(in srgb, var(--floor) 88%, white), var(--floor) 40%, color-mix(in srgb, var(--floor) 88%, black));
-}
+.bedding { flex: none; position: relative; z-index: 1; height: 26px; margin-top: -2px; }
+.floor { flex: none; position: relative; z-index: 1; padding: 14px 20px 12px; color: var(--floor-ink); }
 
 /* width: fit-content + side padding (room for the lever) lets ui.ts measure the rig
    and shrink it with CSS zoom until it fits the stage (phones, 4 reels). */
@@ -347,62 +350,59 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .machine-tag:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
 .machine-tags.many .machine-tag span { display: none; } /* 5+ machines (M9): icons only, one row */
 
-/* ── The slot machines ── */
-/* Old Clunky: a chunky mint toy machine with a pull lever. */
+/* ── The slot machines ──
+   1.5.0: every cabinet is painted as pixel art to fit its machine (cabinet.ts: Old
+   Clunky's mint plastic, the Stacker's awning, the Palace's velvet and crown …), with
+   real bulbs round the sign. The elements here only lay the machine out on top of it;
+   isolation keeps the painting (z-index -1) behind every part of the machine. */
 .machine {
-  position: relative; flex: none;
-  background: var(--machine); border: var(--outline) solid var(--outline-ink);
-  border-radius: 30px 30px 14px 14px;
-  padding: 14px 20px 34px;
-  box-shadow: inset 0 -10px 0 var(--machine-dark), inset 0 5px 0 rgba(255, 255, 255, 0.35), inset 5px 0 0 rgba(255, 255, 255, 0.18);
+  position: relative; flex: none; isolation: isolate;
+  padding: 17px 23px 37px; /* (1.4's padding + its old 3 px border) */
 }
-.machine::before, .machine::after { /* bolts in the bottom corners */
-  content: ""; position: absolute; bottom: 16px; width: 6px; height: 6px;
-  background: var(--outline-ink); opacity: 0.45; clip-path: var(--notch);
-}
-.machine::before { left: 10px; }
-.machine::after { right: 10px; }
+.cabinet-canvas { position: absolute; z-index: -1; image-rendering: pixelated; pointer-events: none; }
+/* The sign: a lit panel on a dark board (the board and its bulbs are painted). */
 .marquee {
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: fit-content; margin: 0 auto 14px;
-  background: var(--marquee); border: var(--outline-thin) solid var(--outline-ink); border-radius: 6px;
-  box-shadow: inset 0 -3px 0 rgba(74, 52, 40, 0.15);
-  padding: 4px 12px; font-family: var(--font-display); font-weight: 500; font-size: 19px; text-transform: uppercase; letter-spacing: 1px;
+  width: fit-content; margin: 0 auto 20px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.55) 0 2px, transparent 2px calc(100% - 4px), rgba(74, 52, 40, 0.16) calc(100% - 4px)),
+    var(--marquee);
+  box-shadow: inset 0 0 0 2px rgba(74, 52, 40, 0.28);
+  padding: 4px 12px 5px; font-family: var(--font-display); font-weight: 500; font-size: 19px; text-transform: uppercase; letter-spacing: 1px;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.55);
 }
-.bulbs {
-  width: 28px; height: 10px;
-  background: radial-gradient(circle, #fff 2px, var(--gold-dark) 2.5px, transparent 4px) 0 0 / 10px 10px repeat-x;
-}
-.bulbs { animation: bulbs 1.4s steps(2) infinite; } /* a lazy chase while it rests… */
-.machine.spinning .bulbs { animation-duration: 0.25s; } /* …racing while it spins */
-@keyframes bulbs { to { background-position: 10px 0; } }
-/* 1.0: a win flashes the marquee; a teasing reel makes the reel window throb.
-   (Each reel landing gives the machine a tiny thump: ui.ts, with element.animate,
-   so it never fights the machine's own animations like the big-win glow.) */
+.bulbs { display: none; } /* (1.0's dots on the sign: the painted bulbs round it took over) */
+/* 1.0: a win flashes the sign; a teasing reel makes the reel window throb. (Each reel
+   landing gives the machine a tiny thump: ui.ts, with element.animate, so it never
+   fights the machine's own animations like the big-win flash.) */
 .machine.winning .marquee { animation: marquee-flash 0.24s steps(2) 6; }
-@keyframes marquee-flash { 50% { background: #fff8d8; box-shadow: 0 0 0 3px var(--gold), 0 0 16px 4px color-mix(in srgb, var(--gold) 70%, transparent); } }
+@keyframes marquee-flash { 50% { background: #fff8d8; box-shadow: inset 0 0 0 2px var(--gold), 0 0 16px 4px color-mix(in srgb, var(--gold) 70%, transparent); } }
 .machine.teasing .reel-window { animation: heartbeat 0.5s ease-in-out infinite; }
-.machine.teasing .bulbs { animation-duration: 0.12s; }
 @keyframes heartbeat { 20% { transform: scale(1.015); } 40% { transform: scale(1); } }
-.machine.big-win { animation: glow 0.3s steps(2) 5; }
+.machine.big-win { animation: cab-flash 0.3s steps(2) 5; }
+@keyframes cab-flash { 50% { filter: brightness(1.22) saturate(1.2); } }
 @keyframes glow { 50% { background: var(--gold); } }
 .machine.switch-in { animation: switch-in 0.35s ease-out; }
 @keyframes switch-in { 0% { transform: translateY(-10px) scale(0.96); opacity: 0.4; } 60% { transform: translateY(2px); } }
 
-/* The coin tray at the bottom of the machine */
-.coin-tray {
-  position: absolute; left: 50%; bottom: 13px; width: 70px; height: 10px; margin-left: -35px;
-  background: var(--outline-ink); border-radius: 3px; box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.35);
-}
+/* (The coin tray at the bottom of the machine is painted since 1.5.0.) */
+.coin-tray { display: none; }
 
 .reel-window {
   position: relative; width: fit-content; margin: 0 auto;
-  background: var(--outline-ink); padding: 5px; border-radius: 8px;
+  background: var(--outline-ink); padding: 5px;
 }
 .reels { position: relative; display: flex; gap: 6px; }
+/* A reel is a drum: lit across the middle, curving away into shade at the top and bottom
+   (hard steps, like pixel art). */
 .reel {
   position: relative; width: 78px; height: calc(var(--cell) * 3);
-  overflow: hidden; border-radius: 5px; background: var(--reel-bg);
+  overflow: hidden; background: var(--reel-bg);
+  background: linear-gradient(
+    color-mix(in srgb, var(--reel-bg) 70%, var(--reel-shade)) 0 6px, color-mix(in srgb, var(--reel-bg) 84%, var(--reel-shade)) 6px 16px,
+    color-mix(in srgb, var(--reel-bg) 93%, var(--reel-shade)) 16px 34px, var(--reel-bg) 34px calc(100% - 34px),
+    color-mix(in srgb, var(--reel-bg) 93%, var(--reel-shade)) calc(100% - 34px) calc(100% - 16px),
+    color-mix(in srgb, var(--reel-bg) 84%, var(--reel-shade)) calc(100% - 16px) calc(100% - 6px), color-mix(in srgb, var(--reel-bg) 70%, var(--reel-shade)) calc(100% - 6px));
 }
 /* A one-row machine: shade the rows above and below the payline (they're decoration) */
 .reels[data-rows="1"] .reel::after {
@@ -476,99 +476,40 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .win-lines polyline { stroke-dasharray: var(--len); animation: trace 0.35s ease-out backwards; }
 @keyframes trace { from { stroke-dashoffset: var(--len); } }
 
-.lever { position: absolute; right: -32px; top: 72px; width: 26px; height: 96px; transform-origin: 50% 100%; transition: transform 0.12s; }
-.lever-stick { position: absolute; left: 9px; top: 18px; width: 8px; height: 78px; background: var(--ink-faint); border: var(--outline-thin) solid var(--outline-ink); border-radius: 3px; }
-.lever-knob { position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--danger); border: var(--outline-thin) solid var(--outline-ink); box-shadow: inset -4px -4px 0 var(--danger-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.35); }
-.machine.pulled .lever { transform: scaleY(0.55); }
+/* The lever: a chrome stick and a glossy ball (cabinet.ts paints the ball in each machine's
+   colours). Pulled, the stick pushes down into its mount and the ball comes with it. */
+.lever { position: absolute; right: -32px; top: 72px; width: 26px; height: 96px; }
+.lever-stick {
+  position: absolute; left: 9px; top: 18px; width: 8px; height: 78px; transform-origin: 50% 100%; transition: transform 0.12s;
+  background: linear-gradient(90deg, var(--chrome-dark) 0 2px, var(--chrome-light) 2px 4px, var(--chrome) 4px 6px, var(--chrome-dark) 6px);
+  box-shadow: 0 0 0 2px var(--outline-ink);
+}
+.lever-knob {
+  position: absolute; left: 0; top: 0; width: 26px; height: 26px; transition: transform 0.12s;
+  background: var(--knob-sprite, none) 0 0 / 100% 100% no-repeat; image-rendering: pixelated;
+}
+.machine.pulled .lever-stick { transform: scaleY(0.5); }
+.machine.pulled .lever-knob { transform: translateY(39px); }
 
-/* The Snack Stacker: a tall strawberry-milk snack machine with a push button.
-   Its window has room on both sides for the payline tags. */
-.machine[data-machine="stacker"] {
-  background: var(--stacker); border-radius: 14px 14px 10px 10px; padding: 12px 34px 34px;
-  box-shadow: inset 0 -10px 0 var(--stacker-dark), inset 0 5px 0 rgba(255, 255, 255, 0.4), inset 5px 0 0 rgba(255, 255, 255, 0.2);
-}
-.machine[data-machine="stacker"] .marquee {
-  background: var(--stacker-marquee);
-  /* a striped awning over the sign */
-  box-shadow: 0 -12px 0 -4px var(--stacker-light), inset 0 -3px 0 rgba(74, 52, 40, 0.12);
-}
-.machine[data-machine="stacker"] .reel-window { padding: 5px 5px; box-shadow: 0 0 0 4px var(--stacker-light); }
+/* Each machine: its padding (room round the reels for its cabinet) and its sign's colour.
+   The Snack Stacker has a push button instead of a lever, and room for the payline tags. */
+.machine[data-machine="stacker"] { padding: 15px 37px 37px; }
+.machine[data-machine="stacker"] .marquee { --marquee: var(--stacker-marquee); }
 .machine[data-machine="stacker"] .lever { top: 104px; height: 40px; right: -26px; }
 .machine[data-machine="stacker"] .lever-stick { display: none; }
-.machine[data-machine="stacker"] .lever-knob { width: 22px; height: 22px; top: 8px; border-radius: 6px; background: var(--gold); box-shadow: inset -4px -4px 0 var(--gold-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.5); }
-.machine[data-machine="stacker"].pulled .lever { transform: translateX(-5px); }
-
-/* The Burrow Bonanza: a wide wooden machine dug into the burrow, with grass on
-   its roof and a round tunnel-mouth window. Five reels, no side tags. */
-.machine[data-machine="bonanza"] {
-  background:
-    repeating-linear-gradient(0deg, transparent 0 22px, rgba(74, 52, 40, 0.12) 22px 24px), /* planks */
-    var(--bonanza);
-  border-radius: 40px 40px 12px 12px; padding: 22px 22px 34px;
-  box-shadow: inset 0 -10px 0 var(--bonanza-dark), inset 0 5px 0 rgba(255, 255, 255, 0.3), inset 5px 0 0 rgba(255, 255, 255, 0.15);
-}
-.machine[data-machine="bonanza"]::before { /* the grassy roof (replaces the bolt) */
-  left: 18px; right: 18px; top: -10px; bottom: auto; width: auto; height: 16px; opacity: 1;
-  background:
-    repeating-linear-gradient(90deg, var(--bonanza-grass) 0 6px, var(--bonanza-grass-dark) 6px 8px, transparent 8px 10px),
-    var(--bonanza-grass);
-  clip-path: polygon(0 100%, 0 40%, 4% 0, 8% 45%, 13% 5%, 18% 50%, 24% 0, 30% 40%, 36% 8%, 42% 45%, 48% 0, 54% 45%, 60% 5%,
-    66% 40%, 72% 0, 78% 45%, 84% 8%, 90% 40%, 96% 0, 100% 40%, 100% 100%);
-}
-.machine[data-machine="bonanza"] .marquee { background: var(--bonanza-light); border-radius: 14px; }
-.machine[data-machine="bonanza"] .reel-window { border-radius: 16px; box-shadow: 0 0 0 5px var(--bonanza-dark); }
-.machine[data-machine="bonanza"] .lever-knob { background: var(--bonanza-grass); box-shadow: inset -4px -4px 0 var(--bonanza-grass-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.35); }
-
-/* The Pouch Palace: velvet with gold trim, and its jackpot pots on a gold rail. */
-.machine[data-machine="palace"] {
-  background:
-    radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1.5px) 0 0 / 8px 8px, /* velvet */
-    var(--palace);
-  border-radius: 24px 24px 12px 12px; padding: 14px 22px 34px;
-  box-shadow: inset 0 -10px 0 var(--palace-dark), inset 0 0 0 5px var(--palace-gold), inset 0 5px 0 5px rgba(255, 255, 255, 0.2);
-}
-.machine[data-machine="palace"] .marquee { background: var(--palace-gold); box-shadow: 0 0 0 3px var(--palace-light), inset 0 -3px 0 rgba(74, 52, 40, 0.15); }
-.machine[data-machine="palace"] .reel-window { box-shadow: 0 0 0 4px var(--palace-gold); }
-.machine[data-machine="palace"] .lever-knob { background: var(--palace-gold); box-shadow: inset -4px -4px 0 var(--gold-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.5); }
+.machine[data-machine="stacker"] .lever-knob { width: 22px; height: 22px; top: 8px; }
+.machine[data-machine="stacker"].pulled .lever-knob { transform: translateX(-5px); }
+.machine[data-machine="bonanza"] { padding: 25px 25px 37px; }
+.machine[data-machine="bonanza"] .marquee { --marquee: var(--bonanza-light); }
+.machine[data-machine="palace"] { padding: 17px 25px 37px; }
+.machine[data-machine="palace"] .marquee { --marquee: var(--palace-gold); }
 .machine[data-machine="bonanza"] .payline-arrow, .machine[data-machine="palace"] .payline-arrow { display: none; }
-
-/* ── M9 machines ── */
-/* The Hamster Maze: a hedge-green machine with maze paths on it. No paylines, so no arrows or tags. */
-.machine[data-machine="maze"] {
-  background:
-    linear-gradient(90deg, var(--maze-path) 0 3px, transparent 3px) 0 0 / 26px 100%,
-    linear-gradient(var(--maze-path) 0 3px, transparent 3px) 13px 0 / 26px 26px,
-    var(--maze);
-  border-radius: 18px 18px 12px 12px; padding: 16px 22px 34px;
-  box-shadow: inset 0 -10px 0 var(--maze-dark), inset 0 0 0 4px var(--maze-dark), inset 0 5px 0 4px rgba(255, 255, 255, 0.25);
-}
-.machine[data-machine="maze"] .marquee { background: var(--maze-path); box-shadow: 0 0 0 3px var(--maze-dark), inset 0 -3px 0 rgba(74, 52, 40, 0.15); }
-.machine[data-machine="maze"] .reel-window { box-shadow: 0 0 0 5px var(--maze-dark); }
-.machine[data-machine="maze"] .lever-knob { background: var(--maze-light); box-shadow: inset -4px -4px 0 var(--maze), inset 3px 3px 0 rgba(255, 255, 255, 0.5); }
-/* The Acorn Vault: brushed steel with rivets and a gold trim. */
-.machine[data-machine="vault"] {
-  background:
-    radial-gradient(circle, var(--vault-rivet) 2px, transparent 2.5px) 6px 6px / 20px 20px,
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 2px, transparent 2px 6px),
-    var(--vault);
-  border-radius: 12px; padding: 14px 22px 34px;
-  box-shadow: inset 0 -10px 0 var(--vault-dark), inset 0 0 0 5px var(--vault-dark), inset 0 5px 0 5px rgba(255, 255, 255, 0.35);
-}
-.machine[data-machine="vault"] .marquee { background: var(--gold); box-shadow: 0 0 0 3px var(--vault-dark), inset 0 -3px 0 rgba(74, 52, 40, 0.15); }
-.machine[data-machine="vault"] .reel-window { box-shadow: 0 0 0 4px var(--gold-dark); }
-.machine[data-machine="vault"] .lever-knob { border-radius: 50%; background: var(--gold); box-shadow: inset -4px -4px 0 var(--gold-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.5); }
-/* The Big Cheese: a cheese-yellow machine full of holes, with a rind top. */
-.machine[data-machine="cheese"] {
-  background:
-    radial-gradient(circle, var(--cheese-dark) 5px, transparent 5.5px) 8px 30px / 44px 40px,
-    radial-gradient(circle, var(--cheese-dark) 3px, transparent 3.5px) 30px 12px / 38px 34px,
-    var(--cheese);
-  border-radius: 26px 26px 12px 12px; padding: 16px 22px 34px;
-  box-shadow: inset 0 -10px 0 var(--cheese-dark), inset 0 10px 0 var(--cheese-rind), inset 0 0 0 4px var(--cheese-dark);
-}
-.machine[data-machine="cheese"] .marquee { background: var(--cheese-light); box-shadow: 0 0 0 3px var(--cheese-rind), inset 0 -3px 0 rgba(74, 52, 40, 0.15); }
-.machine[data-machine="cheese"] .reel-window { box-shadow: 0 0 0 4px var(--cheese-rind); }
-.machine[data-machine="cheese"] .lever-knob { background: var(--cheese-rind); box-shadow: inset -4px -4px 0 var(--cheese-rind-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.4); }
+.machine[data-machine="maze"] { padding: 19px 25px 37px; }
+.machine[data-machine="maze"] .marquee { --marquee: var(--maze-path); }
+.machine[data-machine="vault"] { padding: 17px 25px 37px; }
+.machine[data-machine="vault"] .marquee { --marquee: var(--gold); }
+.machine[data-machine="cheese"] { padding: 21px 25px 37px; }
+.machine[data-machine="cheese"] .marquee { --marquee: var(--cheese-light); }
 .machine[data-machine="maze"] .payline-arrow, .machine[data-machine="vault"] .payline-arrow, .machine[data-machine="cheese"] .payline-arrow { display: none; }
 
 /* Hold & spin (M9): a board over the reels. Locked acorns show their coins; empty cells shimmer. */
@@ -642,8 +583,12 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 @keyframes tease { 50% { box-shadow: 0 0 0 3px var(--primary), 0 0 18px 6px color-mix(in srgb, var(--primary) 60%, transparent); } }
 
 /* Free-spins mode: a golden glow around the machine */
-.machine.free-spins { outline: 4px solid var(--gold); outline-offset: 3px; animation: free-glow 0.8s ease-in-out infinite alternate; }
-@keyframes free-glow { to { outline-color: var(--primary); } }
+/* (1.5.0: a glow that follows the painted cabinet's shape) */
+.machine.free-spins { animation: free-glow 0.8s ease-in-out infinite alternate; }
+@keyframes free-glow {
+  from { filter: drop-shadow(0 0 2px var(--gold)) drop-shadow(0 0 5px color-mix(in srgb, var(--gold) 80%, transparent)); }
+  to { filter: drop-shadow(0 0 2px var(--primary)) drop-shadow(0 0 10px color-mix(in srgb, var(--primary) 70%, transparent)); }
+}
 
 /* The card gamble: a paper panel over the reels. A face-down card, the last few
    cards, Red / Black (×2), the four suits (×4) and Take win. */
@@ -1377,7 +1322,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .marquee-stars img { width: 16px; height: 16px; }
 .marquee-stars.new img:last-child { animation: star-land 0.7s cubic-bezier(0.3, 1.6, 0.5, 1); } /* a new star pops on (1.0) */
 @keyframes star-land { 0% { transform: scale(3) rotate(-90deg); opacity: 0; } 60% { transform: scale(0.8) rotate(10deg); opacity: 1; } }
-.machine.starred { outline: 4px solid var(--gold); outline-offset: 3px; }
+/* (A machine with a star gets a gold trim: its cabinet is painted with a gold outline, cabinet.ts.) */
 .mc-stars { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-top: 2px; }
 .mc-stars:empty { display: none; }
 .mc-stars img { width: 16px; height: 16px; }
@@ -1749,18 +1694,9 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .trial-badge { --frame: var(--frame-paper-gold); --fw: 6px; display: flex; flex-direction: column; align-items: flex-end; padding: 0 5px 1px; font-size: 12px; line-height: 1.25; pointer-events: auto; }
 .trial-badge b { font-family: var(--font-display); font-weight: 500; font-size: 13px; }
 .trial-badge .num { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-num); font-weight: 900; }
-/* Moving Day (the 8th machine): a big cardboard box, taped shut, with a blue label */
-.machine[data-machine="moving"] {
-  background:
-    linear-gradient(90deg, transparent calc(50% - 16px), var(--box-tape) calc(50% - 16px) calc(50% + 16px), transparent calc(50% + 16px)) top / 100% 18px no-repeat,
-    linear-gradient(var(--box-dark), var(--box-dark)) 0 16px / 100% 3px no-repeat,
-    var(--box);
-  border-radius: 8px; padding: 18px 22px 34px;
-  box-shadow: inset 0 -10px 0 var(--box-dark), inset 0 0 0 4px var(--box-dark), inset 4px 4px 0 4px var(--box-light);
-}
-.machine[data-machine="moving"] .marquee { background: var(--box-label); box-shadow: 0 0 0 3px var(--box-dark), inset 0 -3px 0 rgba(74, 52, 40, 0.15); }
-.machine[data-machine="moving"] .reel-window { box-shadow: 0 0 0 4px var(--box-dark); }
-.machine[data-machine="moving"] .lever-knob { background: var(--box-tape); box-shadow: inset -4px -4px 0 var(--box-dark), inset 3px 3px 0 rgba(255, 255, 255, 0.5); }
+/* Moving Day (the 8th machine): a big cardboard box, taped shut, with a blue label (cabinet.ts) */
+.machine[data-machine="moving"] { padding: 21px 25px 37px; }
+.machine[data-machine="moving"] .marquee { --marquee: var(--box-label); }
 .machine[data-machine="moving"] .payline-arrow { display: none; }
 .chip-box { background: color-mix(in srgb, var(--box) 45%, var(--paper)); }
 /* A colony machine before the first migration: a locked card, a goal */
