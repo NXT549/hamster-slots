@@ -13,7 +13,7 @@ import { effectAs } from '../logic/game.ts';
 import { divide } from '../logic/money.ts';
 import type { Game } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
-import type { UpgradeDef, TreeNodeDef } from '../logic/types.ts';
+import type { UpgradeDef, TreeNodeDef, PerkDef } from '../logic/types.ts';
 import type { Settings } from '../platform/save.ts';
 
 // What game.previewUpgrade / previewTreeNode return: the value now and after buying.
@@ -22,7 +22,7 @@ import type { Settings } from '../platform/save.ts';
 // knows which, so it's loosely typed here. (A Money has toFixed() too.)
 type Preview = { now: any; next: any };
 type Format = (value: any) => string;
-type Def = UpgradeDef | TreeNodeDef;
+type Def = UpgradeDef | TreeNodeDef | PerkDef; // (colony perks, 1.4.0)
 
 // Everything a machine card shows (game.getMachineInfo).
 type MachineInfo = NonNullable<ReturnType<Game['getMachineInfo']>>;
@@ -78,11 +78,16 @@ function effectFormats(game: Game): Record<string, (def: Def) => [string, Format
     deliveryTokens: () => ['A token every', (v) => `${ordinal(v)} delivery`],
     gambleHistory: () => ['Past cards shown', String],
     autoBuy: () => ['Hamster Helper', (v) => (v ? 'yes' : 'no')],
+    // 1.4.0: colony perks and colony traits
+    seedGain: () => ['Heirloom Seeds', (v) => `+${Math.round(v * 100)}%`],
+    maxStars: () => ['Most Machine Stars', String],
+    whiskerGain: () => ['Golden Whiskers', (v) => `+${Math.round(v * 100)}%`],
+    autoRetire: () => ['The Wise Elders', (v) => (v ? 'yes' : 'no')],
   };
 }
 
-// "1st", "2nd", "3rd", "5th" …
-function ordinal(n: number): string {
+// "1st", "2nd", "3rd", "5th" … (colony.ts uses it too)
+export function ordinal(n: number): string {
   if (n % 100 >= 11 && n % 100 <= 13) return `${n}th`;
   return `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] || 'th'}`;
 }
@@ -191,6 +196,7 @@ export function featureChips(info: MachineInfo): string {
   if (f.ways) chips.push(`<span class="feature-chip chip-ways">${iconHTML('reel', 16)}Ways</span>`);
   if (f.holdSpin) chips.push(`<span class="feature-chip chip-hold">${iconHTML('acornIcon', 16)}Hold & spin</span>`);
   if (f.wheel) chips.push(`<span class="feature-chip chip-wheel">${iconHTML('cheeseIcon', 16)}Cheese wheel</span>`);
+  if (f.mystery) chips.push(`<span class="feature-chip chip-box">${iconHTML('boxIcon', 16)}Moving Boxes</span>`); // 1.4.0
   return chips.join('');
 }
 
@@ -502,19 +508,26 @@ export function createShopView(game: Game, { settings, onSettingsChange }: { set
       setText(c.rebuild, armed(c.id) ? 'Tap again: reset its upgrades' : 'Rebuild for a star');
       c.card.classList.toggle('active', info.active);
       c.card.classList.toggle('owned', info.owned);
+      // 1.4.0: a colony machine (Moving Day) is for a family that has migrated. Before
+      // that it's a locked card, a goal for the late game (from the family's 2nd hamster).
+      const closed = !info.open;
+      c.card.classList.toggle('hidden', closed && s.generation < 2 && s.colony === 0);
+      c.card.classList.toggle('closed', closed);
       const affordable = !info.owned && game.canBuyMachine(c.id);
       if (affordable) machineReady = true;
       if (info.active) {
         setHTML(c.label, 'Running');
+      } else if (closed) {
+        setHTML(c.label, '🔒 After the Great Migration');
       } else if (info.owned) {
         setHTML(c.label, info.freeSpinsLeft > 0 ? `Switch to it · ${info.freeSpinsLeft} free spins waiting` : 'Switch to it');
       } else {
         setHTML(c.label, coinLabel(`Buy · ${formatCoins(info.cost)}`));
       }
       c.button.classList.toggle('switch', info.owned && !info.active);
-      c.button.disabled = info.active;
-      paintBuy(c.button, c.fill, { maxed: info.active, affordable: info.owned || affordable, progress: divide(s.coins, info.cost).toNumber() });
-      setText(c.wait, info.owned ? '' : waitText(info.cost, rate));
+      c.button.disabled = info.active || closed;
+      paintBuy(c.button, c.fill, { maxed: info.active, affordable: info.owned || affordable, progress: closed ? 0 : divide(s.coins, info.cost).toNumber() });
+      setText(c.wait, info.owned || closed ? '' : waitText(info.cost, rate));
     }
 
     // Upgrade tiles

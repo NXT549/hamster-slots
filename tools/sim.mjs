@@ -29,6 +29,9 @@ const HELP = `node tools/sim.mjs [options]
                          chips or plays a table): the most the casino can speed a life up
   --no-helper            keep the Hamster Helper switched off once Helping Paws is planted (1.3.1),
                          so the bot does all the buying itself
+  --migrate              make the Great Migration (1.4.0) as soon as the whole tree is planted,
+                         spend the Golden Whiskers on perks (cheapest first) and play on in the
+                         new colony; --lives counts every life, in every colony
   --plant S              at the Big Cage, plant a trait if it costs at most S x the
                          seeds held (or 1 seed); hold the rest for their bonus   (default 0.25)
   --data FILE            another data.json to try                               (default data.json)
@@ -37,7 +40,7 @@ const HELP = `node tools/sim.mjs [options]
 // ───────────────────────── Options ─────────────────────────
 
 function parseArgs(argv) {
-  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true, casino: false, helper: true };
+  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true, casino: false, helper: true, migrate: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -55,6 +58,7 @@ function parseArgs(argv) {
     else if (a === '--no-capsules') opts.capsules = false;
     else if (a === '--casino') opts.casino = true;
     else if (a === '--no-helper') opts.helper = false;
+    else if (a === '--migrate') opts.migrate = true;
     else { console.log(`Unknown option ${a}\n\n${HELP}`); process.exit(1); }
   }
   if (!['idle', 'active'].includes(opts.player)) { console.log('--player must be idle or active'); process.exit(1); }
@@ -224,6 +228,18 @@ function spendOnStars(g) {
   return stars;
 }
 
+// 1.4.0: after a migration, spend the Golden Whiskers on colony perks, cheapest
+// first (the bot retires by itself, so it skips the Wise Elders).
+function buyPerks(g) {
+  const perks = (data.colony && data.colony.perks) || [];
+  for (;;) {
+    const pick = perks.filter((p) => p.effect.type !== 'autoRetire' && g.canBuyPerk(p.id)).sort((a, b) => num(g.getPerkCost(a.id)) - num(g.getPerkCost(b.id)))[0];
+    if (!pick) return;
+    g.buyPerk(pick.id);
+  }
+}
+const treeDone = (g) => (typeof g.isTreeComplete === 'function' ? g.isTreeComplete() : data.familyTree.nodes.every((n) => n.maxLevel === null || g.isTreeMaxed(n.id)));
+
 // ───────────────────────── One run (one seed) ─────────────────────────
 
 function playSeed(seed) {
@@ -233,7 +249,7 @@ function playSeed(seed) {
   let t = 0;
 
   const startLife = () => {
-    life = { generation: g.state.generation, start: t, marks: {}, income: {}, luck: {}, hit: {}, seeds: 0, planted: [], freeSpins: 0, pots: 0, holds: 0, stars: 0, held: 0, boosts: 0 };
+    life = { generation: g.state.generation, colony: g.state.colony || 0, start: t, marks: {}, income: {}, luck: {}, hit: {}, seeds: 0, planted: [], freeSpins: 0, pots: 0, holds: 0, stars: 0, held: 0, boosts: 0 };
   };
   const mark = (name) => { if (!(name in life.marks)) life.marks[name] = (t - life.start) / 60; };
 
@@ -253,6 +269,7 @@ function playSeed(seed) {
 
   startLife();
   let treeDoneAt = null; // hours of play when every finite Family Tree node was planted
+  const migrations = []; // --migrate: { at (hours), whiskers, generations }
   let ranking = null;
   let rankedAt = -Infinity;
   let nextClick = 0;
@@ -329,8 +346,15 @@ function playSeed(seed) {
       life.bonus = num(g.getHeirloomBonus());
       life.totalStars = Object.values(g.state.stars).reduce((a, b) => a + b, 0);
       life.skins = Object.keys(g.state.skins.owned).length; // M10: skins found so far
+      if (treeDoneAt === null && treeDone(g)) treeDoneAt = t / 3600;
+      if (opts.migrate && g.canMigrate()) {
+        const whiskers = num(g.getPendingWhiskers());
+        const generations = g.state.generation - 1;
+        g.migrate();
+        buyPerks(g);
+        migrations.push({ at: t / 3600, whiskers, generations });
+      }
       g.leaveBigCage();
-      if (treeDoneAt === null && data.familyTree.nodes.every((n) => n.maxLevel === null || g.isTreeMaxed(n.id))) treeDoneAt = t / 3600;
       startLife();
       ranking = null;
       nextClick = t;
@@ -341,7 +365,7 @@ function playSeed(seed) {
       break;
     }
   }
-  return { lives, treeDoneAt };
+  return { lives, treeDoneAt, migrations };
 }
 
 // ───────────────────────── Report ─────────────────────────
@@ -399,7 +423,9 @@ const MARKS = [
 const maxLives = Math.max(...runs.map((r) => r.length));
 for (let i = 0; i < maxLives; i++) {
   const lives = runs.map((r) => r[i]).filter(Boolean);
-  const parts = [`Gen ${i + 1}: ${range(lives.map((l) => l.length))} min, +${range(lives.map((l) => l.seeds)).replace(/\.0/g, '')} seeds, earned ${short(median(lives.map((l) => l.earned)))}`];
+  const colonies = [...new Set(lives.map((l) => l.colony))];
+  const label = opts.migrate ? `Life ${i + 1} (colony ${colonies.map((c) => c + 1).join('/')}, gen ${[...new Set(lives.map((l) => l.generation))].join('/')})` : `Gen ${i + 1}`;
+  const parts = [`${label}: ${range(lives.map((l) => l.length))} min, +${range(lives.map((l) => l.seeds)).replace(/\.0/g, '')} seeds, earned ${short(median(lives.map((l) => l.earned)))}`];
   for (const [name, fn] of MARKS) {
     const vals = lives.map((l) => { const v = fn(l); return Number.isFinite(v) ? v : null; });
     if (vals.some((v) => v !== null)) parts.push(`${name} ${range(vals)}`);
@@ -428,5 +454,13 @@ const totalHours = runs.map((r) => r.reduce((sum, l) => sum + l.length, 0) / 60)
 console.log(`
 Played ${runs.map((r) => r.length).join('/')} lives per seed, ${range(totalHours)} hours in total.`);
 console.log(`Whole Family Tree planted after: ${range(results.map((r) => r.treeDoneAt))} hours.`);
+if (opts.migrate) {
+  const most = Math.max(0, ...results.map((r) => r.migrations.length));
+  for (let k = 0; k < most; k++) {
+    const m = results.map((r) => r.migrations[k]).filter(Boolean);
+    console.log(`Great Migration ${k + 1}: after ${range(m.map((x) => x.at))} hours, ${range(m.map((x) => x.generations)).replace(/\.0/g, '')} generations, ${range(m.map((x) => x.whiskers)).replace(/\.0/g, '')} Golden Whiskers (${m.length} of ${results.length} seeds).`);
+  }
+  if (!most) console.log('Great Migration: never (the whole tree wasn\'t planted in time).');
+}
 console.log(`Planted after each life (seed 1): ${runs[0].map((l, i) => `gen ${i + 1}: ${l.planted.join(', ') || '-'}`).join(' | ')}`);
 console.log(`Took ${((Date.now() - started) / 1000).toFixed(1)} s.`);

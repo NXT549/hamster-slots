@@ -18,6 +18,9 @@
 //
 // Most machines pay on PAYLINES. A "ways" machine (M9: "ways": true, the Hamster
 // Maze) has none: see evaluateWays below.
+//
+// 1.4.0: MOVING BOXES (Moving Day, "mystery" in data.json). Every box that lands
+// turns into the same symbol before the spin is scored (revealMystery below).
 
 import type { MachineDef, Payouts, SymbolRules, LineResult, LineWin, Grid, Cell, FreeSpinsDef, WheelDef } from './types.ts';
 import type { Rng } from './rng.ts';
@@ -62,6 +65,43 @@ export function rollGrid(machineData: MachineDef, reelCount: number, rng: Rng): 
     grid.push(column);
   }
   return grid;
+}
+
+// ── Moving boxes (1.4.0, Moving Day) ──
+// What a box can turn into right now, with the chances: the machine's reveal list,
+// but only symbols its reels can land on (a locked symbol never comes out of a box).
+// Empty when the machine has no boxes, or none can land (then there's nothing to average).
+export function mysteryOptions(machineData: MachineDef): { symbol: string; p: number }[] {
+  const m = machineData.mystery;
+  if (!m) return [];
+  const weightOf = (id: string) => (machineData.symbols.find((x) => x.id === id) || { weight: 0 }).weight;
+  if (!(weightOf(m.symbol) > 0)) return [];
+  const on = m.reveal.filter((r) => weightOf(r.symbol) > 0 && r.weight > 0);
+  const total = on.reduce((sum, r) => sum + r.weight, 0);
+  return total > 0 ? on.map((r) => ({ symbol: r.symbol, p: r.weight / total })) : [];
+}
+
+// The machine once its boxes have turned into `symbol`: the box's weight moves to it.
+export function withReveal(machineData: MachineDef, symbol: string): MachineDef {
+  const box = machineData.mystery!.symbol;
+  const extra = (machineData.symbols.find((x) => x.id === box) || { weight: 0 }).weight;
+  return {
+    ...machineData,
+    symbols: machineData.symbols.map((x) => (x.id === box ? { ...x, weight: 0 } : x.id === symbol ? { ...x, weight: x.weight + extra } : x)),
+  };
+}
+
+// Turn every box on a grid into one symbol, picked by the reveal weights. It returns
+// the new grid, the cells that were boxes and what they became; null when no box landed.
+export function revealMystery(grid: Grid, machineData: MachineDef, rng: Rng): { grid: Grid; cells: Cell[]; symbol: string } | null {
+  const m = machineData.mystery;
+  if (!m) return null;
+  const cells = findSymbol(grid, m.symbol);
+  const options = mysteryOptions(machineData);
+  if (!cells.length || !options.length) return null;
+  const symbol = rng.pickWeighted(options.map((o) => ({ symbol: o.symbol, weight: o.p }))).symbol;
+  const out = grid.map((column) => column.map((id) => (id === m.symbol ? symbol : id)));
+  return { grid: out, cells, symbol };
 }
 
 // The symbols one payline crosses, reading left to right.
@@ -332,6 +372,20 @@ function chances(machineData: MachineDef): { id: string; p: number }[] {
 // on lines that are NOT full:
 //   EV both ways = EV + (EV − the part of the EV that full lines pay)
 export function expectedValue(machineData: MachineDef, reelCount: number, fullLineMultiplier = 1, lineCount = 1, bothWays = false): { ev: number; hitRate: number; fullEv: number } {
+  // Moving boxes (1.4.0): the average over what they turn into. Given the symbol they
+  // become, a grid is an ordinary grid with the boxes' weight added to that symbol
+  // (every cell is still its own draw), so each part is the ordinary maths below.
+  const options = mysteryOptions(machineData);
+  if (options.length) {
+    const out = { ev: 0, hitRate: 0, fullEv: 0 };
+    for (const o of options) {
+      const r = expectedValue(withReveal(machineData, o.symbol), reelCount, fullLineMultiplier, lineCount, bothWays);
+      out.ev += o.p * r.ev;
+      out.hitRate += o.p * r.hitRate;
+      out.fullEv += o.p * r.fullEv;
+    }
+    return out;
+  }
   if (machineData.ways) return waysExpected(machineData, reelCount, fullLineMultiplier); // (no lines, and no both ways)
   const R = reelCount;
   const rules = symbolRules(machineData);

@@ -71,15 +71,24 @@ function tAtX(l: Limb, x: number): number {
 
 export function treeLayout(width: number, height: number, trunk: string[], branches: BranchIn[]): Layout {
   const px = width < 600 ? 2 : 3;
-  const node = nodeBox(width);
+  const levels = Math.max(1, ...branches.map((b) => b.nodes.length)); // the branches' levels (3; 4 with 1.4.0's colony traits)
+  const crowded = levels > 3; // a migrated family's tree (1.4.0) has a 4th level
+  const node = crowded && height < 340 ? nodeBox(0) : nodeBox(width); // (a short scene: the smallest traits)
   const cx = Math.round(width / 2);
   const ground = Math.round(height * 0.9);
   const base = { x: cx, y: ground };
-  const levels = Math.max(1, ...branches.map((b) => b.nodes.length)); // the branches' levels (3)
-  const yLow = height * 0.62;
-  const yHigh = height * 0.24;
   const tiers = [ground - height * 0.1];
-  for (let k = 0; k < levels; k++) tiers.push(levels > 1 ? yLow - (k * (yLow - yHigh)) / (levels - 1) : (yLow + yHigh) / 2);
+  const yHigh = height * 0.24;
+  // The levels share the space from yLow up to yHigh. A 4th level would crowd the
+  // traits into each other, so then the first level starts as low as it can (just
+  // clear of the trait at the foot), each gap is at least a trait's height, and the
+  // tree climbs higher, but never so high that a trait on the top limb (whose tip
+  // rises a little) leaves the scene.
+  const yLow = crowded ? Math.max(height * 0.62, tiers[0] - node.h - 2) : height * 0.62;
+  const gaps = Math.max(1, levels - 1);
+  const rise = height * 0.06;
+  const gap = crowded ? Math.min(Math.max((yLow - yHigh) / gaps, node.h + 2), (yLow - node.up - 2 - rise) / gaps) : (yLow - yHigh) / gaps;
+  for (let k = 0; k < levels; k++) tiers.push(levels > 1 ? yLow - k * gap : (yLow + yHigh) / 2);
   const perSide = Math.ceil(branches.length / 2);
   // The columns: the inner one a little way out from the trunk, the outer one near the edge.
   const spread = Math.min(width * 0.41, height * 0.62);

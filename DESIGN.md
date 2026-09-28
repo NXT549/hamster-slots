@@ -1704,3 +1704,102 @@ The Hamster Helper's switch (`helper`, on) and two stats (`doubleWins`, `helperB
 - Does a doubled win feel good, or go unnoticed? Is 16% at most too much?
 - Which new upgrades do you never buy? (Card Counter and Night Shift are the likely ones.)
 - Is 1.3.1's name, "Nuts & Bolts", the kind of name you want for updates?
+
+## 29. The Great Migration: a mega rebirth (update 1.4.0)
+
+> **Status: built, waiting for the user's OK** (1.4.0-rc.1 on the branch `claude/nice-hopper-r35bkf`; PORTING_NOTES D142–D145). Not a roadmap milestone: an update the user asked for between M11 and M12.
+
+*"Start working on a new update to keep late game interesting like a mega rebirth and try to keep the game interesting late game be it balancing things adding things changing things I just want the late game to remain interesting and fun"* (the user, 2026-09-27). In a question round the user picked what the mega rebirth resets (**the family, the tree and the stars**), when it opens (**the whole tree planted**), **all four extras** (Colony Trials, automation, an 8th machine, colony-only traits) and, for the late lives, **"make them longer"**. The update's name: **"The Great Migration"**.
+
+### The Great Migration
+
+Once the **whole Family Tree is planted** (every trait at its max; Family Fortune, which has no max, at least once), the family can **migrate to a new colony**: from the Big Cage (a button next to Start, two taps) or from Family → **Colony** (the same, from a life: that life's pending seeds count too). A banner, a rain of golden whiskers, and the first pup of the new colony plants a seed in an empty meadow (the rebirth animation, §26).
+
+| Starts again | Stays |
+|---|---|
+| The generation (1), Heirloom Seeds (held and earned), the Family Tree, **Machine Stars**, this life (coins, upgrades, machines), the Colony Trials beaten | **Golden Whiskers** and the colony perks, skins and tokens, diary stickers, casino chips (a chip's price follows the new colony's earnings), the stats, the settings |
+
+**Golden Whiskers** (the colony's currency, 12 px whiskers by a pink nose): `floor((seeds earned this colony ÷ 4) ^ 0.5)`, at least 1, × (1 + Whisker Wisdom): about 9 for the ~350 seeds a family has when its tree is first complete, 27 for 3,000. So more seeds, more whiskers, but a square root: a longer colony pays more, not endlessly more. Colony Trials pay whiskers too. They never come from coins or chips, and there's nothing to buy them with.
+
+A migrated family's **rebirth upgrades stay open** from its first pup (it has had every generation before: §28's `unlock.generation` counts only in the first colony), and its **casino stays open**. Every colony's pups start further along the name list.
+
+### Colony perks (Golden Whiskers, kept for good)
+
+Family → Colony. Rule 3's formula (`floor(baseCost × growthRate ^ owned)`), in whiskers:
+
+| Perk | Cost | Max | What it does |
+|---|---|---:|---|
+| ❤️ **Colony Pride** | 1 × 1.6ⁿ | none | **+50% payouts a level**, in a group of its own (it multiplies the others): the whiskers' sink |
+| 🌱 **Seed Sense** | 2 × 1.8ⁿ | 10 | **+10% Heirloom Seeds a level** (every seed total × 1.1, 1.2 …). **New effect** `seedGain` |
+| 👓 **Wise Elders** | 3 | 1 | **The automation** (below). **New effect** `autoRetire` |
+| 🥨 **Old Friends** | 4 | 1 | Every pup starts owning the Burrow Bonanza (like Snack Inheritance's Stacker) |
+| ⭐ **Trailblazer** | 5 × 2ⁿ | 3 | Every machine can be rebuilt for **one more Machine Star** a level (5 → 8). **New effect** `maxStars` |
+
+### Colony Trials (a life with a twist)
+
+From the first migration on, **from each colony's 4th hamster**, a life can be a **Colony Trial**, picked in the Big Cage before it starts. The twist lasts until the life's **pending Heirloom Seeds reach the goal**: a quarter of the seeds the family has earned this colony (at least 5). Then it pays its whiskers and **the twist lifts at once** (the rest of the life is ordinary). Each trial pays **once a colony**; retiring before the goal ends it with nothing (and it can be tried again). A badge in the cage's corner shows the trial and the seeds so far.
+
+| Trial | Twist | Whiskers |
+|---|---|---:|
+| **Fresh Start** | No Family Tree and no heirloom bonus (not even the tree's free levels) | 3 |
+| **Tired Paws** | No auto-spin: every spin by hand | 2 |
+| **Rusty Machines** | Machine Stars don't count (no stars' payouts or Luck) | 2 |
+| **Small Pockets** | Bets ×1 only | 3 |
+| **Plain Hamster** | Nothing worn does anything, and no casino boosts | 2 |
+
+(The first three hamsters of a colony have little a twist could take away, so trials wait for the 4th.) A tile's "now → next" ignores a trial's twist: Wheel Training still says what it gives during Tired Paws.
+
+### The Wise Elders (automation)
+
+With the Wise Elders perk, Family → Colony has three settings: **Retire by themselves** (off at first), **when a life's seeds reach** 25% / 50% / 100% / 200% of the seeds earned this colony (at least 3), and **plant the cheap traits** (on: any trait costing at most a quarter of the seeds held, cheapest first, and Family Fortune when it raises the heirloom bonus; the rest are held). They look once a second; when a life is ready they retire the hamster, plant, and start the next life at once, without the Big Cage (the new pup says who retired, and the seeds). Like retiring by hand it can happen mid-spin; they wait for free spins, a bonus and a gamble under way, and they rest during a Colony Trial. The Great Migration itself is always the player's call.
+
+### Moving Day, the 8th machine (for a migrated family)
+
+A big cardboard box, taped shut, with a blue label. **Colony machine** (`"colony": 1` in data.json): before the first migration it's a locked card in Upgrades → Machines ("🔒 After the Great Migration", from the family's 2nd hamster), after it it's for sale. Priced **between the Acorn Vault and the Big Cheese**: 250B, 5 reels × 3 rows, 20 paylines (10 at first), 120,000 a spin, 3.4 s.
+
+**Moving Boxes** (the new mechanic, `mystery` in data.json): a box is an ordinary symbol on the reels, but before the lines are read **every box on the reels opens into the same symbol**: Baby Carrot 30, Corn Cob 26, Red Apple 20, Golden Seed 14 (once unlocked), Hamster Wild 10 (weights). Two boxes on a line are two of the same thing, so a few boxes can fill whole lines. On screen the boxes land as boxes and pop open once the last reel stops (the result is decided when the spin starts, like every feature, D92). **The EV is exact** (machine.ts `expectedValue`): the reveal doesn't depend on the reels, so a spin's EV is the mix of "the machine with the boxes' weight moved to carrots", "… to corn" and so on, weighted by the reveal chances (tested against every line tried and 40,000 spins).
+
+| Symbol | Weight | 2 | 3 | 4 | 5 |
+|---|---:|---:|---:|---:|---:|
+| Sunflower Seed | 28 | 427,680 | 736,560 | 1.28M | 2.26M |
+| Baby Carrot | 22 | 641,520 | 1.12M | 2.57M | 5.68M |
+| Corn Cob | 16 | 902,880 | 2.02M | 5.08M | 14.2M |
+| Red Apple | 12 | 2.26M | 14.2M | 85.3M | 427M |
+| Golden Seed (Valuables) | 7 | 5.68M | 71.1M | 512M | 2.84B |
+| **Moving Box** | 9 | opens into one of the above (or a wild) | | | |
+| Hamster Wild | 5 | 4.28M | 42.7M | 341M | 2.28B |
+| Wood Shaving | 70 | never pays | | | |
+
+**Its upgrades:** Packing Tape (spins ×0.9 a level, 8), More Rooms (+2 lines, 5), **Bubble Wrap** (+2 box weight a level, 4), Valuables (the Golden Seed), Lucky Van (+10 Machine Luck, 5), Pays Both Ways (10T). RTP **1,566%** fresh (10 lines) … 13,987% with everything (20 lines, both ways, Bubble Wrap Lv 4, the Golden Seed): about 16.7M profit a spin maxed, between the Acorn Vault's 4.0M and the Big Cheese's 30M. It has Machine Stars like every machine.
+
+### Colony traits (a 4th level on the tree)
+
+A migrated family's tree grows **one more level**: a colony trait at the top of four branches (`"colony": 1`; bigtree.ts spaces the levels so they never overlap, at every size, `tests/bigtree.test.js`). In the first colony they don't show, and the tree is laid out as before. "The whole tree" (for the next migration) includes them.
+
+| Branch | Trait | Cost | Needs | Effect |
+|---|---|---:|---|---|
+| Luck | 📦 **Moving Boxes** | 40 × 2ⁿ, max 2 | Jackpot Dance | +2 box weight a level on Moving Day |
+| Charms | 🥇 **Whisker Wisdom** | 60 × 2ⁿ, max 2 | Four-Leaf Heirloom | The next migration and every Colony Trial pay **+25% whiskers** a level. **New effect** `whiskerGain` |
+| Head Start | ❤️ **Pack Leader** | 50 × 2ⁿ, max 3 | Snack Inheritance | +50% payouts a level (the family's group) |
+| Bonuses | ⭐ **Starry Roots** | 60 × 2ⁿ, max 2 | Penny Jar | One more Machine Star a level (on top of Trailblazer: 5 → 10 at most) |
+
+### Longer late lives: the seed softcap
+
+The open problem since M7 (§10): from generation ~11 the lives shrank to 2–4 minutes, because income grows ×5–10 a life there (the whole tree, the seed jar with Family Fortune, stars, new machines) while the seeds follow a square root. **Past a softcap the seed curve bends**: below **100 seeds** (`seedSoftcap.seeds`) the total is `(coins ÷ 1,300) ^ 0.5` as before; above it, `100 × (raw ÷ 100) ^ 0.4`, where raw is the old total: the seeds grow as coins ^ **0.2** (`seedSoftcap.exponent`) instead of ^ 0.5, joined up at the cap, so nothing jumps. (+50% seeds takes ×7.6 the coins instead of ×2.25.) The next seed costs more and more coins, so late lives get longer; and once a family owns everything, lives keep getting longer, which is what makes the Great Migration the next step. **Since 1.4.0 the formula reads the coins earned this colony** (`colonyCoins`; lifetime stats keep counting), so a new colony starts on the steep early part of the curve. Seed Sense multiplies the total. The Family tab says "Next Heirloom Seed in N more coins" (the lifetime total isn't the number the formula reads any more).
+
+**An old save keeps its progress:** save v13's migration sets the colony's coins to what the *new* curve needs for the seeds the *old* curve gave (fraction and all), so exactly the same seeds are pending; the next ones come on the new curve (tested at 0 to 1e24 coins).
+
+### The rules still hold (tested, `tests/logic/colony.test.js`)
+
+- **Moving Day's RTP is above 100% in every setup**, every unlock raises its EV and lowers its hit rate, every Luck level raises both (at no Luck and max Luck), and its EV is exact (every line tried, 40,000 sampled spins per setup, both ways too): the machine tests cover it like every machine, with the boxes opened as the game opens them.
+- **Perks never touch the odds** (the hit rate and EV per ×1 are the same with every perk); **auto-spin never beats spin + rest** with every perk and colony trait; the Wise Elders never retire during a trial, when switched off, or without the perk.
+- The migration resets and keeps exactly the table above; trials: goals, once a colony, the twist lifting on the goal, retiring early; the softcap: the same seeds below the cap, fewer above, always growing, the progress bar's next seed exactly where it says; saves v12 → v13.
+
+### Save v13
+
+The colony (`colony`, `colonyCoins`, `whiskers`, `perks`, `trial`, `trialsDone`, `auto`) and six stats (`migrations`, `whiskersEarned`, `trialsCompleted`, `autoRetires`, `mysteryBoxes`, `bestBoxes`). An older save: colony 0, no whiskers, and the colony's coins set so that the same seeds are pending (above). Machine Stars are capped at the max with the family's Trailblazer and Starry Roots. Data schema 14 (the `colony` block, `seedSoftcap`, Moving Day and `mystery`, colony traits and machines, four effect types).
+
+### Six new diary stickers (57 in all)
+
+New Horizons (a migration, 10 tokens) · Far, Far Away (three migrations, 8) · Trial by Fur (a trial beaten, 3) · School of Hard Knocks (five trials, 5) · Wise Old Hamster (the Wise Elders retire a hamster, 2) · Box Full (five boxes in one spin, 3).
+

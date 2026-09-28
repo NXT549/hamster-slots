@@ -18,6 +18,7 @@ import { createCasinoView } from './casino.ts';
 import { createBackupView } from './backup.ts';
 import { createShopView } from './shop.ts';
 import { createBigCage } from './bigcage.ts';
+import { createColonyView } from './colony.ts';
 import { createPayoutsView } from './payouts.ts';
 import { createFx } from './fx.ts';
 import { createCelebration, createIris, IRIS_MS } from './celebrate.ts';
@@ -124,6 +125,7 @@ export function createUI(
   const el = {
     coinPill: $('coin-pill'), coins: $('coin-count'), coinRate: $('coin-rate'),
     seedPill: $('seed-pill'), seedCount: $('seed-count'),
+    whiskerPill: $('whisker-pill'), whiskerCount: $('whisker-count'), trialBadge: $('trial-badge'), familyPanel: $('tab-family'),
     menuBtn: $('menu-btn'), menu: $<HTMLDialogElement>('menu'), debugBtn: $('debug-btn'), debugKey: $('debug-key'), resetBtn: $('reset-btn'),
     stage: $('stage'), wall: $('wall'), rig: document.querySelector<HTMLElement>('.rig')!, machineTags: $('machine-tags'),
     bubble: $('bubble'), spokes: $('spokes'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
@@ -165,6 +167,15 @@ export function createUI(
       }
     },
     onTease: () => sound.play('anticipation'),
+    // 1.4.0: Moving Day's boxes pop open (the symbol they became is already on the cell)
+    onOpen: (cells) => {
+      sound.play('box', cells.length);
+      for (const cell of cells) {
+        if (!lessMotion()) cell.animate([{ transform: 'scale(0.5) rotate(-10deg)' }, { transform: 'scale(1.18) rotate(4deg)', offset: 0.6 }, { transform: 'scale(1)' }], { duration: 340, easing: 'ease-out' });
+        fx.burstAt(cell, { count: 8, palette: fx.colors.box, speed: 150, gravity: 300, size: 3, twinkle: false });
+      }
+      if (cells.length >= 5 && !lessMotion()) say(`${cells.length} boxes, all the same inside!`, 1800);
+    },
     quick: () => settings.quickReels,
   });
   // The prize wheel: { machineId, pot, turns, start, landedAt } while the jackpot wheel shows.
@@ -389,7 +400,7 @@ export function createUI(
   game.on('spinStarted', (e) => {
     if (e.machineId !== activeId()) return;
     winShow.stop();
-    reels.startSpin(e.result);
+    reels.startSpin(e.result, e.mystery);
     el.machine.classList.remove('big-win');
     lastSpinSource = e.source;
     if (e.source === 'manual') {
@@ -588,6 +599,20 @@ export function createUI(
     if (e.amount.gt(0)) replayClass(el.seedPill, 'gain');
   });
 
+  // 1.4.0: the Great Migration. The Big Cage plays the move (bigcage.ts); here the
+  // whiskers pill pops, and the new colony's first pup says hello when it starts.
+  let lastMigrated: GameEvents['migrated'] | null = null;
+  game.on('migrated', (e) => {
+    lastMigrated = e;
+    lastRetired = null;
+    showMachine();
+    shownCoins = game.state.coins;
+    celebrate.close();
+    replayClass(el.whiskerPill, 'gain');
+    sound.play('migrate');
+  });
+  game.on('trialStarted', () => sound.play('unlock'));
+
   game.on('deliveryStarted', (e) => {
     sound.play('deliver');
     const w = el.wheel.getBoundingClientRect();
@@ -627,6 +652,7 @@ export function createUI(
     sound.play('machine');
     const md = game.data.machines.find((m) => m.id === e.id)!;
     const extra = md.ways ? 'No paylines here: matching snacks on neighbouring reels win on any row!'
+      : md.mystery ? 'Boxes everywhere! They all open into the same symbol.'
       : md.holdSpin ? `${md.holdSpin.trigger} Golden Acorns start hold & spin!`
         : md.wheel ? 'Five in a row spins the cheese wheel: up to ×10!'
           : md.jackpot ? 'Three Cheek Pouches spin the jackpot wheel!'
@@ -649,6 +675,12 @@ export function createUI(
     lastRetired = e;
     celebrate.close();
     sound.play('retire');
+    // 1.4.0: the Wise Elders retired this hamster by themselves: no Big Cage, no iris,
+    // the next life just starts (bigCageLeft follows at once), with a word and some seeds.
+    if (e.auto) {
+      fx.burstAt(el.seedPill, { count: 16, palette: fx.colors.heirloom, speed: 160 });
+      return;
+    }
     // The old life closes like the end of a cartoon: a circle shrinks onto the
     // hamster, then the Big Cage opens (bigcage.ts waits for it) and the rebirth
     // animation plays there: the hamster plants the seed and the tree shoots up.
@@ -661,6 +693,24 @@ export function createUI(
   game.on('bigCageLeft', (e) => {
     showMachine();
     sound.play('machine');
+    if (lastRetired && lastRetired.auto) {
+      replayClass(el.hamster, 'hop');
+      hearts(3);
+      say(`The Wise Elders retired ${lastRetired.oldName} (+${formatWhole(lastRetired.seedsGained)} Heirloom Seeds). Hi, I'm ${e.name}!`, 4500);
+      newUpgrades = [];
+      lastRetired = null;
+      return;
+    }
+    if (lastMigrated) {
+      if (!lessMotion()) {
+        iris.open(el.hamster);
+        setTimeout(() => { replayClass(el.hamster, 'hop'); hearts(6); fx.confetti(80, el.stage); }, IRIS_MS * 0.6);
+      } else iris.clear();
+      say(`Hi, I'm ${e.name}, the first pup of colony ${lastMigrated.colony + 1}! We brought ${formatWhole(lastMigrated.whiskers)} Golden Whiskers. Spend them in Family → Colony.`, 7000);
+      lastMigrated = null;
+      newUpgrades = [];
+      return;
+    }
     // …and the new life opens from the hamster, who hops about with hearts and confetti.
     if (!lessMotion()) {
       iris.open(el.hamster);
@@ -940,6 +990,14 @@ export function createUI(
       ['Diary stickers', `${Object.keys(s.diary).length} / ${(game.data.diary || []).length}`],
       ['Capsules opened', String(st.capsulesOpened)],
       ['Skins collected', `${Object.keys(s.skins.owned).length} / ${pool.length}`],
+      // 1.4.0: The Great Migration
+      ...(game.data.colony && (s.colony > 0 || st.migrations > 0) ? [
+        ['Colony', `${s.colony + 1} (${count(st.migrations)} migration${st.migrations === 1 ? '' : 's'})`],
+        ['Golden Whiskers earned', formatWhole(st.whiskersEarned)],
+        ['Colony Trials beaten', count(st.trialsCompleted)],
+        ['Retired by the Wise Elders', count(st.autoRetires)],
+        ['Moving Boxes opened', `${count(st.mysteryBoxes)} (best ${st.bestBoxes} in one spin)`],
+      ] : []),
     ];
     el.statsList.replaceChildren(...rows.map(([label, value]) => {
       const row = document.createElement('div');
@@ -983,10 +1041,16 @@ export function createUI(
       say(`I've earned an Heirloom Seed! I could retire and pass it on to a new pup. Peek at the Family tab.`, 6000);
     }
     el.familyTab.classList.toggle('hidden', !familyShown);
-    el.seedPill.classList.toggle('hidden', !(s.seeds.gt(0) || s.seedsEarned.gt(0)));
+    el.seedPill.classList.toggle('hidden', !(s.seeds.gt(0) || s.seedsEarned.gt(0) || s.colony > 0));
     setText(el.seedCount, formatWhole(s.seeds));
+    // 1.4.0: Golden Whiskers, once the family has migrated (or has some)
+    el.whiskerPill.classList.toggle('hidden', !(s.colony > 0 || s.whiskers.gt(0)));
+    setText(el.whiskerCount, formatWhole(s.whiskers));
     const anyBuyable = game.data.familyTree && game.data.familyTree.nodes.some((n) => game.canBuyTreeNode(n.id));
-    el.familyTab.classList.toggle('alert', familyNew || anyBuyable);
+    const colonyNews = game.canMigrate() || (game.data.colony ? game.data.colony.perks.some((p) => game.canBuyPerk(p.id)) : false);
+    el.familyTab.classList.toggle('alert', familyNew || anyBuyable || colonyNews);
+    colony.render(now, familyShown && !el.familyPanel.classList.contains('hidden'));
+    renderTrialBadge();
     if (!familyShown) return;
 
     // Retire card
@@ -997,7 +1061,9 @@ export function createUI(
     setHTML(el.retireGain, seedLabel(`+${formatWhole(pending)} Heirloom Seed${pending.eq(1) ? '' : 's'}`));
     const prog = game.getSeedProgress();
     el.seedBarFill.style.width = `${(prog.progress * 100).toFixed(1)}%`;
-    setText(el.seedNext, `Family lifetime coins: ${formatCoins(prog.earned)} · next seed at ${formatCoins(prog.nextAt)}`);
+    // (Since 1.4.0 seeds come from the coins earned this colony, on a curve that bends
+    // past its softcap: "coins still to go" says it plainly.)
+    setText(el.seedNext, `Next Heirloom Seed in ${formatCoins(prog.nextAt.sub(prog.earned).max(0))} more coins earned`);
     const perSeed = game.getHeldSeedBonusPerSeed();
     setText(el.heirloomPerSeed, String(Math.round(perSeed * 1000) / 10));
     setText(el.heirloomJar, `${Math.round(game.getSeedJar() * 100)}`);
@@ -1013,7 +1079,8 @@ export function createUI(
     // the planted ones, with their levels.
     const ft = game.data.familyTree;
     const planted = ft ? ft.nodes.filter((n) => game.getTreeLevel(n.id) > 0) : [];
-    setText(el.familyCount, `${planted.length} of ${ft ? ft.nodes.length : 0} traits planted`);
+    const growable = ft ? ft.nodes.filter((n) => (n.colony || 0) <= s.colony).length : 0; // (colony traits, 1.4.0, after a migration)
+    setText(el.familyCount, `${planted.length} of ${growable} traits planted`);
     const traitsKey = planted.map((n) => `${n.id}${game.getTreeLevel(n.id)}`).join();
     if (el.familyTraits.dataset.key !== traitsKey) {
       el.familyTraits.dataset.key = traitsKey;
@@ -1027,6 +1094,20 @@ export function createUI(
         return chip;
       }));
     }
+  }
+
+  // 1.4.0: a Colony Trial under way: its twist, and this life's seeds towards the goal.
+  function renderTrialBadge(): void {
+    const t = game.getTrialDef(game.state.trial);
+    el.trialBadge.classList.toggle('hidden', !t || game.state.bigCage);
+    if (!t) return;
+    const goal = game.getTrialGoal();
+    const have = game.getPendingSeeds();
+    const key = `${t.id}|${formatWhole(have)}|${formatWhole(goal)}`;
+    if (el.trialBadge.dataset.key === key) return;
+    el.trialBadge.dataset.key = key;
+    el.trialBadge.title = `Colony Trial: ${t.description} Reach ${formatWhole(goal)} pending Heirloom Seeds this life for ${formatWhole(game.getTrialWhiskers(t.id))} Golden Whiskers.`;
+    setHTML(el.trialBadge, `<b>Trial: ${t.name}</b><span class="num">${iconHTML('heirloom', 16)}${formatWhole(have)} / ${formatWhole(goal)}</span>`);
   }
 
   function renderMachineTags() {
@@ -1426,6 +1507,7 @@ export function createUI(
   }
 
   const capsules = createCapsulesView(game, { say, sound, fx, settings, onSettingsChange });
+  const colony = createColonyView(game, { say, sound, fx, settings, onSettingsChange });
   const casinoView = createCasinoView(game, { say, sound, fx, lessMotion, settings, onSettingsChange });
   const backupView = createBackupView(game, backup);
   const shop = createShopView(game, { settings, onSettingsChange });

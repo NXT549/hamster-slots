@@ -13,8 +13,14 @@
 // it to. Then the numbers and the Start button slide in. A tap skips it, and Motion
 // "Less" shows the grown tree straight away (and grows it at once when you plant).
 //
-// Like the rest of the view, it only calls game actions (buyTreeNode, leaveBigCage)
-// and reads state. ui.ts creates it and calls render() every frame.
+// 1.4.0, The Great Migration: once the whole tree is planted, a button here moves the
+// family to a new colony (two taps): a banner, golden whiskers rain down, the old tree
+// is gone and the first pup of the new colony plants a seed in the new meadow. A
+// migrated family also picks a Colony Trial here, before a life starts, and its tree
+// grows a 4th level of colony traits.
+//
+// Like the rest of the view, it only calls game actions (buyTreeNode, leaveBigCage,
+// migrate, startTrial) and reads state. ui.ts creates it and calls render() every frame.
 
 import { spriteImg, treeIcon, applySprite, hamsterSprite } from './art.ts';
 import { furColors, hatOf } from './skins.ts';
@@ -76,6 +82,9 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     sub: $('bc-sub'), held: $('bc-held'), bonus: $('bc-bonus'), stars: $('bc-stars'),
     jar: $('bc-jar'), jarFill: $('bc-jar-fill'), jarText: $('bc-jar-text'), explain: $('bc-explain'),
     detail: $('tree-detail'), start: $<HTMLButtonElement>('bc-start'),
+    // 1.4.0
+    migrate: $<HTMLButtonElement>('bc-migrate'), banner: $('bc-banner'),
+    trials: $('bc-trials'), trialPicks: $('bc-trial-picks'), trialNote: $('bc-trial-note'),
   };
   const ctx = el.canvas.getContext('2d')!;
   const seedLabel = (text: string) => `${iconHTML('heirloom')}${text}`;
@@ -99,6 +108,9 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   let heldRoll: { from: Money; at: number } | null = null; // the seeds held count up after a retirement
   let speech: { text: string; until: number } | null = null;
   let hamsterX = 0; // where the scene's hamster stands (screen pixels in the scene)
+  let lastMigrated: GameEvents['migrated'] | null = null; // 1.4.0: the family has just moved to a new colony
+  let migrateArmed = 0; // migrating needs two taps
+  let replayAt = 0; // after a migration from the Big Cage: when the planting animation plays again
 
   // The traits that show: planted ones, and the ones whose needs are all planted.
   function shownTraits(): Set<string> {
@@ -146,11 +158,12 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     const ft = game.data.familyTree;
     const w = el.scene.clientWidth;
     const h = el.scene.clientHeight;
-    const key = `${w}x${h}`;
+    const key = `${w}x${h}|${game.state.colony}`;
     if (key === layoutKey || !ft || w < 10 || h < 10) return;
     layoutKey = key;
     const [trunk, ...branches] = ft.branches;
-    const nodesOf = (id: string) => ft.nodes.filter((n) => n.branch === id).map((n) => n.id);
+    // (Colony traits, 1.4.0, are only on a migrated family's tree: a 4th level.)
+    const nodesOf = (id: string) => ft.nodes.filter((n) => n.branch === id && (n.colony || 0) <= game.state.colony).map((n) => n.id);
     const px = w < 600 ? 2 : 3;
     // The layout is for exactly the canvas's size, so the painted branches and the
     // trait buttons line up to the pixel.
@@ -285,7 +298,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     cue('hello', T.seed, t, () => {
       replayClass(el.hamster, 'hop');
       sound.play('sticker');
-      say('Our Heirloom Seed! Let\'s plant it.', 2400);
+      say(lastMigrated ? 'Our new home! Let\'s plant the colony\'s first seed.' : 'Our Heirloom Seed! Let\'s plant it.', 2400);
       const p = scenePoint(plantX, L.ground - 84);
       fx.burst(p.x, p.y, { count: 14, palette: fx.colors.heirloom, speed: 140 });
     });
@@ -337,7 +350,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   // ─────────────────────── opening and closing ───────────────────────
 
   function open(now: number): void {
-    el.dialog.showModal();
+    if (!el.dialog.open) el.dialog.showModal();
     // The particles move into the dialog while it's open (a dialog sits above the
     // whole page, canvas included).
     el.dialog.appendChild(fx.canvas);
@@ -378,6 +391,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
 
   game.on('retired', (e) => {
     lastRetired = e;
+    if (e.auto) return; // the Wise Elders (1.4.0): the next life starts at once, no Big Cage
     // Wait for the iris to close on the old life (ui.ts), then play the animation.
     if (!lessMotion()) {
       playIntro = true;
@@ -385,7 +399,31 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       openAt = performance.now() + IRIS_MS + 150;
     }
   });
-  game.on('bigCageLeft', () => { lastRetired = null; });
+  game.on('bigCageLeft', () => { lastRetired = null; lastMigrated = null; });
+  // The Great Migration (1.4.0): a banner and a rain of golden whiskers, then the old
+  // tree is gone and the new colony's first pup plants its seed (the rebirth animation).
+  game.on('migrated', (e) => {
+    lastMigrated = e;
+    lastRetired = null;
+    migrateArmed = 0;
+    const now = performance.now();
+    setHTML(el.banner, `<b>The Great Migration!</b><span>Colony ${e.colony + 1} · ${iconHTML('whisker', 24)}+${formatWhole(e.whiskers)} Golden Whiskers</span>`);
+    el.banner.classList.remove('hidden');
+    if (!lessMotion()) replayClass(el.banner, 'slam');
+    setTimeout(() => el.banner.classList.add('hidden'), lessMotion() ? 2500 : 3200);
+    if (el.dialog.open) {
+      fx.rain('whisker', el.scene, 40, { scale: 2, floor: false });
+      playIntro = !lessMotion();
+      replayAt = now + (lessMotion() ? 0 : 1500);
+      layoutKey = '';
+    } else {
+      // From a life: the Big Cage opens (after the iris, like a retirement) and plays it.
+      playIntro = !lessMotion();
+      openAt = now + (lessMotion() ? 0 : 300);
+      setTimeout(() => fx.rain('whisker', el.scene, 40, { scale: 2, floor: false }), 400);
+    }
+    build();
+  });
   game.on('dataReloaded', build);
   game.on('stateLoaded', () => { snap = true; });
 
@@ -426,6 +464,31 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   el.start.addEventListener('click', (e) => {
     (e.currentTarget as HTMLElement).blur();
     game.leaveBigCage();
+  });
+  // The Great Migration (1.4.0): two taps, it can't happen by accident.
+  el.migrate.addEventListener('click', (e) => {
+    (e.currentTarget as HTMLElement).blur();
+    const now = performance.now();
+    if (now < migrateArmed) {
+      migrateArmed = 0;
+      game.migrate();
+    } else {
+      migrateArmed = now + 3000;
+      sound.play('tick');
+      say(`A new colony: the tree, the seeds and the stars start again, for ${formatWhole(game.getPendingWhiskers())} Golden Whiskers. Tap again to go!`, 4000);
+    }
+  });
+  // A Colony Trial for this life (or none): the picks are redrawn often, so it listens on the row.
+  el.trialPicks.addEventListener('click', (e) => {
+    const button = (e.target as Element).closest<HTMLElement>('[data-trial]');
+    if (!button) return;
+    button.blur();
+    const id = button.dataset.trial || null;
+    if (id === game.state.trial) return;
+    if (game.startTrial(id)) {
+      const t = game.getTrialDef(id);
+      say(t ? `${t.name}: ${t.description} Beat it for ${formatWhole(game.getTrialWhiskers(t.id))} Golden Whiskers!` : 'An ordinary life it is.', 4000);
+    }
   });
   el.dialog.addEventListener('cancel', (e) => e.preventDefault());
   // A new size (the window turned, or resized): lay the tree out again.
@@ -487,7 +550,8 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   function renderNumbers(now: number): void {
     const s = game.state;
     const name = game.getPupName();
-    setText(el.sub, !lastRetired ? `${name} (generation ${s.generation}) is waiting to start.`
+    setText(el.sub, lastMigrated ? `The family moved to colony ${lastMigrated.colony + 1} with ${formatWhole(lastMigrated.whiskers)} Golden Whiskers. ${name} is its first pup.`
+      : !lastRetired ? `${name} (generation ${s.generation}${s.colony > 0 ? `, colony ${s.colony + 1}` : ''}) is waiting to start.`
       : intro && intro.uiAt === null ? `${lastRetired.oldName} is planting the family's Heirloom Seed…`
         : `${lastRetired.oldName} retired and planted the family's seed: +${formatWhole(lastRetired.seedsGained)} Heirloom Seeds. ${name} (generation ${s.generation}) is next.`);
     // The seeds held count up from what the family had before this retirement.
@@ -514,12 +578,46 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     setText(el.explain, `Every seed you hold gives +${Math.round(per * 1000) / 10}% payouts, until the seed jar is full (Family Fortune makes it bigger). Planting a seed gives that up, but the trait is the family's forever, and the tree grows. `
       + 'Coins, upgrades and machines start over; the seeds, the tree and Machine Stars stay. Time stands still until you start the new life.');
     setText(el.start, `Start ${name}'s life`);
+    // The Great Migration (1.4.0), once the whole tree is planted
+    const canMigrate = game.canMigrate();
+    el.migrate.classList.toggle('hidden', !canMigrate);
+    if (canMigrate) {
+      setHTML(el.migrate, now < migrateArmed ? 'Tap again: pack up for a new colony!'
+        : `The Great Migration · <span class="whisker-amount">${iconHTML('whisker', 16)}+${formatWhole(game.getPendingWhiskers())}</span> Golden Whiskers`);
+    }
+    renderTrials();
+  }
+
+  // Colony Trials (1.4.0): after the first migration, a life can be a trial. Picked
+  // here, before the life starts; each pays its whiskers once a colony.
+  function renderTrials(): void {
+    const s = game.state;
+    const c = game.data.colony;
+    const open = !!c && game.trialsOpen() && s.run.playTime === 0;
+    el.trials.classList.toggle('hidden', !open);
+    if (!open || !c) return;
+    const key = `${s.trial}|${c.trials.map((t) => (s.trialsDone[t.id] ? 1 : 0)).join('')}|${formatWhole(s.seedsEarned)}`;
+    if (el.trialPicks.dataset.key !== key) {
+      el.trialPicks.dataset.key = key;
+      const pick = (id: string, label: string, done: boolean) => `<button class="seg-btn${(s.trial || '') === id ? ' active' : ''}" data-trial="${id}"${done ? ' disabled' : ''}>${label}${done ? ' ✓' : ''}</button>`;
+      setHTML(el.trialPicks, pick('', 'None', false) + c.trials.map((t) => pick(t.id, t.name, !!s.trialsDone[t.id])).join(''));
+    }
+    const t = game.getTrialDef(s.trial);
+    const seeds = (n: Money) => `<span class="seed-amount">${iconHTML('heirloom', 16)}${formatWhole(n)}</span>`;
+    const whiskers = (n: Money) => `<span class="whisker-amount">${iconHTML('whisker', 16)}${formatWhole(n)}</span>`;
+    setHTML(el.trialNote, t
+      ? `<b>${t.name}:</b> ${t.description} Reach ${seeds(game.getTrialGoal())} Heirloom Seeds this life for ${whiskers(game.getTrialWhiskers(t.id))} Golden Whiskers; then the twist is over.`
+      : `A life with a twist, for Golden Whiskers (each once a colony). ${c.trials.filter((x) => s.trialsDone[x.id]).length} of ${c.trials.length} beaten this colony.`);
   }
 
   function render(now: number): void {
     const s = game.state;
     if (s.bigCage && !el.dialog.open && now >= openAt) open(now);
     else if (!s.bigCage && el.dialog.open) close();
+    else if (s.bigCage && el.dialog.open && replayAt && now >= replayAt) {
+      replayAt = 0;
+      open(now); // 1.4.0: after a migration, the new colony's first seed goes in
+    }
     const dt = Math.min(0.1, Math.max(0, (now - lastFrame) / 1000));
     lastFrame = now;
     if (!s.bigCage || !el.dialog.open) return;

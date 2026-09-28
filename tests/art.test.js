@@ -7,7 +7,7 @@
 
 import { readFileSync } from 'node:fs';
 import { check } from './check.js';
-import { SPRITES, PALETTE, SYMBOL_SPRITES, CAPSULE_SPRITES, MACHINE_SPRITES, upgradeIcon, treeIcon } from '../src/view/art.ts';
+import { SPRITES, PALETTE, SYMBOL_SPRITES, CAPSULE_SPRITES, MACHINE_SPRITES, upgradeIcon, treeIcon, perkIcon } from '../src/view/art.ts';
 import { SKIN_ART, SKIN_TOKENS } from '../src/view/skins.ts';
 import { FRAME_SPRITES, THEME_TOKENS } from '../src/view/theme.ts';
 
@@ -53,6 +53,11 @@ for (const n of data.familyTree.nodes) {
   check(`tree node "${n.id}" has an icon`, treeIcon(n) in SPRITES);
 }
 check('the Heirloom Seed currency has a sprite', 'heirloom' in SPRITES);
+// 1.4.0: Golden Whiskers and the colony perks.
+check('the Golden Whiskers currency has a 12 px sprite', 'whisker' in SPRITES && SPRITES.whisker.length === 12);
+for (const p of data.colony.perks) {
+  check(`colony perk "${p.id}" has an icon`, perkIcon(p) in SPRITES);
+}
 check('the Hamster Token and Capsule Machine have sprites', 'token' in SPRITES && 'gacha' in SPRITES);
 for (const r of data.capsules.rarities) {
   check(`capsule rarity "${r.id}" has a capsule sprite`, CAPSULE_SPRITES[r.id] in SPRITES);

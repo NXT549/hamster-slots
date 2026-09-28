@@ -79,11 +79,21 @@ export interface WheelDef {
   wedges: { multiplier: number; weight: number }[];
 }
 
+// 1.4.0 (The Great Migration): Moving Day's moving boxes. Every box that lands turns
+// into the SAME symbol, picked by weight from `reveal` (only symbols the machine has
+// unlocked), before the spin is scored. So the maths stays exact: given the reveal,
+// the grid is an ordinary grid with the box's weight added to that symbol's.
+export interface MysteryDef {
+  symbol: string; // the box symbol (never pays itself)
+  reveal: { symbol: string; weight: number }[];
+}
+
 export interface MachineDef {
   id: string;
   name: string;
   description: string;
   unlockCost: number; // 0 for the free first machine
+  colony?: number; // 1.4.0: only for a family that has migrated this many times (missing = 0)
   startReels: number;
   maxReels: number;
   spinCost: number; // at ×1, before upgrades
@@ -99,6 +109,7 @@ export interface MachineDef {
   ways?: boolean; // "243 ways": no paylines; matching symbols on neighbouring reels win on any row (machine.ts evaluateWays)
   holdSpin?: HoldSpinDef;
   wheel?: WheelDef;
+  mystery?: MysteryDef; // 1.4.0: moving boxes (Moving Day)
 }
 
 // Every upgrade and Family Tree node has an effect. The "type" says which small
@@ -139,6 +150,11 @@ export type Effect =
   | { type: 'starPayout'; perLevel: number } // Star Polish: every Machine Star pays this much more (per level)
   | { type: 'generationPayout'; perLevel: number } // Deep Roots: + this × the generation, to payouts (per level)
   | { type: 'autoBuy'; share: number; interval: number } // Helping Paws: the Hamster Helper buys an upgrade that costs at most share × your coins, every `interval` seconds
+  // 1.4.0 (The Great Migration): colony perks and colony traits
+  | { type: 'seedGain'; perLevel: number } // Seed Sense: every Heirloom Seed total × (1 + this) (per level)
+  | { type: 'maxStars'; perLevel: number } // Trailblazer, Starry Roots: a machine can have this many more Machine Stars (per level)
+  | { type: 'whiskerGain'; perLevel: number } // Whisker Wisdom: Golden Whiskers from migrating × (1 + this) (per level)
+  | { type: 'autoRetire' } // Wise Elders: the Hamster Helper may retire and plant for you (the Colony tab's switch)
   | { type: 'shiftWeight'; from: string; to: string; amount: number }
   | { type: 'fullLineMultiplier'; multiplier: number }
   | { type: 'startingLevel'; upgrade: string; levels: number }
@@ -183,7 +199,43 @@ export interface TreeNodeDef extends Priced {
   description: string;
   branch: string;
   requires: string[]; // node ids that must be planted first
+  colony?: number; // 1.4.0: a colony trait, only for a family that has migrated this many times
   effect: Effect;
+}
+
+// ── 1.4.0: The Great Migration ──
+// A colony perk: bought with Golden Whiskers, kept for good (through every migration).
+export interface PerkDef extends Priced {
+  id: string;
+  name: string;
+  description: string;
+  effect: Effect;
+}
+
+// A Colony Trial: a life with a twist. Beat its goal (this life's coins would bring
+// `goalShare` × the Heirloom Seeds the family has earned this colony, at least
+// `minSeeds`) for its Golden Whiskers, once a colony.
+export type TrialRule = 'noFamily' | 'noAuto' | 'noStars' | 'betCap' | 'noWardrobe';
+export interface TrialDef {
+  id: string;
+  name: string;
+  description: string;
+  rule: TrialRule;
+  goalShare: number;
+  minSeeds: number;
+  whiskers: number;
+}
+
+export interface ColonyDef {
+  name: string; // "The Great Migration"
+  currencyName: string; // "Golden Whiskers"
+  whiskerDivisor: number; // whiskers = floor((seeds earned this colony / divisor) ^ exponent) × (1 + Whisker Wisdom)
+  whiskerExponent: number;
+  perks: PerkDef[];
+  trials: TrialDef[];
+  trialsFrom: number; // trials open from this many migrations…
+  trialGeneration: number; // …from this hamster of each colony on (the first ones have little a twist could take away)
+  autoRetire: { shares: number[]; minSeeds: number; plantShare: number }; // the Wise Elders' choices
 }
 
 export interface Named {
@@ -250,6 +302,18 @@ export interface Sticker {
   tokens: number;
 }
 
+export interface RetirementDef {
+  name: string;
+  currencyName: string;
+  seedDivisor: number;
+  seedExponent: number;
+  payoutBonusPerSeedHeld: number; // M8: every seed you HOLD (not planted) adds this to payouts
+  seedJar?: number; // M9: the most the held seeds can add (1 = +100%); Family Fortune adds to it
+  // 1.4.0: past this many seeds, the total grows more slowly (as coins ^ exponent), so late lives last longer
+  seedSoftcap?: { seeds: number; exponent: number };
+  pupNames: string[];
+}
+
 export interface GameData {
   schemaVersion: number;
   startCoins: number;
@@ -261,15 +325,7 @@ export interface GameData {
   upgrades: UpgradeDef[];
   winTiers: { id: string; minMultiple: number }[];
   offline: { minSeconds: number; maxSeconds: number; efficiency: number };
-  retirement: {
-    name: string;
-    currencyName: string;
-    seedDivisor: number;
-    seedExponent: number;
-    payoutBonusPerSeedHeld: number; // M8: every seed you HOLD (not planted) adds this to payouts
-    seedJar?: number; // M9: the most the held seeds can add (1 = +100%); Family Fortune adds to it
-    pupNames: string[];
-  };
+  retirement: RetirementDef;
   // M8: Machine Stars, for rebuilding a machine with every upgrade maxed.
   stars: { max: number; payoutPerStar: number; luckPerStar: number };
   familyTree: { branches: Named[]; nodes: TreeNodeDef[] };
@@ -287,6 +343,7 @@ export interface GameData {
   skins: SkinDef[];
   diary: Sticker[];
   casino?: CasinoDef; // M11
+  colony?: ColonyDef; // 1.4.0: The Great Migration
 }
 
 // ───────────────────────── Spins ─────────────────────────
@@ -458,6 +515,13 @@ export interface Stats {
   // 1.3.1 (save v12): the new upgrades
   doubleWins: number; // wins Lucky Pennies paid double
   helperBuys: number; // upgrade levels the Hamster Helper bought
+  // 1.4.0 (save v13): The Great Migration
+  migrations: number; // times the family moved to a new colony
+  whiskersEarned: Money; // Golden Whiskers ever received
+  trialsCompleted: number; // Colony Trials beaten
+  autoRetires: number; // hamsters the Wise Elders retired
+  mysteryBoxes: number; // moving boxes opened (Moving Day)
+  bestBoxes: number; // the most boxes in one spin
 }
 
 export interface GameState {
@@ -478,6 +542,14 @@ export interface GameState {
   stars: Record<string, number>; // M8: Machine Stars by machine type, e.g. { clunky: 2 }
   bigCage: boolean; // M8: between lives, on the Big Cage page (time stands still; the only time you can plant)
   helper: boolean; // 1.3.1: the Hamster Helper is switched on (it only works once the family has planted Helping Paws)
+  // 1.4.0: The Great Migration (the colony: kept through retirements; `colony` counts the migrations)
+  colony: number; // 0 = the first colony
+  colonyCoins: Money; // coins earned this colony: the Heirloom Seed formula reads this (lifetime stats keep counting)
+  whiskers: Money; // Golden Whiskers held
+  perks: Levels; // colony perk levels (kept for good)
+  trial: string | null; // the Colony Trial this life is (null = an ordinary life)
+  trialsDone: Record<string, boolean>; // trials beaten this colony
+  auto: { retire: boolean; share: number; plant: boolean }; // the Wise Elders' settings
   // the collection (also kept)
   tokens: Money;
   diary: Record<string, boolean>;
@@ -521,7 +593,10 @@ export interface RouletteBet { kind: RouletteKind; pick: number; amount: Money |
 export type GambleEndReason = 'collect' | 'lose' | 'max' | 'spin' | 'expired' | 'switch' | 'retire';
 
 export interface GameEvents {
-  spinStarted: { machineId: string; result: Grid; source: SpinSource; cost: Money; bet: number; free: boolean };
+  spinStarted: {
+    machineId: string; result: Grid; source: SpinSource; cost: Money; bet: number; free: boolean;
+    mystery: { cells: Cell[]; symbol: string } | null; // 1.4.0: the moving boxes that landed and what they all turned into (result shows them turned)
+  };
   spinResolved: {
     machineId: string; result: Grid; wins: PaidWin[]; payout: Money; fullLine: boolean; tier: string;
     bet: number; free: boolean; streak: number; featureCells: Cell[];
@@ -548,7 +623,13 @@ export interface GameEvents {
   machineBought: { id: string; cost: Money };
   machineSwitched: { id: string; from: string };
   treeNodeBought: { id: string; level: number; cost: Money };
-  retired: { generation: number; seedsGained: Money; oldName: string; newName: string; runEarned: Money };
+  retired: { generation: number; seedsGained: Money; oldName: string; newName: string; runEarned: Money; auto: boolean }; // auto: the Wise Elders did it (1.4.0)
+  migrated: { colony: number; whiskers: Money; seedsEarned: Money; generations: number }; // 1.4.0: the family moved (colony = migrations now)
+  perkBought: { id: string; level: number; cost: Money };
+  trialStarted: { id: string; goal: Money };
+  trialCompleted: { id: string; whiskers: Money };
+  trialEnded: { id: string; completed: boolean }; // the life with the twist is over (completed, or retired before the goal)
+  autoChanged: { retire: boolean; share: number; plant: boolean };
   bigCageLeft: { generation: number; name: string };
   machineRebuilt: { id: string; stars: number };
   deliveryStarted: { duration: number; reward: Money; source: 'manual' | 'auto' };

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 13,
+  "schemaVersion": 14,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -214,6 +214,51 @@
         "grand": 175000000,
         "respinSeconds": 1,
         "pause": 1.2
+      }
+    },
+    {
+      "id": "moving",
+      "name": "Moving Day",
+      "description": "Cardboard boxes everywhere! When boxes land, every box opens into the same symbol, so a few boxes can fill whole lines.",
+      "colony": 1,
+      "unlockCost": 250000000000,
+      "startReels": 5,
+      "maxReels": 5,
+      "rows": 3,
+      "paylines": [[1, 1, 1, 1, 1], [0, 0, 0, 0, 0], [2, 2, 2, 2, 2], [0, 1, 2, 1, 0], [2, 1, 0, 1, 2],
+                   [0, 0, 1, 2, 2], [2, 2, 1, 0, 0], [1, 0, 0, 0, 1], [1, 2, 2, 2, 1], [1, 2, 1, 0, 1],
+                   [0, 1, 0, 1, 0], [2, 1, 2, 1, 2], [1, 1, 0, 1, 1], [1, 1, 2, 1, 1], [0, 1, 1, 1, 0],
+                   [2, 1, 1, 1, 2], [0, 0, 2, 0, 0], [2, 2, 0, 2, 2], [0, 2, 0, 2, 0], [2, 0, 2, 0, 2]],
+      "startLines": 10,
+      "spinCost": 120000,
+      "spinDuration": 3.4,
+      "symbols": [
+        { "id": "seed", "name": "Sunflower Seed", "weight": 28 },
+        { "id": "carrot", "name": "Baby Carrot", "weight": 22 },
+        { "id": "corn", "name": "Corn Cob", "weight": 16 },
+        { "id": "apple", "name": "Red Apple", "weight": 12 },
+        { "id": "golden", "name": "Golden Seed", "weight": 7, "locked": true },
+        { "id": "box", "name": "Moving Box", "weight": 9 },
+        { "id": "wild", "name": "Hamster Wild", "weight": 5, "wild": true },
+        { "id": "blank", "name": "Wood Shaving", "weight": 70, "blank": true }
+      ],
+      "payouts": {
+        "seed": { "2": 427680, "3": 736560, "4": 1283040, "5": 2257200 },
+        "carrot": { "2": 641520, "3": 1116720, "4": 2566080, "5": 5678640 },
+        "corn": { "2": 902880, "3": 2019600, "4": 5084640, "5": 14232240 },
+        "apple": { "2": 2257200, "3": 14232240, "4": 85322160, "5": 426610800 },
+        "golden": { "2": 5678640, "3": 71113680, "4": 511932960, "5": 2844072000 },
+        "wild": { "2": 4276800, "3": 42672960, "4": 341288640, "5": 2275257600 }
+      },
+      "mystery": {
+        "symbol": "box",
+        "reveal": [
+          { "symbol": "carrot", "weight": 30 },
+          { "symbol": "corn", "weight": 26 },
+          { "symbol": "apple", "weight": 20 },
+          { "symbol": "golden", "weight": 14 },
+          { "symbol": "wild", "weight": 10 }
+        ]
       }
     },
     {
@@ -992,6 +1037,72 @@
       "growthRate": 1,
       "maxLevel": 1,
       "effect": { "type": "wheelBonus", "perLevel": 1 }
+    },
+    {
+      "id": "packingTape",
+      "name": "Packing Tape",
+      "description": "Taped-up boxes stack faster: each level makes a Moving Day spin 10% cheaper.",
+      "scope": "machine",
+      "machines": ["moving"],
+      "baseCost": 12000000000,
+      "growthRate": 1.3,
+      "maxLevel": 8,
+      "effect": { "type": "spinCostMultiplier", "perLevel": 0.9 }
+    },
+    {
+      "id": "moreRooms",
+      "name": "More Rooms",
+      "description": "A bigger new home: two more paylines on Moving Day each level, up to 20.",
+      "scope": "machine",
+      "machines": ["moving"],
+      "baseCost": 24000000000,
+      "growthRate": 2.5,
+      "maxLevel": 5,
+      "effect": { "type": "extraPayline", "linesPerLevel": 2 }
+    },
+    {
+      "id": "bubbleWrap",
+      "name": "Bubble Wrap",
+      "description": "More Moving Boxes land on Moving Day (+2 weight each level). More boxes, more lines filled.",
+      "scope": "machine",
+      "machines": ["moving"],
+      "baseCost": 30000000000,
+      "growthRate": 2.2,
+      "maxLevel": 4,
+      "effect": { "type": "symbolWeight", "symbol": "box", "perLevel": 2 }
+    },
+    {
+      "id": "valuables",
+      "name": "Valuables",
+      "description": "A new symbol on Moving Day: the Golden Seed (boxes can open into it too). Bigger prizes, but wins come a little less often.",
+      "scope": "machine",
+      "machines": ["moving"],
+      "baseCost": 40000000000,
+      "growthRate": 6,
+      "maxLevel": 1,
+      "effect": { "type": "unlockSymbol", "symbols": ["golden"] }
+    },
+    {
+      "id": "luckyVan",
+      "name": "Lucky Van",
+      "description": "Machine Luck for Moving Day: fewer Wood Shavings, more wins.",
+      "scope": "machine",
+      "machines": ["moving"],
+      "baseCost": 24000000000,
+      "growthRate": 2,
+      "maxLevel": 5,
+      "effect": { "type": "luck", "perLevel": 10 }
+    },
+    {
+      "id": "movingBothWays",
+      "name": "Pays Both Ways",
+      "description": "Every Moving Day payline pays from the right-hand reel too, as well as from the left. A full line still pays once.",
+      "scope": "machine",
+      "machines": ["moving"],
+      "baseCost": 10000000000000,
+      "growthRate": 1,
+      "maxLevel": 1,
+      "effect": { "type": "bothWays" }
     }
   ],
   "winTiers": [
@@ -1011,6 +1122,7 @@
     "seedExponent": 0.5,
     "payoutBonusPerSeedHeld": 0.015,
     "seedJar": 1,
+    "seedSoftcap": { "seeds": 100, "exponent": 0.2 },
     "pupNames": ["Pip", "Nibbles", "Biscuit", "Hazel", "Mochi", "Peanut", "Waffles", "Clover", "Pudding", "Sesame", "Truffle", "Button"]
   },
   "stars": { "max": 5, "payoutPerStar": 0.1, "luckPerStar": 2 },
@@ -1266,7 +1378,118 @@
         "growthRate": 2,
         "maxLevel": 3,
         "effect": { "type": "doubleWin", "perLevel": 0.02 }
+      },
+      {
+        "id": "movingBoxes",
+        "name": "Moving Boxes",
+        "description": "A colony trait: more Moving Boxes on Moving Day (+2 weight each level).",
+        "branch": "luck",
+        "requires": ["jackpotDance"],
+        "colony": 1,
+        "baseCost": 40,
+        "growthRate": 2,
+        "maxLevel": 2,
+        "effect": { "type": "symbolWeight", "symbol": "box", "perLevel": 2 }
+      },
+      {
+        "id": "whiskerWisdom",
+        "name": "Whisker Wisdom",
+        "description": "A colony trait: the next Great Migration (and every Colony Trial) brings 25% more Golden Whiskers each level.",
+        "branch": "charms",
+        "requires": ["cloverHeirloom"],
+        "colony": 1,
+        "baseCost": 60,
+        "growthRate": 2,
+        "maxLevel": 2,
+        "effect": { "type": "whiskerGain", "perLevel": 0.25 }
+      },
+      {
+        "id": "packLeader",
+        "name": "Pack Leader",
+        "description": "A colony trait: the family leads the colony. Every payout +50% each level.",
+        "branch": "headStart",
+        "requires": ["snackInheritance"],
+        "colony": 1,
+        "baseCost": 50,
+        "growthRate": 2,
+        "maxLevel": 3,
+        "effect": { "type": "payoutMultiplier", "perLevel": 0.5 }
+      },
+      {
+        "id": "starryRoots",
+        "name": "Starry Roots",
+        "description": "A colony trait: every machine can be rebuilt for one more Machine Star each level.",
+        "branch": "bonuses",
+        "requires": ["pennyJar"],
+        "colony": 1,
+        "baseCost": 60,
+        "growthRate": 2,
+        "maxLevel": 2,
+        "effect": { "type": "maxStars", "perLevel": 1 }
       }
+    ]
+  },
+  "colony": {
+    "name": "The Great Migration",
+    "currencyName": "Golden Whiskers",
+    "whiskerDivisor": 4,
+    "whiskerExponent": 0.5,
+    "trialsFrom": 1,
+    "trialGeneration": 4,
+    "autoRetire": { "shares": [0.25, 0.5, 1, 2], "minSeeds": 3, "plantShare": 0.25 },
+    "perks": [
+      {
+        "id": "colonyPride",
+        "name": "Colony Pride",
+        "description": "The whole colony cheers: every payout +50% each level, in every life and every colony.",
+        "baseCost": 1,
+        "growthRate": 1.6,
+        "maxLevel": null,
+        "effect": { "type": "payoutMultiplier", "perLevel": 0.5 }
+      },
+      {
+        "id": "seedSense",
+        "name": "Seed Sense",
+        "description": "The family finds more: +10% Heirloom Seeds each level (every life's seeds).",
+        "baseCost": 2,
+        "growthRate": 1.8,
+        "maxLevel": 10,
+        "effect": { "type": "seedGain", "perLevel": 0.1 }
+      },
+      {
+        "id": "wiseElders",
+        "name": "Wise Elders",
+        "description": "The old hamsters help out: they can retire a hamster by itself when its seeds are ready, plant the cheap traits and start the next life (choose when in the Colony tab).",
+        "baseCost": 3,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "autoRetire" }
+      },
+      {
+        "id": "oldFriends",
+        "name": "Old Friends",
+        "description": "Friends from the old colony: every pup starts owning the Burrow Bonanza.",
+        "baseCost": 4,
+        "growthRate": 1,
+        "maxLevel": 1,
+        "effect": { "type": "startingMachine", "machine": "bonanza" }
+      },
+      {
+        "id": "trailblazer",
+        "name": "Trailblazer",
+        "description": "Every machine can be rebuilt for one more Machine Star each level.",
+        "baseCost": 5,
+        "growthRate": 2,
+        "maxLevel": 3,
+        "effect": { "type": "maxStars", "perLevel": 1 }
+      }
+    ],
+    "trials": [
+      { "id": "freshStart", "name": "Fresh Start", "description": "No Family Tree and no heirloom bonus: a pup on its own.", "rule": "noFamily", "goalShare": 0.25, "minSeeds": 5, "whiskers": 3 },
+      { "id": "tiredPaws", "name": "Tired Paws", "description": "No auto-spin: every spin by hand.", "rule": "noAuto", "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "rustyMachines", "name": "Rusty Machines", "description": "Machine Stars don't count (no stars' payouts or Luck).", "rule": "noStars", "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "smallPockets", "name": "Small Pockets", "description": "Bets \u00d71 only.", "rule": "betCap", "goalShare": 0.25, "minSeeds": 5, "whiskers": 3 },
+      { "id": "plainHamster", "name": "Plain Hamster", "description": "Nothing worn does anything, and no casino boosts.", "rule": "noWardrobe", "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 }
     ]
   },
   "tokens": {
@@ -1385,7 +1608,13 @@
     { "id": "littleHelper", "name": "Little Helper", "description": "Let the Hamster Helper buy an upgrade for you.", "goal": { "type": "stat", "stat": "helperBuys", "target": 1 }, "tokens": 2 },
     { "id": "stickerBook", "name": "Sticker Book", "description": "Earn 30 diary stickers.", "goal": { "type": "stickers", "target": 30 }, "tokens": 5 },
     { "id": "dynasty", "name": "Dynasty", "description": "Reach generation 10.", "goal": { "type": "generation", "target": 10 }, "tokens": 5 },
-    { "id": "billionaire", "name": "Billionaire", "description": "Earn 1,000,000,000 coins in total.", "goal": { "type": "stat", "stat": "coinsEarned", "target": 1000000000 }, "tokens": 5 }
+    { "id": "billionaire", "name": "Billionaire", "description": "Earn 1,000,000,000 coins in total.", "goal": { "type": "stat", "stat": "coinsEarned", "target": 1000000000 }, "tokens": 5 },
+    { "id": "newHorizons", "name": "New Horizons", "description": "Make the Great Migration to a new colony.", "goal": { "type": "stat", "stat": "migrations", "target": 1 }, "tokens": 10 },
+    { "id": "farAway", "name": "Far, Far Away", "description": "Make the Great Migration three times.", "goal": { "type": "stat", "stat": "migrations", "target": 3 }, "tokens": 8 },
+    { "id": "trialByFur", "name": "Trial by Fur", "description": "Beat a Colony Trial.", "goal": { "type": "stat", "stat": "trialsCompleted", "target": 1 }, "tokens": 3 },
+    { "id": "hardKnocks", "name": "School of Hard Knocks", "description": "Beat five Colony Trials.", "goal": { "type": "stat", "stat": "trialsCompleted", "target": 5 }, "tokens": 5 },
+    { "id": "wiseOld", "name": "Wise Old Hamster", "description": "Let the Wise Elders retire a hamster for you.", "goal": { "type": "stat", "stat": "autoRetires", "target": 1 }, "tokens": 2 },
+    { "id": "boxFull", "name": "Box Full", "description": "Open five Moving Boxes in one spin on Moving Day.", "goal": { "type": "stat", "stat": "bestBoxes", "target": 5 }, "tokens": 3 }
   ],
   "casino": {
     "enabled": true,

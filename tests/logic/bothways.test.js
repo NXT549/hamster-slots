@@ -8,7 +8,7 @@ import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
   createRng, evaluate, evaluateGrid, expectedValue, rollGrid, allPaylines, symbolRules, spinExpectation,
-  data, near, num, newGame, clunky, stacker, bonanza, palace, land, soldOn, wildWeights, withWild, unlockLevels, withUnlocks,
+  data, near, num, newGame, clunky, stacker, bonanza, palace, land, soldOn, wildWeights, withWild, unlockLevels, withUnlocks, spinGrid, opened,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -138,7 +138,9 @@ describe('pays both ways: the exact EV and hit rate', () => {
         let exact = 0;
         (function all(line, chance) {
           if (line.length === reels) {
-            exact += chance * evaluateGrid(line.map((id) => [id]), [new Array(reels).fill(0)], md.payouts, mdRules, true).basePayout;
+            for (const { ids, p } of opened(md, line)) {
+              exact += chance * p * evaluateGrid(ids.map((id) => [id]), [new Array(reels).fill(0)], md.payouts, mdRules, true).basePayout;
+            }
             return;
           }
           for (const s of md.symbols) if (s.weight > 0) all([...line, s.id], (chance * s.weight) / mdTotal);
@@ -150,7 +152,7 @@ describe('pays both ways: the exact EV and hit rate', () => {
         const rng = createRng(7 + reels + (wildWeight || 0));
         const N = 30000;
         let hits = 0;
-        for (let i = 0; i < N; i++) if (evaluateGrid(rollGrid(md, reels, rng), allPaylines(md), md.payouts, mdRules, true).wins.length > 0) hits++;
+        for (let i = 0; i < N; i++) if (evaluateGrid(spinGrid(md, reels, rng), allPaylines(md), md.payouts, mdRules, true).wins.length > 0) hits++;
         const { hitRate } = expectedValue(md, reels, 1, lines, true);
         check(`${label}, ${lines} lines: sampled hit rate ${(hits / N * 100).toFixed(2)}% ~ formula ${(hitRate * 100).toFixed(2)}%`, near(hits / N, hitRate, 0.012));
       }

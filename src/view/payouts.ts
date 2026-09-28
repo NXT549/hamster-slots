@@ -11,6 +11,7 @@
 import { symbolImg, MACHINE_SPRITES, SYMBOL_SPRITES } from './art.ts';
 import { formatCoins, iconHTML, setHTML, createSubTabs } from './dom.ts';
 import { effectAs } from '../logic/game.ts';
+import { mysteryOptions } from '../logic/machine.ts';
 import type { Game } from '../logic/game.ts';
 import type { PaidWin } from '../logic/types.ts';
 import type { Money } from '../logic/money.ts';
@@ -145,6 +146,16 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
       const p = s.weight / totalWeight;
       chance.textContent = s.weight > 0 ? `${p < 0.1 ? (p * 100).toFixed(1) : Math.round(p * 100)}%` : locked ? 'locked' : 'upgrade';
       tr.append(name, chance);
+      // 1.4.0: Moving Day's box pays nothing itself: it opens into a symbol first.
+      if (md.mystery && md.mystery.symbol === s.id) {
+        const td = document.createElement('td');
+        td.colSpan = md.maxReels - firstK + 1;
+        td.className = 'scatter-note';
+        const opens = mysteryOptions({ ...md, symbols }).map((o) => `${(md.symbols.find((x) => x.id === o.symbol) || { name: o.symbol }).name} ${Math.round(o.p * 100)}%`);
+        td.textContent = `Every box on the reels opens into the same symbol, then the lines are read: ${opens.join(' · ')}`;
+        tr.appendChild(td);
+        return tr;
+      }
       if (s.blank || locked) {
         // A blank pays nothing; a locked symbol says how to get it (its prizes stay visible, faded).
         if (s.blank) {
@@ -243,6 +254,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
       + ' A Wood Shaving never pays and ends a run.'
       + (wild ? ' The Hamster Wild stands in for any symbol on a line (not scatters or Wood Shavings); a line pays whichever reading is worth more.' : '')
       + (md.wheel ? ' A line of five (every reel) spins the cheese wheel, which multiplies that line.' : '')
+      + (md.mystery ? ' Moving Boxes all open into the same symbol before the lines are read, so a few boxes can fill whole lines.' : '')
       + ` Prices include your payout bonuses and your bet (×${game.getBet()}). "Chance" is how often one cell lands on that symbol${luck > 0 ? `, with your Luck (${luck})` : ''}.`;
   }
 
@@ -306,6 +318,19 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
       const wedges = wheel.wedges.map((w) => `×${w.multiplier + odds.wheel!.bonus}`).join(', ');
       cards.push(card('cheeseIcon', 'The cheese wheel',
         `A line of five (every reel) spins the cheese wheel, and that line's win is multiplied by the wedge it lands on: ${wedges}. On average ×${odds.wheel.average.toFixed(2)}.${odds.wheel.bonus > 0 ? ` (Aged Cheese adds +${odds.wheel.bonus} to every wedge.)` : ''}`));
+    }
+    // 1.4.0: Moving Day's boxes: how often one lands, and what they open into.
+    if (md.mystery) {
+      const reelMd = { ...md, symbols: game.getSymbols() };
+      const opens = mysteryOptions(reelMd);
+      const total = reelMd.symbols.reduce((sum, s) => sum + s.weight, 0);
+      const box = reelMd.symbols.find((s) => s.id === md.mystery!.symbol);
+      const cell = box && total > 0 ? box.weight / total : 0;
+      const cells = game.getReelCount() * game.getRowCount();
+      const any = 1 - Math.pow(1 - cell, cells);
+      const list = opens.map((o) => `${(md.symbols.find((x) => x.id === o.symbol) || { name: o.symbol }).name} ${Math.round(o.p * 100)}%`).join(', ');
+      cards.push(card('boxIcon', 'Moving Boxes',
+        `A box lands on ${(cell * 100).toFixed(1)}% of the cells, so ${Math.round(any * 100)}% of spins have at least one. Before the lines are read, every box on the reels opens into the SAME symbol: ${list}. So the more boxes, the more lines they fill together. (Bubble Wrap and the Moving Boxes trait put more boxes on the reels.)`));
     }
     if (odds.gamble) {
       const gm = odds.gamble;

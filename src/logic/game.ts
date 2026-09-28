@@ -21,7 +21,7 @@
 //   game.state                                                      ← read-only snapshot for drawing
 
 import { createEmitter } from './events.ts';
-import { rollGrid, evaluateGrid, evaluateWays, rowCount, allPaylines, symbolRules, findSymbol, freeSpinAward, spinExpectation, wheelAverage } from './machine.ts';
+import { rollGrid, revealMystery, evaluateGrid, evaluateWays, rowCount, allPaylines, symbolRules, findSymbol, freeSpinAward, spinExpectation, wheelAverage } from './machine.ts';
 import type { SpinValue } from './machine.ts';
 import type { Rng } from './rng.ts';
 import { money, roundMoney, divide, power, moneyFrom, isMoney } from './money.ts';
@@ -32,7 +32,7 @@ import type { Money, MoneyLike } from './money.ts';
 import type {
   GameData, GameState, GameEvents, MachineDef, MachineState, SymbolDef, UpgradeDef, TreeNodeDef, Priced, Effect, EffectType,
   EffectOf, Levels, Overrides, Stats, SaveData, Goal, Grid, SpinSource, Suit, CardColor, Card, GambleEndReason, TokenSource, PotDef,
-  Cell, HoldState, BlackjackHand, UpgradeUnlock,
+  Cell, HoldState, BlackjackHand, UpgradeUnlock, PerkDef, TrialDef, TrialRule, RetirementDef,
 } from './types.ts';
 
 // v2 added retirement: generation, Heirloom Seeds, the family tree, per-run
@@ -54,7 +54,10 @@ import type {
 // v12 (1.3.1, Nuts & Bolts) added the Hamster Helper's switch (helper) and the
 // stats doubleWins and helperBuys.
 // See migrateSave() below.
-export const SAVE_VERSION = 12;
+// v13 (1.4.0, The Great Migration) added the colony: migrations, Golden Whiskers,
+// colony perks, the coins earned this colony (the seed formula reads them), Colony
+// Trials and the Wise Elders' settings, and six stats.
+export const SAVE_VERSION = 13;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -95,7 +98,7 @@ interface OwnedEffect<T extends EffectType> {
   effect: EffectOf<T>;
   level: number;
   fromTree: boolean;
-  scope: 'global' | 'machine' | 'tree' | 'wardrobe' | 'boost';
+  scope: 'global' | 'machine' | 'tree' | 'wardrobe' | 'boost' | 'colony';
 }
 
 // Is this effect of the given type? (It also tells TypeScript which fields the
@@ -136,6 +139,10 @@ export function createGame(initialData: GameData, rng: Rng) {
   // and the rebirth/sticker upgrades still locked (to announce each one as it opens).
   // Neither is saved: they're worked out again on load.
   let helperTimer = 0;
+  let elderTimer = 0; // 1.4.0: the Wise Elders look once a second (not saved)
+  // 1.4.0: true while a preview ("now → next" on a tile) is worked out: a Colony Trial's
+  // twist doesn't count there (Wheel Training still says what it gives, during Tired Paws).
+  let previewing = false;
   let stillLocked = new Set<string>();
   // Debug (the debug panel, tests): every rebirth and sticker upgrade on sale now. Not saved.
   let allUnlocked = false;
@@ -237,7 +244,8 @@ export function createGame(initialData: GameData, rng: Rng) {
     const u = def && def.unlock;
     if (!u || allUnlocked) return null;
     const lock: UpgradeUnlock = {};
-    if (u.generation && state.generation < u.generation) lock.generation = u.generation;
+    // A migrated family has had every generation before, so its rebirth upgrades stay open (1.4.0).
+    if (u.generation && state.generation < u.generation && state.colony === 0) lock.generation = u.generation;
     if (u.sticker && !state.diary[u.sticker]) lock.sticker = u.sticker;
     return lock.generation || lock.sticker ? lock : null;
   }
@@ -289,16 +297,26 @@ export function createGame(initialData: GameData, rng: Rng) {
       if (!isEffect(def.effect, type) || !isUpgradeAvailable(def, machine)) continue;
       out.push({ effect: def.effect, level: levelFor(def.id, levelStore(def, machine)[def.id] || 0), fromTree: false, scope: def.scope });
     }
-    for (const def of treeNodes()) {
-      if (isEffect(def.effect, type)) out.push({ effect: def.effect, level: levelFor(def.id, state.tree[def.id] || 0), fromTree: true, scope: 'tree' });
+    // (The Colony Trial "No Family" (1.4.0) leaves the family's traits out for a life.)
+    if (!trialRule('noFamily')) {
+      for (const def of treeNodes()) {
+        if (isEffect(def.effect, type)) out.push({ effect: def.effect, level: levelFor(def.id, state.tree[def.id] || 0), fromTree: true, scope: 'tree' });
+      }
+    }
+    // 1.4.0: the colony perks (Golden Whiskers), kept for good. They work on every
+    // machine and in every life, like the hamster's own upgrades.
+    for (const def of colonyPerks()) {
+      if (isEffect(def.effect, type)) out.push({ effect: def.effect, level: levelFor(def.id, state.perks[def.id] || 0), fromTree: false, scope: 'colony' });
     }
     // M10: what the hamster wears (one skin per category) works like an upgrade at
     // level 1, so every rule that reads an effect type picks it up by itself.
-    for (const effect of wornEffects()) {
+    // (Not in the Colony Trial "Plain Hamster", 1.4.0; nor the casino's boosts.)
+    const plain = trialRule('noWardrobe');
+    for (const effect of plain ? [] : wornEffects()) {
       if (isEffect(effect, type)) out.push({ effect, level: 1, fromTree: false, scope: 'wardrobe' });
     }
     // M11: the casino's boosts and charms, the same way, while they last.
-    if (!boostsOff) {
+    if (!boostsOff && !plain) {
       for (const effect of casino.boostEffects()) {
         if (isEffect(effect, type)) out.push({ effect, level: 1, fromTree: false, scope: 'boost' });
       }
@@ -333,6 +351,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // Payout bonuses ADD UP within a group and MULTIPLY between the groups:
   //   (1 + coin upgrade bonuses) × (1 + family bonuses) × (1 + what you wear) × (1 + casino boosts)
+  //   × (1 + colony perks) (1.4.0: Colony Pride, bought with Golden Whiskers)
   // Family bonuses = family tree nodes + the heirloom bonus (see below).
   // e.g. Chubby Cheeks Lv 2 (+50%) with Family Pride (+25%) → 1.5 × 1.25 = ×1.875.
   // Multiplying is what makes the family feel strong in every new life, and keeps
@@ -344,18 +363,20 @@ export function createGame(initialData: GameData, rng: Rng) {
     let upgrades = 1;
     let wardrobe = 1;
     let boost = 1;
+    let colony = 1;
     let family = money(1).add(getHeirloomBonus(overrides));
     const add = ({ fromTree, scope }: { fromTree: boolean; scope: string }, amount: number) => {
       if (fromTree) family = family.add(amount);
       else if (scope === 'wardrobe') wardrobe += amount;
       else if (scope === 'boost') boost += amount;
+      else if (scope === 'colony') colony += amount;
       else upgrades += amount;
     };
     for (const x of effectsOfType('payoutMultiplier', overrides)) add(x, x.effect.perLevel * x.level);
     const stickers = countStickers();
     for (const x of effectsOfType('stickerPayout', overrides)) add(x, x.effect.perLevel * x.level * stickers);
     for (const x of effectsOfType('generationPayout', overrides)) add(x, x.effect.perLevel * x.level * state.generation);
-    return family.mul(upgrades).mul(wardrobe).mul(boost);
+    return family.mul(upgrades).mul(wardrobe).mul(boost).mul(colony);
   }
 
   // How many diary stickers the family has earned (the Sticker Album, a diary goal).
@@ -399,6 +420,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   function getHeirloomBonus(overrides?: Overrides): Money {
+    if (trialRule('noFamily')) return money(0); // the Colony Trial "No Family" (1.4.0)
     return getHeirloomBonusFor(state.seeds, overrides);
   }
 
@@ -420,6 +442,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   // so there's always a beat to see each win before the next spin starts.
   // The spin time depends on the machine, so the floor does too.
   function getAutoInterval(overrides?: Overrides, machine: MachineState = activeMachine()): number | null {
+    if (trialRule('noAuto')) return null; // the Colony Trial "Tired Paws" (1.4.0): every spin by hand
     let interval: number | null = null;
     let rest = 0;
     for (const { effect: e, level } of effectsOfType('autoSpin', overrides, machine)) {
@@ -512,7 +535,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       if (scope === 'machine') own += effect.perLevel * level;
       else hamster += effect.perLevel * level;
     }
-    own += getStars(machine.typeId) * starData().luckPerStar; // Machine Stars count as Machine Luck
+    own += countedStars(machine) * starData().luckPerStar; // Machine Stars count as Machine Luck
     return { hamster, machine: own, total: hamster + own };
   }
 
@@ -573,6 +596,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // The biggest bet step you've unlocked (an index into betSteps).
   function getMaxBetIndex(overrides?: Overrides): number {
+    if (trialRule('betCap')) return 0; // the Colony Trial "Small Pockets" (1.4.0): bets ×1 only
     let steps = 0;
     for (const { effect, level } of effectsOfType('betSteps', overrides)) steps += effect.stepsPerLevel * level;
     return Math.min(getBetSteps().length - 1, steps);
@@ -710,7 +734,19 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // What a machine's stars multiply its payouts by (1 = no stars).
   function getStarMultiplier(machine: MachineState = activeMachine(), overrides?: Overrides): number {
-    return 1 + getStarPayout(overrides) * getStars(machine.typeId);
+    return 1 + getStarPayout(overrides) * countedStars(machine);
+  }
+
+  // The stars that count this life: all of them, but none in the Colony Trial "Rusty Machines" (1.4.0).
+  function countedStars(machine: MachineState): number {
+    return trialRule('noStars') ? 0 : getStars(machine.typeId);
+  }
+
+  // The most stars a machine can have: data.json's max, plus Trailblazer and Starry Roots (1.4.0).
+  function getMaxStars(overrides?: Overrides): number {
+    let extra = 0;
+    for (const { effect, level } of effectsOfType('maxStars', overrides)) extra += effect.perLevel * level;
+    return starData().max + extra;
   }
 
   // Every upgrade this machine sells is at its max level.
@@ -724,7 +760,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   // gamble on it), and not past the most stars a machine can have.
   function canRebuild(id: string): boolean {
     const m = findMachine(id);
-    if (!m || state.bigCage || getStars(id) >= starData().max) return false;
+    if (!m || state.bigCage || getStars(id) >= getMaxStars() || trialRule('noStars')) return false;
     if (m.spinning || m.bonus || m.hold || (m.freeSpins && m.freeSpins.left > 0) || (state.gamble && state.gamble.machineId === id)) return false;
     return isFullyUpgraded(m);
   }
@@ -750,7 +786,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // For the shop cards: which stat an effect type changes.
-  const STAT_FOR_EFFECT: { [K in EffectType]: (def: UpgradeDef | TreeNodeDef, o?: Overrides) => PreviewValue } = {
+  const STAT_FOR_EFFECT: { [K in EffectType]: (def: UpgradeDef | TreeNodeDef | PerkDef, o?: Overrides) => PreviewValue } = {
     payoutMultiplier: (def, o) => getPayoutMultiplier(o),
     spinCostMultiplier: (def, o) => getSpinCost(o),
     autoSpin: (def, o) => getAutoInterval(o),
@@ -793,6 +829,11 @@ export function createGame(initialData: GameData, rng: Rng) {
     // M9
     extraRespins: (def, o) => getHoldRespins(o),
     wheelBonus: (def, o) => getWheelAverage(o),
+    // 1.4.0: colony perks and colony traits
+    seedGain: (def, o) => getSeedGain(o),
+    maxStars: (def, o) => getMaxStars(o),
+    whiskerGain: (def, o) => getWhiskerGain(o),
+    autoRetire: (def, o) => hasAutoRetire(o),
     // M10: worn skins have these (and since 1.3.1 some upgrades too)
     offlineBonus: (def, o) => getOfflineMultiplier(o),
     jackpotTokens: (def, o) => getJackpotTokens(o),
@@ -810,14 +851,25 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // The affected stat now, and after `levels` more levels (next = null when maxed).
   // The shop passes levels > 1 when it's buying ×10 or Max.
-  function preview(def: UpgradeDef | TreeNodeDef, level: number, levels = 1) {
+  function preview(def: UpgradeDef | TreeNodeDef | PerkDef, level: number, levels = 1) {
     const statFn = STAT_FOR_EFFECT[def.effect.type];
     const cap = def.maxLevel === null || def.maxLevel === undefined ? Infinity : def.maxLevel;
-    return {
+    return withoutTrial(() => ({
       type: def.effect.type,
       now: statFn(def),
       next: maxedAtLevel(def, level) ? null : statFn(def, { [def.id]: Math.min(cap, level + Math.max(1, levels)) }),
-    };
+    }));
+  }
+
+  // Work something out as if no Colony Trial were under way (1.4.0: previews).
+  function withoutTrial<T>(fn: () => T): T {
+    const was = previewing;
+    previewing = true;
+    try {
+      return fn();
+    } finally {
+      previewing = was;
+    }
   }
 
   function previewUpgrade(id: string, levels = 1) {
@@ -930,7 +982,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   function earn(amount: Money): void {
     state.stats.coinsEarned = roundMoney(state.stats.coinsEarned.add(amount));
     state.run.coinsEarned = roundMoney(state.run.coinsEarned.add(amount));
+    state.colonyCoins = roundMoney(state.colonyCoins.add(amount)); // 1.4.0: the seed formula counts this colony's coins
     changeCoins(amount);
+    checkTrial(); // 1.4.0: a Colony Trial's goal is in seeds, so coins earned can beat it
   }
 
   // Is anything still waiting to play on this machine? (free spins left, or the
@@ -997,6 +1051,13 @@ export function createGame(initialData: GameData, rng: Rng) {
     // Roll with the luck-adjusted weights (Lucky Whiskers, Carrot Patch, Hamster Wild).
     const md = { ...getMachineData(machine), symbols: getSymbols() };
     machine.result = rollGrid(md, getReelCount(), rng);
+    // 1.4.0: Moving Day's boxes all turn into one symbol before the spin is scored.
+    const reveal = md.mystery ? revealMystery(machine.result, md, rng) : null;
+    if (reveal) {
+      machine.result = reveal.grid;
+      state.stats.mysteryBoxes += reveal.cells.length;
+      state.stats.bestBoxes = Math.max(state.stats.bestBoxes, reveal.cells.length);
+    }
     if (!free) casino.onPaidSpin(); // M11: a chip every few paid spins; a Luck charm uses up a spin
     machine.spinning = true;
     machine.spinTimer = getSpinDuration();
@@ -1009,7 +1070,8 @@ export function createGame(initialData: GameData, rng: Rng) {
     else if (free) state.stats.freeSpins++;
     else state.stats.manualSpins++;
 
-    events.emit('spinStarted', { machineId: machine.typeId, result: copyGrid(machine.result), source, cost, bet, free });
+    const mystery = reveal ? { cells: reveal.cells, symbol: reveal.symbol } : null;
+    events.emit('spinStarted', { machineId: machine.typeId, result: copyGrid(machine.result), source, cost, bet, free, mystery });
     checkDiary(); // spin counts are diary goals ("First Spin", "Warming Up" …)
     return true;
   }
@@ -1629,7 +1691,13 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   function canBuyMachine(id: string): boolean {
-    return data.machines.some((m) => m.id === id) && !ownsMachine(id) && canAfford(getMachineCost(id));
+    const md = data.machines.find((m) => m.id === id);
+    return !!md && isMachineOpen(md) && !ownsMachine(id) && canAfford(getMachineCost(id));
+  }
+
+  // 1.4.0: a colony machine (Moving Day) is only sold to a family that has migrated.
+  function isMachineOpen(md: MachineDef): boolean {
+    return (md.colony || 0) <= state.colony;
   }
 
   // Buying a machine also switches to it straight away. It starts at the bet you
@@ -1697,12 +1765,16 @@ export function createGame(initialData: GameData, rng: Rng) {
         ways: getWays(undefined, m), // M9: ways (0 = paylines)
         holdSpin: !!md.holdSpin, // M9
         wheel: !!md.wheel, // M9
+        mystery: !!md.mystery, // 1.4.0: Moving Day's boxes
       },
+      // 1.4.0: a colony machine is only for sale after this many migrations
+      open: isMachineOpen(md),
+      colony: md.colony || 0,
       freeSpinsLeft: owned && owned.freeSpins ? owned.freeSpins.left : 0,
       bonus: !!(owned && (owned.bonus || owned.hold)),
       // Machine Stars (M8): kept forever, even for a machine you don't own this life.
       stars: getStars(id),
-      maxStars: starData().max,
+      maxStars: getMaxStars(),
       fullyUpgraded: !!owned && isFullyUpgraded(owned),
       canRebuild: canRebuild(id),
     };
@@ -1732,27 +1804,38 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // ─────────────────── Retirement + family tree ───────────────────
-  // Heirloom Seeds come from ALL the coins your family has ever earned:
-  //   total seeds = floor( (lifetime coins earned / seedDivisor) ^ seedExponent )
+  // Heirloom Seeds come from ALL the coins your family has earned (since 1.4.0: in
+  // this colony, state.colonyCoins; a Great Migration starts it again):
+  //   total seeds = floor( (coins earned / seedDivisor) ^ seedExponent )
   // Retiring pays the difference between that total and the seeds you've already
   // received. So retiring early or late gives the same seeds for the same coins:
   // there's no trick where retiring every minute beats playing on.
   // With exponent 0.5 (a square root), 4× the coins gives 2× the seeds.
 
-  function seedsForCoins(coins: Money): Money {
+  // 1.4.0: past `seedSoftcap.seeds` the total grows more slowly: as coins ^ softcap
+  // exponent instead of ^ seedExponent (a gentler curve, joined up at the softcap).
+  // That's what keeps late lives from shrinking to a minute: the next seeds cost more
+  // and more coins. Seed Sense (a colony perk) then multiplies the total.
+  function seedsForCoins(coins: Money, overrides?: Overrides): Money {
     const r = data.retirement;
     if (!r) return money(0);
-    return power(divide(coins.max(0), r.seedDivisor), r.seedExponent).add(EPS).floor();
+    return seedTotal(coins, r, getSeedGain(overrides));
   }
 
-  // The inverse: lifetime coins needed for a total of n seeds.
+  // The inverse: this colony's coins needed for a total of n seeds.
   function coinsForSeeds(n: Money): Money {
-    const r = data.retirement;
-    return power(n, 1 / r.seedExponent).mul(r.seedDivisor);
+    return seedCoins(n, data.retirement, getSeedGain());
+  }
+
+  // Seed Sense (1.4.0): every seed total × (1 + this).
+  function getSeedGain(overrides?: Overrides): number {
+    let g = 0;
+    for (const { effect, level } of effectsOfType('seedGain', overrides)) g += effect.perLevel * level;
+    return g;
   }
 
   function getPendingSeeds(): Money {
-    return seedsForCoins(state.stats.coinsEarned).sub(state.seedsEarned).max(0);
+    return seedsForCoins(state.colonyCoins).sub(state.seedsEarned).max(0);
   }
 
   // Not while the jackpot wheel is turning or a gamble is under way (their coins
@@ -1763,7 +1846,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // For the progress bar: how far lifetime coins are towards the next seed.
   function getSeedProgress() {
-    const earned = state.stats.coinsEarned;
+    const earned = state.colonyCoins;
     const total = seedsForCoins(earned);
     const from = coinsForSeeds(total);
     const nextAt = coinsForSeeds(total.add(1));
@@ -1774,7 +1857,8 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Names cycle through the list in data.json: generation 1 is the first name.
   function getPupName(generation: number = state.generation): string {
     const names = (data.retirement && data.retirement.pupNames) || [];
-    return names.length ? names[(generation - 1) % names.length] : `Hamster ${generation}`;
+    // Every colony starts its names a little further along the list (1.4.0), so a new colony has new pups.
+    return names.length ? names[(generation - 1 + state.colony * 4) % names.length] : `Hamster ${generation}`;
   }
 
   // Family tree nodes like Warm-up Laps give free upgrade levels. Raise any
@@ -1810,17 +1894,32 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Retire to the Big Cage: collect the pending seeds, and a new pup starts a new
   // life. Coins, upgrades, machines, deliveries and timers go back to the start.
   // The family keeps: generation, Heirloom Seeds, the tree, Machine Stars and lifetime stats.
-  function retire(): boolean {
+  function retire(auto = false): boolean {
     if (!canRetire()) return false;
     const gained = getPendingSeeds();
     if (state.gamble) endGamble('retire');
+    endTrial(false); // 1.4.0: retiring before a Colony Trial's goal ends it (no whiskers)
     casino.beforeRetire(); // M11: the family remembers this life's earnings (a chip's price never falls)
     const oldName = getPupName();
     const runEarned = state.run.coinsEarned;
     state.seedsEarned = state.seedsEarned.add(gained);
     changeSeeds(gained);
     state.generation++;
+    startFreshLife();
+    state.bigCage = true; // the Big Cage page: plant, then leaveBigCage() starts the new life
 
+    if (auto) state.stats.autoRetires++;
+    events.emit('retired', { generation: state.generation, seedsGained: gained, oldName, newName: getPupName(), runEarned, auto });
+    events.emit('coinsChanged', { coins: state.coins, amount: money(0) });
+    if (data.tokens) earnTokens(data.tokens.perRetirement, 'retire');
+    casino.onRetire(); // M11: chips for the family (the first retirement opens the casino)
+    checkDiary();
+    return true;
+  }
+
+  // A new pup's life from the start: coins, upgrades, machines, deliveries and
+  // timers as in a new game, plus the family's head start (the tree's free levels).
+  function startFreshLife(): void {
     const fresh = newState(data);
     state.coins = fresh.coins;
     state.upgrades = fresh.upgrades;
@@ -1830,15 +1929,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     state.autoTimer = fresh.autoTimer;
     state.run = fresh.run;
     queuedManual = false;
-    state.bigCage = true; // the Big Cage page: plant, then leaveBigCage() starts the new life
     applyStartingLevels(); // the new pup's head start from the tree
-
-    events.emit('retired', { generation: state.generation, seedsGained: gained, oldName, newName: getPupName(), runEarned });
-    events.emit('coinsChanged', { coins: state.coins, amount: money(0) });
-    if (data.tokens) earnTokens(data.tokens.perRetirement, 'retire');
-    casino.onRetire(); // M11: chips for the family (the first retirement opens the casino)
-    checkDiary();
-    return true;
   }
 
   // Debug only (the debug panel, tests): open the Big Cage without retiring, to
@@ -1878,7 +1969,8 @@ export function createGame(initialData: GameData, rng: Rng) {
   // A node is unlocked once every node it "requires" has at least level 1.
   function isTreeNodeUnlocked(id: string): boolean {
     const def = getTreeNodeDef(id);
-    return !!def && def.requires.every((r) => getTreeLevel(r) > 0);
+    // (A colony trait, 1.4.0, only grows for a family that has migrated enough times.)
+    return !!def && (def.colony || 0) <= state.colony && def.requires.every((r) => getTreeLevel(r) > 0);
   }
 
   // Planting only happens in the Big Cage, between lives (M8: the user's "it takes
@@ -1909,10 +2001,265 @@ export function createGame(initialData: GameData, rng: Rng) {
     try {
       const after = preview(def, getTreeLevel(id));
       state.seeds = held;
-      return { ...after, now: STAT_FOR_EFFECT[def.effect.type](def) };
+      return { ...after, now: withoutTrial(() => STAT_FOR_EFFECT[def.effect.type](def)) };
     } finally {
       state.seeds = held;
     }
+  }
+
+
+  // ─────────────── The Great Migration (1.4.0) ───────────────
+  // The mega rebirth. Once the whole Family Tree is planted, the family can migrate
+  // to a new colony: the generation, Heirloom Seeds, the tree and Machine Stars start
+  // again, and the family takes Golden Whiskers with it (from the seeds it earned this
+  // colony). Whiskers buy colony perks, which are kept for good. Skins, tokens, the
+  // diary, the casino's chips and the stats are kept too. A migrated family also
+  // gets Colony Trials (a life with a twist, for whiskers), a new machine (Moving
+  // Day) and colony traits on its tree.
+
+  function colonyPerks(): PerkDef[] {
+    return (data.colony && data.colony.perks) || [];
+  }
+  function getPerkDef(id: string): PerkDef | null {
+    return colonyPerks().find((p) => p.id === id) || null;
+  }
+  function getPerkLevel(id: string): number {
+    return state.perks[id] || 0;
+  }
+  function getPerkCost(id: string): Money {
+    return costAtLevel(getPerkDef(id)!, getPerkLevel(id)); // rule 3: the one cost formula
+  }
+  function isPerkMaxed(id: string): boolean {
+    return maxedAtLevel(getPerkDef(id)!, getPerkLevel(id));
+  }
+  // Perks can be bought any time (in a life or in the Big Cage).
+  function canBuyPerk(id: string): boolean {
+    return !!getPerkDef(id) && !isPerkMaxed(id) && state.whiskers.gte(getPerkCost(id));
+  }
+  function buyPerk(id: string): boolean {
+    if (!canBuyPerk(id)) return false;
+    const cost = getPerkCost(id);
+    const level = getPerkLevel(id) + 1;
+    state.perks[id] = level;
+    state.whiskers = state.whiskers.sub(cost);
+    applyStartingLevels(); // a perk can give free levels too
+    events.emit('perkBought', { id, level, cost });
+    checkDiary();
+    return true;
+  }
+  function previewPerk(id: string) {
+    return preview(getPerkDef(id)!, getPerkLevel(id));
+  }
+
+  // Whisker Wisdom (a colony trait): every migration's whiskers × (1 + this).
+  function getWhiskerGain(overrides?: Overrides): number {
+    let g = 0;
+    for (const { effect, level } of effectsOfType('whiskerGain', overrides)) g += effect.perLevel * level;
+    return g;
+  }
+
+  // The traits this colony can grow (a colony trait needs enough migrations).
+  function colonyTreeNodes(): TreeNodeDef[] {
+    return treeNodes().filter((n) => (n.colony || 0) <= state.colony);
+  }
+  // "The whole tree": every trait this colony can grow at its max level (Family
+  // Fortune, which has no max, planted at least once).
+  function isTreeComplete(): boolean {
+    const nodes = colonyTreeNodes();
+    return nodes.length > 0 && nodes.every((n) => (n.maxLevel === null || n.maxLevel === undefined ? getTreeLevel(n.id) > 0 : isTreeMaxed(n.id)));
+  }
+  // How many traits are done (for the Colony tab's progress bar).
+  function getTreeProgress(): { done: number; total: number } {
+    const nodes = colonyTreeNodes();
+    const done = nodes.filter((n) => (n.maxLevel === null || n.maxLevel === undefined ? getTreeLevel(n.id) > 0 : isTreeMaxed(n.id))).length;
+    return { done, total: nodes.length };
+  }
+
+  // From the Big Cage, or during a life (then it's a retirement first: this life's
+  // pending seeds count too). Not while a bonus or a gamble is under way.
+  function canMigrate(): boolean {
+    if (!data.colony || !isTreeComplete()) return false;
+    return state.bigCage || (!state.machines.some((m) => m.bonus || m.hold) && !(state.gamble && state.gamble.started));
+  }
+  function getMigrationSeeds(): Money {
+    return state.bigCage ? state.seedsEarned : state.seedsEarned.add(getPendingSeeds());
+  }
+  // whiskers = floor((seeds earned this colony / divisor) ^ exponent × (1 + Whisker Wisdom)), at least 1
+  function whiskersFor(seeds: Money, overrides?: Overrides): Money {
+    const c = data.colony;
+    if (!c) return money(0);
+    return power(divide(seeds.max(0), c.whiskerDivisor), c.whiskerExponent).mul(1 + getWhiskerGain(overrides)).add(EPS).floor().max(1);
+  }
+  function getPendingWhiskers(): Money {
+    return whiskersFor(getMigrationSeeds());
+  }
+
+  // Debug only (the debug panel, tests): free Golden Whiskers.
+  function addWhiskers(n: MoneyLike): boolean {
+    state.whiskers = state.whiskers.add(money(n)).floor().max(0);
+    return true;
+  }
+
+  function migrate(): boolean {
+    if (!canMigrate()) return false;
+    if (state.gamble) endGamble('retire');
+    endTrial(false);
+    const seedsEarned = getMigrationSeeds();
+    const gained = whiskersFor(seedsEarned);
+    const generations = state.generation;
+    if (!state.bigCage) casino.beforeRetire();
+    state.whiskers = state.whiskers.add(gained);
+    state.stats.whiskersEarned = state.stats.whiskersEarned.add(gained);
+    state.stats.migrations++;
+    state.colony++;
+    // The family starts again: generation 1, no seeds, a bare tree, no stars.
+    state.generation = 1;
+    const heldBefore = state.seeds;
+    state.seeds = money(0);
+    state.seedsEarned = money(0);
+    state.colonyCoins = money(0);
+    state.tree = {};
+    state.stars = {};
+    state.trialsDone = {};
+    casino.onMigrate(); // a chip's price follows the new colony's earnings
+    startFreshLife();
+    state.bigCage = true; // the first pup of the new colony waits in the Big Cage
+    events.emit('seedsChanged', { seeds: state.seeds, amount: heldBefore.neg() });
+    events.emit('migrated', { colony: state.colony, whiskers: gained, seedsEarned, generations });
+    events.emit('coinsChanged', { coins: state.coins, amount: money(0) });
+    checkDiary();
+    return true;
+  }
+
+  // ── Colony Trials ──
+  // From the first migration on, a life can be a trial: one twist (no family
+  // bonuses, no auto-spin, no stars, bets ×1 only, or nothing worn) until the life's
+  // pending seeds reach the goal. Beating it pays whiskers and lifts the twist at
+  // once (the rest of the life is ordinary). Each trial pays once a colony.
+
+  function getTrialDef(id: string | null): TrialDef | null {
+    return (id && data.colony && data.colony.trials.find((t) => t.id === id)) || null;
+  }
+  function trialRule(rule: TrialRule): boolean {
+    if (previewing) return false; // a preview shows what a buy does for the family, twist or not
+    const t = getTrialDef(state.trial);
+    return !!t && t.rule === rule;
+  }
+  function trialsOpen(): boolean {
+    return !!data.colony && state.colony >= data.colony.trialsFrom && state.generation >= data.colony.trialGeneration;
+  }
+  // The goal: this life's pending seeds must reach goalShare × the seeds the family
+  // has earned this colony (at least minSeeds).
+  function getTrialGoal(id: string | null = state.trial): Money {
+    const t = getTrialDef(id);
+    if (!t) return money(0);
+    return state.seedsEarned.mul(t.goalShare).ceil().max(t.minSeeds);
+  }
+  function getTrialWhiskers(id: string): Money {
+    const t = getTrialDef(id);
+    return t ? money(t.whiskers).mul(1 + getWhiskerGain()).add(EPS).floor() : money(0);
+  }
+  // Chosen in the Big Cage before the life starts (a fresh life, nothing played yet).
+  function canStartTrial(id: string): boolean {
+    return state.bigCage && trialsOpen() && !!getTrialDef(id) && !state.trialsDone[id] && state.run.playTime === 0;
+  }
+  // startTrial(null) goes back to an ordinary life.
+  function startTrial(id: string | null): boolean {
+    if (id === null) {
+      if (!state.bigCage || !state.trial) return false;
+      const old = state.trial;
+      state.trial = null;
+      startFreshLife(); // the family's head start comes back (No Family)
+      events.emit('trialEnded', { id: old, completed: false });
+      return true;
+    }
+    if (!canStartTrial(id) || state.trial === id) return false;
+    if (state.trial) events.emit('trialEnded', { id: state.trial, completed: false });
+    state.trial = id;
+    startFreshLife(); // No Family: no head start from the tree either
+    events.emit('trialStarted', { id, goal: getTrialGoal(id) });
+    return true;
+  }
+  // Called whenever coins are earned: has the trial's goal been reached?
+  function checkTrial(): void {
+    if (!state.trial || state.bigCage) return;
+    if (getPendingSeeds().lt(getTrialGoal())) return;
+    const id = state.trial;
+    const whiskers = getTrialWhiskers(id);
+    state.trial = null; // the twist lifts at once
+    state.trialsDone[id] = true;
+    state.whiskers = state.whiskers.add(whiskers);
+    state.stats.whiskersEarned = state.stats.whiskersEarned.add(whiskers);
+    state.stats.trialsCompleted++;
+    applyStartingLevels(); // No Family: the tree's free levels arrive now
+    events.emit('trialCompleted', { id, whiskers });
+    events.emit('trialEnded', { id, completed: true });
+    checkDiary();
+  }
+  // Retiring (or migrating) before the goal ends the trial without whiskers.
+  function endTrial(completed: boolean): void {
+    if (!state.trial) return;
+    const id = state.trial;
+    state.trial = null;
+    events.emit('trialEnded', { id, completed });
+  }
+
+  // ── The Wise Elders (a colony perk): automation ──
+  // With it, the family can retire by itself when a life's pending seeds reach a
+  // share of the seeds earned this colony, plant the cheap traits, and start the
+  // next life, all without stopping. Never during a trial, a bonus, free spins or a
+  // gamble under way.
+
+  function hasAutoRetire(overrides?: Overrides): boolean {
+    return effectsOfType('autoRetire', overrides).some(({ level }) => level > 0);
+  }
+  function getAutoShares(): number[] {
+    return (data.colony && data.colony.autoRetire.shares) || [];
+  }
+  function setAuto(opts: { retire?: boolean; share?: number; plant?: boolean }): boolean {
+    const a = state.auto;
+    if (typeof opts.retire === 'boolean') a.retire = opts.retire;
+    if (typeof opts.plant === 'boolean') a.plant = opts.plant;
+    if (typeof opts.share === 'number' && getAutoShares().includes(opts.share)) a.share = opts.share;
+    events.emit('autoChanged', { ...a });
+    return true;
+  }
+  function getAutoRetireGoal(): Money {
+    const c = data.colony;
+    return state.seedsEarned.mul(state.auto.share).ceil().max(c ? c.autoRetire.minSeeds : 1);
+  }
+  // (Like retiring by hand it may happen mid-spin; it waits for free spins, a bonus
+  // and a gamble under way, whose coins would vanish with the old life.)
+  function autoRetireReady(): boolean {
+    if (!state.auto.retire || !hasAutoRetire() || state.trial || !canRetire()) return false;
+    if (state.machines.some((m) => m.freeSpins)) return false;
+    return getPendingSeeds().gte(getAutoRetireGoal());
+  }
+  // Plant the cheapest trait that costs at most plantShare of the seeds held (or 1
+  // seed), again and again; Family Fortune only when it raises the heirloom bonus.
+  function autoPlant(): number {
+    const c = data.colony;
+    const share = c ? c.autoRetire.plantShare : 0.25;
+    let planted = 0;
+    for (let guard = 0; guard < 1000; guard++) {
+      const cheap = colonyTreeNodes()
+        .filter((n) => n.effect.type !== 'seedJar' && canBuyTreeNode(n.id) && getTreeCost(n.id).lte(state.seeds.mul(share).max(1)))
+        .sort((a, b) => getTreeCost(a.id).cmp(getTreeCost(b.id)))[0];
+      if (cheap) { buyTreeNode(cheap.id); planted++; continue; }
+      const sink = colonyTreeNodes().find((n) => n.effect.type === 'seedJar' && canBuyTreeNode(n.id));
+      if (sink) {
+        const after = getHeirloomBonusFor(state.seeds.sub(getTreeCost(sink.id)), { [sink.id]: getTreeLevel(sink.id) + 1 });
+        if (after.gt(getHeirloomBonus().add(1e-12))) { buyTreeNode(sink.id); planted++; continue; }
+      }
+      break;
+    }
+    return planted;
+  }
+  function autoStep(): void {
+    if (!autoRetireReady()) return;
+    retire(true);
+    if (state.auto.plant) autoPlant();
+    leaveBigCage();
   }
 
   // ─────────────── Hamster Tokens + the Hamster Diary ───────────────
@@ -2245,6 +2592,15 @@ export function createGame(initialData: GameData, rng: Rng) {
         helperStep();
       }
     }
+
+    // 9) The Wise Elders (1.4.0) look once a second: time to retire by itself?
+    if (state.auto.retire) {
+      elderTimer += dt;
+      if (elderTimer >= 1 - EPS) {
+        elderTimer = 0;
+        autoStep();
+      }
+    }
   }
 
   // ─────────────────────── UI helpers ───────────────────────
@@ -2344,6 +2700,15 @@ export function createGame(initialData: GameData, rng: Rng) {
     getTreeNodeDef, getTreeLevel, getTreeCost, isTreeMaxed, isTreeNodeUnlocked, canBuyTreeNode, previewTreeNode,
     getStartingLevel,
 
+    // The Great Migration (1.4.0): actions, then queries
+    migrate, buyPerk, startTrial, setAuto, addWhiskers,
+    canMigrate, isTreeComplete, getTreeProgress, getPendingWhiskers, getMigrationSeeds, getWhiskerGain, getSeedGain, getMaxStars,
+    getPerkDef, getPerkLevel, getPerkCost, isPerkMaxed, canBuyPerk, previewPerk,
+    trialsOpen, getTrialDef, getTrialGoal, getTrialWhiskers, canStartTrial, hasAutoRetire, getAutoShares, getAutoRetireGoal, isMachineOpen: (id: string) => {
+      const md = data.machines.find((m) => m.id === id);
+      return !!md && isMachineOpen(md);
+    },
+
     // queries: tokens, diary, capsules, skins
     getDiaryProgress, getSkinDef, isSkinOwned, getEquippedSkin, getPullCost, canPull, getPityRemaining, getCapsuleOdds,
     getWardrobe, getOfflineMultiplier, getJackpotTokens, getDeliveryTokenEvery, getCardHistoryLength,
@@ -2394,6 +2759,22 @@ function copyGrid(grid: Grid): Grid {
 }
 
 // Lifetime stats: they keep counting across retirements (only Reset wipes them).
+// The seed formula (1.4.0: with its softcap and Seed Sense's gain), outside the game
+// so the save migration can use it too. seedTotal: coins → the whole seeds they give;
+// seedCoins: the inverse (the coins a total of n seeds needs).
+function seedTotal(coins: Money, r: RetirementDef, gain: number): Money {
+  let s = power(divide(coins.max(0), r.seedDivisor), r.seedExponent);
+  const cap = r.seedSoftcap;
+  if (cap && s.gt(cap.seeds)) s = power(divide(s, cap.seeds), cap.exponent / r.seedExponent).mul(cap.seeds);
+  return s.mul(1 + gain).add(EPS).floor();
+}
+function seedCoins(n: Money, r: RetirementDef, gain: number): Money {
+  let s = divide(n, 1 + gain);
+  const cap = r.seedSoftcap;
+  if (cap && s.gt(cap.seeds)) s = power(divide(s, cap.seeds), r.seedExponent / cap.exponent).mul(cap.seeds);
+  return power(s, 1 / r.seedExponent).mul(r.seedDivisor);
+}
+
 function newStats(): Stats {
   return {
     spins: 0, manualSpins: 0, autoSpins: 0, wins: 0,
@@ -2433,6 +2814,10 @@ function newStats(): Stats {
     // v12 (1.3.1): the new upgrades
     doubleWins: 0, // wins Lucky Pennies paid double
     helperBuys: 0, // upgrade levels the Hamster Helper bought
+    // v13 (1.4.0): The Great Migration
+    migrations: 0, whiskersEarned: money(0), // migrations made, Golden Whiskers earned (migrating and trials)
+    trialsCompleted: 0, autoRetires: 0, // Colony Trials beaten; retirements the Wise Elders did
+    mysteryBoxes: 0, bestBoxes: 0, // Moving Day's boxes opened, and the most in one spin
   };
 }
 
@@ -2456,6 +2841,15 @@ export function newState(data: GameData): GameState {
     stars: {}, // Machine Stars by machine type, e.g. { clunky: 2 } (M8)
     bigCage: false, // true between lives: on the Big Cage page, where you plant (M8)
     helper: true, // the Hamster Helper's switch (1.3.1): on, so it starts working as soon as Helping Paws is planted
+
+    // ── the colony (1.4.0: kept when retiring; a migration starts a new one) ──
+    colony: 0, // migrations made (0 = the first colony)
+    colonyCoins: money(0), // coins earned this colony: Heirloom Seeds are worked out from these
+    whiskers: money(0), // unspent Golden Whiskers (kept for good)
+    perks: {}, // colony perk levels, e.g. { colonyPride: 2 } (kept for good)
+    trial: null, // the Colony Trial this life is, e.g. "noFamily" (null = an ordinary life)
+    trialsDone: {}, // trials beaten this colony, e.g. { noFamily: true }
+    auto: { retire: false, share: data.colony ? data.colony.autoRetire.shares[0] : 0.5, plant: true }, // the Wise Elders' settings
 
     // ── collection (also kept when retiring) ──
     tokens: money(0), // unspent Hamster Tokens
@@ -2582,6 +2976,24 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
   // 0 (sanitizeState fills both in), so only the version changes here.
   if (save.saveVersion === 11) {
     save.saveVersion = 12;
+  }
+
+  // v12 → v13 (1.4.0, The Great Migration): Heirloom Seeds now come from the coins
+  // earned this colony, on a curve that grows more slowly past its softcap. So the
+  // family doesn't lose its progress, its colony coins start at what the NEW curve
+  // needs for the seeds the OLD curve gave (fraction and all): the same seeds are
+  // pending as before, and the next ones come on the new curve. (Without data.json:
+  // the lifetime coins.) The rest (whiskers, perks, trials) starts empty.
+  if (save.saveVersion === 12) {
+    const earned = moneyFrom(save.stats && save.stats.coinsEarned, 0).max(0);
+    const r = data && data.retirement;
+    let colonyCoins = earned;
+    if (r) {
+      const oldTotal = power(divide(earned, r.seedDivisor), r.seedExponent);
+      colonyCoins = roundMoney(seedCoins(oldTotal, r, 0)).max(earned);
+    }
+    save.colonyCoins = colonyCoins.toString();
+    save.saveVersion = 13;
   }
 
   if (save.saveVersion !== SAVE_VERSION) return null;
@@ -2731,15 +3143,35 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   s.seeds = moneyFrom(raw.seeds, 0).floor().max(0);
   s.seedsEarned = moneyFrom(raw.seedsEarned, 0).floor().max(0);
   s.tree = cleanLevels(raw.tree, (data.familyTree && data.familyTree.nodes) || []);
-  const maxStars = data.stars ? data.stars.max : 0;
+  s.bigCage = raw.bigCage === true;
+  s.helper = raw.helper !== false; // 1.3.1: on unless it was switched off
+
+  // The colony (1.4.0). Perks and trials that still exist; the Wise Elders' share must be one of the choices.
+  const cdef = data.colony;
+  s.colony = Math.max(0, Math.floor(num(raw.colony, 0)));
+  s.colonyCoins = moneyFrom(raw.colonyCoins, 0).max(0);
+  s.whiskers = moneyFrom(raw.whiskers, 0).floor().max(0);
+  s.perks = cleanLevels(raw.perks, (cdef && cdef.perks) || []);
+  const trials = (cdef && cdef.trials) || [];
+  s.trial = trials.some((t) => t.id === raw.trial) ? raw.trial : null;
+  if (raw.trialsDone && typeof raw.trialsDone === 'object') {
+    for (const t of trials) if (raw.trialsDone[t.id] === true) s.trialsDone[t.id] = true;
+  }
+  const ra = raw.auto && typeof raw.auto === 'object' ? raw.auto : {};
+  s.auto.retire = ra.retire === true;
+  s.auto.plant = ra.plant !== false;
+  if (cdef && cdef.autoRetire.shares.includes(ra.share)) s.auto.share = ra.share;
+
+  // Machine Stars, capped at the max (Trailblazer and Starry Roots, 1.4.0, raise it by their levels).
+  let maxStars = data.stars ? data.stars.max : 0;
+  for (const def of (cdef && cdef.perks) || []) if (def.effect.type === 'maxStars') maxStars += def.effect.perLevel * (s.perks[def.id] || 0);
+  for (const def of (data.familyTree && data.familyTree.nodes) || []) if (def.effect.type === 'maxStars') maxStars += def.effect.perLevel * (s.tree[def.id] || 0);
   if (raw.stars && typeof raw.stars === 'object') {
     for (const md of data.machines) {
       const n = clamp(Math.floor(num(raw.stars[md.id], 0)), 0, maxStars);
       if (n > 0) s.stars[md.id] = n;
     }
   }
-  s.bigCage = raw.bigCage === true;
-  s.helper = raw.helper !== false; // 1.3.1: on unless it was switched off
 
   s.tokens = moneyFrom(raw.tokens, 0).floor().max(0);
   if (raw.diary && typeof raw.diary === 'object') {

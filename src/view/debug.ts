@@ -27,6 +27,9 @@ export function createDebugPanel(
       <button data-earn="10000">Earn +10K</button><button data-earn="100000">Earn +100K</button><button id="dbg-seeds">+5 seeds</button>
       <button id="dbg-cage">Open the Big Cage</button><button id="dbg-unlock">Unlock every upgrade</button>
     </div>
+    <div class="row"><span class="row-label">The Great Migration (1.4.0)</span>
+      <button id="dbg-tree">Plant the whole tree</button><button id="dbg-whiskers">+10 whiskers</button><button id="dbg-migrate">Migrate now</button>
+    </div>
     <div class="row"><span class="row-label">Capsules</span>
       <button data-tokens="10">+10 tokens</button><button data-tokens="100">+100 tokens</button><button id="dbg-skins">Every skin</button>
       <button data-chips="1000">+1,000 chips</button>
@@ -69,6 +72,25 @@ export function createDebugPanel(
   // Plant without retiring (M8: planting only happens in the Big Cage).
   panel.querySelector('#dbg-cage')!.addEventListener('click', () => {
     if (!game.openBigCage()) setStatus('Already in the Big Cage, or a gamble is under way.');
+  });
+  // 1.4.0: plant every trait this colony can grow, to its max (in the Big Cage), so the
+  // Great Migration is ready; the spare seeds are taken back.
+  panel.querySelector('#dbg-tree')!.addEventListener('click', () => {
+    if (!game.state.bigCage && !game.openBigCage()) { setStatus('Can\'t open the Big Cage now (a gamble is under way).'); return; }
+    const held = game.state.seeds;
+    game.addSeeds(1e9);
+    for (let pass = 0; pass < 20; pass++) {
+      for (const n of game.data.familyTree.nodes) {
+        if ((n.maxLevel === null || n.maxLevel === undefined) && game.getTreeLevel(n.id) > 0) continue;
+        while (game.canBuyTreeNode(n.id)) game.buyTreeNode(n.id);
+      }
+    }
+    game.addSeeds(held.sub(game.state.seeds));
+    setStatus('The whole tree is planted: the Great Migration is ready (the Big Cage, or Family → Colony).');
+  });
+  panel.querySelector('#dbg-whiskers')!.addEventListener('click', () => game.addWhiskers(10));
+  panel.querySelector('#dbg-migrate')!.addEventListener('click', () => {
+    if (!game.migrate()) setStatus('Plant the whole tree first (or wait for the bonus or gamble to finish).');
   });
   panel.querySelectorAll<HTMLElement>('[data-chips]').forEach((b) => {
     b.addEventListener('click', () => game.addChips(Number(b.dataset.chips))); // M11 (the casino)

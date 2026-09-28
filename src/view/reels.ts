@@ -16,6 +16,10 @@
 // Anticipation: when the reels that have stopped already show all but one of the
 // scatters a feature needs, the reels still spinning shimmer and land a beat later
 // (still inside the same spin time, so the game's timing never changes).
+//
+// 1.4.0, Moving Day's boxes: the game has already opened them (spinStarted says which
+// cells were boxes and what they became), so the reels land them as boxes, and once
+// the last reel stops they all pop open into that symbol, just before the win shows.
 
 import { symbolImg } from './art.ts';
 import type { Game } from '../logic/game.ts';
@@ -82,7 +86,9 @@ export const lineClass = (index: number) => `line-${index % LINE_COLOURS}`;
 export function createReels(
   container: HTMLElement,
   game: Game,
-  { onLand = () => {}, onTease = () => {}, quick = () => false }: { onLand?: (i: number) => void; onTease?: () => void; quick?: () => boolean } = {},
+  { onLand = () => {}, onTease = () => {}, onOpen = () => {}, quick = () => false }: {
+    onLand?: (i: number) => void; onTease?: () => void; onOpen?: (cells: HTMLElement[]) => void; quick?: () => boolean;
+  } = {},
 ) {
   let reels: Reel[] = []; // { col, strip, ids, from, to, landed, stop, tease }
   let tags: { line: number; el: HTMLElement[] }[] = []; // payline number tags: { line, el: [left, right] }
@@ -92,6 +98,7 @@ export function createReels(
   let teased = false; // onTease() already called for this spin
   let teasingNow = false; // a reel is teasing right now (the machine's heartbeat, ui.ts)
   let buildKey = '';
+  let boxes: { cells: Cell[]; symbol: string } | null = null; // 1.4.0: boxes still closed on the reels
 
   const md = () => game.getMachineData();
   const realRows = () => game.getRowCount(); // 1 = only the middle row counts
@@ -140,6 +147,7 @@ export function createReels(
 
   // Build resting reels showing the machine's current/last result.
   function build() {
+    boxes = null; // (a rebuilt window shows the result, boxes already open)
     const machine = game.state.machines[game.state.activeMachine];
     const count = game.getReelCount();
     container.replaceChildren();
@@ -214,8 +222,12 @@ export function createReels(
     return best;
   }
 
-  // Called on the game's "spinStarted" event with the (already decided) result.
-  function startSpin(grid: Grid): void {
+  // Called on the game's "spinStarted" event with the (already decided) result, and
+  // (Moving Day) the boxes the game opened: they land as boxes and open later.
+  function startSpin(result: Grid, mystery: { cells: Cell[]; symbol: string } | null = null): void {
+    const box = md().mystery ? md().mystery!.symbol : null;
+    const grid = mystery && box ? result.map((column, r) => column.map((id, row) => (mystery.cells.some(([cr, crow]) => cr === r && crow === row) ? box : id))) : result;
+    boxes = mystery && box ? mystery : null;
     if (key() !== buildKey || reels.length !== grid.length) build();
     spinQuick = quick();
     teaseFrom = spinQuick ? null : findTease(grid);
@@ -333,6 +345,23 @@ export function createReels(
     return winReels(win).map((i) => cellAt(i, line[i])).filter(Boolean) as Element[];
   }
 
+  // Every box opens into the symbol the game picked (once the last reel has landed).
+  function openBoxes(): void {
+    if (!boxes) return;
+    const { cells, symbol } = boxes;
+    boxes = null;
+    const opened: HTMLElement[] = [];
+    for (const [reel, row] of cells) {
+      const cell = cellAt(reel, row) as HTMLElement | undefined;
+      if (!cell) continue;
+      cell.dataset.kind = symbolKind(symbol);
+      cell.className = `cell ${cell.dataset.kind}`;
+      cell.replaceChildren(symbolImg(symbol));
+      opened.push(cell);
+    }
+    if (opened.length) onOpen(opened);
+  }
+
   // The on-screen box of one reel (for the dust puff when it lands).
   const reelElement = (i: number) => (reels[i] ? reels[i].col : null);
 
@@ -363,6 +392,9 @@ export function createReels(
       onTease();
     }
     teasingNow = teasing;
+    // Moving Day (1.4.0): every reel has landed, so the boxes open (a new spin, or the
+    // machine rebuilt, simply shows the result: it's already opened).
+    if (boxes && reels.every((r) => r.landed)) openBoxes();
   }
 
   build();

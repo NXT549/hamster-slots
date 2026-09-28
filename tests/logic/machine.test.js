@@ -5,7 +5,7 @@
 import { describe } from 'vitest';
 import { check } from '../check.js';
 import {
-  readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
+  spinGrid, opened, readFileSync, createRng, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree,
 } from './helpers.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -131,9 +131,12 @@ describe('EV formula vs every line, and vs real spins (same RNG as the game)', (
     let m2 = 0;
     (function all(line, chance) {
       if (line.length === reels) {
-        const pay = evaluate(line, md.payouts, rules).basePayout;
-        m1 += chance * pay;
-        m2 += chance * pay * pay;
+        // (Moving Day, 1.4.0: every way its boxes can open, with its chance.)
+        for (const { ids, p } of opened(md, line)) {
+          const pay = evaluate(ids, md.payouts, rules).basePayout;
+          m1 += chance * p * pay;
+          m2 += chance * p * pay * pay;
+        }
         return;
       }
       for (const s of symbols) all([...line, s.id], (chance * s.weight) / total);
@@ -158,7 +161,7 @@ describe('EV formula vs every line, and vs real spins (same RNG as the game)', (
           let sumSq = 0;
           let hits = 0;
           for (let i = 0; i < N; i++) {
-            const pay = evaluateGrid(rollGrid(md, reels, rng), active, md.payouts, rules).basePayout;
+            const pay = evaluateGrid(spinGrid(md, reels, rng), active, md.payouts, rules).basePayout;
             sum += pay;
             sumSq += pay * pay;
             if (pay > 0) hits++;

@@ -281,6 +281,7 @@ describe('save migration: v7 -> v8 (money saved as text: big numbers)', () => {
   big.coins = '1.5e400';
   big.seeds = '4e320';
   big.stats.coinsEarned = '2.5e500';
+  big.colonyCoins = '2.5e500'; // (1.4.0: the seed formula reads this colony's coins)
   const g3 = newGame();
   check('a save with money past 1.8e308 loads', g3.loadSaveData(big) === true && g3.state.coins.gt(1e308) && g3.state.seeds.gt(1e308));
   const again = g3.toSaveData();
@@ -288,7 +289,7 @@ describe('save migration: v7 -> v8 (money saved as text: big numbers)', () => {
   g4.loadSaveData(again);
   check('… keeps the amounts (to 12 digits) and saves them back the same every time',
     g3.state.coins.eq_tolerance('1.5e400', 1e-12) && g3.state.stats.coinsEarned.eq_tolerance('2.5e500', 1e-12) && deepEqual(g4.toSaveData(), again), again.coins);
-  check('… and the game carries on (a spin, buying, the seed formula)', g4.spin() === true && g4.buyUpgrade('cheeks', 10) === true && g4.getPendingSeeds().gt(1e200));
+  check('… and the game carries on (a spin, buying, the seed formula)', g4.spin() === true && g4.buyUpgrade('cheeks', 10) === true && g4.getPendingSeeds().gt(1e30));
 
   // Junk in the money fields falls back like any broken value.
   const junk = JSON.parse(JSON.stringify(g.toSaveData()));

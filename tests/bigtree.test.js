@@ -12,9 +12,14 @@ const data = JSON.parse(readFileSync(new URL('../data.json', import.meta.url), '
 const css = readFileSync(new URL('../src/view/style.css', import.meta.url), 'utf8');
 const ft = data.familyTree;
 const [trunkBranch, ...rest] = ft.branches;
-const nodesOf = (b) => ft.nodes.filter((n) => n.branch === b.id).map((n) => n.id);
-const trunk = nodesOf(trunkBranch);
-const branches = rest.map((b) => ({ id: b.id, nodes: nodesOf(b) }));
+// The whole tree (a migrated family's, with 1.4.0's colony traits as a 4th level), and
+// the first colony's (bigcage.ts leaves the colony traits out until the family migrates).
+const treeFor = (nodes) => {
+  const of = (b) => nodes.filter((n) => n.branch === b.id).map((n) => n.id);
+  return { nodes, trunk: of(trunkBranch), branches: rest.map((b) => ({ id: b.id, nodes: of(b) })) };
+};
+const TREES = [['colony tree', treeFor(ft.nodes)], ['first colony', treeFor(ft.nodes.filter((n) => !n.colony))]];
+const { trunk, branches } = TREES[0][1];
 
 // Scene sizes the Big Cage really gets (bigcage.ts: the part of the page left for the tree).
 const SIZES = [
@@ -22,13 +27,17 @@ const SIZES = [
   [820, 560], [920, 720], [1000, 560], [1200, 900], [1560, 1040],
 ];
 
-for (const [w, h] of SIZES) {
+for (const [label, tree] of TREES) for (const [wide, high] of SIZES) {
+  const w = wide;
+  const h = high;
+  const { trunk, branches } = tree;
   const layout = treeLayout(w, h, trunk, branches);
+  const tag = `${label}, ${w}×${h}`;
   const { w: bw, h: bh, up } = layout.node;
   const box = (n) => ({ left: n.x - bw / 2, right: n.x + bw / 2, top: n.y - up, bottom: n.y - up + bh });
-  check(`${w}×${h}: every trait has a spot`, layout.nodes.length === ft.nodes.length && ft.nodes.every((n) => layout.nodes.some((s) => s.id === n.id)));
+  check(`${tag}: every trait has a spot`, layout.nodes.length === tree.nodes.length && tree.nodes.every((n) => layout.nodes.some((s) => s.id === n.id)));
   const outside = layout.nodes.filter((n) => { const b = box(n); return b.left < 0 || b.top < 0 || b.right > w || b.bottom > h; });
-  check(`${w}×${h}: every trait is inside the scene`, outside.length === 0, outside.map((n) => n.id).join(', '));
+  check(`${tag}: every trait is inside the scene`, outside.length === 0, outside.map((n) => n.id).join(', '));
   const overlaps = [];
   for (let i = 0; i < layout.nodes.length; i++) {
     for (let j = i + 1; j < layout.nodes.length; j++) {
@@ -37,23 +46,23 @@ for (const [w, h] of SIZES) {
       if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) overlaps.push(`${layout.nodes[i].id} + ${layout.nodes[j].id}`);
     }
   }
-  check(`${w}×${h}: no two traits overlap`, overlaps.length === 0, overlaps.join('; '));
-  check(`${w}×${h}: the tree stands on the ground`, layout.base.y === layout.ground && layout.fullTop < layout.ground);
+  check(`${tag}: no two traits overlap`, overlaps.length === 0, overlaps.join('; '));
+  check(`${tag}: the tree stands on the ground`, layout.base.y === layout.ground && layout.fullTop < layout.ground);
   // Every branch trait sits on its limb (the curve at its t), and right above the trait it needs.
   const onLimb = layout.nodes.filter((n) => n.limb >= 0).every((n) => {
     const l = layout.limbs[n.limb];
     const p = bezier(l.p0, l.p1, l.p2, n.t);
     return Math.abs(p.x - n.x) <= 1 && Math.abs(p.y - n.y) <= 1 && l.tier === n.tier;
   });
-  check(`${w}×${h}: every branch trait sits on its limb`, onLimb);
-  const stacked = ft.nodes.filter((n) => n.branch !== trunkBranch.id && n.requires.length).every((n) => {
+  check(`${tag}: every branch trait sits on its limb`, onLimb);
+  const stacked = tree.nodes.filter((n) => n.branch !== trunkBranch.id && n.requires.length).every((n) => {
     const me = layout.nodes.find((s) => s.id === n.id);
     return n.requires.every((r) => {
       const need = layout.nodes.find((s) => s.id === r);
       return need.limb < 0 || (Math.abs(need.x - me.x) <= 1 && need.y > me.y);
     });
   });
-  check(`${w}×${h}: a trait sits right above the one it needs`, stacked);
+  check(`${tag}: a trait sits right above the one it needs`, stacked);
 }
 
 // The tree grows as the family plants (bigcage.ts shows a trait once it's planted or

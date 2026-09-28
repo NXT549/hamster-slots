@@ -53,9 +53,10 @@ export function createCasino(host: CasinoHost) {
 
   // The casino opens once the family has a second hamster (after the first
   // retirement), and it's closed in the Big Cage between lives (time stands still there).
+  // (A family that has migrated, 1.4.0, found it long ago: it stays open.)
   function isUnlocked(): boolean {
     const c = def();
-    return !!c && host.state().generation >= c.unlockGeneration;
+    return !!c && (host.state().generation >= c.unlockGeneration || host.state().colony > 0);
   }
   function isOpen(): boolean {
     return isUnlocked() && !host.state().bigCage;
@@ -96,6 +97,12 @@ export function createCasino(host: CasinoHost) {
   // A hamster is about to retire: the family remembers what it earned (a chip's price).
   function beforeRetire(): void {
     if (def()) noteIncome();
+  }
+
+  // The family migrated (1.4.0): a chip's price follows the new colony's earnings
+  // from now on (the old colony's best would price every chip out of reach).
+  function onMigrate(): void {
+    if (def()) casino().bestIncome = money(0);
   }
 
   // A hamster retired: the family gets chips (the first retirement opens the casino).
@@ -437,7 +444,7 @@ export function createCasino(host: CasinoHost) {
     runDerby, dropSeed,
     getPrize, canBuyPrize, getPrizeBlock, buyPrize, getBoosts, boostEffects,
     getCasinoOdds, addChips,
-    onPaidSpin, beforeRetire, onRetire, tick,
+    onPaidSpin, beforeRetire, onRetire, onMigrate, tick,
   };
 }
 

@@ -1,0 +1,137 @@
+{
+ "saveVersion": 13,
+ "coins": "4",
+ "upgrades": {},
+ "machines": [
+  {
+   "typeId": "clunky",
+   "upgrades": {},
+   "bet": 0,
+   "spinning": false,
+   "spinTimer": 0,
+   "spinBet": 1,
+   "spinFree": false,
+   "spinSource": "manual",
+   "result": [
+    [
+     "blank"
+    ],
+    [
+     "blank"
+    ]
+   ],
+   "streak": 0,
+   "freeSpins": null,
+   "pots": {},
+   "bonus": null,
+   "hold": null
+  }
+ ],
+ "activeMachine": 0,
+ "delivery": {
+  "active": true,
+  "timer": 10.750000000001387,
+  "duration": 45
+ },
+ "autoTimer": 0,
+ "run": {
+  "coinsEarned": "707",
+  "playTime": 599.999999999783
+ },
+ "generation": 1,
+ "seeds": "0",
+ "seedsEarned": "0",
+ "tree": {},
+ "stars": {},
+ "bigCage": false,
+ "helper": true,
+ "colony": 0,
+ "colonyCoins": "707",
+ "whiskers": "0",
+ "perks": {},
+ "trial": null,
+ "trialsDone": {},
+ "auto": {
+  "retire": false,
+  "share": 0.25,
+  "plant": true
+ },
+ "tokens": "6",
+ "diary": {
+  "firstSpin": true,
+  "firstWin": true,
+  "firstDelivery": true
+ },
+ "skins": {
+  "owned": {},
+  "equipped": {}
+ },
+ "capsules": {
+  "sincePity": 0
+ },
+ "casino": {
+  "chips": "0",
+  "bestIncome": "0",
+  "spinsToChip": 0,
+  "boosts": {},
+  "hand": null
+ },
+ "stats": {
+  "spins": 85,
+  "manualSpins": 85,
+  "autoSpins": 0,
+  "wins": 21,
+  "coinsWon": "567",
+  "coinsSpent": "425",
+  "deliveries": 7,
+  "deliveryCoins": "140",
+  "coinsEarned": "707",
+  "upgradesBought": 0,
+  "playTime": 599.999999999783,
+  "goldenJackpots": 0,
+  "capsulesOpened": 0,
+  "tokensEarned": "6",
+  "biggestWin": "27",
+  "offlineCoins": "0",
+  "machinesBought": 0,
+  "mostLinesWon": 1,
+  "biggestBet": 1,
+  "freeSpins": 0,
+  "freeSpinTriggers": 0,
+  "freeSpinCoins": "0",
+  "wildWins": 0,
+  "bestStreak": 4,
+  "jackpotsWon": 0,
+  "grandJackpots": 0,
+  "gambleWins": 1,
+  "gambleLosses": 15,
+  "bestGambleRun": 1,
+  "symbolsUnlocked": 0,
+  "bestLuck": 0,
+  "suitWins": 0,
+  "rebuilds": 0,
+  "bestStars": 0,
+  "mostSeedsHeld": 0,
+  "bestWays": 0,
+  "holdBonuses": 0,
+  "holdGrands": 0,
+  "bestWheel": 0,
+  "casinoGames": 0,
+  "chipsBought": "0",
+  "chipsEarned": "0",
+  "biggestCasinoWin": "0",
+  "rouletteNumbers": 0,
+  "blackjacks": 0,
+  "derbyLongshots": 0,
+  "seedDropEdges": 0,
+  "prizesBought": 0,
+  "doubleWins": 0,
+  "helperBuys": 0,
+  "migrations": 0,
+  "whiskersEarned": "0",
+  "trialsCompleted": 0,
+  "autoRetires": 0,
+  "mysteryBoxes": 0,
+  "bestBoxes": 0
+ }
+}

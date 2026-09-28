@@ -1777,6 +1777,138 @@ const roots = [
   '................',
 ];
 
+// ── 1.4.0: The Great Migration ──
+// The Moving Box (Moving Day's mystery symbol): a taped cardboard box with a "?".
+const box = [
+  '........................',
+  '........................',
+  '........................',
+  '...UUUUUUUUUUUUUUUUUU...',
+  '..UxxxxxxxxqQxxxxxxxnU..',
+  '..UxnnnnnnnqQnnnnnnnNU..',
+  '..UUUUUUUUUqQUUUUUUUUU..',
+  '..UxnnnnnnnqQnnnnnnnNU..',
+  '..UxnnnnnnnqQnnnnnnnNU..',
+  '..UxnnnnnnnnnnnnnnnnNU..',
+  '..UxnnnnnnUUUUnnnnnnNU..',
+  '..UxnnnnnUUnnUUnnnnnNU..',
+  '..UxnnnnnnnnnUUnnnnnNU..',
+  '..UxnnnnnnnnUUnnnnnnNU..',
+  '..UxnnnnnnnUUnnnnnnnNU..',
+  '..UxnnnnnnnnnnnnnnnnNU..',
+  '..UxnnnnnnnUUnnnnnnnNU..',
+  '..UxnnnnnnnnnnnnnnnnNU..',
+  '..UNNNNNNNNNNNNNNNNNNU..',
+  '...UUUUUUUUUUUUUUUUUU...',
+  '........................',
+  '........................',
+  '........................',
+  '........................',
+];
+
+// Moving Day: a big cardboard box with a blue label, a taped lid and a carrying slot.
+const machineMoving = [
+  '..........UqqU..........',
+  '.........UxqQnU.........',
+  '.UUUUUUUUUUUUUUUUUUUUUU.',
+  '.UxxxxxxxxxxxxxxxxxxxnU.',
+  '.UxnWWWWWWWWWWWWWWWWnNU.',
+  '.UxnWvbbbbbbbbbbbbBWnNU.',
+  '.UxnWWWWWWWWWWWWWWWWnNU.',
+  '.UxnnnnnnnnqQnnnnnnnnNU.',
+  '.UxnUUUUUUUUUUUUUUUUnNU.',
+  '.UxnUwwqwwqwwqwwqwwUnNU.',
+  '.UxnUuzqrexyhqtaqpFUnNU.',
+  '.UxnUuIqrRqYyqtAqpPUnNU.',
+  '.UxnUqqqqqqqqqqqqqqUnNU.',
+  '.UxnUyyqdLquuqrrqttUnNU.',
+  '.UxnUhYqddqzIqeRqaTUnNU.',
+  '.UxnUwwqwwqwwqwwqwwUnNU.',
+  '.UxnUUUUUUUUUUUUUUUUnNU.',
+  '.UxnnnnnnnnnnnnnnnnnnNU.',
+  '.UxnnnnnnUUUUUUnnnnnnNU.',
+  '.UxnnnnnnnNNNNnnnnnnnNU.',
+  '.UxnnnnnnnnnnnnnnnnnnNU.',
+  '.UxnnnnnnnnnnnnnnnnnnNU.',
+  '.UNNNNNNNNNNNNNNNNNNNNU.',
+  '.UUUUUUUUUUUUUUUUUUUUUU.',
+];
+
+// Bubble Wrap and Moving Boxes (more boxes): a small taped box.
+const boxIcon = [
+  '................',
+  '................',
+  '..UUUUUUUUUUUU..',
+  '.UxxxxxqQxxxxnU.',
+  '.UxnnnnqQnnnnNU.',
+  '.UUUUUUqQUUUUUU.',
+  '.UxnnnnqQnnnnNU.',
+  '.UxnnnnnnnnnnNU.',
+  '.UxnnnnnnnnnnNU.',
+  '.UxnnnUUUUnnnNU.',
+  '.UxnnnnNNnnnnNU.',
+  '.UxnnnnnnnnnnNU.',
+  '.UNNNNNNNNNNNNU.',
+  '..UUUUUUUUUUUU..',
+  '................',
+  '................',
+];
+
+// Golden Whiskers (the colony's currency, 12×12) and Whisker Wisdom (16×16): golden whiskers by a pink nose.
+const whisker = [
+  '..........h.',
+  '........VyY.',
+  '......VyYV..',
+  '....VyYV....',
+  '.ZZVyYV.....',
+  'ZpPVyyyyyyyh',
+  '.ZZVyYV.....',
+  '....VyYV....',
+  '......VyYV..',
+  '........VyY.',
+  '..........h.',
+  '............',
+];
+
+const whiskerIcon = [
+  '................',
+  '.............Vh.',
+  '...........VyY..',
+  '.........VyYV...',
+  '.......VyYV.....',
+  '..ZZ.VyYV.......',
+  '.ZppZV..........',
+  'ZpppPVyyyyyyyyh.',
+  '.ZPPZV..........',
+  '..ZZ.VyYV.......',
+  '.......VyYV.....',
+  '.........VyYV...',
+  '...........VyY..',
+  '.............Vh.',
+  '................',
+  '................',
+];
+
+// The Wise Elders (automation): an old hamster's spectacles.
+const glasses = [
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '..KKKK....KKKK..',
+  '.KvvvbK..KvvvbK.',
+  'KKvvbbKKKKvvbbKK',
+  '.KvbbBK..KvbbBK.',
+  '..KKKK....KKKK..',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
 export const SPRITES: Record<string, string[]> = {
   seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple, hamster, hamster2, coin, chip, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
   cheeks, wheel, oilcan, gear, reel, paylinesIcon, heart, star, bolt, scooter, backpack, parcel, pouch, goldenIcon, carrotIcon,
@@ -1785,6 +1917,7 @@ export const SPRITES: Record<string, string[]> = {
   shaving, clover, horseshoe, seedPacket, cardBack, suitHearts, suitDiamonds, suitClubs, suitSpades, bothWaysIcon, snackIcon,
   goldAcorn, cheese, machineMaze, machineVault, machineCheese, acornIcon, cheeseIcon,
   pennies, jar, moon, nest, shoe, coupon, album, paw, roots, // 1.3.1
+  box, machineMoving, boxIcon, whisker, whiskerIcon, glasses, // 1.4.0
   frameCard, framePaper, frameTab, frameButton, bubbleTail,
 };
 
@@ -1880,12 +2013,14 @@ export const SYMBOL_SPRITES: Record<string, string> = {
   seed: 'seed', carrot: 'carrot', golden: 'golden', blueberry: 'blueberry', strawberry: 'strawberry',
   wild: 'wild', ball: 'ball', pouch: 'pouch24', corn: 'corn', apple: 'apple', blank: 'shaving',
   goldAcorn: 'goldAcorn', cheese: 'cheese', // M9
+  box: 'box', // 1.4.0: Moving Day's boxes
 };
 
 // Which sprite to draw for each machine id (from data.json), e.g. on the machine cards.
 export const MACHINE_SPRITES: Record<string, string> = {
   clunky: 'machineClunky', stacker: 'machineStacker', bonanza: 'machineBonanza', palace: 'machinePalace',
   maze: 'machineMaze', vault: 'machineVault', cheese: 'machineCheese', // M9
+  moving: 'machineMoving', // 1.4.0
 };
 
 // Upgrade icons: by upgrade id first, then by effect type, so a new upgrade
@@ -1896,6 +2031,7 @@ const UPGRADE_ICONS_BY_ID: Record<string, string> = {
   clover: 'clover', // Hamster Luck is the clover; every Machine Luck upgrade is a horseshoe (by type, below)
   // 1.3.1
   couponBook: 'coupon', moneyBags: 'pouch', lineDance: 'paylinesIcon', goldenTouch: 'goldenIcon', deepPockets: 'pouchPolish',
+  bubbleWrap: 'boxIcon', // 1.4.0: Moving Day
 };
 const UPGRADE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'cheeks', autoSpin: 'wheel', spinCostMultiplier: 'oilcan', extraReel: 'reel', extraPayline: 'paylinesIcon',
@@ -1919,6 +2055,8 @@ const TREE_ICONS_BY_ID: Record<string, string> = {
   bigSpender: 'highRollerIcon', luckyHeirlooms: 'horseshoe', seedVault: 'seedPacket',
   // 1.3.1
   cloverHeirloom: 'clover', pennyJar: 'jar',
+  // 1.4.0: the colony traits
+  movingBoxes: 'boxIcon', whiskerWisdom: 'whiskerIcon', packLeader: 'heart', starryRoots: 'star',
 };
 const TREE_ICONS_BY_TYPE: Record<string, string> = {
   payoutMultiplier: 'heart', shiftWeight: 'goldenIcon', fullLineMultiplier: 'star', startingLevel: 'wheel',
@@ -1931,6 +2069,14 @@ const TREE_ICONS_BY_TYPE: Record<string, string> = {
 };
 export function treeIcon(def: { id: string; effect: { type: string } }): string | null {
   return TREE_ICONS_BY_ID[def.id] || TREE_ICONS_BY_TYPE[def.effect.type] || null;
+}
+
+// Colony perks (1.4.0) by effect type.
+const PERK_ICONS_BY_TYPE: Record<string, string> = {
+  payoutMultiplier: 'heart', seedGain: 'seedPacket', autoRetire: 'glasses', startingMachine: 'snackIcon', maxStars: 'star',
+};
+export function perkIcon(def: { id: string; effect: { type: string } }): string | null {
+  return PERK_ICONS_BY_TYPE[def.effect.type] || null;
 }
 
 // ── Drawing (browser only; everything above also loads fine in Node for tests) ──

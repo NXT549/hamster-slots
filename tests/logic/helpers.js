@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { createRng } from '../../src/logic/rng.ts';
 import {
   evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol,
-  scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation,
+  scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, revealMystery,
 } from '../../src/logic/machine.ts';
 import { createGame, costAtLevel, SAVE_VERSION, SUITS } from '../../src/logic/game.ts';
 import { money, roundMoney as roundBig } from '../../src/logic/money.ts';
@@ -110,6 +110,7 @@ function withUnlocks(m, level) {
 // One game that owns every machine, used to ask "what would the reels land on
 // with these levels?" (game.getSymbols with overrides) for any setup.
 const probe = newGame(999);
+probe.state.colony = 1; // (a migrated family: Moving Day, 1.4.0, is only sold to one)
 probe.addCoins(1e15);
 for (const m of data.machines.slice(1)) probe.buyMachine(m.id);
 const probeMachine = (m) => probe.state.machines.find((x) => x.typeId === m.id);
@@ -161,6 +162,29 @@ function gameWithWholeTree(seed = 1) {
   return g;
 }
 
+// 1.4.0: a spin as the game plays it: roll the reels, then (Moving Day) the boxes open.
+function spinGrid(md, reels, rng) {
+  const grid = rollGrid(md, reels, rng);
+  const reveal = md.mystery ? revealMystery(grid, md, rng) : null;
+  return reveal ? reveal.grid : grid;
+}
+// What a machine's boxes can open into, with their chances (worked out here, apart
+// from machine.ts, so the tests check its maths): [{ symbol, p }], or [] without boxes.
+function boxReveals(md) {
+  const m = md.mystery;
+  const weight = (id) => (md.symbols.find((x) => x.id === id) || { weight: 0 }).weight;
+  if (!m || !(weight(m.symbol) > 0)) return [];
+  const on = m.reveal.filter((r) => r.weight > 0 && weight(r.symbol) > 0);
+  const total = on.reduce((sum, r) => sum + r.weight, 0);
+  return on.map((r) => ({ symbol: r.symbol, p: r.weight / total }));
+}
+// Every way a line (or grid) of symbols can be read once its boxes open: [{ ids, p }].
+function opened(md, ids) {
+  const reveals = boxReveals(md);
+  if (!reveals.length || !ids.includes(md.mystery.symbol)) return [{ ids, p: 1 }];
+  return reveals.map((r) => ({ ids: ids.map((id) => (id === md.mystery.symbol ? r.symbol : id)), p: r.p }));
+}
+
 export {
-  readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree, plant,
+  spinGrid, boxReveals, opened, readFileSync, createRng, money, num, evaluate, evaluateGrid, expectedValue, rollGrid, lineSymbols, allPaylines, rowCount, symbolRules, findSymbol, scatterDistribution, freeSpinAward, freeSpinStats, jackpotStats, spinExpectation, createGame, roundMoney, costAtLevel, SAVE_VERSION, SUITS, data, near, deepEqual, newGame, clunky, stacker, bonanza, palace, nodes, nodeIds, upgrade, row0, land, soldOn, maxLuckLevels, maxLuck, gameOnStacker, gameOn, reachableLines, wildWeights, withWild, unlockLevels, withUnlocks, probe, probeMachine, setups, gameWithWholeTree, plant,
 };

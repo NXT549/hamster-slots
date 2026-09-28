@@ -37,6 +37,7 @@ interface Particle {
 // The colour lists particles pick from (read from the theme tokens).
 interface Palettes {
   gold: string[];
+  box: string[]; // 1.4.0: Moving Day's cardboard
   party: string[];
   fire: string[];
   dust: string[];
@@ -75,6 +76,7 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
       dust: ['#e6dfd5', '#cbb8a5', '#b9ad9f'],
       token: [token('--token'), token('--token-dark'), '#ffffff'],
       heirloom: [token('--heirloom'), token('--heirloom-dark'), '#f5d6a8'],
+      box: [token('--box'), token('--box-dark'), token('--box-light'), token('--box-tape')],
       lines: Array.from({ length: 10 }, (_, i) => token(`--line-${i + 1}`)),
     };
   }

@@ -35,10 +35,12 @@ describe('1.3.1 data: the new upgrades, traits and stickers', () => {
   check('no two sticker upgrades need the same sticker', new Set(stickerUps.map((u) => u.unlock.sticker)).size === stickerUps.length);
   check('the bets still stop at x10 (DESIGN §18: bigger bets made late lives collapse, D80)', data.betSteps.join() === '1,2,3,5,10'
     && !gated.some((u) => u.effect.type === 'betSteps'));
+  const firstColony = data.familyTree.nodes.filter((n) => !n.colony);
   check('the four new traits sit where the Big Cage has room: two on the trunk, the third of Charms and of Bonuses',
     ['helpingPaws', 'deepRoots'].every((id) => data.familyTree.nodes.find((n) => n.id === id).branch === 'roots')
-    && data.familyTree.nodes.filter((n) => n.branch === 'charms').length === 3 && data.familyTree.nodes.filter((n) => n.branch === 'bonuses').length === 3);
-  check('Full Bloom still means every trait', data.diary.find((d) => d.id === 'treeAll').goal.target === data.familyTree.nodes.length);
+    && firstColony.filter((n) => n.branch === 'charms').length === 3 && firstColony.filter((n) => n.branch === 'bonuses').length === 3);
+  check('Full Bloom still means every trait (of the first colony: 1.4.0\'s colony traits come on top)',
+    data.diary.find((d) => d.id === 'treeAll').goal.target === firstColony.length);
   check('every new upgrade has a max level, except Mega Cheeks (a coin sink, like Chubby Cheeks)',
     [...gated, upgrade('luckyPennies'), upgrade('nightShift'), upgrade('cosyNest')].every((u) => (u.id === 'megaCheeks' ? u.maxLevel === null : u.maxLevel > 0)));
 });
@@ -414,7 +416,7 @@ describe('the Four-Leaf Heirloom and the new stickers', () => {
 describe('save v12', () => {
   const g = gameWithWholeTree(111);
   const save = g.toSaveData();
-  check('a save is v12, with the helper\'s switch and the new stats', save.saveVersion === SAVE_VERSION && SAVE_VERSION === 12
+  check('a save is v12 (or newer), with the helper\'s switch and the new stats', save.saveVersion === SAVE_VERSION && SAVE_VERSION >= 12
     && save.helper === true && save.stats.doubleWins === 0 && save.stats.helperBuys === 0);
   const v11 = structuredClone(save);
   v11.saveVersion = 11;

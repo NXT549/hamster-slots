@@ -28,6 +28,7 @@ const EVENTS = [
   'deliveryStarted', 'deliveryFinished', 'tokensChanged', 'stickerEarned', 'capsuleOpened',
   'skinEquipped', 'offlineEarned', 'dataReloaded', 'stateLoaded',
   'chipsChanged', 'rouletteSpun', 'blackjackChanged', 'blackjackEnded', 'derbyRun', 'seedDropped', 'prizeBought', 'boostEnded', // M11
+  'migrated', 'perkBought', 'trialStarted', 'trialCompleted', 'trialEnded', 'autoChanged', // 1.4.0
 ];
 
 const STEP = 0.25; // seconds of game time per step; the player acts once a second
@@ -38,9 +39,10 @@ const PICKS = ['collect', 'red', 'hearts', 'black', 'collect', 'spades', 'red', 
 // numbers, migration step 3.7) it's written as text ("1234.56"); the recording
 // was made with v7, where it was a plain number.
 export const MONEY_STATS = ['coinsWon', 'coinsSpent', 'deliveryCoins', 'coinsEarned', 'tokensEarned', 'biggestWin', 'offlineCoins', 'freeSpinCoins',
-  'chipsBought', 'chipsEarned', 'biggestCasinoWin']; // (M11's, in v11 saves)
+  'chipsBought', 'chipsEarned', 'biggestCasinoWin', // (M11's, in v11 saves)
+  'whiskersEarned']; // (1.4.0's, in v13 saves)
 export function moneyFields(save) {
-  const fields = [[save, 'coins'], [save, 'seeds'], [save, 'seedsEarned'], [save, 'tokens']];
+  const fields = [[save, 'coins'], [save, 'seeds'], [save, 'seedsEarned'], [save, 'tokens'], [save, 'colonyCoins'], [save, 'whiskers']];
   if (save.run) fields.push([save.run, 'coinsEarned']);
   if (save.stats) for (const key of MONEY_STATS) fields.push([save.stats, key]);
   for (const m of save.machines || []) {
@@ -371,7 +373,90 @@ function casino() {
   return s.checkpoints;
 }
 
-export const SESSIONS = { firstLife, allMachines, family, moreMachines, casino };
+
+// 1.4.0: The Great Migration. A family plants its whole tree and migrates from a
+// life (its pending seeds count); the whiskers buy perks; a few quick lives in the
+// new colony, then a Colony Trial played and beaten; Moving Day with every upgrade
+// (its boxes open on the reels); the Wise Elders retire a hamster by themselves; and
+// a save loaded halfway.
+function migration() {
+  const s = newSession(66);
+  const g = () => s.g;
+  g().addCoins(50000, true);
+  g().retire();
+  plantAll(g());
+  g().leaveBigCage();
+  play(s, 3 * 60, { buyEvery: 5 });
+  // The whole tree, to its max (seeds from the debug helper; the spare ones taken back).
+  g().openBigCage();
+  g().addSeeds(1e7);
+  for (let pass = 0; pass < 20; pass++) {
+    for (const n of data.familyTree.nodes) {
+      if (n.maxLevel === null && g().getTreeLevel(n.id) > 0) continue;
+      while (g().canBuyTreeNode(n.id)) g().buyTreeNode(n.id);
+    }
+  }
+  g().addSeeds(g().state.seeds.neg());
+  g().leaveBigCage();
+  checkpoint(s, 'the whole tree planted');
+  g().addCoins('1e12', true);
+  g().migrate();
+  checkpoint(s, 'migrated');
+  // The Wise Elders (with a few debug whiskers on top), then perks cheapest first, while the whiskers last.
+  g().addWhiskers(10);
+  g().buyPerk('wiseElders');
+  for (;;) {
+    const perks = data.colony.perks.filter((p) => g().canBuyPerk(p.id));
+    if (!perks.length) break;
+    perks.sort((a, b) => g().getPerkCost(a.id).cmp(g().getPerkCost(b.id)));
+    g().buyPerk(perks[0].id);
+  }
+  g().leaveBigCage();
+  play(s, 3 * 60, { buyEvery: 5 });
+  checkpoint(s, 'the new colony\'s first life');
+  // A few quick lives, until trials open; then a trial for the next life.
+  while (g().state.generation < data.colony.trialGeneration) {
+    g().addCoins(g().getSeedProgress().nextAt.mul(4), true);
+    g().retire();
+    plantAll(g());
+    g().leaveBigCage();
+  }
+  g().addCoins(g().getSeedProgress().nextAt.mul(4), true);
+  g().retire();
+  plantAll(g());
+  g().startTrial('tiredPaws');
+  g().leaveBigCage();
+  play(s, 2 * 60, { buyEvery: 5 });
+  checkpoint(s, 'a trial under way');
+  g().addCoins(g().getSeedProgress().nextAt.mul(50), true);
+  play(s, 30);
+  checkpoint(s, 'the trial beaten');
+  // Moving Day, with every upgrade.
+  g().addCoins('1e16');
+  g().buyMachine('moving');
+  for (const def of g().getAvailableUpgrades()) g().buyUpgrade(def.id, Infinity);
+  g().setBet(g().getMaxBetIndex());
+  play(s, 4 * 60);
+  checkpoint(s, 'played Moving Day');
+  // The Wise Elders retire a hamster by themselves (and plant, and start the next life).
+  g().setAuto({ retire: true, share: data.colony.autoRetire.shares[0], plant: true });
+  waitIdle(s);
+  if (g().getGambleInfo()) g().collectGamble();
+  g().addCoins(g().getSeedProgress().nextAt.mul(20), true);
+  play(s, 20);
+  checkpoint(s, 'the elders retired a hamster');
+  // Saved and loaded, then played on.
+  const save = g().toSaveData();
+  const next = newGame(66);
+  next.rng.setState(g().rng.getState());
+  next.loadSaveData(save);
+  attach(s, next);
+  play(s, 60, { buyEvery: 5 });
+  checkpoint(s, 'played on after loading');
+  return s.checkpoints;
+}
+
+export const SESSIONS = { firstLife, allMachines, family, moreMachines, casino, migration };
 
 // Which checkpoints are also kept as real save files (tests/fixtures/), for
 // save-migration tests: [session, checkpoint label, name]. The files are called

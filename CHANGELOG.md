@@ -8,7 +8,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased]
+## [Unreleased] · 1.4.0 "The Great Migration"
+
+**A mega rebirth for the late game: once your Family Tree is fully grown, the whole family can move to a new colony and start again, with Golden Whiskers to spend on perks that last forever. Plus Colony Trials, the Wise Elders (who retire for you), an 8th machine, and longer late lives.**
+
+### Added
+
+- **The Great Migration.** Plant the whole Family Tree and your family can move to a new colony (from the Big Cage, or Family → Colony). The generation, Heirloom Seeds, the tree and Machine Stars start again, and the family takes **Golden Whiskers** with it: the more seeds it earned in the colony, the more whiskers. Your skins, tokens, diary stickers, casino chips and stats come along.
+- **Colony perks**, bought with Golden Whiskers and kept for good: **Colony Pride** (+50% payouts a level, as many levels as you like), **Seed Sense** (more Heirloom Seeds), the **Wise Elders** (below), **Old Friends** (every pup starts with the Burrow Bonanza) and **Trailblazer** (machines can earn more Machine Stars).
+- **Colony Trials.** From a colony's 4th hamster, you can make a life a trial with a twist: no Family Tree, no auto-spin, no Machine Stars, bets ×1 only, or nothing worn counts. Reach the trial's seed goal for Golden Whiskers, and the twist is over for the rest of that life. Each trial pays once per colony.
+- **The Wise Elders.** A perk that retires your hamster for you when its seeds are ready (you choose when), plants the cheap traits and starts the next life, all without stopping.
+- **Moving Day**, an 8th machine for families that have migrated: a big cardboard box full of **Moving Boxes**. When boxes land, they all open into the same symbol, so a few boxes can fill whole lines. It has its own upgrades, like **Bubble Wrap** (more boxes).
+- **Colony traits:** after a migration the family's tree grows a 4th level: **Moving Boxes**, **Whisker Wisdom** (more whiskers), **Pack Leader** (bigger payouts) and **Starry Roots** (more Machine Stars).
+- **6 new diary stickers:** New Horizons, Far, Far Away, Trial by Fur, School of Hard Knocks, Wise Old Hamster and Box Full.
+- Golden Whiskers show next to your coins and seeds once you have some. New art: the Moving Box, the Moving Day machine, golden whiskers and the elders' spectacles, and new sounds for boxes opening and for the migration.
+
+### Changed
+
+- **Late lives last longer.** Past about 100 Heirloom Seeds, each new seed takes more coins than before, so the lives from about the 11th generation on stop shrinking to a couple of minutes. Seeds now come from the coins earned in the current colony. **Your saved game keeps its progress:** the seeds you could retire with right now stay exactly the same.
+- The Family tab now says how many more coins the next Heirloom Seed needs.
 
 ## [1.3.1] - 2026-09-27 · Nuts & Bolts
 

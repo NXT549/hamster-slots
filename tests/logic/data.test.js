@@ -18,7 +18,8 @@ describe('data.json sanity', () => {
   const treeTypes = ['payoutMultiplier', 'shiftWeight', 'fullLineMultiplier', 'startingLevel', 'spinSpeed',
     'deliveryTime', 'deliveryPayoutBonus', 'autoDelivery',
     'seedJar', 'luck', 'startingMachineLevel', 'startingMachine', 'symbolWeight', 'potSeedBonus', // M8
-    'autoBuy', 'generationPayout', 'doubleWin']; // 1.3.1
+    'autoBuy', 'generationPayout', 'doubleWin', // 1.3.1
+    'maxStars', 'whiskerGain', 'payoutMultiplier']; // 1.4.0: the colony traits
   check('every upgrade has a known effect type', data.upgrades.every((u) => knownTypes.includes(u.effect.type)));
   check('every tree node has a known effect type', nodes.every((n) => treeTypes.includes(n.effect.type)),
     nodes.filter((n) => !treeTypes.includes(n.effect.type)).map((n) => n.id).join(', '));
@@ -37,6 +38,28 @@ describe('data.json sanity', () => {
   check('tree requires only point at earlier nodes (no loops)',
     nodes.every((n, i) => n.requires.every((r) => nodeIds.slice(0, i).includes(r))));
   check('exactly one tree node has no requirements (the root)', nodes.filter((n) => n.requires.length === 0).length === 1);
+  // 1.4.0: a colony trait needs a migration, and never a trait of a later colony.
+  const colonyOf = (id) => nodes.find((n) => n.id === id).colony || 0;
+  check('colony traits need at least one migration, and only need traits of their colony or earlier',
+    nodes.every((n) => (n.colony === undefined || (Number.isInteger(n.colony) && n.colony >= 1)) && n.requires.every((r) => colonyOf(r) <= (n.colony || 0))));
+
+  // The Great Migration (1.4.0): its perks and trials.
+  const col = data.colony;
+  const perkTypes = ['payoutMultiplier', 'seedGain', 'autoRetire', 'startingMachine', 'maxStars'];
+  check('every colony perk has a known effect type, a price and a unique id',
+    col.perks.every((p) => perkTypes.includes(p.effect.type) && p.baseCost >= 1 && p.growthRate >= 1)
+    && new Set([...allIds, ...col.perks.map((p) => p.id)]).size === allIds.length + col.perks.length);
+  check('every Colony Trial has a known twist, a goal and whiskers, and the ids are unique',
+    col.trials.every((t) => ['noFamily', 'noAuto', 'noStars', 'betCap', 'noWardrobe'].includes(t.rule) && t.goalShare > 0 && t.minSeeds >= 1 && t.whiskers >= 1)
+    && new Set(col.trials.map((t) => t.id)).size === col.trials.length);
+  check('the Wise Elders\' choices go up, and they plant at most the seeds held',
+    col.autoRetire.shares.length > 0 && col.autoRetire.shares.every((x, i) => x > 0 && (i === 0 || x > col.autoRetire.shares[i - 1]))
+    && col.autoRetire.minSeeds >= 1 && col.autoRetire.plantShare > 0 && col.autoRetire.plantShare <= 1);
+  check('whiskers need a divisor and a growing curve, and trials open after a migration (from a colony\'s Nth hamster)',
+    col.whiskerDivisor > 0 && col.whiskerExponent > 0 && col.whiskerExponent <= 1 && col.trialsFrom >= 1
+    && Number.isInteger(col.trialGeneration) && col.trialGeneration >= 1);
+  const cap = data.retirement.seedSoftcap;
+  check('the seed softcap (1.4.0) bends the curve down, never up', !cap || (cap.seeds >= 1 && cap.exponent > 0 && cap.exponent < data.retirement.seedExponent));
   check('startingLevel effects name real upgrades',
     nodes.filter((n) => n.effect.type === 'startingLevel').every((n) => data.upgrades.some((u) => u.id === n.effect.upgrade)));
   const symbolIds = clunky.symbols.map((s) => s.id);
@@ -49,12 +72,24 @@ describe('data.json sanity', () => {
   check('every symbol has a positive weight (or an upgrade raises it from 0)',
     data.machines.every((m) => m.symbols.every((s) => s.weight > 0 || (s.weight === 0 && raised(m, s)))));
   // (On a ways machine the wild never lands on reel 1, so it never starts a win and has no table.)
-  const needsTable = (m, s) => !(s.scatter || s.blank || (m.ways && s.wild));
+  // (Moving Day's box, 1.4.0, always opens into another symbol first, so it has no table either.)
+  const isBox = (m, s) => !!m.mystery && m.mystery.symbol === s.id;
+  const needsTable = (m, s) => !(s.scatter || s.blank || (m.ways && s.wild) || isBox(m, s));
   check('every line symbol has a payout table; scatters and blanks have none',
     data.machines.every((m) => m.symbols.every((s) => (needsTable(m, s) ? !!m.payouts[s.id] : !m.payouts[s.id]))));
   // The exact hit-rate count in machine.ts relies on every 2-match paying something
   // on a payline machine. (Ways machines count their hit rate another way: any shortest run.)
-  check('every line symbol\'s 2-match pays on a payline machine (wilds too)', data.machines.filter((m) => !m.ways).every((m) => m.symbols.every((s) => s.scatter || s.blank || m.payouts[s.id]['2'] > 0)));
+  check('every line symbol\'s 2-match pays on a payline machine (wilds too)', data.machines.filter((m) => !m.ways).every((m) => m.symbols.every((s) => s.scatter || s.blank || isBox(m, s) || m.payouts[s.id]['2'] > 0)));
+  // Moving Day's boxes (1.4.0): a plain symbol on the machine (not wild, scatter or blank, never
+  // locked), opening only into symbols of the same machine that pay on a line.
+  for (const m of data.machines.filter((x) => x.mystery)) {
+    const box = m.symbols.find((x) => x.id === m.mystery.symbol);
+    check(`${m.name}: its box is a plain symbol of the machine, never locked`, !!box && !box.wild && !box.scatter && !box.blank && !box.locked && box.weight > 0);
+    check(`${m.name}: boxes open only into its own line symbols (with a payout table), each at least once`,
+      m.mystery.reveal.length > 0 && m.mystery.reveal.every((r) => r.weight > 0 && r.symbol !== box.id && m.payouts[r.symbol]
+        && m.symbols.some((x) => x.id === r.symbol && !x.scatter && !x.blank)));
+    check(`${m.name}: at least one symbol a box opens into is never locked`, m.mystery.reveal.some((r) => !m.symbols.find((x) => x.id === r.symbol).locked));
+  }
   check('every symbol of a ways machine pays for 3 on 3 reels (its first reels)', data.machines.filter((m) => m.ways).every((m) => m.startReels >= 3 && m.symbols.every((s) => !needsTable(m, s) || m.payouts[s.id]['3'] > 0)));
   check('at most one wild per machine, and no symbol is two kinds at once (wild, scatter, blank)',
     data.machines.every((m) => m.symbols.filter((s) => s.wild).length <= 1 && m.symbols.every((s) => [s.wild, s.scatter, s.blank].filter(Boolean).length <= 1)));
@@ -112,6 +147,8 @@ describe('data.json sanity', () => {
   check('machine ids are unique', new Set(machineIds).size === machineIds.length);
   check('the first machine is free (unlockCost 0)', (data.machines[0].unlockCost || 0) === 0);
   check('every other machine has a price', data.machines.slice(1).every((m) => m.unlockCost > 0));
+  check('a colony machine (1.4.0) needs at least one migration, and the first machine is never one',
+    data.machines.every((m) => m.colony === undefined || (Number.isInteger(m.colony) && m.colony >= 1)) && !data.machines[0].colony);
   check('machine-only upgrades name real machines and are machine-scoped',
     data.upgrades.filter((u) => u.machines).every((u) => u.scope === 'machine' && u.machines.every((id) => machineIds.includes(id))));
   for (const m of data.machines) {

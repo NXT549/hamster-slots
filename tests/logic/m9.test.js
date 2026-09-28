@@ -308,8 +308,10 @@ describe('the cheese wheel in the game', () => {
 // ─────────────────────────────────────────────────────────────
 describe('M9 in the game: the machines, stickers and save v10', () => {
   const order = data.machines.map((m) => m.id);
+  // (1.4.0's Moving Day, a colony machine, sits between the Acorn Vault and the Big Cheese.)
   check('the three new machines come after the Pouch Palace, each dearer than the last',
-    deepEqual(order.slice(-3), ['maze', 'vault', 'cheese']) && data.machines.every((m, i) => i === 0 || m.unlockCost > data.machines[i - 1].unlockCost));
+    deepEqual(order.filter((id) => !data.machines.find((m) => m.id === id).colony).slice(-3), ['maze', 'vault', 'cheese'])
+    && data.machines.every((m, i) => i === 0 || m.unlockCost > data.machines[i - 1].unlockCost));
   const g = newGame(71);
   g.addCoins('1e18');
   for (const m of data.machines.slice(1)) g.buyMachine(m.id);
