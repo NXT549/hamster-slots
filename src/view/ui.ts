@@ -1399,7 +1399,7 @@ export function createUI(
     el.machine.classList.toggle('spinning', machine.spinning);
     el.machine.classList.toggle('teasing', reels.teasing);
     el.machine.classList.toggle('pulled', machine.spinning && game.getSpinProgress() < 0.3);
-    cabinet.render(now, { spinning: machine.spinning, winning: el.machine.classList.contains('winning'), teasing: reels.teasing, still: lessMotion() });
+    cabinet.render(now, { spinning: machine.spinning, winning: el.machine.classList.contains('winning'), teasing: reels.teasing, still: lessMotion(), glow: !!game.getFreeSpins() });
     renderMachineTags();
 
     // Spin + deliver buttons. During free spins, Spin just counts them down.

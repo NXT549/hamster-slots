@@ -8,7 +8,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased]
+## [Unreleased] · 1.5.0 "The Glow Up"
+
+**A brand-new look for the whole game: a cosy painted room around the cage, a new hamster that really runs, redrawn machines and symbols, and bigger, shinier wins. Still pixel art, with far more detail.**
+
+### Changed
+
+- **The cage is a little world of its own.** It stands in a cosy room: wallpaper, a window with clouds drifting past the hills outside, curtains, a shelf with a plant, books and a lamp, and a portrait of the family's first hamster. The cage's wire runs round the back and down both sides, so you look into it, and the tray is full of deep wood shavings with a few dropped sunflower seeds. Sunlight falls in through the window. **In free spins the room goes to night**: the lamp comes on, and the moon and the stars are out.
+- **A new hamster.** Bigger and chubbier, with cheek pouches, and it really runs now: four steps a stride (quicker while the reels spin), a blink now and then, a nap when you leave it alone, and a happy hop after a big win. All seven hats are redrawn to fit, and every fur still works.
+- **The wheel really turns**: a chunky wire wheel with rungs and spokes on a wooden stand, blurring when it's fast. During the jackpot wheel its rim turns gold, with bulbs.
+- **Every slot machine is redrawn** as detailed pixel art, each its own thing: Old Clunky in mint plastic and chrome with a bulb on top, the Snack Stacker under a striped awning, the Burrow Bonanza with grass on its roof and a mushroom, the Pouch Palace in quilted velvet with a gold crown, the Hamster Maze as a clipped hedge, the Acorn Vault in riveted steel with a dial, the Big Cheese full of holes, and Moving Day as a taped-up box. **Real bulbs** chase round each sign, race while the reels spin and flash when you win. A machine with a star gets a gold trim, and in free spins the machine glows.
+- **All 14 reel symbols are redrawn**, bigger and more detailed: the striped seed, the golden seed, the carrot, the blueberry, the strawberry, the hamster coin (wild), the hamster ball, the cheek pouch, corn, the apple, the wood shaving, the golden acorn, the cheese and the moving box. The reels look like real drums, each gives a little hitch before it spins and a flash as it lands, and winning cells get a white frame.
+- **Big wins look big**: "BIG WIN!", "JACKPOT!" and "FREE SPINS!" are written in chunky pixel letters (gold, orange for HUGE WIN, blue for free spins), with two sets of light rays and a glow behind them. Coins clink down into the machine's coin tray, and sparkles twinkle into little stars.
+- **The game has a logo** in gold pixel letters, the coin on your counter turns over now and then, and the page has a quilted wallpaper.
+- **The tray** looks like real cardboard, the tabs have icons (when there's room), buy buttons fill up with moving stripes as you save up, the upgrade tiles sit up off the tray and lift when you point at them, and every button is a little glossier.
+- **The Big Cage's meadow comes alive**: butterflies flutter about, a bird flies over now and then, and blossom petals drift down from the family's tree.
+- **The casino's tables** have a wooden rail round their felt.
+- Motion "Less" still turns the animations off, and skins still recolour the room, the wire, the wheel and Old Clunky.
 
 ## [1.4.0] - 2026-09-28 · The Great Migration
 

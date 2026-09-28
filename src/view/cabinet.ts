@@ -30,7 +30,7 @@ export const CABINET_TOKENS = [
   '--vault', '--vault-dark', '--vault-light', '--vault-rivet',
   '--cheese', '--cheese-dark', '--cheese-light', '--cheese-rind', '--cheese-rind-dark',
   '--box', '--box-dark', '--box-light', '--box-tape', '--box-label',
-  '--danger', '--danger-dark', '--leaf-light', '--pot', '--soil', '--soil-dark',
+  '--danger', '--danger-dark', '--primary', '--leaf-light', '--pot', '--soil', '--soil-dark',
 ] as const;
 export type CabinetColors = Record<(typeof CABINET_TOKENS)[number], string>;
 
@@ -43,7 +43,9 @@ export interface Rect { x: number; y: number; w: number; h: number }
 // The machine and the parts the painting frames, in the machine's own screen pixels.
 export interface CabinetParts { w: number; h: number; sign: Rect | null; window: Rect | null; meter: Rect | null; lever: Rect | null }
 export interface Bulb { x: number; y: number }
-export interface Cabinet { pix: Pixmap; bulbs: Bulb[]; left: number; top: number } // left/top: where the canvas sits (screen px)
+// left/top: where the canvas sits (screen px); halo: the pixels round the body, 2, 3 and 4 away
+// from it (the free-spins glow is drawn on them).
+export interface Cabinet { pix: Pixmap; bulbs: Bulb[]; halo: Bulb[][]; left: number; top: number }
 
 // How each machine is built: its body's corner radii (painted pixels) and its plinth.
 const SHAPES: Record<string, { rt: number; rb: number; plinth: number }> = {
@@ -356,7 +358,22 @@ export function paintCabinet(id: string, P: CabinetParts, c: CabinetColors, star
   if (id === 'clunky') paintClunkyTop(out, ox + W / 2, oy, chrome, c);
   if (id === 'cheese') paintMouseHole(out, ox + 6, oy + H - shape.plinth, ink, body);
 
-  return { pix: out, bulbs, left: -PAD_X * CAB_PX, top: -PAD_TOP * CAB_PX };
+  // The halo round the body (for the free-spins glow): the rings of pixels 2, 3 and 4 away.
+  const dist = new Uint8Array(out.w * out.h);
+  for (let y = 0; y < out.h; y++) for (let x = 0; x < out.w; x++) if (bm.at(x - ox, y - oy)) dist[y * out.w + x] = 1;
+  const halo: Bulb[][] = [[], [], []];
+  for (let d = 2; d <= 4; d++) {
+    for (let y = 0; y < out.h; y++) {
+      for (let x = 0; x < out.w; x++) {
+        const i = y * out.w + x;
+        if (dist[i]) continue;
+        const near = (x > 0 && dist[i - 1] === d - 1) || (x < out.w - 1 && dist[i + 1] === d - 1)
+          || (y > 0 && dist[i - out.w] === d - 1) || (y < out.h - 1 && dist[i + out.w] === d - 1);
+        if (near) { dist[i] = d; halo[d - 2].push({ x, y }); }
+      }
+    }
+  }
+  return { pix: out, bulbs, halo, left: -PAD_X * CAB_PX, top: -PAD_TOP * CAB_PX };
 }
 
 // A striped awning over the Snack Stacker: scalloped at the bottom.
@@ -541,6 +558,7 @@ export function createCabinet(machine: HTMLElement, { starred }: { starred: () =
   let onPix: Pixel = 0;
   let offPix: Pixel = 0;
   let glowPix: Pixel = 0;
+  let haloPix: [Pixel, Pixel] = [0, 0]; // the free-spins glow: gold, then pink as it pulses
   let lastLit = '';
   let lastStarred = false;
   const ro = new ResizeObserver(() => { dirty = true; });
@@ -584,12 +602,13 @@ export function createCabinet(machine: HTMLElement, { starred }: { starred: () =
     onPix = pixel(colors['--bulb-on']);
     offPix = pixel(colors['--bulb-off']);
     glowPix = withAlpha(pixel(colors['--bulb-on']), 0.35);
+    haloPix = [pixel(colors['--gold']), pixel(colors['--primary'])];
     lastLit = '';
   }
 
   // Every frame: which bulbs are lit. At rest a slow chase, spinning a fast one, a
   // win flashes them all, a teasing reel makes them race. With Motion "Less" they just glow.
-  function render(now: number, mode: { spinning: boolean; winning: boolean; teasing: boolean; still: boolean }): void {
+  function render(now: number, mode: { spinning: boolean; winning: boolean; teasing: boolean; still: boolean; glow: boolean }): void {
     if (starred() !== lastStarred) dirty = true;
     if (dirty) repaint();
     if (!cab) return;
@@ -602,13 +621,24 @@ export function createCabinet(machine: HTMLElement, { starred }: { starred: () =
       const step = Math.floor(now / speed);
       lit = cab.bulbs.map((_, i) => (i + step) % 3 === 0);
     }
-    const key = lit.map((b) => (b ? 1 : 0)).join('');
+    // Free spins (1.5.0): a halo glows round the cabinet, pulsing between gold and pink
+    // (painted here, a few steps a second: a CSS glow on the moving machine cost too much).
+    const pulse = mode.glow ? (mode.still ? 2 : Math.floor(now / 110) % 8) : -1;
+    const key = `${lit.map((b) => (b ? 1 : 0)).join('')}|${pulse}`;
     if (key === lastLit) return;
     lastLit = key;
     const ctx = lights.getContext('2d')!;
     const img = ctx.createImageData(lights.width, lights.height);
     const data = new Uint32Array(img.data.buffer);
     const put = (x: number, y: number, p: Pixel) => { if (x >= 0 && y >= 0 && x < lights.width && y < lights.height) data[y * lights.width + x] = p; };
+    if (pulse >= 0) {
+      const t = pulse < 4 ? pulse / 3 : (7 - pulse) / 3; // 0 → 1 → 0
+      const col = mixPixel(haloPix[0], haloPix[1], t);
+      cab.halo.forEach((ring, k) => {
+        const a = [1, 1, 0.55][k];
+        for (const p of ring) if (k < 2 || (p.x + p.y) % 2) put(p.x, p.y, withAlpha(col, a));
+      });
+    }
     for (let i = 0; i < n; i++) {
       const b = cab.bulbs[i];
       if (lit[i]) {

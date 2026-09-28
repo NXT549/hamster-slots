@@ -1,7 +1,7 @@
 # Hamster Slots — Design
 
 > Working title. A cute pixel-art idle/clicker game. A tiny hamster runs on a wheel, and the wheel powers a slot machine.
-> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates: **1.1.0** (the same day) added M9, three more machines (§24), and M10, Wardrobe buffs (§25); then 1.2.0 the visual redesign (§26), 1.3.0 the Hamster Casino (§27), **1.3.1 "Nuts & Bolts"**, more upgrades (§28), 1.3.2 "Rest Stop" (a pause button for auto-spin, §17), and **1.4.0 "The Great Migration"**, a mega rebirth for the late game (§29). **Every update has a name** from what it's about (AGENTS.md → Git and releases). The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
+> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates: **1.1.0** (the same day) added M9, three more machines (§24), and M10, Wardrobe buffs (§25); then 1.2.0 the visual redesign (§26), 1.3.0 the Hamster Casino (§27), **1.3.1 "Nuts & Bolts"**, more upgrades (§28), 1.3.2 "Rest Stop" (a pause button for auto-spin, §17), **1.4.0 "The Great Migration"**, a mega rebirth for the late game (§29), and **1.5.0 "The Glow Up"** (a release candidate), a full visual redesign: still pixel art, now painted with far more detail and life (§30). **Every update has a name** from what it's about (AGENTS.md → Git and releases). Playtests keep tuning the fun and the balance.
 > All currency is fake in-game coins. There is no real money and nothing to buy with real money.
 
 Every number in this file comes from `data.json`. If you change one there, change it here too, and log it in `PORTING_NOTES.md` → Balance log.
@@ -422,6 +422,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | **15** | **Visual redesign** *(done; released in 1.2.0; §26)* | The user's "i want an entire visual redesign" (2026-09-27), built before M11 ("build this now"): still pixel art, **a cleaner layout that fits the window** on big and small screens (the tray beside the cage, or under it on a phone; no page scrolling), **small upgrade tiles like the tree's** with a detail card, **the Family Tree only in the Big Cage**, the Big Cage as **a meadow with the family's pixel-art tree**, which **grows with the family** (a sapling at first; every trait planted grows the trunk and a branch out to the traits it unlocks; only traits you can plant show), and **a new rebirth animation** (the hamster plants an Heirloom Seed, the tree shoots up, the traits branch off it). View only: no rules, balance or save changes. |
 | — | **Update 1.3.1 "Nuts & Bolts"** *(done; released in 1.3.1; §28)* | Not a milestone: the user's "a ton of new upgrades and improvements some gated behind rebirths… maybe some from achievements" (2026-09-27). 20 upgrades (3 for everyone, 6 rebirth upgrades, 11 sticker upgrades), 4 Family Tree traits (the Hamster Helper buys cheap upgrades for you), 7 stickers, Lucky Pennies (a win can pay double), save v12. And from now on **every update has a name** (the user's wish). |
 | — | **Update 1.4.0 "The Great Migration"** *(done; released in 1.4.0; §29)* | Not a milestone: the user's "a new update to keep late game interesting like a mega rebirth… I just want the late game to remain interesting and fun" (2026-09-27), with their picks: the **Great Migration** (the whole tree planted → a new colony: the generation, seeds, tree and stars start again, for **Golden Whiskers** and colony perks kept for good), **Colony Trials**, the **Wise Elders** (automation), **Moving Day** (an 8th machine with boxes that all open into one symbol), **colony traits**, and **longer late lives** (a softcap on the seed curve). Save v14. |
+| — | **Update 1.5.0 "The Glow Up"** *(release candidate, waiting for the user's OK; §30)* | Not a milestone: the user's "a full visual redesign of the game… a massive improvement in graphics/visuals, better animations, more detail, everything" (2026-09-28). Still pixel art, but painted to fit instead of CSS boxes: a cosy **room** round a **cage in perspective** (window with a drifting sky, curtains, shelf, portrait, deep bedding, sunlight; a night version in free spins), **painted cabinets** for all 8 machines with chasing **bulbs**, a **32×32 hamster** with a run cycle and expressions, a **wheel that really turns**, **32×32 reel symbols**, **pixel-art titles** (a font of our own), glints, reel wind-up and landing flash, coins into the tray, a **logo**, and tray, meadow and casino polish. View only. |
 | → | **Releases** | GitHub Pages from the start; then itch.io, Steam (Electron or Tauri), maybe mobile (Capacitor), all from the same web codebase. See PORTING_NOTES → The plan. |
 
 **Particles and animations are now a thread, not a milestone** (the user's "fun particle effects and animations"): every milestone ships the effects for what it adds (M7: dust puffs as each reel stops, sparkles per winning line, rolling WIN digits, a card flip, a clover sparkle when luck goes up; M8: the Big Cage scene and a star burst on a rebuild; and so on). **1.0 went through the whole game** (the user's "I also really want some cool animations and effects", §23). Motion "Less" keeps turning them all off.
@@ -436,6 +437,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 - **Milestone 6 goals (user):** "different denoms like actual pokies", "features where you can win more", "more slot machines", "better game balances", "new and unique upgrade", "different tabs for upgrades and stuff", "cool particle effects and animations" → milestone 6. "Hats that give different buffs", "skins give different buffs", "new Heirloom Seed upgrades" → planned as milestone 7, now M10 (hats, skins) and M8 (tree traits).
 - **First M7 feedback (user, 2026-09-27):** "issue with 3 slots its based left to right meaning if you get 2 on the right it doesnt count" → the user picked **Pays Both Ways as an upgrade** (§3, D119), over "both ways always", "keep left to right, explain it better" and "both ways on Old Clunky only".
 - **M9 (user, 2026-09-27):** after 1.0 ("looks good keep going"), the user picked **all three** proposed machines (243 ways, hold & spin, a multiplier wheel) and placed them in the **late game**, "priced so lives from generation ~9 get longer again" (§24; that part didn't work out, §10).
+- **After 1.4.0 (user, 2026-09-28):** "I want you to do a full visual redesign of the game I mean I want a massive improvement in graphics/visuals better animations more detail everything" → update 1.5.0 "The Glow Up" (§30).
 - **After 1.1.0 (user, 2026-09-27):** "i want an entire visual redesign" · "i want better ui for upgrades as having to scroll down is a pain" · "i want a rebirth animation" · "i want a separate screen where you spend heirloom seeds and you can only spend those seeds when you rebirth" → M15 (§26). The last two partly existed (1.0's iris and seed rain, M8's Big Cage page); asked what should change, the user picked: still pixel art, "a full cleaner way more user friendly ui for both big and small screens", the Big Cage and the animation "more detailed", "tree only apears when you rebirth", "the hamster planting an heirloom seed and a huge tree shoots up and the rebirth skill tree is branching off the huge tree", upgrades "similar to the rebirth… fit a bit better", and "build this now" (§26).
 - **After M6 (user, 2026-09-25):** new: "more slot machines" → M9 · "rebirths for slot machines" → M8 · "unlock/buy new seeds (carrot, sunflower, golden)", which the user explained as *unlockable symbols you don't start with, kept balanced* → M7 · "more new fun upgrades" → every milestone (luck M7, stars M8, casino M11) · "roulette, blackjack etc in a hamster casino" → M11 · "late game you can eventually start your own casino" → M12 · "hats & skins which both give unique changes and improvements" → M10 · "fun particle effects and animations" → every milestone. Balancing: "slow down spin speed… early game to feel like a slog" → M7 (the user picked "real slog") · "with new symbols added change how likely you are to actually get wins therefore making players buy the luck upgrade" → M7 · "a reason to both rebirth and hold heirloom seeds" → M8. Changes: "change how the double or nothing system works" → M7 (the user picked the pokies card gamble) · "make it more like slot machines… make them go one by one" → M7 · "luck upgrades so you can see how much luck you have… hamster luck and machine luck" → M7 · "when you rebirth it takes you to a fully in-depth page of just the upgrades" → M8.
 
@@ -448,7 +450,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 
 ## 12. Look & feel (prototype): the hamster cage
 
-**Direction: the inside of a hamster cage** (milestone 5, the user's pick from four directions: hamster cage, night arcade, cozy cottage, candy toy shop). It is *not* the classic clicker layout (big button on the left, long text shop on the right). The game is a little cage you look into: wire bars, wood-shaving bedding, a coloured plastic base, a water bottle and a food bowl, and clear plastic tubes. The UI around it is **cardboard and paper**: the tray is a taped-up cardboard box, tiles and dialogs are paper cards, and every border is a crisp pixel-art frame. **The final look is open:** the 2D pixel-art cage is the current look, and the 2.5D look planned for the Godot rebuild went with it (D106). Whether the release keeps this look is decided later. **M15 (§26) redesigned the layout** (the user's "entire visual redesign", still pixel art): the whole game fits the window, with the tray **beside the cage** on wide screens and **under it** on phones; the tables below describe the parts, and §26 how they fit together.
+**Direction: the inside of a hamster cage** (milestone 5, the user's pick from four directions: hamster cage, night arcade, cozy cottage, candy toy shop). It is *not* the classic clicker layout (big button on the left, long text shop on the right). The game is a little cage you look into: wire bars, wood-shaving bedding, a coloured plastic base, a water bottle and a food bowl, and clear plastic tubes. The UI around it is **cardboard and paper**: the tray is a taped-up cardboard box, tiles and dialogs are paper cards, and every border is a crisp pixel-art frame. **The final look is open:** the 2D pixel-art cage is the current look, and the 2.5D look planned for the Godot rebuild went with it (D106). Whether the release keeps this look is decided later. **M15 (§26) redesigned the layout** (the user's "entire visual redesign", still pixel art): the whole game fits the window, with the tray **beside the cage** on wide screens and **under it** on phones; the tables below describe the parts, and §26 how they fit together. **1.5.0 "The Glow Up" (§30) repainted it all**: the cage, the room behind it, the wheel and every machine's cabinet are pixel art painted in code to fit (no longer CSS shapes), the hamster and the reel symbols are 32×32, and the big moments, the tray and the HUD got far more detail and motion. Where a row below and §30 differ, §30 is the current look.
 
 | Area | What's there | Why |
 |---|---|---|
@@ -473,8 +475,9 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 - Soft pastel palette with warm brown outlines (never pure black). All colours are **theme tokens** in `src/view/style.css :root`: the room (`--page`), the cage (`--wall-*`, `--wire*`, `--floor*` for the plastic base, `--tube*`), cardboard and paper (`--kraft*`, `--paper*`), buttons, machines (`--machine*`, `--stacker*`, `--bonanza*`, `--palace*`), payline colours (`--line-1` … `--line-10`; line 11 on reuses them).
 - **Pixel frames (9-slice):** the UI borders are 12×12 sprites in `src/view/art.ts` (cardboard, paper, a paper tab, a button). `src/view/theme.ts` turns them into CSS variables, and CSS stretches them with `border-image` at 2× (8 px) or 3× (12 px). A button is ONE sprite repainted in each button's token colours (face and lip, plus a light and an outline mixed from them). Paper frames also come with coloured edges: green = you can afford it, gold = maxed / running, heirloom = planted, blue = selected.
 - The pixel font (Pixelify Sans, weight 500) is for words. The clean rounded font (Nunito) is for **all numbers** and body text, because pixel digits like 5 and 8 read as "S".
-- **Sprites** (the full style guide is at the top of `src/view/art.ts`): main sprites 24×24 (hamster, reel symbols, machines, cage props, the bedding tile), icons 16×16, currency icons 12×12, UI frames 12×12. They're drawn at **whole-number scales only** (mostly 2×), so pixels stay crisp squares. Each material has a small ramp (base, shade, light) and its **own darker outline**. Light comes from the top-left. See them all at `tools/sprites.html`.
-- **Stage outlines** are 3 px (2 px for small parts) in a slightly softer ink (`--outline`, `--outline-thin`, `--outline-ink`). Small flat things (bars, chips, strips) get notched "pixel" corners (`--notch`) instead of round ones.
+- **Sprites** (the full style guide is at the top of `src/view/art.ts`): the hamster and the reel symbols are 32×32 since 1.5.0 (§30); other main sprites 24×24 (machines, cage props, the bedding tile), icons 16×16, currency icons 12×12, UI frames 12×12. They're drawn at **whole-number scales only** (mostly 2×), so pixels stay crisp squares. Each material has a small ramp (base, shade, light; the 32×32 sprites add a highlight and a deep shade) and its **own darker outline**. Light comes from the top-left. See them all at `tools/sprites.html`.
+- **Painted scenes (1.5.0):** what must fit any size is painted pixel by pixel on a small canvas at 2×, with the same rules (ramps, top-left light, an outline per part, dithered blends, token colours): the cage and the room (`cage.ts`), the wheel (`wheel.ts`), every machine's cabinet (`cabinet.ts`), the Big Cage's tree (`bigtree.ts`) and the roulette wheel. The big titles use a pixel font of our own (`pixelfont.ts`).
+- **Stage outlines** (the parts still drawn in CSS: the sign, the reel window's inside, the buttons) are 3 px (2 px for small parts) in a slightly softer ink (`--outline`, `--outline-thin`, `--outline-ink`). Small flat things (bars, chips, strips) get notched "pixel" corners (`--notch`) instead of round ones.
 - Feedback: the win glow sits *behind* the symbols (never tint the symbol itself), plus a "+N" popup, and the coin tag pops when coins come in. Bigger wins add more (§15), and pixel particles add sparkle (§20).
 - Works from phone width up. On narrow screens the machine rig **zooms out just enough to fit** (measured by `ui.ts`), so every reel and the lever always show. The speech bubble text is scaled back up so it stays readable.
 - Numbers from a thousand up are **short by default** (47.27K, 1.5M; Menu → Numbers can switch to 47,275). From a quadrillion up they're written like **1.23e15** (coins, seeds and tokens alike), and there's no upper limit (big numbers, PORTING_NOTES D115).
@@ -1834,3 +1837,86 @@ New Horizons (a migration, 10 tokens) · Far, Far Away (three migrations, 8) · 
 - Moving Day: do the boxes feel exciting? Is it in the right place (between the Acorn Vault and the Big Cheese)?
 - Later colonies go much faster, and their late lives are short again: fun, or too fast?
 - Is "The Great Migration" the right name?
+
+## 30. The Glow Up: a visual redesign (update 1.5.0)
+
+> **Status: a release candidate** (`1.5.0-rc.1`) on the branch `claude/game-visual-redesign-k9ykeg`, waiting for the user's OK (PORTING_NOTES D150–D154). **View only:** no rules, balance or save changes: the golden run, the save fixtures and the simulator are untouched.
+
+*"I want you to do a full visual redesign of the game I mean I want a massive improvement in graphics/visuals better animations more detail everything"* (the user, 2026-09-28)
+
+### The direction
+
+**Still pixel art** (the game's identity, and the user's pick for M15: "still pixel art"), but with far more detail and life: what used to be CSS boxes and gradients is now **painted as pixel art to fit** (a small canvas at 2×, the sprites' rules: colour ramps, light from the top-left, an outline per part, dithered blends), the hamster and the symbols are **bigger sprites** (32×32), and there's motion everywhere, all of it off with Motion "Less". Every colour is still a theme token, and skins still recolour the room, the wire, the wheel and Old Clunky.
+
+### The cage and the room (`src/view/cage.ts`)
+
+The stage is **one painting behind everything**, repainted only when the stage's size, a skin or the machine changes:
+- **The room behind the cage:** wallpaper (the wall's two colours, the old stripes, a tiny motif), a wainscot and a chair rail; **a window** with a wooden frame and sill (a little plant on it), tied-back curtains, and the view outside: sky, hills and a round tree, with **clouds drifting past** (the sky is a layer behind the canvas, seen through the glass); **a shelf** with a plant, books and a lamp; **a portrait** of the family's first hamster in a gold frame.
+- **The cage in perspective:** wire on the back wall and **down both side walls** (the side wires closer together towards the back), a strong top rail, a middle rail, corner posts, and the **plastic tray** the cage stands in (taller at the front). You look into the cage over the tray's front, which is where the buttons are.
+- **The bedding:** a floor of wood shavings, darker where it meets the back wall, the shavings bigger towards the front (depth), a few **sunflower seeds** dropped in it, and **soft shadows under the wheel and the machine**.
+- **Sunlight** falls in through the window in two bands, fading as it goes down.
+- **At night (free spins):** a second painting fades in: the room dimmed to blue, **the lamp on** with a warm pool of light, and the window showing **the moon and the stars**. (The old purple glow and twinkles stay.)
+- The layout is pure maths (`cageLayout()`); tests check the back wall sits inside the stage and the window, shelf and portrait sit on it without overlapping, from a small phone to a big screen.
+
+### The machines (`src/view/cabinet.ts`)
+
+Every machine's cabinet is **painted to fit the machine** (its size depends on its reels, rows and pots), behind its sign, reels and meter, each in its own material:
+
+| Machine | Its cabinet |
+|---|---|
+| Old Clunky | Mint plastic with a gloss stripe, a chrome-rimmed reel window, bolts, speaker grilles by the meter, little feet, and a chrome cap with a big red bulb on top |
+| Snack Stacker | Strawberry-milk pink with candy stripes, under a **striped, scalloped awning** |
+| Burrow Bonanza | Wooden planks with nails and grain, **grass on the roof**, a red mushroom at its foot |
+| Pouch Palace | **Quilted purple velvet** with gold buttons, a gold border and a **gold crown** with jewels |
+| Hamster Maze | A clipped hedge with maze paths and two **topiary balls** |
+| Acorn Vault | Brushed steel, **rivets** all round, a **gold combination dial** on top |
+| The Big Cheese | A block of cheese **full of holes**, an orange rind, a **mouse hole** |
+| Moving Day | Corrugated cardboard, **flaps open on top**, packing tape, "this way up" arrows |
+
+- **Real light bulbs** round every sign: they chase slowly at rest, race while the reels spin (faster still when a reel teases) and all flash on a win (a second, see-through canvas repainted only when a bulb changes).
+- A painted **coin tray** at the foot (a few coins in it), a **chrome plate** where the lever joins, and the lever's **ball in the machine's colours** (the Stacker's square push button too).
+- **A machine with a Machine Star** is trimmed in gold (its outline turns gold). **In free spins** a halo round the cabinet pulses gold and orange (painted on the bulbs' canvas: a CSS glow on a machine whose reels move every frame cost too much, D153).
+- **The reels are drums:** lighter across the middle, shaded towards the top and bottom (hard steps).
+
+### The hamster and the wheel
+
+- **The hamster is 32×32** (drawn at 2×, 64 px), chubbier, with a cheek pouch, a lit crown of fur, a deep shade and whiskers. It has **frames** now: a **four-step run** (quicker while the reels spin), a **blink** every few seconds while it rests, **asleep** when it dozes off (the "z"s still float up), and a **cheer** (a happy hop, eyes squeezed shut) after a nice win, a big win, free spins or a jackpot. The Big Cage, the delivery tube and the Derby's racers use the new run.
+- **The seven hats are redrawn** for the bigger head, and move with its bounce; **fur skins** work out the new deep shade by themselves (`%`).
+- **The wheel really turns** (`src/view/wheel.ts`): painted every frame at its angle (so its pixels stay square at any angle): a chunky wire wheel with rungs across its track, spokes and a hub bolt, a see-through back, on an A-frame stand in the bedding. At speed the rungs smear and the spokes leave ghosts. During the jackpot (and cheese) wheel its rim turns gold with chasing bulbs, and the prize face sits inside it. Wheel skins still recolour it.
+
+### The reel symbols
+
+All 14 are redrawn at **32×32** with five-step ramps (six new deep-shade colours; the palette's letters had run out, so they're punctuation marks): the **striped sunflower seed**, the **golden seed** with sparkles, a **carrot** with three fronds, a dusky **blueberry** with its crown, a **strawberry** with seeds and a leafy cap, the **hamster coin** (the wild) with a raised rim, the **hamster ball** (clear, with the hamster curled inside), the **cheek pouch** (a tied sack with coins spilling out), **corn** in its husk, a two-lobed **apple**, a pale **wood shaving** (the blank: light, so it never looks like a win), the **golden acorn** under a scaly cap, a **wedge of cheese** full of holes, and a taped **moving box**. They draw at 64 px in the 72 px cells.
+
+### The big moments and the little touches
+
+- **Pixel-art titles** (`src/view/pixelfont.ts`): "BIG WIN!", "HUGE WIN!", "JACKPOT!", "8 FREE SPINS!" … are drawn in **a chunky pixel font of our own** (the browser smooths every font at every size), each letter coloured like metal from its top to its bottom, with an edge, an ink outline and a drop shadow: gold, HUGE WIN in orange, free spins in blue, the Mini, Minor and Major pots in their plaques' colours. As big as fits the cage; the letters still bob in a wave. The amount under them stays in the clean number font (rule 11).
+- **A second set of rays** turning the other way, and **a glow that breathes** behind the title.
+- **Star glints:** sparkles swell into four-pointed stars and fade (glowing); big wins make the machine glint.
+- **Coins clink into the coin tray** on every nice win and up.
+- **The reels:** each gives a little **wind-up hitch** before it drops, a **flash of light as it lands** (behind its symbols), and winning cells get a **white frame** inside their line's colour.
+- The WIN meter has faint **LCD scanlines**.
+
+### The HUD, the tray, the Big Cage and the casino
+
+- **A logo:** "HAMSTER SLOTS" in gold pixel letters (a wave runs through it now and then); the coin on the counter **turns over** every few seconds; the page is a **quilted pixel wallpaper**, a little darker at the edges.
+- **The tray:** cardboard **fibres**, an **icon on each tab** (when they fit: not with four or more tabs in a narrow tray), buy buttons that fill with **marching green stripes** as you save up, tiles that sit up off the tray and **lift under the mouse**, and every button a little glossier (a two-row highlight with a glint).
+- **The Big Cage's meadow comes alive:** two **butterflies** (pink and blue) flutter about, a **bird** flies over every so often, and **blossom petals** drift down from the tree.
+- **The casino's tables** sit in a **wooden rail** round textured felt.
+
+### What stays
+
+- **View only:** no rules, balance or save changes. The golden run and the save fixtures are untouched; the simulator plays the same.
+- **The layout is M15's** (§26): the whole game fits the window; nothing moved.
+- **The art rules** (rules 9 and 11): sprites in art.ts (now 32/24/16/12 px squares), painted scenes by the same rules, whole-number scales, colours as theme tokens (tests check every token the painters read is in `:root`), the pixel font for words (and now the big titles), the clean font for numbers, highlights behind symbols.
+- **Motion "Less"** stills it all: no drifting clouds, bulbs chasing (they just glow), critters, glints, wind-up or flashes, turning coin or waving logo.
+- **Speed:** measured in a browser with no graphics card (the worst case), on a 5-reel machine in free spins with auto-spin: about 54 frames a second, against 56 for 1.4.0 (PORTING_NOTES D153).
+
+### Questions the playtest must answer
+
+- Is it too busy anywhere? Does the machine still stand out from the room, and the symbols from the machine?
+- The new hamster: cute? Does its run read at auto-spin speed? Is the cheer too often, or not enough?
+- The night room in free spins: lovely, or too dark?
+- Are the pixel titles readable on a phone? Is the logo too big on a small laptop?
+- Does anything feel slow on your phone?
+- Is "The Glow Up" the right name?

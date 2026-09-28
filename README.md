@@ -21,7 +21,7 @@ Spin the reels, win coins, buy upgrades, and teach your hamster to run the wheel
 - **The Hamster Casino**: roulette, blackjack, a hamster derby and Seed Drop, played with pretend Casino Chips you earn by spinning (or buy with coins). Every table shows its odds, and chips only buy prizes: boosts, a Luck charm, tokens and three skins you can't get anywhere else.
 - It saves by itself, keeps earning a little while you're away, and has a save backup code (Menu → Save backup).
 
-What changed in each version: [CHANGELOG.md](CHANGELOG.md). Every update has a name, like 1.3.0 "The Hamster Casino", 1.3.1 "Nuts & Bolts" (the upgrades update) and 1.4.0 "The Great Migration" (the mega rebirth).
+What changed in each version: [CHANGELOG.md](CHANGELOG.md). Every update has a name, like 1.3.0 "The Hamster Casino", 1.3.1 "Nuts & Bolts" (the upgrades update), 1.4.0 "The Great Migration" (the mega rebirth) and 1.5.0 "The Glow Up" (a whole new look, coming next).
 
 ## Running it yourself
 
@@ -34,7 +34,7 @@ Other commands: `npm test` (the tests), `npm run build` (the players' version, i
 
 ## How it's made
 
-TypeScript and [Vite](https://vite.dev/), with no game engine and no UI framework. The game rules live in `src/logic/` and never touch the page, so the tests and the balance simulator run them without a browser. The pixel art is drawn as text in `src/view/art.ts`, and every sound is made in the browser.
+TypeScript and [Vite](https://vite.dev/), with no game engine and no UI framework. The game rules live in `src/logic/` and never touch the page, so the tests and the balance simulator run them without a browser. The sprites are drawn as text in `src/view/art.ts`; the bigger scenes (the cage and the room around it, the wheel, every machine's cabinet, the family's tree) are painted pixel by pixel in code; and every sound is made in the browser.
 
 - **[AGENTS.md](AGENTS.md)**: how the project is built and the rules for working on it (read this first).
 - **[DESIGN.md](DESIGN.md)**: what the game is: every system, the maths behind the machines, the roadmap.

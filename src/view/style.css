@@ -144,7 +144,7 @@ body {
   /* the room the cage sits in: a quilted wallpaper (1.5.0: a pixel tile, theme.ts),
      a little darker towards the edges so the game stands out */
   background:
-    radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(74, 52, 40, 0.12)) fixed,
+    radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(74, 52, 40, 0.12)),
     var(--tile-page) 0 0 / 48px 48px repeat,
     var(--page);
   image-rendering: pixelated;
@@ -586,12 +586,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 @keyframes tease { 50% { box-shadow: 0 0 0 3px var(--primary), 0 0 18px 6px color-mix(in srgb, var(--primary) 60%, transparent); } }
 
 /* Free-spins mode: a golden glow around the machine */
-/* (1.5.0: a glow that follows the painted cabinet's shape) */
-.machine.free-spins { animation: free-glow 0.8s ease-in-out infinite alternate; }
-@keyframes free-glow {
-  from { filter: drop-shadow(0 0 2px var(--gold)) drop-shadow(0 0 5px color-mix(in srgb, var(--gold) 80%, transparent)); }
-  to { filter: drop-shadow(0 0 2px var(--primary)) drop-shadow(0 0 10px color-mix(in srgb, var(--primary) 70%, transparent)); }
-}
+/* (1.5.0: the glow round the machine is painted by cabinet.ts on its lights canvas, pulsing) */
 
 /* The card gamble: a paper panel over the reels. A face-down card, the last few
    cards, Red / Black (×2), the four suits (×4) and Take win. */
@@ -750,7 +745,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 /* 1.5.0: the title's letters are pixel art (pixelfont.ts): one little canvas each */
 .px-char { display: inline-block; margin-right: calc(-1 * var(--px, 3px)); } /* neighbours share their outermost outline */
 .px-letter { display: block; image-rendering: pixelated; width: calc(var(--w) * var(--px, 3px)); height: calc(var(--h) * var(--px, 3px)); }
-.cel-title:has(.px-char) { line-height: 0; text-shadow: none; filter: drop-shadow(0 0 14px color-mix(in srgb, var(--cel-glow, var(--gold)) 55%, transparent)); }
+.cel-title:has(.px-char) { line-height: 0; text-shadow: none; }
 .cel-title.slam { animation: slam 0.45s cubic-bezier(0.2, 1.5, 0.45, 1); }
 @keyframes slam { 0% { transform: scale(2.6); opacity: 0; } 55% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1); } }
 /* Every letter bobs, one after another: a wave running through the word */
@@ -1782,7 +1777,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .less-motion .bulbs, .less-motion .machine.winning .marquee, .less-motion .machine.teasing .reel-window,
 .less-motion .cell .sprite, .less-motion .win-lines polyline { animation: none; }
 .less-motion .reel.fast .strip { filter: none; }
-.less-motion .reel.landed, .less-motion .cage-sky-clouds, .less-motion .machine.free-spins { animation: none; } /* 1.5.0 */
+.less-motion .reel.landed, .less-motion .cage-sky-clouds { animation: none; } /* 1.5.0 (the free-spins halo stands still by itself: cabinet.ts) */
 .less-motion .brand-logo .px-char, .less-motion #coin-pill > img, .less-motion .buy-fill { animation: none; }
 .less-motion .tile { transition: none; }
 .less-motion .hold-cell, .less-motion .hold-cell::after, .less-motion .hold-board.full .hold-cell { animation: none !important; }

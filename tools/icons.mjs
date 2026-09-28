@@ -83,13 +83,19 @@ function png(px, size) {
 const hamster = cropped(SPRITES.hamster);
 // [file, size, scale, background]. The app icons keep the hamster inside the
 // middle 80% ("maskable": phones may cut the corners off into a circle).
+// (1.5.0: the hamster is 32×32 now, 30×25 once cropped, so the scales are smaller than 1.0's.)
 const ICONS = [
   ['icon-32.png', 32, 1, null], // the browser tab
   ['icon-64.png', 64, 2, null], // the browser tab on a sharp screen
-  ['icon-180.png', 180, 7, BACKGROUND], // iPhone / iPad home screen
-  ['icon-192.png', 192, 6, BACKGROUND], // Android home screen (web manifest)
-  ['icon-512.png', 512, 18, BACKGROUND], // app stores, install screens (web manifest)
+  ['icon-180.png', 180, 5, BACKGROUND], // iPhone / iPad home screen
+  ['icon-192.png', 192, 5, BACKGROUND], // Android home screen (web manifest)
+  ['icon-512.png', 512, 13, BACKGROUND], // app stores, install screens (web manifest)
 ];
+for (const [file, size, scale] of ICONS) {
+  const w = hamster[0].length * scale;
+  const h = hamster.length * scale;
+  if (w > size || h > size) throw new Error(`${file}: the hamster at ${scale}× (${w}×${h}) doesn't fit in ${size}×${size}`);
+}
 mkdirSync(OUT, { recursive: true });
 for (const [file, size, scale, background] of ICONS) {
   writeFileSync(new URL(file, OUT), png(paint(hamster, size, scale, background), size));
