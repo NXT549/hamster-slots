@@ -1678,10 +1678,10 @@ const frameTab = [
 ];
 
 // A button with a darker lip underneath. theme.ts repaints it for every button colour.
-const frameButton = [
+const frameButton = [ // (1.5.0: a two-row highlight with a glint, like a glossy arcade key)
   '..77777777..',
-  '.7666666667.',
-  '764444444457',
+  '.7w66666667.',
+  '766666666657',
   '764444444457',
   '764444444457',
   '764444444457',
@@ -1694,6 +1694,21 @@ const frameButton = [
 ];
 
 // The speech bubble's little tail (paper colours), hung under the bubble.
+// 1.5.0: a casino table's wooden rail round its felt (theme.ts repaints the wood and the felt).
+const frameRail = [
+  '..UUUUUUUU..',
+  '.UxxxxxxxxU.',
+  'UxnnnnnnnnNU',
+  'UxnkkkkkkNNU',
+  'Uxnk11111NNU',
+  'Uxnk11111NNU',
+  'Uxnk11111NNU',
+  'Uxnk11111NNU',
+  'Uxnk11111NNU',
+  'UxnNNNNNNNNU',
+  '.UNNNNNNNNU.',
+  '..UUUUUUUU..',
+];
 const bubbleTail = [
   '3111113.....',
   '.311113.....',
@@ -2259,6 +2274,64 @@ const glasses = [
   '................',
 ];
 
+// ── The Big Cage's meadow (1.5.0): a butterfly (two wingbeats) and a bird (two flaps), 12×12 ──
+const butterfly = [
+  '....k..k....',
+  '.ZZZ.kk.ZZZ.',
+  'ZpppZ..ZpppZ',
+  'ZpFppZZppFpZ',
+  'ZpppppppppPZ',
+  '.ZpppkkpppZ.',
+  '..ZZpkkpZZ..',
+  '..ZppkkppZ..',
+  '..ZpPkkPpZ..',
+  '...ZZ..ZZ...',
+  '............',
+  '............',
+];
+const butterfly2 = [
+  '............',
+  '....k..k....',
+  '.....kk.....',
+  '...ZZkkZZ...',
+  '..ZpFkkFpZ..',
+  '..ZppkkppZ..',
+  '...ZpkkpZ...',
+  '...ZpkkpZ...',
+  '....ZkkZ....',
+  '.....kk.....',
+  '............',
+  '............',
+];
+const bird = [
+  '............',
+  '.S........S.',
+  '.SS......SS.',
+  '..SI....IS..',
+  '...SI..IS...',
+  '....SIIS....',
+  '.....SS.....',
+  '............',
+  '............',
+  '............',
+  '............',
+  '............',
+];
+const bird2 = [
+  '............',
+  '............',
+  '............',
+  '............',
+  '....SIIS....',
+  '..SSI..ISS..',
+  '.SS......SS.',
+  '.S........S.',
+  '............',
+  '............',
+  '............',
+  '............',
+];
+
 export const SPRITES: Record<string, string[]> = {
   seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple,
   hamster, hamsterRun1, hamsterRun2, hamsterRun3, hamsterRun4, hamsterBlink, hamsterSleep, hamsterCheer, coin, chip, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
@@ -2269,7 +2342,8 @@ export const SPRITES: Record<string, string[]> = {
   goldAcorn, cheese, machineMaze, machineVault, machineCheese, acornIcon, cheeseIcon,
   pennies, jar, moon, nest, shoe, coupon, album, paw, roots, // 1.3.1
   box, machineMoving, boxIcon, whisker, whiskerIcon, glasses, // 1.4.0
-  frameCard, framePaper, frameTab, frameButton, bubbleTail,
+  butterfly, butterfly2, bird, bird2, // 1.5.0
+  frameCard, framePaper, frameTab, frameButton, frameRail, bubbleTail,
 };
 
 // ── Hats (M10): worn on the hamster's head ──

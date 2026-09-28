@@ -610,6 +610,42 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       : `A life with a twist, for Golden Whiskers (each once a colony). ${c.trials.filter((x) => s.trialsDone[x.id]).length} of ${c.trials.length} beaten this colony.`);
   }
 
+  // 1.5.0: life in the meadow. Two butterflies flutter about near the grass, a bird flies
+  // over now and then, and blossom petals drift down from the tree (none with Motion "Less").
+  const critters = [
+    { img: spriteImg('butterfly', 24) as HTMLImageElement, colors: null as Record<string, string> | null, seed: 0.3 },
+    { img: spriteImg('butterfly', 24) as HTMLImageElement, colors: { p: '#93cfe8', F: '#cbecf8', Z: '#33739a', P: '#5ea6c8' }, seed: 2.1 },
+  ];
+  const bird = spriteImg('bird', 24) as HTMLImageElement;
+  for (const c of [...critters.map((x) => x.img), bird]) {
+    c.classList.add('bc-critter');
+    el.world.appendChild(c);
+  }
+  let birdFrom = 0; // when the bird last set off
+  function renderCritters(now: number, dt: number): void {
+    const still = lessMotion() || !layout;
+    for (const c of [...critters.map((x) => x.img), bird]) c.classList.toggle('hidden', still);
+    if (still || !layout) return;
+    const W = layout.width;
+    const g = layout.ground;
+    critters.forEach((c, i) => {
+      const t = now / 1000 + c.seed * 10;
+      // A wandering loop over the meadow, bobbing as it flaps.
+      const x = W * (0.5 + 0.38 * Math.sin(t * 0.23 + c.seed) * Math.cos(t * 0.11 + i));
+      const y = g - 30 - Math.abs(Math.sin(t * 0.7 + c.seed)) * g * 0.22 - Math.sin(t * 6) * 3;
+      applySprite(c.img, Math.floor(now / 110 + i) % 2 ? 'butterfly2' : 'butterfly', 24, c.colors);
+      c.img.style.transform = `translate(${Math.round(x - 12)}px, ${Math.round(y - 12)}px) scaleX(${Math.cos(t * 0.23 + c.seed) > 0 ? 1 : -1})`;
+    });
+    // The bird: across the sky every 16 s or so.
+    const flight = (now - birdFrom) / 1000;
+    if (flight > 16) birdFrom = now;
+    const bx = -30 + flight * (W + 60) / 7;
+    bird.classList.toggle('hidden', flight > 7);
+    applySprite(bird, Math.floor(now / 180) % 2 ? 'bird2' : 'bird', 24, null);
+    bird.style.transform = `translate(${Math.round(bx)}px, ${Math.round(layout.height * 0.12 + Math.sin(flight * 2) * 8)}px)`;
+    fx.petals(el.canvas, 1.2, dt, [colors['--blossom'], '#ffffff', colors['--blossom']]);
+  }
+
   function render(now: number): void {
     const s = game.state;
     if (s.bigCage && !el.dialog.open && now >= openAt) open(now);
@@ -654,6 +690,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       el.hamster.style.top = `${layout.ground - 60}px`;
     }
     el.hamster.classList.toggle('idle', !intro);
+    renderCritters(now, dt);
     el.skip.classList.toggle('hidden', !intro || intro.uiAt !== null);
     renderNodes(shown);
     renderDetail();

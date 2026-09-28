@@ -26,6 +26,7 @@ import { createCelebration, createIris, IRIS_MS } from './celebrate.ts';
 import { createCageScene } from './cage.ts';
 import { createCabinet } from './cabinet.ts';
 import { createWheel } from './wheel.ts';
+import { titleLetters, rampFromTokens } from './pixelfont.ts';
 import { effectAs } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
@@ -1586,6 +1587,21 @@ export function createUI(
     treeLine: (type) => (TREE_LINES[type] ? TREE_LINES[type](1) : null),
   });
   setText($('app-version'), version);
+  // 1.5.0: an icon on every tab.
+  const TAB_ICONS: Record<string, string> = { upgrades: 'gear', family: 'heart', capsules: 'capsule', casino: 'chip', info: 'paylinesIcon' };
+  for (const tab of document.querySelectorAll<HTMLElement>('.tab')) {
+    const icon = spriteImg(TAB_ICONS[tab.dataset.tab!], 16);
+    icon.classList.add('tab-icon');
+    tab.prepend(icon);
+  }
+  // 1.5.0: the game's name as a pixel-art logo in gold (pixelfont.ts); the words stay for screen readers.
+  const brandText = document.querySelector<HTMLElement>('.brand span');
+  if (brandText) {
+    const words = brandText.textContent || 'Hamster Slots';
+    brandText.setAttribute('aria-label', words);
+    brandText.classList.add('brand-logo');
+    brandText.replaceChildren(...titleLetters(words, rampFromTokens('--gold', '--gold-dark')));
+  }
   buildMachineTags();
   buildSettings();
   applySettings();

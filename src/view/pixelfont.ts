@@ -6,7 +6,10 @@
 // ramp's edge colour, a dark ink outline round that, and a drop shadow. The browser's
 // fonts are smoothed at every size, so they can't be pixel-perfect: this can.
 // Each letter is its own canvas, so the celebration can bob the letters in a wave.
-// Colours are theme tokens (the ramps come from style.css :root via ui.ts/celebrate.ts).
+// Colours are theme tokens (rampFromTokens: a colour and its dark, from style.css :root).
+// The letters' size is set by CSS: --px on (or above) them is one font pixel on screen.
+
+import { mix } from './dom.ts';
 
 // The letters: 8 rows each, 2-pixel strokes. Narrow letters are narrower.
 const GLYPHS: Record<string, string[]> = {
@@ -120,17 +123,31 @@ export function letterCanvas(ch: string, ramp: TitleRamp): HTMLCanvasElement {
 // How wide a title is in font pixels (its letters, their outlines, less the shared ones).
 export const titleWidth = (text: string) => [...text.toUpperCase()].reduce((w, ch) => w + (GLYPHS[ch] || GLYPHS['?'])[0].length + 3, 1);
 
-// A whole word as one row of letter canvases, each `scale` screen pixels a font pixel.
+// A title's metal from two theme tokens, a colour and its dark (like the buttons' frames):
+// the highlight and light are mixed towards white, the edge and ink towards the outline ink.
+export function rampFromTokens(face: string, dark: string, from: Element = document.documentElement): TitleRamp {
+  const css = getComputedStyle(from);
+  const tok = (name: string) => css.getPropertyValue(name).trim();
+  const base = tok(face);
+  const deep = tok(dark);
+  const ink = tok('--outline-ink');
+  return {
+    hilite: mix(base, '#ffffff', 0.8), light: mix(base, '#ffffff', 0.45), base, shade: mix(base, deep, 0.55), deep,
+    edge: mix(deep, ink, 0.55), ink: mix(ink, '#000000', 0.25),
+  };
+}
+
+// A whole word as one row of letter canvases. CSS sizes them: --px (on the title, or
+// anything above it) is how many screen pixels one font pixel is (style.css .px-letter).
 // Letters overlap by their outlines so they sit snugly together.
-export function titleLetters(text: string, ramp: TitleRamp, scale: number): HTMLElement[] {
+export function titleLetters(text: string, ramp: TitleRamp): HTMLElement[] {
   return [...text.toUpperCase()].map((ch, i) => {
     const span = document.createElement('span');
     span.className = 'px-char';
     span.style.setProperty('--i', String(i));
     const c = letterCanvas(ch, ramp);
-    c.style.width = `${c.width * scale}px`;
-    c.style.height = `${c.height * scale}px`;
-    span.style.marginRight = `${-scale}px`; // the neighbours share their outermost outline
+    c.style.setProperty('--w', String(c.width));
+    c.style.setProperty('--h', String(c.height));
     span.appendChild(c);
     return span;
   });

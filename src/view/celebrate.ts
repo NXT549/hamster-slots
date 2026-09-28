@@ -15,9 +15,9 @@
 // With Motion "Less" there are no rays turning, no slams and no flying coins,
 // and the amount shows straight away.
 
-import { formatCoins, mix } from './dom.ts';
+import { formatCoins } from './dom.ts';
 import { spriteImg } from './art.ts';
-import { canDraw, titleLetters, titleWidth } from './pixelfont.ts';
+import { canDraw, titleLetters, titleWidth, rampFromTokens } from './pixelfont.ts';
 import type { TitleRamp } from './pixelfont.ts';
 import type { Fx } from './fx.ts';
 import type { Sound } from './sound.ts';
@@ -76,17 +76,7 @@ export function createCelebration({ host, fx, sound, lessMotion }: { host: HTMLE
   // 1.5.0: the titles are pixel art (pixelfont.ts), each in a metal of its own: gold,
   // HUGE WIN in orange, free spins in blue, the smaller pots in their plaques' colours.
   // The ramp is worked out from two theme tokens (a colour and its dark), like the buttons.
-  const css = getComputedStyle(document.documentElement);
-  const tok = (name: string) => css.getPropertyValue(name).trim();
-  function rampOf(face: string, dark: string): TitleRamp {
-    const base = tok(face);
-    const deep = tok(dark);
-    const ink = tok('--outline-ink');
-    return {
-      hilite: mix(base, '#ffffff', 0.8), light: mix(base, '#ffffff', 0.45), base, shade: mix(base, deep, 0.55), deep,
-      edge: mix(deep, ink, 0.55), ink: mix(ink, '#000000', 0.25),
-    };
-  }
+  const rampOf = (face: string, dark: string) => rampFromTokens(face, dark);
   function titleRamp(text: string, kind: CelebrationKind): TitleRamp {
     if (kind === 'free') return rampOf('--soft', '--soft-dark');
     if (/HUGE/.test(text)) return rampOf('--primary', '--primary-dark');
@@ -101,7 +91,8 @@ export function createCelebration({ host, fx, sound, lessMotion }: { host: HTMLE
     // As big as it can be (bigger for a jackpot), but never wider than the cage.
     const want = small() ? 3 : kind === 'jackpot' || kind === 'grand' ? 6 : 5;
     const scale = Math.max(2, Math.min(want, Math.floor((host.clientWidth * 0.94) / Math.max(1, titleWidth(text)))));
-    parts.title.replaceChildren(...(canDraw(text) ? titleLetters(text, titleRamp(text, kind), scale) : [...text].map((ch, i) => {
+    parts.title.style.setProperty('--px', `${scale}px`);
+    parts.title.replaceChildren(...(canDraw(text) ? titleLetters(text, titleRamp(text, kind)) : [...text].map((ch, i) => {
       const span = document.createElement('span');
       span.textContent = ch === ' ' ? ' ' : ch;
       span.style.setProperty('--i', String(i));

@@ -223,6 +223,18 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
     });
   }
 
+  // 1.5.0: blossom petals drifting down over an element, `rate` a second (the Big Cage's tree):
+  // slow, swaying, soft pink and white.
+  function petals(el: Element | null | undefined, rate: number, dt: number, palette: string[]) {
+    if (!el || Math.random() > rate * dt) return;
+    const r = el.getBoundingClientRect();
+    add({
+      x: between(r.left + r.width * 0.15, r.right - r.width * 0.15), y: between(r.top + r.height * 0.1, r.top + r.height * 0.55),
+      vx: between(-10, 10), vy: between(8, 22), life: between(3, 5), max: 0, size: pick([2, 3]), color: pick(palette),
+      gravity: 4, drag: 0.2, wobble: between(0, Math.PI * 2), fade: true,
+    });
+  }
+
   // Twinkling specks over an element, `rate` a second (the cage at night during free spins).
   function twinkles(el: Element | null | undefined, rate: number, dt: number, palette: string[] = colors.gold) {
     if (!el || Math.random() > rate * dt) return;
@@ -387,7 +399,7 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
 
   return {
     frame, readColors, burst, burstAt, sparkleOver, glints, confetti, fountain, dust, embers, motes, centerOf,
-    coinFountain, coinRain, coinDrop, rain, spriteBurst, ring, ringAt, twinkles,
+    coinFountain, coinRain, coinDrop, rain, spriteBurst, ring, ringAt, twinkles, petals,
     canvas, // the one canvas: ui.ts lends it to an open dialog (the Big Cage), which sits above the page
     get colors() { return colors; },
     get count() { return parts.length; },
