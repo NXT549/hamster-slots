@@ -1,7 +1,7 @@
 # Hamster Slots — Design
 
 > Working title. A cute pixel-art idle/clicker game. A tiny hamster runs on a wheel, and the wheel powers a slot machine.
-> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates: **1.1.0** (the same day) added M9, three more machines (§24), and M10, Wardrobe buffs (§25); then 1.2.0 the visual redesign (§26), 1.3.0 the Hamster Casino (§27) and **1.3.1 "Nuts & Bolts"**, more upgrades (§28). **Every update has a name** from what it's about (AGENTS.md → Git and releases). The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
+> **Web-first (since 2026-09-25):** this browser game *is* the game; there is no engine port. It ships from one web codebase: GitHub Pages first (friends play from a link), then itch.io, then Steam (Electron or Tauri), maybe mobile (Capacitor). See `PORTING_NOTES.md` (D106). **1.0 (§23)** is milestones 1–8, polished; more content comes after it as updates: **1.1.0** (the same day) added M9, three more machines (§24), and M10, Wardrobe buffs (§25); then 1.2.0 the visual redesign (§26), 1.3.0 the Hamster Casino (§27), **1.3.1 "Nuts & Bolts"**, more upgrades (§28), and **1.4.0 "The Great Migration"**, a mega rebirth for the late game (§29; a release candidate on its branch). **Every update has a name** from what it's about (AGENTS.md → Git and releases). The art is still the prototype art (§12), and playtests keep tuning the fun and the balance.
 > All currency is fake in-game coins. There is no real money and nothing to buy with real money.
 
 Every number in this file comes from `data.json`. If you change one there, change it here too, and log it in `PORTING_NOTES.md` → Balance log.
@@ -357,7 +357,7 @@ The user picked **"real slog"** for the first life (PORTING_NOTES D93). Measured
 | Snack Stacker / Burrow Bonanza / Pouch Palace | | ~30–37 min into gen 2 / gens 4–5 / from gen 8 | a little earlier |
 | Whole Family Tree | | 4.0–4.9 h | 2.7–3.4 h |
 
-**Late lives (M7's known issue; much better since M9's seed jar):** from generation ~9 lives got short again: once bets ×10 and the Palace multiply income, a square-root seed curve hands out seeds easily. M8 kept generations 1–8 close to M7 (§22) but didn't fix the late lives, and M9's machines alone didn't either: the heirloom bonus grew with every seed held (+7,600% by generation 13), so a late life lasted about a minute (D127). **The user picked the seed jar** (§13, D128): held seeds pay up to +100%, and Family Fortune makes the jar bigger. Now the simulated players' lives dip to 2–9 minutes around generations 12–15 and grow again as the family works through M9's machines (22–40 minutes by generation 18, idle; 7–17 active). The dip is still the weakest part of the pacing: the family owns everything up to the Palace by then, so a life there is a quick re-run until the next machine.
+**Late lives (M7's known issue; much better since M9's seed jar):** from generation ~9 lives got short again: once bets ×10 and the Palace multiply income, a square-root seed curve hands out seeds easily. M8 kept generations 1–8 close to M7 (§22) but didn't fix the late lives, and M9's machines alone didn't either: the heirloom bonus grew with every seed held (+7,600% by generation 13), so a late life lasted about a minute (D127). **The user picked the seed jar** (§13, D128): held seeds pay up to +100%, and Family Fortune makes the jar bigger. Now the simulated players' lives dip to 2–9 minutes around generations 12–15 and grow again as the family works through M9's machines (22–40 minutes by generation 18, idle; 7–17 active). The dip is still the weakest part of the pacing: the family owns everything up to the Palace by then, so a life there is a quick re-run until the next machine. **1.4.0 (the user's "make them longer", §29):** a softcap on the seed curve past 100 seeds lengthens generations 11–13 from 2.5–7 to about 7–10 minutes (idle), and lives keep getting longer after that (the family owns everything; the simulator's lives hit its 2-hour cap from generation ~18), which is where the Great Migration comes in: the whole tree, its unlock, is planted at about the same time as before (5.0–5.8 h idle).
 
 **A limit to keep in mind:** balance rules 2 and 3 together mean the base RTP must be at least **1 + auto-spin interval ÷ delivery time** (a delivery pays at least one spin, and must earn less per second than auto-spin at Wheel Training 1). So the slog comes from **time and prices** (slower spins, slower auto-spin, longer deliveries, higher prices), not from an RTP below that floor. RTP stays above 100% (Old Clunky starts at 150%).
 
@@ -420,6 +420,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | 14 | Release prep (toward 1.0.0) *(done: moved up after M8 and released as 1.0.0 on 2026-09-27, §23)* | The user's "I want a full release before trying to make the game longer" (2026-09-27): **1.0 = M1–M8, polished**, with the user's "cool animations and effects" (celebrations, reel and win-show effects, little touches, the big moments between lives) and the release basics (icons, a link card, the version in the Menu, a crash screen, a README). Then 1.0.0, the full public release (AGENTS → Git and releases); M9 onwards come after it as updates. Still before each store release: the store-rule checks below. *Was "Port-prep freeze" for the Godot rebuild (D106).* |
 | **15** | **Visual redesign** *(done; released in 1.2.0; §26)* | The user's "i want an entire visual redesign" (2026-09-27), built before M11 ("build this now"): still pixel art, **a cleaner layout that fits the window** on big and small screens (the tray beside the cage, or under it on a phone; no page scrolling), **small upgrade tiles like the tree's** with a detail card, **the Family Tree only in the Big Cage**, the Big Cage as **a meadow with the family's pixel-art tree**, which **grows with the family** (a sapling at first; every trait planted grows the trunk and a branch out to the traits it unlocks; only traits you can plant show), and **a new rebirth animation** (the hamster plants an Heirloom Seed, the tree shoots up, the traits branch off it). View only: no rules, balance or save changes. |
 | — | **Update 1.3.1 "Nuts & Bolts"** *(done; released in 1.3.1; §28)* | Not a milestone: the user's "a ton of new upgrades and improvements some gated behind rebirths… maybe some from achievements" (2026-09-27). 20 upgrades (3 for everyone, 6 rebirth upgrades, 11 sticker upgrades), 4 Family Tree traits (the Hamster Helper buys cheap upgrades for you), 7 stickers, Lucky Pennies (a win can pay double), save v12. And from now on **every update has a name** (the user's wish). |
+| — | **Update 1.4.0 "The Great Migration"** *(built: 1.4.0-rc.1 on its branch, waiting for the user's OK; §29)* | Not a milestone: the user's "a new update to keep late game interesting like a mega rebirth… I just want the late game to remain interesting and fun" (2026-09-27), with their picks: the **Great Migration** (the whole tree planted → a new colony: the generation, seeds, tree and stars start again, for **Golden Whiskers** and colony perks kept for good), **Colony Trials**, the **Wise Elders** (automation), **Moving Day** (an 8th machine with boxes that all open into one symbol), **colony traits**, and **longer late lives** (a softcap on the seed curve). Save v13. |
 | → | **Releases** | GitHub Pages from the start; then itch.io, Steam (Electron or Tauri), maybe mobile (Capacitor), all from the same web codebase. See PORTING_NOTES → The plan. |
 
 **Particles and animations are now a thread, not a milestone** (the user's "fun particle effects and animations"): every milestone ships the effects for what it adds (M7: dust puffs as each reel stops, sparkles per winning line, rolling WIN digits, a card flip, a clover sparkle when luck goes up; M8: the Big Cage scene and a star burst on a rebuild; and so on). **1.0 went through the whole game** (the user's "I also really want some cool animations and effects", §23). Motion "Less" keeps turning them all off.
@@ -1795,6 +1796,24 @@ The open problem since M7 (§10): from generation ~11 the lives shrank to 2–4 
 - **Perks never touch the odds** (the hit rate and EV per ×1 are the same with every perk); **auto-spin never beats spin + rest** with every perk and colony trait; the Wise Elders never retire during a trial, when switched off, or without the perk.
 - The migration resets and keeps exactly the table above; trials: goals, once a colony, the twist lifting on the goal, retiring early; the softcap: the same seeds below the cap, fewer above, always growing, the progress bar's next seed exactly where it says; saves v12 → v13.
 
+### Balance (from the simulator; the full tables are in PORTING_NOTES → Playtest notes, 1.4.0-rc.1)
+
+`node tools/sim.mjs --lives 20 --seeds 3`, idle and active, before (1.3.1's curve) and after; life lengths in minutes (120 is the simulator's cap):
+
+| Life | idle before | idle after | active before | active after |
+|---|---|---|---|---|
+| Gen 1 · 5 · 8 | 50–61 · 37–46 · 10–16 | the same (8: 11–16) | 31–33 · 27–31 · 7–10 | the same |
+| Gen 9–10 | 5.1–13.3 · 9.8–11.6 | 7.4–13.6 · 5.8–9.2 | 6.0–9.7 · 3.9–6.1 | 6.9–10.1 · 5.0–9.9 |
+| **Gen 11–13** | **4.3–7.0 · 2.8–3.5 · 2.5–3.7** | **7.9–10.3 · 7.1–8.7 · 6.9–8.3** | 2.9–4.0 · 2.1–3.5 · 1.2–2.6 | 4.5–5.6 · 4.2–8.6 · 3.5–8.5 |
+| Gen 14–15 | 2.6–3.8 · 3.3–6.5 | 5.0–14.4 · 8.6–37.1 | 1.9–2.7 · 1.3–2.0 | **7.5–9.6 · 7.6–13.9** |
+| Gen 16–17 | 3.7–4.1 · 3.2–5.2 | 13–69 · 21–40 | 2.0–4.4 · 2.1–3.6 | 17–39 · 18–51 |
+| Gen 18–20 | 5.1–27.6 | 70–120 | 2.6–6.6 | 82–120 |
+| Whole Family Tree | 5.0–5.6 h | 5.0–5.8 h | 3.3–3.7 h | 3.4–3.9 h |
+
+- **The first colony's late lives are 2–3× longer**, the first 8 lives are the same, and the whole tree (the Great Migration's unlock) comes at the same time. After generation ~16 the lives climb steeply (the family owns everything): the nudge to migrate.
+- **The migration loop** (`--migrate`): the first migration after 5.0–5.8 h idle (3.4–3.9 active) pays **9–11 whiskers**; a migrated family's early game is 3–4× faster (colony 2's first lives 10–15 min idle, 4–10 active); the second migration comes about 2 h later idle (1.2 h active) and pays **33–49**.
+- **Open:** later colonies' late lives are short again (colony 2's generations 9–15: 2.5–8 min idle, 1.7–4 active), because Colony Pride multiplies the income and the seed curve is the same. The Wise Elders take the clicking out of it; if it's still too fast, the levers are Colony Pride's size and price, or a softcap that tightens with each colony (PORTING_NOTES D144).
+
 ### Save v13
 
 The colony (`colony`, `colonyCoins`, `whiskers`, `perks`, `trial`, `trialsDone`, `auto`) and six stats (`migrations`, `whiskersEarned`, `trialsCompleted`, `autoRetires`, `mysteryBoxes`, `bestBoxes`). An older save: colony 0, no whiskers, and the colony's coins set so that the same seeds are pending (above). Machine Stars are capped at the max with the family's Trailblazer and Starry Roots. Data schema 14 (the `colony` block, `seedSoftcap`, Moving Day and `mystery`, colony traits and machines, four effect types).
@@ -1803,3 +1822,13 @@ The colony (`colony`, `colonyCoins`, `whiskers`, `perks`, `trial`, `trialsDone`,
 
 New Horizons (a migration, 10 tokens) · Far, Far Away (three migrations, 8) · Trial by Fur (a trial beaten, 3) · School of Hard Knocks (five trials, 5) · Wise Old Hamster (the Wise Elders retire a hamster, 2) · Box Full (five boxes in one spin, 3).
 
+### Questions the playtest must answer
+
+- Is the Great Migration worth it when it opens (about 10 whiskers the first time)? Does a new colony's much faster early game feel like the reward?
+- Is "the whole tree planted" the right moment, and "the family, the tree and the stars" the right size of reset?
+- Are generations 11–15 long enough now? Is the climb after generation ~16 a good nudge to migrate, or a wall?
+- Which Colony Trials are fun, and which are chores (Tired Paws for an idle player)? Is a quarter of the colony's seeds the right goal, and the 4th hamster the right start?
+- Do the Wise Elders make the late game better (less clicking) or empty (nothing to do)?
+- Moving Day: do the boxes feel exciting? Is it in the right place (between the Acorn Vault and the Big Cheese)?
+- Later colonies go much faster, and their late lives are short again: fun, or too fast?
+- Is "The Great Migration" the right name?

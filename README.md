@@ -12,15 +12,16 @@ Spin the reels, win coins, buy upgrades, and teach your hamster to run the wheel
 
 ## What's in it
 
-- **Seven slot machines**: Old Clunky, the Snack Stacker, the Burrow Bonanza, the Pouch Palace, and for the late game the Hamster Maze (243 ways), the Acorn Vault (hold & spin) and the Big Cheese (a multiplier wheel). Paylines, bets, wilds, free spins, a jackpot wheel with four pots, and a card gamble.
+- **Eight slot machines**: Old Clunky, the Snack Stacker, the Burrow Bonanza, the Pouch Palace, and for the late game the Hamster Maze (243 ways), the Acorn Vault (hold & spin), the Big Cheese (a multiplier wheel) and, after the Great Migration, Moving Day (boxes that all open into the same symbol). Paylines, bets, wilds, free spins, a jackpot wheel with four pots, and a card gamble.
 - **Upgrades** for your hamster and for every machine: payouts, auto-spin, Luck, new symbols, Pays Both Ways, Lucky Pennies (wins that pay double) and more. Some unlock as your family grows (**rebirth upgrades**) and some with diary stickers (**sticker upgrades**), and the Hamster Helper can buy the cheap ones for you.
 - **Retirement and the Big Cage**: every seed you hold pays a bonus (up to the seed jar), or plant it in the Family Tree for a trait the family keeps forever.
 - **Machine Stars**: max a machine's upgrades and rebuild it for a star it keeps for good.
+- **The Great Migration**: once the Family Tree is fully grown, the whole family can move to a new colony and start again, taking Golden Whiskers for perks that last forever. Colony Trials (a life with a twist) pay whiskers too, and the Wise Elders can retire and restart for you.
 - **The Capsule Machine**: Hamster Tokens from your Hamster Diary buy skins for the hamster, its hat, the wheel, the machine and the room, and everything you wear gives a small buff.
 - **The Hamster Casino**: roulette, blackjack, a hamster derby and Seed Drop, played with pretend Casino Chips you earn by spinning (or buy with coins). Every table shows its odds, and chips only buy prizes: boosts, a Luck charm, tokens and three skins you can't get anywhere else.
 - It saves by itself, keeps earning a little while you're away, and has a save backup code (Menu → Save backup).
 
-What changed in each version: [CHANGELOG.md](CHANGELOG.md). Every update has a name, like 1.3.0 "The Hamster Casino" and 1.3.1 "Nuts & Bolts" (the upgrades update).
+What changed in each version: [CHANGELOG.md](CHANGELOG.md). Every update has a name, like 1.3.0 "The Hamster Casino", 1.3.1 "Nuts & Bolts" (the upgrades update) and 1.4.0 "The Great Migration" (the mega rebirth).
 
 ## Running it yourself
 

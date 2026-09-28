@@ -652,7 +652,9 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Why the late lives were short:** from generation ~11 a life's income grows ×5–10 over the one before (the whole tree, the seed jar with Family Fortune, Machine Stars, the Maze and the Vault), while the bot retires once its pending seeds reach half the seeds earned, and on a square root that needs only ×2.25 the coins. So lives shrank to 2–4 minutes (idle) and 1–3 (active).
 - **The fix: a softcap on the seed curve** (`retirement.seedSoftcap = { seeds, exponent }`): below `seeds` the curve is as before; past it, the seeds past the cap grow as coins ^ `exponent` (joined up at the cap). Rejected: a steeper exponent everywhere (it would slow the first lives, which are right); slowing the income instead (the jar, stars and machines would all need new numbers, and the late game would feel smaller); a cap on seeds per life (a wall with no gradient).
 - **Seeds come from this colony's coins** (`state.colonyCoins`), so a new colony starts on the curve's steep early part. **An old save's pending seeds don't change:** the v12 → v13 step sets `colonyCoins` to what the new curve needs for the seeds the old one gave (fraction and all; pure functions `seedTotal` / `seedCoins`, outside the game, so the save step can use them). Without data (a save migrated on its own) it's the lifetime coins.
-- The variants tried and the one picked: Balance log (2026-09-28) and Playtest notes (1.4.0-rc.1).
+- **Picked: 100 seeds, exponent 0.2** (seven variants, 20 lives × 3 seeds each: Playtest notes 1.4.0-rc.1). A later cap (300, 1,000 seeds) only stretched the last lives, where income stops growing, and left generations 11–14 at 3–6 minutes; the lower cap reaches them, and exponent 0.2 (+50% seeds takes ×7.6 the coins) matches their ×5–10 income growth. Idle generations 11–13: 2.5–7.0 → 6.9–10.3 min; active 11–15: 1.2–4.0 → 3.5–13.9. The first 8 lives and the time to the whole tree (the migration's unlock) don't change.
+- **Past generation ~16 the lives climb steeply** (the simulator hits its 2-hour cap from ~18): by then the family owns everything, so income barely grows. That's meant to make the Great Migration the next step (it opens at the whole tree, at 5.0–5.8 h idle, ~generation 11–12).
+- **Open (for the playtest):** a migrated family's income is × Colony Pride, but its seed curve is the same, so later colonies go much faster and their late lives are short again (colony 2's generations 9–15: 2.5–8 min idle, 1.7–4 active). If that's too fast, the levers are data: a weaker or dearer Colony Pride, or a softcap that tightens with each colony (a small code change: `seedSoftcap.seeds` ÷ something per colony).
 
 **D145 — 1.4.0: Colony Trials, the Wise Elders, Moving Day, colony traits** (DESIGN §29).
 - **Colony Trials:** five twists as data (`colony.trials`, `rule`: `noFamily`, `noAuto`, `noStars`, `betCap`, `noWardrobe`), each a check in the one place its effect is worked out (`trialRule`: the tree's effects and the heirloom bonus, the auto-spin interval, the star multiplier and Machine Luck, the biggest bet, the wardrobe and the casino's boosts). The goal is **a quarter of the seeds earned this colony, at least 5**, so it grows with the family; **beating it lifts the twist at once** (the rest of the life is ordinary; rejected: the twist for the whole life, which would make a finished trial a wait). Picked in the Big Cage before the life starts (a fresh life: `run.playTime === 0`); Fresh Start rebuilds the life without the tree's free levels, and giving the trial up gives them back. Once a colony each (`trialsDone` resets on a migration). **From a colony's 4th hamster** (`colony.trialGeneration`): the first hamsters have no tree, stars or wardrobe worth taking away, so a trial there would be free whiskers. **A tile's "now → next" ignores the twist** (`withoutTrial`), so the shop still says what an upgrade does.
@@ -762,7 +764,7 @@ Every `data.json` change: date · value · old → new · why.
 | 2026-09-27 | Family Tree (new, 1.3.1) | 18 traits / 71 seeds (each once) → 22 / 94 | + Helping Paws 4 (the Hamster Helper: 10% of your coins, every 1 s) · Deep Roots 10 (+2% a generation) · Four-Leaf Heirloom 4 × 2ⁿ, max 2 (free Clover levels) · Penny Jar 5 × 2ⁿ, max 3 (+2% double). Full Bloom's target 18 → 22. |
 | 2026-09-27 | Diary | 44 stickers / 135 tokens → 51 / 159 | + Seeing Double (2), Night Owl (2), Busy Paws (3), Little Helper (2), Sticker Book (5), Dynasty (5), Billionaire (5). |
 | 2026-09-28 | `schemaVersion` | 13 → 14 | 1.4.0: the `colony` block, `retirement.seedSoftcap`, machines' `colony` and `mystery`, tree nodes' `colony`, the effect types `seedGain`, `maxStars`, `whiskerGain`, `autoRetire`. |
-| 2026-09-28 | `retirement.seedSoftcap` | — → 100 seeds, exponent 0.2 | The late lives (D144). Tried (seeds, exponent), 20 lives × 3 seeds, idle: (1,000, 0.25), (300, 0.25), (300, 0.2), (150, 0.25), (150, 0.2), (100, 0.22), (100, 0.2); the table is in Playtest notes (1.4.0-rc.1). A later cap only stretched the last lives; 100 / 0.2 lengthens generations 11–13 most evenly (idle 2.5–7 → 6.9–10.3 min, active 1.2–4 → see the notes) and leaves the first 8 lives as they were. |
+| 2026-09-28 | `retirement.seedSoftcap` | — → 100 seeds, exponent 0.2 | The late lives (D144). Tried (seeds, exponent), 20 lives × 3 seeds, idle: (1,000, 0.25), (300, 0.25), (300, 0.2), (150, 0.25), (150, 0.2), (100, 0.22), (100, 0.2); the table is in Playtest notes (1.4.0-rc.1). A later cap only stretched the last lives; 100 / 0.2 lengthens generations 11–13 most evenly (idle 2.5–7.0 → 6.9–10.3 min; active generations 11–15: 1.2–4.0 → 3.5–13.9) and leaves the first 8 lives as they were. |
 | 2026-09-28 | `colony` (new) | — → whiskers `floor((seeds earned ÷ 4) ^ 0.5)` · perks Colony Pride 1 × 1.6ⁿ (+50%, no max), Seed Sense 2 × 1.8ⁿ (+10%, max 10), Wise Elders 3, Old Friends 4, Trailblazer 5 × 2ⁿ (+1 star, max 3) · trials: 25% of the colony's seeds (at least 5), 2–3 whiskers each, from a colony's 4th hamster · the Elders: 25 / 50 / 100 / 200%, at least 3 seeds, plant at most 25% of the seeds held | The whisker divisor started at 100: with the softcap the first migration comes at ~300–400 seeds, which paid 1–2 whiskers (the simulator's `--migrate`). 4 pays ~9 there and ~27 at 3,000 seeds. |
 | 2026-09-28 | Moving Day (new machine, `colony: 1`) | — → 250B · 5 reels × 3 rows · 20 paylines (10 at first) · 120,000 a spin, 3.4 s · weights seed 28, carrot 22, corn 16, apple 12, golden 7 (locked), box 9, wild 5, blank 70 · payouts in DESIGN §29 · boxes open into carrot 30, corn 26, apple 20, golden 14, wild 10 | Between the Acorn Vault (25B) and the Big Cheese (2.5T): fresh RTP 1,566% (the Vault's 1,246%, the Cheese's 1,322%); fully upgraded ~16.7M profit a spin (the Vault ~4.0M, the Cheese ~30M). |
 | 2026-09-28 | Moving Day's upgrades | — → Packing Tape 12B × 1.3ⁿ (spins ×0.9, max 8) · More Rooms 24B × 2.5ⁿ (+2 lines, max 5) · Bubble Wrap 30B × 2.2ⁿ (+2 box weight, max 4) · Valuables 40B (the Golden Seed) · Lucky Van 24B × 2ⁿ (+10 Luck, max 5) · Pays Both Ways 10T | Like the Big Cheese's set, scaled to its price. |
@@ -778,6 +780,80 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-09-28 · 1.4.0-rc.1 "The Great Migration" · the mega rebirth (automated checks, not a real playtest)**
+- **Played in Chromium** at 1280×800 and 390×844, in `npm run dev` and in the built game (`?debug`): the Big Cage with the whole tree planted and **The Great Migration** button (two taps: "Tap again: pack up for a new colony!"); the banner "The Great Migration! Colony 2 · +14 Golden Whiskers" and the whisker rain; the new colony's sapling and its first seed planted (the rebirth animation again); the **Colony Trial** picker above Start (from the colony's 4th hamster) and the trial's badge in the cage's corner ("Trial: Tired Paws · 0 / 100"); Family → **Colony** (the migration card and its progress bar, five perk tiles bought with whiskers, the Wise Elders' settings, the five trials with "✓ Beaten" and "Under way"); **Moving Day** (the cardboard machine, two "?" boxes landing and popping open into Red Apples, the paytable's Moving Box row, the Moving Boxes card, the machine's locked card before a migration); a retirement by the **Wise Elders** (the Big Cage never opens; "The Wise Elders retired Mochi (+4 Heirloom Seeds). Hi, I'm Peanut!", the planted traits at work). No console errors. The build passes.
+- **Found and fixed on the way:** the Wise Elders waited for an idle machine, which a clicking player (or a tight auto-spin) never has: they now retire mid-spin, like a retirement by hand; a tile's preview during Tired Paws said "Auto-spin off (max)": previews now ignore a trial's twist; trials in a colony's first lives were free whiskers (nothing to take away): they open from the 4th hamster; the first migration paid 1–2 whiskers: the divisor went from 100 to 4; the icons in the Big Cage's trial note and the migration button broke onto lines of their own (a sprite is a block: they're in inline boxes now).
+- **Tests:** 2,474 pass. 107 new in `tests/logic/colony.test.js` (the migration's resets and keeps, whiskers, perks (rule 3, Colony Pride's group, no effect on the odds), the softcap (the same seeds below it, fewer past it, always growing, the next seed exactly where the bar says), trials (goals, once a colony, the twists, lifting on the goal, retiring early, previews), the Wise Elders (the perk, the shares, never in a trial, off), Moving Day (for sale only after a migration, boxes always open, the stats), colony traits, save v13 and v12 → v13 with the same seeds pending from 0 to 1e24 coins). **Moving Day is in every machine check**: its EV formula = every line tried (each way its boxes can open) and ≈ 40,000 sampled spins per setup (both ways too), every unlock and Luck level (rule 4). The tree's layout is tested for both trees at all 14 sizes. **The golden run was re-recorded** (the saves gained v13's fields; with them left out, all 42 old checkpoints play exactly as before, since the sessions stay below the softcap; the new `migration` session plants the whole tree, migrates, buys perks, plays a trial and Moving Day, and lets the Wise Elders retire a hamster). Save fixtures v13 added (the v12 files migrated: the same seeds pending).
+- **The simulator, 20 lives, 3 seeds** (`node tools/sim.mjs --lives 20 --seeds 3`, with `--data` for each softcap tried; `before` is 1.3.1's curve), idle, life lengths in minutes (120.0 is the simulator's cap: the bot retires at 2 hours, whatever it has):
+
+| Life | before | 1000/0.25 | 300/0.25 | 300/0.2 | 150/0.25 | 150/0.2 | 100/0.22 | **100/0.2 (picked)** |
+|---|---|---|---|---|---|---|---|---|
+| Gen 1 | 49.9–61.4 | 49.9–61.4 | 49.9–61.4 | 49.9–61.4 | 49.9–61.4 | 49.9–61.4 | 49.9–61.4 | 49.9–61.4 |
+| Gen 5 | 36.6–46.3 | 36.6–46.3 | 36.6–46.3 | 36.6–46.3 | 36.6–46.3 | 36.6–46.3 | 36.6–46.3 | 36.6–46.3 |
+| Gen 8 | 10.2–15.9 | 10.2–15.9 | 10.2–15.9 | 10.2–15.9 | 10.2–15.9 | 10.2–15.9 | 11.2–15.9 | 11.3–15.9 |
+| Gen 9 | 5.1–13.3 | 5.1–13.3 | 5.1–13.3 | 5.1–13.3 | 5.2–13.3 | 5.2–13.3 | 10.9–13.5 | 7.4–13.6 |
+| Gen 10 | 9.8–11.6 | 9.8–11.6 | 9.8–11.6 | 9.8–11.6 | 7.8–11.7 | 7.9–11.8 | 4.5–12.3 | 5.8–9.2 |
+| Gen 11 | 4.3–7.0 | 4.3–7.0 | 5.5–7.0 | 6.9–7.2 | 3.8–8.9 | 4.5–7.5 | 6.9–9.5 | 7.9–10.3 |
+| Gen 12 | 2.8–3.5 | 3.2–3.9 | 4.5–5.1 | 4.0–5.6 | 3.3–9.4 | 7.5–9.5 | 4.5–7.9 | 7.1–8.7 |
+| Gen 13 | 2.5–3.7 | 3.5–5.9 | 3.5–5.8 | 3.3–5.8 | 4.2–9.0 | 3.5–11.8 | 5.5–8.5 | 6.9–8.3 |
+| Gen 14 | 2.6–3.8 | 4.8–5.4 | 3.9–6.3 | 3.0–7.3 | 3.5–10.2 | 8.2–16.0 | 5.6–8.7 | 5.0–14.4 |
+| Gen 15 | 3.3–6.5 | 5.6–6.7 | 3.5–8.4 | 5.0–11.6 | 4.9–32.8 | 13.2–19.4 | 8.4–25.2 | 8.6–37.1 |
+| Gen 16 | 3.7–4.1 | 5.9–18.7 | 4.8–12.3 | 13.9–45.3 | 8.3–36.8 | 14.2–78.9 | 6.0–49.0 | 13.3–69.0 |
+| Gen 17 | 3.2–5.2 | 7.7–14.1 | 8.8–33.8 | 12.4–36.8 | 9.9–40.5 | 33.3–120.0 | 13.6–120.0 | 21.2–40.0 |
+| Gen 18 | 5.7–9.7 | 7.7–22.9 | 9.3–49.1 | 31.5–120.0 | 10.4–108.2 | 83.0–120.0 | 43.2–120.0 | 69.8–120.0 |
+| Gen 19 | 5.1–21.9 | 11.0–27.6 | 20.6–96.2 | 110.8–120.0 | 26.6–120.0 | 120.0 | 84.3–120.0 | 120.0 |
+| Gen 20 | 9.9–27.6 | 31.9–120.0 | 49.7–120.0 | 120.0 | 30.0–120.0 | 120.0 | 120.0 | 120.0 |
+| **20 lives in all** | 5.8–6.7 h | 7.1–8.9 h | 7.4–10.4 h | 10.7–13.0 h | 7.4–13.1 h | 12.4–15.2 h | 10.5–14.7 h | 11.9–14.1 h |
+| Whole Family Tree | 5.0–5.6 h | 5.0–5.6 h | 5.1–5.6 h | 5.0–5.6 h | 5.0–5.8 h | 5.0–5.6 h | 5.1–5.6 h | 5.0–5.8 h |
+
+- **Active** (`--player active`), before and after (100 / 0.2):
+
+| Life | active before | **active after** |
+|---|---|---|
+| Gen 1 | 31.0–33.2 | 31.0–33.2 |
+| Gen 5 | 26.6–30.5 | 26.6–30.5 |
+| Gen 8 | 6.9–10.3 | 6.9–10.3 |
+| Gen 9 | 6.0–9.7 | 6.9–10.1 |
+| Gen 10 | 3.9–6.1 | 5.0–9.9 |
+| Gen 11 | 2.9–4.0 | 4.5–5.6 |
+| Gen 12 | 2.1–3.5 | 4.2–8.6 |
+| Gen 13 | 1.2–2.6 | 3.5–8.5 |
+| Gen 14 | 1.9–2.7 | 7.5–9.6 |
+| Gen 15 | 1.3–2.0 | 7.6–13.9 |
+| Gen 16 | 2.0–4.4 | 17.2–39.3 |
+| Gen 17 | 2.1–3.6 | 17.5–50.7 |
+| Gen 18 | 2.6–4.1 | 82.3–120.0 |
+| Gen 19 | 3.2–6.6 | 120.0 |
+| Gen 20 | 3.4–5.8 | 120.0 |
+| **20 lives in all** | 3.8–4.2 h | 10.5–11.0 h |
+| Whole Family Tree | 3.3–3.7 h | 3.4–3.9 h |
+
+- **The migration loop** (`--lives 30 --seeds 3 --migrate`, idle and active): the bot migrates as soon as the whole tree is planted and spends its whiskers cheapest first. **Idle:** the first migration after 5.0–5.8 h (10–12 generations, **9–10 whiskers**), the second after 7.1–7.7 h (15 generations of colony 2, **38–49 whiskers**). **Active:** after 3.4–3.9 h (11–12 generations, 10–11 whiskers) and 4.6–5.1 h (14–15 generations, 33–37 whiskers). Life lengths ("1/2 · 11/1": the seeds' lives were in colony 1 or 2, generation 11 or 1):
+
+| Life | idle: colony · gen | idle | active: colony · gen | active |
+|---|---|---|---|---|
+| 1 | 1 · 1 | 49.9–61.4 | 1 · 1 | 31.0–33.2 |
+| 5 | 1 · 5 | 36.6–46.3 | 1 · 5 | 26.6–30.5 |
+| 8 | 1 · 8 | 11.3–15.9 | 1 · 8 | 6.9–10.3 |
+| 10 | 1 · 10 | 5.8–9.2 | 1 · 10 | 5.0–9.9 |
+| 11 | 1/2 · 11/1 | 9.2–11.4 | 1 · 11 | 4.5–5.6 |
+| 12 | 1/2 · 12/2 | 7.1–11.4 | 1/2 · 12/1 | 4.7–8.6 |
+| 13 | 2 · 1/3 | 11.8–14.8 | 2 · 1/2 | 5.2–10.1 |
+| 14 | 2 · 2/4 | 10.3–13.1 | 2 · 2/3 | 3.6–9.6 |
+| 15 | 2 · 3/5 | 12.8–19.7 | 2 · 3/4 | 7.6–10.0 |
+| 17 | 2 · 5/7 | 8.7–17.8 | 2 · 5/6 | 6.2–8.6 |
+| 19 | 2 · 7/9 | 2.8–6.5 | 2 · 7/8 | 3.7–5.0 |
+| 21 | 2 · 9/11 | 2.6–7.9 | 2 · 9/10 | 3.7–4.1 |
+| 23 | 2 · 11/13 | 2.6–3.7 | 2 · 11/12 | 1.7–3.4 |
+| 25 | 2 · 13/15 | 2.5–3.6 | 2 · 13/14 | 2.1–3.1 |
+| 26 | 2/3 · 14/1 | 3.2–6.0 | 2 · 14/15 | 1.9–3.9 |
+| 27 | 2/3 · 15/2 | 3.2–7.8 | 3 · 1 | 3.2–4.4 |
+| 28 | 3 · 1/3 | 3.2–12.5 | 3 · 2 | 1.8–3.5 |
+| 30 | 3 · 3/5 | 3.7–5.2 | 3 · 4 | 2.0–3.6 |
+
+- **What it shows:** the late lives of the first colony are 2–3× longer (idle generations 11–13 from 2.5–7.0 to 6.9–10.3 min; active 11–15 from 1.2–4.0 to 3.5–13.9 min); the first 8 lives don't change; the whole tree (the migration's unlock) comes at the same time as before; past generation ~16 lives climb steeply (the family owns everything), which is where the migration takes over. **A migrated family's early game is 3–4× faster** (colony 2's first lives: 10–15 min idle, 4–10 active; colony 1's: 37–61 and 27–33), and **its late lives are short again** (colony 2's generations 9–15: 2.5–8 min idle, 1.7–4 active): Colony Pride multiplies the income while the seed curve is the same. That's the open question for the playtest (DESIGN §29); the levers are in D144.
+- **Not checked:** Firefox and Safari; a real phone's touch; how the new sounds sound (a box opening, the migration's fanfare); a real session through a whole second colony.
 
 **2026-09-27 · 1.3.1-rc.1 "Nuts & Bolts" · more upgrades (automated checks, not a real playtest)**
 - **Played in Chromium** at 1280×800 and 390×844: the Upgrades tab with the new tiles (Lucky Pennies, Night Shift, the Cosy Nest) and the folded "🔒 9 upgrades still locked" group (Running Shoes "Generation 2" first, then the sticker upgrades with their stickers); the Hamster Helper's row after planting Helping Paws (on: 15 levels bought in its first seconds; off: a plain paper row with an Off button); the Diary's "Unlocks the upgrade …" lines; the Big Cage's tree with all 22 traits at both sizes (Helping Paws and Deep Roots on the trunk, the Four-Leaf Heirloom and the Penny Jar at the top of Charms and Bonuses); a stress run with every upgrade unlocked and bought on three machines at 20× speed for 8 s (143 levels bought by the helper, 2 wins doubled, "×2 DOUBLE!" over the machine, the Info tab's Lucky Pennies card): no console errors. The build (`npm run build`) passes.
