@@ -8,7 +8,8 @@
 // (Capsules), payouts.ts (Info). Skin colours live in skins.ts, the pixel frames
 // for the cardboard/paper look are made in theme.ts, and the particles in fx.ts.
 
-import { applySprite, spriteImg, treeIcon, hamsterSprite, MACHINE_SPRITES, SUIT_SPRITES } from './art.ts';
+import { applySprite, spriteImg, treeIcon, hamsterSprite, runFrame, MACHINE_SPRITES, SUIT_SPRITES } from './art.ts';
+import type { HamsterFrame } from './art.ts';
 import { createReels } from './reels.ts';
 import { createWinShow } from './winshow.ts';
 import { formatCoins, formatWhole, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle, popText } from './dom.ts';
@@ -24,6 +25,7 @@ import { createFx } from './fx.ts';
 import { createCelebration, createIris, IRIS_MS } from './celebrate.ts';
 import { createCageScene } from './cage.ts';
 import { createCabinet } from './cabinet.ts';
+import { createWheel } from './wheel.ts';
 import { effectAs } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
@@ -160,6 +162,8 @@ export function createUI(
   });
   // …and every machine's cabinet, painted to fit it, with bulbs round its sign (cabinet.ts).
   const cabinet = createCabinet(el.machine, { starred: () => game.getStars() > 0 });
+  // …and the hamster wheel, painted at its angle every frame, so it really turns (wheel.ts).
+  const wheel = createWheel(wheelUnit, el.stage);
 
   let lastSpinSource: SpinSource = 'manual'; // spins you pulled yourself clunk louder
   let lastManualSpinAt = performance.now(); // for the sleepy "Zzz" hint
@@ -211,6 +215,8 @@ export function createUI(
   let lastRetired: GameEvents['retired'] | null = null; // what the Big Cage page says about the hamster that just retired
   let rigFitKey = ''; // stage width + machine + reel count the rig was last fitted for
   let lastZ = 0; // when the dozing hamster last let out a "z"
+  let cheerUntil = 0; // 1.5.0: the hamster cheers (a happy hop) until then, after a big win
+  let nextBlink = 0; // …and blinks now and then while it rests
 
   const lessMotion = () => settings.motion === 'less' || (settings.motion === 'auto' && systemReducedMotion);
   const activeId = () => game.getMachineData().id;
@@ -255,7 +261,7 @@ export function createUI(
     const hat = hatOf(game);
     for (const img of document.querySelectorAll<HTMLImageElement>('img[data-sprite]')) {
       const name = img.dataset.sprite!;
-      const isHamster = name === 'hamster' || name === 'hamster2';
+      const isHamster = name === 'hamster';
       applySprite(img, isHamster ? hamsterSprite(name, hat) : name, Number(img.dataset.size || 48), isHamster ? fur : null);
     }
   }
@@ -265,6 +271,7 @@ export function createUI(
     applyStageSkins(game, el.stage);
     cage.invalidate(); // a room skin repaints the cage
     cabinet.invalidate(); // …and a machine skin Old Clunky
+    wheel.invalidate(); // …and a wheel skin the wheel
   }
   applySkins();
 
@@ -442,6 +449,7 @@ export function createUI(
     if (e.tier !== 'win' || lastSpinSource === 'manual') sound.play(tierFx.sound); // small auto-spin wins stay quiet
     coinBurst(tierFx.coins);
     if (tierFx.hop && !lessMotion()) replayClass(el.hamster, 'hop');
+    if (tierFx.hop) cheerUntil = performance.now() + (tierFx.titles ? 1400 : 800); // (1.5.0) a happy face
     if (tierFx.shake && !lessMotion()) replayClass(el.stage, 'shake-stage');
     // The hamster is thrilled: little hearts float up from it (big wins and up).
     if (tierFx.titles) hearts(e.tier === 'jackpot' ? 8 : 5);
@@ -518,6 +526,7 @@ export function createUI(
     fx.confetti(50, el.stage);
     fx.burstAt(el.machine, { count: 30, palette: fx.colors.party, speed: 220 });
     if (!lessMotion()) replayClass(el.hamster, 'hop');
+    cheerUntil = performance.now() + 1400;
     say(e.retrigger ? `More Hamster Balls! +${e.count} free spins!` : `Hamster Balls! ${e.count} free spins, and every win is doubled!`, 3500);
   });
   game.on('freeSpinsEnded', (e) => {
@@ -551,6 +560,7 @@ export function createUI(
     coinBurst(30);
     fx.fountain(el.wheel, 60);
     fx.confetti(grand ? 160 : 80);
+    cheerUntil = performance.now() + 2000;
     if (!lessMotion()) {
       replayClass(el.stage, 'shake-stage');
       replayClass(el.hamster, 'hop');
@@ -1268,7 +1278,7 @@ export function createUI(
         cell.className = 'hold-cell';
         cell.style.gridColumn = String(Math.floor(i / hold.rows) + 1);
         cell.style.gridRow = String((i % hold.rows) + 1);
-        cell.append(spriteImg('goldAcorn', 48), Object.assign(document.createElement('span'), { className: 'hold-value' }));
+        cell.append(spriteImg('goldAcorn', 64), Object.assign(document.createElement('span'), { className: 'hold-value' }));
         return cell;
       });
       el.holdBoard.replaceChildren(...holdCells);
@@ -1450,7 +1460,8 @@ export function createUI(
     // Rotation uses GAME time, so it speeds up with the debug speed buttons.
     const speed = delivering ? 0 : machine.spinning || machine.bonus ? 540 : autoRunning || free ? 90 : 0; // degrees per second
     wheelAngle = (wheelAngle + speed * Math.max(0, gameDt)) % 360;
-    el.spokes.style.transform = `rotate(${wheelAngle}deg)`;
+    // (1.5.0) The painted wheel turns (its prize rim lights up during the jackpot wheel).
+    wheel.render(wheelAngle, speed, el.wheel.classList.contains("prize"), now);
     el.belt.style.backgroundPositionX = `${(wheelAngle * 0.6) % 16}px`;
     // Particles: bedding dust kicked up by a fast wheel, and motes drifting in the cage.
     if (speed >= 540 && Math.random() < realDt * 6) {
@@ -1471,15 +1482,20 @@ export function createUI(
     }
     fx.frame(realDt);
 
-    // Hamster: two-frame run cycle (real time, purely visual).
-    const frame = speed > 0 || delivering ? (Math.floor(now / 110) % 2 ? 'hamster2' : 'hamster') : 'hamster';
+    // Hamster (1.5.0): a four-step run (quicker while the reels spin), a blink now and
+    // then while it rests, asleep when it dozes off, and a happy hop after a big win.
+    // Real time, purely visual.
+    const resting = speed === 0 && !delivering;
+    const sleepy = resting && !autoRunning && !machine.spinning && now - lastManualSpinAt > 25000;
+    if (now > nextBlink + 150) nextBlink = now + 2200 + Math.random() * 3200;
+    const frame: HamsterFrame = now < cheerUntil && !delivering ? 'hamsterCheer'
+      : speed > 0 || delivering ? runFrame(now, speed >= 540 ? 55 : 105)
+        : sleepy ? 'hamsterSleep' : now > nextBlink ? 'hamsterBlink' : 'hamster';
     const fur = furColors(game);
-    applySprite(el.hamster, hamsterSprite(frame, hatOf(game)), 48, fur);
+    applySprite(el.hamster, hamsterSprite(frame, hatOf(game)), 64, fur);
     el.hamster.classList.toggle('away', delivering);
     // Resting (the wheel still): the hamster breathes; left alone long enough, it dozes off (Zzz).
-    const resting = speed === 0 && !delivering;
     el.hamster.classList.toggle('idle', resting);
-    const sleepy = resting && !autoRunning && !machine.spinning && now - lastManualSpinAt > 25000;
     if (sleepy && now - lastZ > 1300 && !lessMotion()) {
       lastZ = now;
       const z = document.createElement('span');
@@ -1493,8 +1509,8 @@ export function createUI(
     const p = game.getDeliveryProgress();
     el.road.classList.toggle('active', delivering);
     el.roadFill.style.width = `${(p * 100).toFixed(1)}%`;
-    el.roadHamster.style.left = `calc(10px + (100% - 44px) * ${p.toFixed(4)})`; // the tube's margins + the 24px sprite
-    applySprite(el.roadHamster, frame, 24, fur);
+    el.roadHamster.style.left = `calc(10px + (100% - 52px) * ${p.toFixed(4)})`; // the tube's margins + the 32px sprite
+    applySprite(el.roadHamster, runFrame(now, 80), 32, fur);
     setText(el.roadLabel, delivering
       ? `Delivering… back in ${Math.ceil(s.delivery.timer)}s`
       : `Delivery tube · ${trip} trip → +${reward} coins`);

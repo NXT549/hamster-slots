@@ -95,14 +95,16 @@ export const SKIN_ART: Record<string, SkinArt> = {
 export const SKIN_TOKENS = [...new Set(Object.values(SKIN_ART).flatMap((art) => Object.keys(art.tokens || {})))];
 
 // A fur skin only lists its main colours (t fur, T shade, c cream, maybe p pink).
-// The hamster sprite also uses a light fur (a), an outline (A), a cream shade (C)
+// The hamster sprite also uses a light fur (a), an outline (A), a deep shade (%), a cream shade (C)
 // and pink shades (P, Z), so work those out from the main colours. That way a new
 // fur skin needs just 3 colours and still matches the sprite's style.
 export function furPalette(skinId: string | null): Colors | null {
   const art = skinId ? SKIN_ART[skinId] : undefined;
   if (!art || !art.colors) return null;
   const { t, T, c } = art.colors;
-  const out: Colors = { ...art.colors, a: mix(t, '#ffffff', 0.4), A: mix(T, '#2b1a10', 0.45), C: mix(c, T, 0.22) };
+  const A = mix(T, '#2b1a10', 0.45);
+  // (1.5.0: '%' is the 32×32 hamster's deep fur shade, between the shade and the outline.)
+  const out: Colors = { ...art.colors, a: mix(t, '#ffffff', 0.4), A, '%': mix(T, A, 0.42), C: mix(c, T, 0.22) };
   if (art.colors.p) {
     out.P = mix(art.colors.p, '#2b1a10', 0.2);
     out.Z = mix(art.colors.p, '#2b1a10', 0.5);

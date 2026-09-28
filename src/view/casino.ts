@@ -12,7 +12,7 @@
 // the chips counter waits for them, so a win lands when the ball does.
 
 import { formatCoins, setText, setHTML, iconHTML, createSubTabs, replayClass, mix } from './dom.ts';
-import { spriteImg, applySprite, SUIT_SPRITES } from './art.ts';
+import { spriteImg, applySprite, runFrame, SUIT_SPRITES } from './art.ts';
 import { furPalette, skinPreview } from './skins.ts';
 import { WHEEL_ORDER, POCKETS, pocketColor } from '../logic/roulette.ts';
 import type { RouletteKind } from '../logic/roulette.ts';
@@ -492,7 +492,7 @@ export function createCasinoView(
       const o = odds.find((x) => x.id === r.id)!;
       lane.innerHTML = `<span class="derby-name"><b>${r.name}</b><span class="note">×${r.pays} · ${Math.round(o.chance * 100)}%</span></span>
         <span class="derby-run"><span class="derby-finish"></span></span>`;
-      const runner = spriteImg('hamster', 24, r.name[0], furPalette(RACER_FURS[i % RACER_FURS.length])) as HTMLImageElement;
+      const runner = spriteImg('hamster', 32, r.name[0], furPalette(RACER_FURS[i % RACER_FURS.length])) as HTMLImageElement;
       runner.classList.add('derby-runner');
       lane.querySelector('.derby-run')!.appendChild(runner);
       lane.addEventListener('click', (e) => {
@@ -543,10 +543,10 @@ export function createCasinoView(
         // A dash with a wobble: each hamster speeds up and slows down on its own.
         p = Math.min(1, x + (x < 1 && x > 0 ? Math.sin(x * 9 + race.phase[id]) * 0.035 * (1 - x) : 0));
         lane.classList.toggle('winner', race.done && id === race.e.winner);
-        applySprite(runner, x < 1 && t > 0 ? (Math.floor(now / 90) % 2 ? 'hamster2' : 'hamster') : 'hamster', 24,
+        applySprite(runner, x < 1 && t > 0 ? runFrame(now + id.length * 37, 70) : race.done && id === race.e.winner ? 'hamsterCheer' : 'hamster', 32,
           furPalette(RACER_FURS[casino().derby.racers.findIndex((r) => r.id === id) % RACER_FURS.length]));
       } else lane.classList.remove('winner');
-      runner.style.left = `calc((100% - 24px) * ${p.toFixed(4)})`;
+      runner.style.left = `calc((100% - 32px) * ${p.toFixed(4)})`;
     }
     if (race && !race.done && now - race.start >= race.duration) {
       race.done = true;

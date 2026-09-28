@@ -282,34 +282,21 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 }
 
 /* Hamster wheel */
-.wheel-unit { position: relative; width: 170px; height: 200px; flex: none; }
-.wheel {
-  position: absolute; left: 12px; top: 0; width: 146px; height: 146px; border-radius: 50%;
-  border: var(--outline) solid var(--wheel-rim); background: var(--wheel-bg);
-  box-shadow: inset 0 0 0 9px var(--wheel-ring), inset 0 0 0 12px color-mix(in srgb, var(--wheel-ring) 70%, black);
-}
-.spokes {
-  position: absolute; inset: 14px; border-radius: 50%;
-  background: repeating-conic-gradient(var(--wheel-spoke) 0 3deg, transparent 3deg 30deg);
-}
-.spokes::after { /* hub */
-  content: ""; position: absolute; left: 50%; top: 50%; width: 16px; height: 16px; margin: -8px;
-  border-radius: 50%; background: var(--wheel-hub); border: var(--outline-thin) solid var(--wheel-rim);
-}
+/* 1.5.0: the wheel is painted (wheel.ts), turning pixel by pixel on its canvas, with its
+   stand; .wheel is just the round window the jackpot wheel's prize face shows in. */
+.wheel-unit { position: relative; width: 190px; height: 212px; flex: none; }
+.wheel-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
+.wheel { position: absolute; left: 9px; top: 4px; width: 172px; height: 172px; border-radius: 50%; }
+.spokes, .wheel-stand { display: none; }
 .hamster {
-  position: absolute; left: 61px; top: 80px;
+  position: absolute; left: 61px; top: 104px;
   transition: opacity 0.3s, transform 0.3s;
 }
 .hamster.away { opacity: 0; transform: translateX(40px); }
-.wheel-stand {
-  position: absolute; left: 60px; top: 138px; width: 50px; height: 62px;
-  background: var(--wheel-stand); border: var(--outline) solid var(--outline-ink); border-top: none;
-  clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
-}
 
 /* The tube from the wheel to the machine: seeds roll along it (ui.ts moves the stripes) */
 .belt {
-  position: relative; width: 44px; height: 18px; margin: 0 -6px 116px; flex: none; z-index: 1;
+  position: relative; width: 44px; height: 18px; margin: 0 -6px 113px; flex: none; z-index: 1;
   border-radius: 9px; border: var(--outline-thin) solid var(--tube-edge);
   background:
     linear-gradient(var(--tube-shine) 0 3px, transparent 3px),
@@ -656,12 +643,11 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .luck-badge.up { animation: pop 0.5s ease-in-out 2; }
 
 /* The jackpot wheel: the hamster wheel's face becomes a 4-colour prize wheel */
-.prize-face { position: absolute; inset: 10px; border-radius: 50%; display: none; }
+.prize-face { position: absolute; inset: 9px; border-radius: 50%; display: none; box-shadow: inset 0 0 0 2px var(--gold-dark); }
 .wheel.prize .prize-face { display: block; }
-.wheel.prize .spokes { opacity: 0; }
-.wheel.prize { box-shadow: inset 0 0 0 9px var(--gold), inset 0 0 0 12px var(--gold-dark), 0 0 0 4px var(--gold); }
+/* (the gold rim with its bulbs is painted by wheel.ts while .wheel has .prize) */
 .prize-pointer {
-  position: absolute; left: 77px; top: -12px; width: 16px; height: 16px; z-index: 4; display: none;
+  position: absolute; left: 87px; top: -6px; width: 16px; height: 16px; z-index: 4; display: none;
   background: var(--danger); border: var(--outline-thin) solid var(--outline-ink);
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
@@ -799,7 +785,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 @keyframes attract { 50% { transform: scale(1.04); filter: brightness(1.08) drop-shadow(0 0 8px color-mix(in srgb, var(--primary) 70%, transparent)); } }
 /* A dozing hamster lets out a "z" now and then */
 .zzz {
-  position: absolute; left: 96px; top: 70px; z-index: 5; pointer-events: none;
+  position: absolute; left: 112px; top: 96px; z-index: 5; pointer-events: none;
   font-family: var(--font-display); font-weight: 500; font-size: 18px; color: var(--soft-dark);
   text-shadow: 2px 2px 0 var(--paper); animation: zzz 2.4s ease-out forwards;
 }
@@ -902,7 +888,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 }
 .road-track { position: absolute; left: 10px; right: 10px; bottom: 5px; height: 4px; }
 .road-fill { height: 100%; width: 0; background: var(--soft-dark); clip-path: var(--notch); }
-.road-hamster { position: absolute; top: 6px; left: 10px; opacity: 0; transition: opacity 0.3s; }
+.road-hamster { position: absolute; top: 3px; left: 10px; opacity: 0; transition: opacity 0.3s; }
 .road.active .road-hamster { opacity: 1; }
 .road-label { position: absolute; right: 14px; top: 9px; font-size: 12px; color: var(--floor-ink); opacity: 0.85; }
 
@@ -1400,7 +1386,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 0 0 2px; font: inherit; color: var(--ink); cursor: pointer;
 }
-.skin-preview { height: 48px; display: flex; align-items: center; justify-content: center; }
+.skin-preview { height: 64px; display: flex; align-items: center; justify-content: center; } /* (1.5.0: the 32×32 hamster at 2×) */
 .skin-name { font-family: var(--font-display); font-weight: 500; font-size: 13px; text-align: center; line-height: 1.1; }
 .skin-state { font-size: 11px; color: var(--ink-soft); }
 /* M10: what a skin does, and everything worn added up */
@@ -1601,7 +1587,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .derby-name { display: flex; flex-direction: column; line-height: 1.1; }
 .derby-name b { font-family: var(--font-display); font-weight: 500; font-size: 14px; }
 .derby-name .note { font-size: 11px; }
-.derby-run { position: relative; height: 26px; border-bottom: 2px dashed color-mix(in srgb, var(--paper) 35%, var(--felt)); }
+.derby-run { position: relative; height: 34px; border-bottom: 2px dashed color-mix(in srgb, var(--paper) 35%, var(--felt)); }
 .derby-finish { position: absolute; right: 0; top: 0; bottom: 0; width: 4px;
   background: repeating-linear-gradient(to bottom, var(--paper) 0 4px, var(--pocket-black) 4px 8px); }
 .derby-runner { position: absolute; bottom: 0; left: 0; }
@@ -1784,9 +1770,9 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   .bet-hint { font-size: 9px; }
   .floor { padding: 10px 8px 8px; }
   /* The delivery tube only shows while the hamster is out (Deliver says the trip's pay and time). */
-  .road { display: none; height: 28px; margin-top: 8px; }
+  .road { display: none; height: 38px; margin-top: 8px; }
   .road.active { display: block; }
-  .road-hamster { top: 0; }
+  .road-hamster { top: 1px; }
   .road-label { top: 5px; right: 10px; font-size: 11px; }
   .bedding { height: 18px; background-size: 36px 36px; }
 }

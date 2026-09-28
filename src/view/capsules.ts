@@ -95,7 +95,7 @@ export function createCapsulesView(
         tile.className = 'skin-tile';
         tile.innerHTML = `<span class="skin-preview"></span><span class="skin-name"></span>
           <span class="rarity-chip rarity-${def.rarity}">${rarityName(def.rarity)}</span><span class="skin-buff"></span><span class="skin-state"></span>`;
-        tile.querySelector('.skin-preview')!.appendChild(skinPreview(def, 48));
+        tile.querySelector('.skin-preview')!.appendChild(skinPreview(def, def.category === 'fur' || def.category === 'hat' ? 64 : 48));
         tile.querySelector('.skin-name')!.textContent = def.name;
         tile.querySelector('.skin-buff')!.textContent = wearText(def);
         tile.addEventListener('click', (e) => {
@@ -263,7 +263,7 @@ export function createCapsulesView(
             ${badge}</div>
           ${button}
         </div>`;
-      el.reveal.querySelector('.reveal-preview')!.appendChild(skinPreview(def, 48));
+      el.reveal.querySelector('.reveal-preview')!.appendChild(skinPreview(def, def.category === 'fur' || def.category === 'hat' ? 64 : 48));
       // 1.0: the prize bursts out in its rarity's colour; the rarest one with confetti too.
       if (!e.duplicate || e.rarity !== 'common') {
         const preview = el.reveal.querySelector('.reveal-preview');

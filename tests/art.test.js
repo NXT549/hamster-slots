@@ -24,9 +24,10 @@ for (const [name, rows] of Object.entries(SPRITES)) {
   check(`${name}: every pixel letter has a palette colour`, unknown.length === 0, `unknown: ${unknown.join(' ')}`);
 }
 
-// Style guide (see the top of src/view/art.ts): square sprites of 24, 16 or 12 pixels.
+// Style guide (see the top of src/view/art.ts): square sprites of 32 (1.5.0: the hamster
+// and the reel symbols), 24, 16 or 12 pixels.
 for (const [name, rows] of Object.entries(SPRITES)) {
-  check(`${name}: is a square 24, 16 or 12 px sprite`, rows.length === rows[0].length && [24, 16, 12].includes(rows.length),
+  check(`${name}: is a square 32, 24, 16 or 12 px sprite`, rows.length === rows[0].length && [32, 24, 16, 12].includes(rows.length),
     `${rows[0].length}x${rows.length}`);
 }
 

@@ -226,7 +226,11 @@ export class Mask {
   }
   // A shaded ellipse: light from the top-left, shade and deep shade towards the
   // bottom-right, like a ball under a lamp (a small bright spot near the top-left).
-  ball(cx: number, cy: number, rx: number, ry: number, { spot = true, flat = 0 }: { spot?: boolean; flat?: number } = {}): void {
+  // `light`, `shade` and `deep` move where the ramp's steps fall (higher = less light,
+  // more shade), for materials that should look soft (fur) or glossy (a ball).
+  ball(cx: number, cy: number, rx: number, ry: number,
+    { spot = true, flat = 0, light = 0.62, shade = 0.18, deep = -0.25, hilite = 0.92 }:
+    { spot?: boolean; flat?: number; light?: number; shade?: number; deep?: number; hilite?: number } = {}): void {
     for (let y = Math.floor(cy - ry); y <= cy + ry; y++) {
       for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
         const nx = (x + 0.5 - cx) / rx;
@@ -235,8 +239,8 @@ export class Mask {
         if (d > 1) continue;
         const nz = Math.sqrt(1 - d) * (1 - flat) + flat;
         const lit = -nx * 0.5 - ny * 0.62 + nz * 0.6; // the light comes from the top-left, a bit in front
-        let v = lit > 0.62 ? LIGHT : lit > 0.18 ? BASE : lit > -0.25 ? SHADE : DEEP;
-        if (spot && lit > 0.92) v = HILITE;
+        let v = lit > light ? LIGHT : lit > shade ? BASE : lit > deep ? SHADE : DEEP;
+        if (spot && lit > hilite) v = HILITE;
         this.put(x, y, v);
       }
     }

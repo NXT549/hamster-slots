@@ -22,7 +22,7 @@
 // Like the rest of the view, it only calls game actions (buyTreeNode, leaveBigCage,
 // migrate, startTrial) and reads state. ui.ts creates it and calls render() every frame.
 
-import { spriteImg, treeIcon, applySprite, hamsterSprite } from './art.ts';
+import { spriteImg, treeIcon, applySprite, hamsterSprite, runFrame } from './art.ts';
 import { furColors, hatOf } from './skins.ts';
 import { treeLayout, treeShape, trunkTop, leafClumps, drawTree, TREE_TOKENS } from './bigtree.ts';
 import { describeEffect } from './shop.ts';
@@ -272,8 +272,8 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     if (!layout || !intro) return;
     const L = layout;
     const plantX = L.base.x - 30;
-    const frame = t < T.walkEnd ? (Math.floor(now / 110) % 2 ? 'hamster2' : 'hamster') : 'hamster';
-    applySprite(el.hamster, hamsterSprite(frame, hatOf(game)), 48, furColors(game));
+    const frame = t < T.walkEnd ? runFrame(now, 80) : t >= T.digStart && t < T.digEnd ? 'hamsterRun2' : 'hamster';
+    applySprite(el.hamster, hamsterSprite(frame, hatOf(game)), 64, furColors(game));
     // Walk in, stand and dig at the spot, then jump back out of the tree's way.
     let x = hamsterX;
     let lift = 0;
@@ -284,8 +284,8 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       x = plantX + (hamsterX - plantX) * easeOut(k);
       lift = Math.sin(Math.PI * k) * 38;
     }
-    el.hamster.style.left = `${x - 24}px`;
-    el.hamster.style.top = `${L.ground - 46 - lift}px`;
+    el.hamster.style.left = `${x - 32}px`;
+    el.hamster.style.top = `${L.ground - 60 - lift}px`;
     el.hamster.classList.toggle('digging', t >= T.digStart && t < T.digEnd);
     // The seed: held up over its head, then it drops into the hole.
     const seedUp = t >= T.seed && t < T.dropEnd;
@@ -372,7 +372,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     el.dialog.classList.toggle('ui-in', !animate);
     el.seed.classList.add('hidden');
     if (!animate) {
-      applySprite(el.hamster, hamsterSprite('hamster', hatOf(game)), 48, furColors(game));
+      applySprite(el.hamster, hamsterSprite('hamster', hatOf(game)), 64, furColors(game));
       if (heldRoll) heldRoll.at = now + 350;
       if (lastRetired) setTimeout(() => fx.rain('heirloom', el.scene, Math.min(40, 12 + lastRetired!.seedsGained.toNumber()), { scale: 2, floor: false }), 300);
     }
@@ -650,8 +650,8 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     }
     if (!intro) {
       // Standing by the tree: it breathes.
-      el.hamster.style.left = `${hamsterX - 24}px`;
-      el.hamster.style.top = `${layout.ground - 46}px`;
+      el.hamster.style.left = `${hamsterX - 32}px`;
+      el.hamster.style.top = `${layout.ground - 60}px`;
     }
     el.hamster.classList.toggle('idle', !intro);
     el.skip.classList.toggle('hidden', !intro || intro.uiAt !== null);
@@ -662,7 +662,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     const line = speech && now < speech.until ? speech.text : '';
     setText(el.bubble, line);
     el.bubble.classList.toggle('hidden', line === '');
-    el.bubble.style.left = `${parseFloat(el.hamster.style.left || '0') + 24}px`;
+    el.bubble.style.left = `${parseFloat(el.hamster.style.left || '0') + 32}px`;
     el.bubble.style.top = `${parseFloat(el.hamster.style.top || '0') - 8}px`;
   }
 
