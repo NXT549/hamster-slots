@@ -53,8 +53,9 @@ import type {
 // and the casino stats.
 // v12 (1.3.1, Nuts & Bolts) added the Hamster Helper's switch (helper) and the
 // stats doubleWins and helperBuys.
+// v13 added the auto-spin pause toggle (autoPaused).
 // See migrateSave() below.
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -430,6 +431,21 @@ export function createGame(initialData: GameData, rng: Rng) {
     }
     if (interval === null) return null;
     return Math.max(interval * productOf('spinSpeed', overrides, machine), getSpinDuration(overrides, machine) + rest);
+  }
+
+  // The pause toggle (a QoL control, not a balance change): while true, auto-spin
+  // doesn't fire (tick(), below) and doesn't earn while away (getOfflineEarnings).
+  // getAutoInterval() above is untouched by it on purpose: the shop, the economy
+  // stats and the simulator all ask "what would Wheel Training do", not "is it
+  // firing right now", so previews and "ready in ~X" hints stay meaningful while paused.
+  function getAutoPaused(): boolean {
+    return state.autoPaused;
+  }
+
+  function setAutoPaused(paused: boolean): boolean {
+    state.autoPaused = paused;
+    events.emit('autoPausedChanged', { paused });
+    return true;
   }
 
   // Third Reel / Fourth Reel: startReels + reelsPerLevel × level, capped at maxReels
@@ -884,7 +900,10 @@ export function createGame(initialData: GameData, rng: Rng) {
       // Free spins and the jackpot wheel pause auto-spin while they play, so they
       // make each paid spin's "cycle" longer by this many seconds on average.
       extraSecondsPerSpin: value.extraSeconds,
-      expectedAutoProfitPerSecond: autoInterval ? divide(profitPerSpin, autoInterval + value.extraSeconds) : money(0),
+      // 0 while paused: nothing is really coming in by itself, so the HUD's rate,
+      // the shop's "ready in ~X" hints and offline earnings all agree with what's
+      // actually happening (autoInterval above stays the real number either way).
+      expectedAutoProfitPerSecond: autoInterval && !state.autoPaused ? divide(profitPerSpin, autoInterval + value.extraSeconds) : money(0),
       deliveryPerSecond: divide(getDeliveryReward(), getDeliveryDuration()),
     };
   }
@@ -1828,6 +1847,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     state.activeMachine = fresh.activeMachine;
     state.delivery = fresh.delivery;
     state.autoTimer = fresh.autoTimer;
+    state.autoPaused = fresh.autoPaused; // a fresh pup starts running, even if the last life was paused
     state.run = fresh.run;
     queuedManual = false;
     state.bigCage = true; // the Big Cage page: plant, then leaveBigCage() starts the new life
@@ -2120,8 +2140,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   // No Wheel Training = no auto-spin = nothing earned while away.
   function getOfflineEarnings(seconds: number): { seconds: number; coins: Money } {
     const o = data.offline;
-    // Nothing runs while you're in the Big Cage between lives.
-    if (!o || !(seconds >= o.minSeconds) || state.bigCage) return { seconds: 0, coins: money(0) };
+    // Nothing runs while you're in the Big Cage between lives, or while auto-spin
+    // is paused (a paused hamster earns nothing while you're away either).
+    if (!o || !(seconds >= o.minSeconds) || state.bigCage || state.autoPaused) return { seconds: 0, coins: money(0) };
     const counted = Math.min(seconds, getOfflineCap());
     const perSecond = withoutBoosts(() => getEconomy().expectedAutoProfitPerSecond.max(0)); // boosts only count while you play
     return { seconds: counted, coins: roundMoney(perSecond.mul(counted).mul(o.efficiency * getOfflineMultiplier())) };
@@ -2211,12 +2232,15 @@ export function createGame(initialData: GameData, rng: Rng) {
       if (fs.timer <= EPS && spin('free')) fs.timer = getMachineData(machine).freeSpins!.pause;
     }
 
-    // 6) Auto-spin (Wheel Training) on the active machine. Paused while the
-    //    hamster is delivering, and its timer stands still while free spins, the
-    //    jackpot wheel or a gamble have the machine (so they don't cost auto-spins).
+    // 6) Auto-spin (Wheel Training) on the active machine. It doesn't fire while
+    //    the hamster is delivering, or while the player has paused it (state.autoPaused,
+    //    the pause toggle: a QoL control, so coins can pile up for the next
+    //    upgrade instead of being spent on auto-spins). Its timer stands still
+    //    while free spins, the jackpot wheel or a gamble have the machine (so
+    //    they don't cost auto-spins).
     const interval = getAutoInterval();
     const held = hasFreeSpins(machine) || !!machine.bonus || !!machine.hold || (!!state.gamble && state.gamble.machineId === machine.typeId);
-    if (interval !== null && !state.delivery.active && !held) {
+    if (interval !== null && !state.autoPaused && !state.delivery.active && !held) {
       state.autoTimer += dt;
       if (state.autoTimer >= interval - EPS) {
         if (!machine.spinning && getSpinBet() !== null) {
@@ -2316,13 +2340,13 @@ export function createGame(initialData: GameData, rng: Rng) {
 
     // actions
     update, spin, startDelivery, buyUpgrade, buyMachine, switchMachine, retire, leaveBigCage, buyTreeNode, rebuild, pullCapsule, equipSkin,
-    setBet, gamble, collectGamble, setHelper,
+    setBet, gamble, collectGamble, setHelper, setAutoPaused,
     applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, triggerHold, openBigCage, ownAllSkins, setData,
     unlockAllUpgrades,
 
     // queries: coins, upgrades
     getUpgradeDef, getAvailableUpgrades, getUpgradeLevel, getUpgradeCost, getUpgradeBulk, getUpgradeNeeds, isMaxed, canAfford, canBuyUpgrade,
-    previewUpgrade, getUpgradeLock, isUpgradeUnlocked, hasHelper, getHelper,
+    previewUpgrade, getUpgradeLock, isUpgradeUnlocked, hasHelper, getHelper, getAutoPaused,
     getDoubleChance, getStarPayout, getOfflineCap, countStickers,
 
     // queries: machines, symbols, Luck
@@ -2445,6 +2469,7 @@ export function newState(data: GameData): GameState {
     activeMachine: 0, // index into machines: the one the hamster is running
     delivery: { active: false, timer: 0, duration: 0 },
     autoTimer: 0,
+    autoPaused: false, // a fresh pup's auto-spin runs by default
     gamble: null, // { machineId, stake, rounds, won, started, timer } while a gamble is offered or played (never saved)
     run: { coinsEarned: money(0), playTime: 0 }, // totals for this hamster only
 
@@ -2582,6 +2607,12 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
   // 0 (sanitizeState fills both in), so only the version changes here.
   if (save.saveVersion === 11) {
     save.saveVersion = 12;
+  }
+
+  // v12 → v13: the auto-spin pause toggle. An older save has it running
+  // (sanitizeState defaults autoPaused to false), so only the version changes here.
+  if (save.saveVersion === 12) {
+    save.saveVersion = 13;
   }
 
   if (save.saveVersion !== SAVE_VERSION) return null;
@@ -2722,6 +2753,7 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
     s.delivery.timer = clamp(num(raw.delivery.timer, s.delivery.duration), 0, s.delivery.duration);
   }
   s.autoTimer = Math.max(0, num(raw.autoTimer, 0));
+  s.autoPaused = raw.autoPaused === true;
   if (raw.run && typeof raw.run === 'object') {
     s.run.coinsEarned = moneyFrom(raw.run.coinsEarned, 0).max(0);
     s.run.playTime = Math.max(0, num(raw.run.playTime, 0));

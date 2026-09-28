@@ -411,10 +411,10 @@ describe('the Four-Leaf Heirloom and the new stickers', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-describe('save v12', () => {
+describe('save v12 (1.3.1 added it; later saves keep it)', () => {
   const g = gameWithWholeTree(111);
   const save = g.toSaveData();
-  check('a save is v12, with the helper\'s switch and the new stats', save.saveVersion === SAVE_VERSION && SAVE_VERSION === 12
+  check('a save has the helper\'s switch and the new stats', save.saveVersion === SAVE_VERSION
     && save.helper === true && save.stats.doubleWins === 0 && save.stats.helperBuys === 0);
   const v11 = structuredClone(save);
   v11.saveVersion = 11;

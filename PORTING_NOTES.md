@@ -635,6 +635,13 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - The deploy run (Actions run 11) passed; the live page serves the new build, which says 1.3.1 and "Nuts & Bolts" (checked with curl, like 1.3.0).
 - The tag `v1.3.1` is made locally on the release commit (`5d5bb4e`); the tag push was cut off again by the sessions' git proxy, so the user publishes the GitHub Release **"v1.3.1 · Nuts & Bolts"** on the "Release 1.3.1" commit (`5d5bb4e`).
 
+**D142 — 1.3.2 "Rest Stop": a pause button for auto-spin** (the user, 2026-09-27, on the web version on mobile: "theres no option to pause the hamster"; asked what it should do, they said "I just want an option to pause that auto spin I want a option to enable and disable auto spin" and "to make it easier to star machines"; placement: "A button next to Spin/Deliver").
+- **The gap:** once Wheel Training is bought it fires forever; there was no way to stop it short of going broke (which Self-Starter also papers over) or leaving the tab. That gets in the way of saving up for a machine's last upgrade to rebuild it for a Machine Star (M8, §22), since auto-spin keeps spending the coins.
+- **Scope, from the user's answers:** auto-spin only, not deliveries (Self-Starter still works while paused — it's the safety net, not something to switch off by accident) and not a full freeze (manual spins still work). Offline earnings pay 0 while paused (my recommendation; the user didn't object): a paused hamster earns nothing while you're away either, matching what "pause" means.
+- **How it's built:** a new `state.autoPaused` (save v13), gated only where auto-spin actually *fires* — tick()'s auto-spin step, `getEconomy().expectedAutoProfitPerSecond` (so the HUD rate, the shop's "ready in ~X" hints and offline earnings all agree) and `getOfflineEarnings()`. **`getAutoInterval()` itself is untouched on purpose**: the shop's previews, the debug stats, the simulator and the balance rules all ask "what would Wheel Training do", not "is it firing right now", so buying the next level still shows a real number while paused. Resets to unpaused on retire, like the bet.
+- **The button:** a small ⏸/▶ toggle next to Spin (the user's pick), only shown once Wheel Training exists. The view also uses "is it really running" (interval AND not paused) for the wheel's visual speed, the Spin button's idle "attract" glow, and the sleepy dozing hamster, so pausing reads the same as never having bought Wheel Training at all, visually.
+- **Not released yet:** built on the branch as `1.3.2-rc.1`, waiting for the user's OK (and to see it work on their phone, since that's where the gap was found). Named "Rest Stop" (Claude's pick, offered for the user to rename, per AGENTS.md's naming rule).
+
 
 
 

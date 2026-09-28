@@ -129,7 +129,7 @@ export function createUI(
     bubble: $('bubble'), spokes: $('spokes'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
     machine: $('machine'), machineName: $('machine-name'), reels: $('reels'), winLayer: $('win-layer'),
     spinBtn: $<HTMLButtonElement>('spin-btn'), spinTitle: $('spin-title'), spinMeta: $('spin-meta'),
-    deliverBtn: $<HTMLButtonElement>('deliver-btn'), deliverMeta: $('deliver-meta'),
+    deliverBtn: $<HTMLButtonElement>('deliver-btn'), deliverMeta: $('deliver-meta'), autoBtn: $<HTMLButtonElement>('auto-btn'),
     betBox: $('bet-box'), betDown: $<HTMLButtonElement>('bet-down'), betUp: $<HTMLButtonElement>('bet-up'), betAmount: $('bet-amount'), betHint: $('bet-hint'),
     wheel: $('wheel'), prizeFace: $('prize-face'), pots: $('pots'), streakBadge: $('streak-badge'), streakText: $('streak-text'),
     luckBadge: $('luck-badge'), luckText: $('luck-text'),
@@ -764,6 +764,15 @@ export function createUI(
     (e.currentTarget as HTMLElement).blur();
     game.startDelivery();
   });
+  // Pause/resume auto-spin (Wheel Training). A QoL toggle: manual spins and
+  // deliveries work the same either way.
+  el.autoBtn.addEventListener('click', (e) => {
+    (e.currentTarget as HTMLElement).blur();
+    const paused = !game.getAutoPaused();
+    game.setAutoPaused(paused);
+    sound.play('bet', !paused);
+    say(paused ? "I'll wait for you to tap Spin." : "Back to running the wheel myself!", 1800);
+  });
 
   // The bet: one step up or down. Past the biggest unlocked bet, the hamster
   // points you to High Roller instead.
@@ -1254,7 +1263,7 @@ export function createUI(
     shownCoins = diff.abs().lt(s.coins.abs().mul(1e-9).max(0.01)) ? s.coins : shownCoins.add(diff.mul(Math.min(1, realDt * 14)));
     setText(el.coins, formatCoins(shownCoins));
     const econ = game.getEconomy();
-    setText(el.coinRate, econ.autoInterval ? `+${formatCoins(econ.expectedAutoProfitPerSecond)}/s` : '');
+    setText(el.coinRate, econ.autoInterval && !game.getAutoPaused() ? `+${formatCoins(econ.expectedAutoProfitPerSecond)}/s` : '');
     // Coins in the browser tab's title, so you can peek from another tab (twice a second).
     if (now - lastTitle > 500) {
       lastTitle = now;
@@ -1282,6 +1291,12 @@ export function createUI(
     const spinBet = game.getSpinBet();
     const gambling = !!s.gamble && s.gamble.started;
     const busy = machine.spinning || !!machine.bonus || !!machine.hold || gambling || (!!free && free.left > 0);
+    // Auto-spin (Wheel Training): whether it's ON right now (bought AND not paused).
+    // Used for every visual that should reflect "is the hamster actually running by
+    // itself", as opposed to game.getAutoInterval(), which stays the real number
+    // for shop previews and stats even while paused.
+    const hasAuto = game.getAutoInterval() !== null;
+    const autoRunning = hasAuto && !game.getAutoPaused();
     if (free) {
       setText(el.spinTitle, 'Free');
       setHTML(el.spinMeta, `${free.left} left · ×${free.bet}`);
@@ -1294,8 +1309,9 @@ export function createUI(
     el.spinBtn.classList.toggle('busy', machine.spinning);
     el.spinBtn.classList.toggle('free', !!free);
     el.spinBtn.classList.toggle('poor', !free && (delivering || spinBet === null));
-    // No auto-spin yet and the hamster's been idle a while (or never spun): Spin glows to say "tap me".
-    const idle = !machine.spinning && !busy && !delivering && spinBet !== null && !game.getAutoInterval()
+    // No auto-spin running (never bought, or paused) and the hamster's been idle a
+    // while (or never spun): Spin glows to say "tap me".
+    const idle = !machine.spinning && !busy && !delivering && spinBet !== null && !autoRunning
       && (s.stats.spins === 0 || now - lastManualSpinAt > 8000);
     el.spinBtn.classList.toggle('attract', idle);
     renderBet();
@@ -1303,6 +1319,15 @@ export function createUI(
     const trip = formatSeconds(game.getDeliveryDuration());
     el.deliverBtn.disabled = delivering;
     setText(el.deliverMeta, delivering ? `back in ${Math.ceil(s.delivery.timer)}s` : `+${reward} · ${trip}`);
+    // The pause/resume button: only once Wheel Training exists (nothing to pause before that).
+    el.autoBtn.classList.toggle('hidden', !hasAuto);
+    if (hasAuto) {
+      const paused = game.getAutoPaused();
+      el.autoBtn.classList.toggle('paused', paused);
+      setText(el.autoBtn, paused ? '▶' : '⏸');
+      el.autoBtn.setAttribute('aria-pressed', String(!paused));
+      el.autoBtn.setAttribute('aria-label', paused ? 'Resume auto-spin' : 'Pause auto-spin');
+    }
 
     // The machine's own extras: free-spin mode on the marquee, pots, streak, gamble.
     el.machine.classList.toggle('free-spins', !!free);
@@ -1323,10 +1348,9 @@ export function createUI(
     winShow.render(now);
     celebrate.render(now);
 
-    // Wheel: fast during a spin, steady with auto-spin, still when resting.
+    // Wheel: fast during a spin, steady with auto-spin, still when resting or paused.
     // Rotation uses GAME time, so it speeds up with the debug speed buttons.
-    const interval = game.getAutoInterval();
-    const speed = delivering ? 0 : machine.spinning || machine.bonus ? 540 : interval || free ? 90 : 0; // degrees per second
+    const speed = delivering ? 0 : machine.spinning || machine.bonus ? 540 : autoRunning || free ? 90 : 0; // degrees per second
     wheelAngle = (wheelAngle + speed * Math.max(0, gameDt)) % 360;
     el.spokes.style.transform = `rotate(${wheelAngle}deg)`;
     el.belt.style.backgroundPositionX = `${(wheelAngle * 0.6) % 16}px`;
@@ -1354,7 +1378,7 @@ export function createUI(
     // Resting (the wheel still): the hamster breathes; left alone long enough, it dozes off (Zzz).
     const resting = speed === 0 && !delivering;
     el.hamster.classList.toggle('idle', resting);
-    const sleepy = resting && !interval && !machine.spinning && now - lastManualSpinAt > 25000;
+    const sleepy = resting && !autoRunning && !machine.spinning && now - lastManualSpinAt > 25000;
     if (sleepy && now - lastZ > 1300 && !lessMotion()) {
       lastZ = now;
       const z = document.createElement('span');
@@ -1384,7 +1408,8 @@ export function createUI(
     else if (s.gamble && s.gamble.machineId === activeId()) hint = 'Feeling lucky? Guess the card: a colour doubles it, a suit makes it ×4!';
     else if (!machine.spinning && spinBet === null) hint = 'Out of coins! Send me on a delivery (D).';
     else if (s.stats.spins === 0) hint = `Hi, I'm ${game.getPupName()}! Tap SPIN (or Space). Match symbols from the left to win!`;
-    else if (!interval && !machine.spinning && now - lastManualSpinAt > 25000) hint = 'Zzz… (tap Spin to wake me up)';
+    else if (game.getAutoPaused() && !machine.spinning) hint = "Paused! I'll wait for you to tap Spin (or ▶ up there).";
+    else if (!autoRunning && !machine.spinning && now - lastManualSpinAt > 25000) hint = 'Zzz… (tap Spin to wake me up)';
     setText(el.bubble, hint);
     el.bubble.classList.toggle('hidden', hint === '');
 

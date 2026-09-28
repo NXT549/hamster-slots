@@ -468,6 +468,9 @@ export interface GameState {
   activeMachine: number;
   delivery: { active: boolean; timer: number; duration: number };
   autoTimer: number;
+  autoPaused: boolean; // a QoL toggle (not a balance change): while true, Wheel Training doesn't fire by
+  // itself, so coins pile up for the next upgrade instead of being spent on auto-spins. Manual spins and
+  // deliveries (incl. Self-Starter) work as normal. Resets to false on retire, like the bet and the auto-spin timer.
   gamble: GambleState | null;
   run: { coinsEarned: Money; playTime: number };
   // the family (kept when retiring)
@@ -545,6 +548,7 @@ export interface GameEvents {
   upgradeBought: { id: string; level: number; cost: Money; count: number; helper: boolean }; // helper: the Hamster Helper bought it (1.3.1)
   upgradeUnlocked: { id: string; reason: 'generation' | 'sticker' }; // 1.3.1: a rebirth or sticker upgrade is on sale now
   helperChanged: { on: boolean }; // 1.3.1: the Hamster Helper was switched on or off
+  autoPausedChanged: { paused: boolean }; // the player paused or resumed auto-spin (Wheel Training)
   machineBought: { id: string; cost: Money };
   machineSwitched: { id: string; from: string };
   treeNodeBought: { id: string; level: number; cost: Money };

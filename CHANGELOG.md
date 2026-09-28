@@ -8,7 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased]
+## [Unreleased] · 1.3.2 "Rest Stop"
+
+**Pause the hamster.**
+
+### Added
+
+- **A pause button** by Spin: once you've bought Wheel Training, a small ⏸ button stops the hamster from spinning by itself, so your coins pile up instead of being spent — handy when you're saving up for the last upgrade on a machine. Tap it again (▶) to let it run by itself again. Manual spins and deliveries work exactly the same either way, and it starts a new life running as normal.
 
 ## [1.3.1] - 2026-09-27 · Nuts & Bolts
 

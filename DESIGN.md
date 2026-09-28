@@ -212,6 +212,7 @@ You can buy one level, **×10**, or **Max** at a time (§17). A bundle costs the
 
 - Auto-spin waits if you can't afford a spin, or while the hamster is out on a delivery.
 - Manual spins still work between auto-spins, on top of them.
+- **The pause toggle** (§17, the user's "no option to pause the hamster" on mobile) lets you stop auto-spin without losing the upgrade: a ⏸/▶ button by Spin, view only.
 
 ### 🍀 Four-Leaf Clover (global, Hamster Luck; milestone 7)
 *"Your hamster found a four-leaf clover."* **+10 Luck on every machine** per level (§21). Cost 500 × 2ⁿ, **max level 5** (500, 1,000, 2,000, 4,000, 8,000): up to 50 Hamster Luck.
@@ -980,6 +981,7 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 - **Payline diagrams** (Info → Paylines) (locked lines faded), and numbered payline tags on the Stacker's window that pulse when their line wins.
 - **Sub-tabs** (M6, the user's "different tabs for upgrades and stuff"): Upgrades → Hamster · [machine] · Machines; Capsules → Capsule Machine · Wardrobe · Diary; Info → Paytable · Paylines · Features · Recent wins. Each tab remembers its sub-tab (a setting, `subTabs`), and a sub-tab shows a dot when something in it is ready.
 - **A click is never lost** (M6): tapping Spin (or Space) while the machine is still spinning queues ONE spin that starts the moment this one lands, before auto-spin can take the machine. If the spin you pulled just won, the gamble offer takes that queued spin's place, so you get to see it (your next tap decides).
+- **Pause auto-spin** (D142; the user's "no option to pause the hamster" on mobile, then "to make it easier to star machines"): once Wheel Training is bought, a small ⏸/▶ button next to Spin stops it from firing by itself, so coins pile up instead of being spent — handy while saving for a machine's last upgrade to rebuild it for a star. **Manual spins and every delivery (Self-Starter included) still work exactly the same**, paused or not: it only touches auto-spin. Pausing also stops coins piling up while you're away (offline earnings pay 0 for a paused hamster) — the shop's "ready in ~X" hints and the HUD's coin rate go quiet too, since nothing is really coming in by itself. It resets to running at the start of every new life (like the bet). Save v13; view only otherwise (game.getAutoInterval(), used for shop previews and the balance rules, is unaffected either way).
 - **Keys** (M6, M7): `-` / `=` change the bet; in the card gamble `←` red, `→` black, `1`–`4` a suit, `C` takes the win.
 - Stats (Menu → Stats) gained *Most paylines won at once* and *Machines bought*.
 - Settings are saved separately from progress (like sound), so Reset keeps them.
