@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased] · 1.5.0 "The Glow Up"
+## [Unreleased]
+
+## [1.5.0] - 2026-09-28 · The Glow Up
 
 **A brand-new look for the whole game: a cosy painted room around the cage, a new hamster that really runs, redrawn machines and symbols, and bigger, shinier wins. Still pixel art, with far more detail.**
 
@@ -209,7 +211,8 @@ The first numbered version: everything built so far.
 - **Cute extras:** the hamster-cage look, speech-bubble hints from your hamster, sound effects with a volume control, pixel sparkles and confetti, win banners, a Stats screen, and an Info tab with the paytable, the paylines, the real odds of every feature, and your recent wins.
 - **Settings:** less motion, quick reels, short or full numbers.
 
-[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/NXT549/hamster-slots/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/NXT549/hamster-slots/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/NXT549/hamster-slots/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/NXT549/hamster-slots/compare/v1.3.0...v1.3.1

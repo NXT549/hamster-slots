@@ -713,7 +713,13 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Chosen:** the free-spins glow is painted on the cabinet's bulbs canvas (rings round the body, a few steps a second), the title's drop-shadow filter is gone (the glow behind it does the job), and the page background scrolls. *Rejected:* dropping the glow (the user asked for more, not less).
 
 **D154 — The Glow Up: the version and the name.**
-- **1.5.0**, a minor version (new look and features, no new content, like 1.2.0 "A New Look"), as **1.5.0-rc.1** on the branch until the user OKs it. **The name: "The Glow Up"**, the way players talk about a game that got a big visual upgrade; the user can rename it. View only: the golden run, the save fixtures and the simulator are untouched, so nothing migrates and nobody's progress changes. The icons (tools/icons.mjs) and the link card's picture (`public/social.png`, a BIG WIN) are redrawn from the new art.
+- **1.5.0**, a minor version (new look and features, no new content, like 1.2.0 "A New Look"), as **1.5.0-rc.1** on the branch until the user OKs it (released below, D155). **The name: "The Glow Up"**, the way players talk about a game that got a big visual upgrade; the user can rename it. View only: the golden run, the save fixtures and the simulator are untouched, so nothing migrates and nobody's progress changes. The icons (tools/icons.mjs) and the link card's picture (`public/social.png`, a BIG WIN) are redrawn from the new art.
+
+**D155 — 1.5.0 "The Glow Up" released** (the user, 2026-09-28: "Publish the new update").
+- 1.5.0 = the second visual redesign (D150–D154, DESIGN §30): the painted room and cage (and its night), the painted cabinets and their bulbs, the new hamster and the turning wheel, the 32×32 symbols, the pixel-art titles and the logo, and the new animation. View only: save v14 and data schema 14, as in 1.4.0; the golden run and the save fixtures are untouched, so nobody's progress changes.
+- Released after the user saw screenshots of it, without a playtest first (the user's call), like 1.3.0–1.4.0: checked by the tests and in Chromium, not yet by a real player, on a real phone, or in Firefox or Safari. DESIGN §30's questions are the ones to answer.
+- `main` hadn't moved since 1.4.0's docs commit (`4b92790`), so there was nothing to merge in first. The release commit moved the CHANGELOG's entries under `[1.5.0] - 2026-09-28 · The Glow Up`, set 1.5.0 in package.json and package-lock (from 1.5.0-rc.1) and marked it released in the docs; `main` was fast-forwarded to it, and the deploy workflow puts it on the Pages link. The tests were run on Node 24 too (CI's Node) before the push, after 1.4.0's first deploy failed on it (D149).
+- The tag `v1.5.0` is made locally on the release commit; tag pushes are cut off by the sessions' git proxy, so the user publishes the GitHub Release **"v1.5.0 · The Glow Up"** on the "Release 1.5.0" commit.
 
 
 
