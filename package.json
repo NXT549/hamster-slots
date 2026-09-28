@@ -1,6 +1,6 @@
 {
   "name": "hamster-slots",
-  "version": "1.4.0-rc.1",
+  "version": "1.4.0",
   "releaseName": "The Great Migration",
   "private": true,
   "description": "A cute pixel-art idle slot machine powered by a hamster on a wheel.",

@@ -650,7 +650,7 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - The deploy run (Actions run 13) passed; the live page serves the new build (checked with curl: the same hashed bundle as the local build, `assets/index-C-XVTqMk.js`, containing "1.3.2" and "Rest Stop").
 **D144 — 1.4.0 "The Great Migration": the user's late-game update** (the user, 2026-09-27: "Start working on a new update to keep late game interesting like a mega rebirth and try to keep the game interesting late game be it balancing things adding things changing things I just want the late game to remain interesting and fun").
 - A new system, so it was planned with the user first (AGENTS.md): a question round with four questions, and the user took the recommended answer for three of them and every extra for the fourth. **What a mega rebirth resets:** "Family, tree & stars" (rejected: only the tree and seeds; everything but the collection). **When it opens:** "Whole tree planted" (rejected: a generation number; a coins total). **The extras:** all four offered, "Colony Trials, Automation, An 8th machine, Colony-only traits". **The late lives:** "Make them longer" (rejected: leave them short and add automation only).
-- **The version: 1.4.0** (new features: AGENTS.md's rule), a release candidate (`1.4.0-rc.1`) on the branch until the user OKs it. **The name: "The Great Migration"** (the family packs up and moves to a new colony).
+- **The version: 1.4.0** (new features: AGENTS.md's rule), a release candidate (`1.4.0-rc.1`) on the branch until the user OKs it. Released below (D148). **The name: "The Great Migration"** (the family packs up and moves to a new colony).
 - What's in it: DESIGN §29. How it's built: D145 (the migration), D146 (the late lives), D147 (trials, the Wise Elders, Moving Day, colony traits).
 
 **D145 — 1.4.0: the Great Migration, how it's built** (DESIGN §29).
@@ -676,6 +676,13 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Colony traits** at a 4th level of four branches (Moving Boxes, Whisker Wisdom, Pack Leader, Starry Roots): costs 40–60 seeds a level, so they come with the late part of a colony. Rejected: a new branch (4 columns on a side overlap on a 320 px phone, D139).
 - **Six stickers** (57 in all): New Horizons pays 10 tokens (a migration is a big moment); the rest 2–8.
 - **Debug:** Plant the whole tree, +10 whiskers, Migrate now (`addWhiskers` is the only new debug action in the logic).
+
+**D148 — 1.4.0 "The Great Migration" released** (the user, 2026-09-28: "publish 1.4").
+- 1.4.0 = the mega rebirth (D144–D147, DESIGN §29): the Great Migration and Golden Whiskers, colony perks, Colony Trials, the Wise Elders, Moving Day, colony traits and the seed softcap.
+- **Merged with 1.3.2 first.** 1.3.2 "Rest Stop" (D142–D143) came out on `main` while 1.4.0 waited on its branch, and it took save v13 (the pause toggle). So the colony became **save v14**: v12 → v13 is 1.3.2's step, v13 → v14 is 1.4.0's (the seeds pending stay exactly the same), and 1.4.0's decisions became D144–D147 (they were D142–D145 on the branch). The golden run was re-recorded on top of 1.3.2's recording: with 1.4.0's new fields left out, all 42 checkpoints of the old sessions play exactly as recorded, and the migration session is new. The save fixtures v14 are 1.3.2's v13 files, migrated. A migration starts the new colony's first life unpaused (like any new life), and the pause button hides during the Tired Paws trial (there's no auto-spin to pause). **Data schema 14.** 2,520 tests pass; the built game checked again in Chromium (1280 and 390 px): the pause button stops auto-spin, a migration works, Moving Day has the pause button beside Spin, no console errors.
+- Released without a playtest first (the user's call), like 1.3.0–1.3.2: checked by the tests, the simulator and in Chromium, not yet by a real player. DESIGN §29's questions are the ones to answer; the open one is how fast the later colonies go (D146).
+- The release commit moved the CHANGELOG's entries under `[1.4.0] - 2026-09-28 · The Great Migration`, set 1.4.0 in package.json and package-lock (from 1.4.0-rc.1) and marked it released in the docs; `main` was fast-forwarded to it, and the deploy workflow puts it on the Pages link.
+- The tag `v1.4.0` is made locally on the release commit; tag pushes are cut off by the sessions' git proxy, so the user publishes the GitHub Release **"v1.4.0 · The Great Migration"** on the "Release 1.4.0" commit.
 
 
 

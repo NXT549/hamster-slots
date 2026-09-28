@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased] · 1.4.0 "The Great Migration"
+## [Unreleased]
+
+## [1.4.0] - 2026-09-28 · The Great Migration
 
 **A mega rebirth for the late game: once your Family Tree is fully grown, the whole family can move to a new colony and start again, with Golden Whiskers to spend on perks that last forever. Plus Colony Trials, the Wise Elders (who retire for you), an 8th machine, and longer late lives.**
 
@@ -191,7 +193,8 @@ The first numbered version: everything built so far.
 - **Cute extras:** the hamster-cage look, speech-bubble hints from your hamster, sound effects with a volume control, pixel sparkles and confetti, win banners, a Stats screen, and an Info tab with the paytable, the paylines, the real odds of every feature, and your recent wins.
 - **Settings:** less motion, quick reels, short or full numbers.
 
-[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/NXT549/hamster-slots/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/NXT549/hamster-slots/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/NXT549/hamster-slots/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/NXT549/hamster-slots/compare/v1.2.0...v1.3.0
