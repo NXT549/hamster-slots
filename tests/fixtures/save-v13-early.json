@@ -34,6 +34,7 @@
   "duration": 45
  },
  "autoTimer": 0,
+ "autoPaused": false,
  "run": {
   "coinsEarned": "707",
   "playTime": 599.999999999783
@@ -45,17 +46,6 @@
  "stars": {},
  "bigCage": false,
  "helper": true,
- "colony": 0,
- "colonyCoins": "707",
- "whiskers": "0",
- "perks": {},
- "trial": null,
- "trialsDone": {},
- "auto": {
-  "retire": false,
-  "share": 0.25,
-  "plant": true
- },
  "tokens": "6",
  "diary": {
   "firstSpin": true,
@@ -126,12 +116,6 @@
   "seedDropEdges": 0,
   "prizesBought": 0,
   "doubleWins": 0,
-  "helperBuys": 0,
-  "migrations": 0,
-  "whiskersEarned": "0",
-  "trialsCompleted": 0,
-  "autoRetires": 0,
-  "mysteryBoxes": 0,
-  "bestBoxes": 0
+  "helperBuys": 0
  }
 }

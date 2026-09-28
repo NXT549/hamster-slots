@@ -920,6 +920,10 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
 .btn-spin.free { --frame: var(--frame-btn-gold); }
 .btn-spin.free:disabled { filter: none; opacity: 1; }
 .btn-deliver { min-width: 130px; }
+/* Pause/resume auto-spin: a small square toggle, only shown once Wheel Training is
+   owned. Neutral (running) or a warning frame (paused), like a real pause light. */
+.btn-auto { --fw: 8px; width: 44px; font-size: 22px; line-height: 1; flex: none; }
+.btn-auto.paused { --frame: var(--frame-btn-danger); }
 
 /* The bet box: − BET ×5 + */
 .bet-box { display: flex; align-items: stretch; gap: 4px; }
@@ -1836,6 +1840,7 @@ kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(
   .btn-deliver { min-width: 0; flex: 1 1 0; font-size: 15px; padding: 0 4px 2px; }
   .btn-deliver .btn-meta { font-size: 11px; }
   .btn-spin { --fw: 10px; min-width: 0; flex: 1.4 1 0; font-size: 22px; padding: 0 6px 2px; }
+  .btn-auto { width: 32px; font-size: 17px; }
   .bet-box { flex: none; gap: 3px; }
   .bet-btn { width: 30px; font-size: 18px; }
   .bet-value { min-width: 48px; padding: 1px 3px; }

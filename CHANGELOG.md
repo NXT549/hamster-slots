@@ -28,6 +28,14 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 - **Late lives last longer.** Past about 100 Heirloom Seeds, each new seed takes more coins than before, so the lives from about the 11th generation on stop shrinking to a couple of minutes. Seeds now come from the coins earned in the current colony. **Your saved game keeps its progress:** the seeds you could retire with right now stay exactly the same.
 - The Family tab now says how many more coins the next Heirloom Seed needs.
 
+## [1.3.2] - 2026-09-28 · Rest Stop
+
+**Pause the hamster.**
+
+### Added
+
+- **A pause button** by Spin: once you've bought Wheel Training, a small ⏸ button stops the hamster from spinning by itself, so your coins pile up instead of being spent — handy when you're saving up for the last upgrade on a machine. Tap it again (▶) to let it run by itself again. Manual spins and deliveries work exactly the same either way, and it starts a new life running as normal.
+
 ## [1.3.1] - 2026-09-27 · Nuts & Bolts
 
 **A big upgrades update: 20 new upgrades (some you unlock by retiring, some with diary stickers), four new Family Tree traits, a helper hamster that buys upgrades for you, and wins that can pay double.**
@@ -183,7 +191,8 @@ The first numbered version: everything built so far.
 - **Cute extras:** the hamster-cage look, speech-bubble hints from your hamster, sound effects with a volume control, pixel sparkles and confetti, win banners, a Stats screen, and an Info tab with the paytable, the paylines, the real odds of every feature, and your recent wins.
 - **Settings:** less motion, quick reels, short or full numbers.
 
-[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/NXT549/hamster-slots/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/NXT549/hamster-slots/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/NXT549/hamster-slots/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/NXT549/hamster-slots/compare/v1.1.0...v1.2.0

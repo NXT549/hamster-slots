@@ -212,7 +212,7 @@ export function createDebugPanel(
       `RTP            ${(e.rtp * 100).toFixed(1)}%   (profit/spin ${e.profitPerSpin.toFixed(2)}, +${e.extraSecondsPerSpin.toFixed(3)} s of features a spin)`,
       `Hit rate       ${(e.hitRate * 100).toFixed(1)}% expected · ${actualHit} actual (all machines)`,
       `Luck           ${e.luck.total} (Hamster ${e.luck.hamster} + Machine ${e.luck.machine}) · symbols ${game.getMachineInfo(md.id)!.symbols.unlocked}/${game.getMachineInfo(md.id)!.symbols.lockable} unlocked`,
-      `Auto interval  ${e.autoInterval ? `${e.autoInterval.toFixed(2)} s (${(1 / e.autoInterval).toFixed(2)} spins/s)` : 'off'}`,
+      `Auto interval  ${e.autoInterval ? `${e.autoInterval.toFixed(2)} s (${(1 / e.autoInterval).toFixed(2)} spins/s)` : 'off'}${e.autoInterval && game.getAutoPaused() ? ' · PAUSED (the pause toggle)' : ''}`,
       `Auto profit/s  ${e.expectedAutoProfitPerSecond.toFixed(2)} expected`,
       `Net coins/s    ${measuredPerSecond().toFixed(2)} measured (last ${WINDOW}s game time)`,
       `Spin time      ${e.spinDuration.toFixed(2)} s`,

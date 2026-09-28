@@ -28,6 +28,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -85,7 +86,7 @@
       "coinsEarned": "330",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -184,6 +185,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -241,7 +243,7 @@
       "coinsEarned": "707",
       "playTime": 599.999999999783
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -340,6 +342,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -398,7 +401,7 @@
       "coinsEarned": "1084",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -498,6 +501,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -557,7 +561,7 @@
       "coinsEarned": "1603",
       "playTime": 1199.9999999992374
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -659,6 +663,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -720,7 +725,7 @@
       "coinsEarned": "2493.25",
       "playTime": 1499.9999999989645
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -822,6 +827,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -885,7 +891,7 @@
       "coinsEarned": "3410.75",
       "playTime": 1799.9999999986917
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -987,6 +993,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -1050,7 +1057,7 @@
       "coinsEarned": "3848.75",
       "playTime": 2099.9999999991282
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1152,6 +1159,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -1216,7 +1224,7 @@
       "coinsEarned": "5032.75",
       "playTime": 2400.000000002948
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1318,6 +1326,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -1382,7 +1391,7 @@
       "coinsEarned": "7310.5",
       "playTime": 2700.000000006768
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1485,6 +1494,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4.6,
      "bigCage": false,
      "capsules": {
@@ -1551,7 +1561,7 @@
       "coinsEarned": "10245.5",
       "playTime": 3000.000000010588
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1658,6 +1668,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": true,
      "capsules": {
@@ -1714,7 +1725,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "2",
      "seedsEarned": "2",
      "skins": {
@@ -1819,6 +1830,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -1875,7 +1887,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -1985,6 +1997,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4.6,
      "bigCage": false,
      "capsules": {
@@ -2050,7 +2063,7 @@
       "coinsEarned": "1671.64",
       "playTime": 599.999999999783
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -2153,6 +2166,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -2287,7 +2301,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2397,6 +2411,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 1.2500000000000004,
      "bigCage": false,
      "capsules": {
@@ -2547,7 +2562,7 @@
       "coinsEarned": "418950.02",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2657,6 +2672,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4,
      "bigCage": false,
      "capsules": {
@@ -2832,7 +2848,7 @@
       "coinsEarned": "14285684.52",
       "playTime": 360.00000000000125
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2944,6 +2960,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0.2499999999999999,
      "bigCage": false,
      "capsules": {
@@ -3146,7 +3163,7 @@
       "coinsEarned": "94183950.29",
       "playTime": 539.9999999998375
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3261,6 +3278,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4.4,
      "bigCage": false,
      "capsules": {
@@ -3492,7 +3510,7 @@
       "coinsEarned": "1114478903.43",
       "playTime": 732.8666666663288
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3607,6 +3625,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 2.5999999999999956,
      "bigCage": false,
      "capsules": {
@@ -3838,7 +3857,7 @@
       "coinsEarned": "1115120153.43",
       "playTime": 744.333333332985
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3953,6 +3972,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 2.9999999999999942,
      "bigCage": false,
      "capsules": {
@@ -4184,7 +4204,7 @@
       "coinsEarned": "1115186653.43",
       "playTime": 744.7333333329847
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4300,6 +4320,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 2.9999999999999942,
      "bigCage": false,
      "capsules": {
@@ -4532,7 +4553,7 @@
       "coinsEarned": "1122592134.26",
       "playTime": 744.7333333329847
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4648,6 +4669,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 2.9999999999999942,
      "bigCage": false,
      "capsules": {
@@ -4880,7 +4902,7 @@
       "coinsEarned": "1122592134.26",
       "playTime": 744.7333333329847
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4996,6 +5018,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 3.8,
      "bigCage": false,
      "capsules": {
@@ -5229,7 +5252,7 @@
       "coinsEarned": "1123359081.17",
       "playTime": 864.7333333328755
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5330,6 +5353,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -5376,7 +5400,7 @@
       "coinsEarned": "20000",
       "playTime": 0
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5472,6 +5496,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -5521,7 +5546,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5625,6 +5650,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -5677,7 +5703,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5809,6 +5835,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 3.9099999999999997,
      "bigCage": false,
      "capsules": {
@@ -5870,7 +5897,7 @@
       "coinsEarned": "162",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -6003,6 +6030,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -6062,7 +6090,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6205,6 +6233,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 2.8399999999998755,
      "bigCage": false,
      "capsules": {
@@ -6276,7 +6305,7 @@
       "coinsEarned": "4656.83",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6416,6 +6445,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -6537,7 +6567,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -6647,6 +6677,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4.4,
      "bigCage": false,
      "capsules": {
@@ -6802,7 +6833,7 @@
       "coinsEarned": "68222700000",
       "playTime": 240.00000000008313
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -6912,6 +6943,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4.4,
      "bigCage": false,
      "capsules": {
@@ -7096,7 +7128,7 @@
       "coinsEarned": "1274404575000",
       "playTime": 479.9999999998921
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7206,6 +7238,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 3.2499999999999933,
      "bigCage": false,
      "capsules": {
@@ -7416,7 +7449,7 @@
       "coinsEarned": "3028004780250",
       "playTime": 719.9999999996738
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7527,6 +7560,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 3.2499999999999933,
      "bigCage": false,
      "capsules": {
@@ -7798,7 +7832,7 @@
       "coinsEarned": "3339639158250",
       "playTime": 724.9999999996693
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7911,6 +7945,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 2.249999999999997,
      "bigCage": false,
      "capsules": {
@@ -8121,7 +8156,7 @@
       "coinsEarned": "3356837633250",
       "playTime": 784.9999999996147
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -8237,6 +8272,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4.6,
      "bigCage": false,
      "capsules": {
@@ -8299,7 +8335,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8416,6 +8452,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4.6,
      "bigCage": false,
      "capsules": {
@@ -8479,7 +8516,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8598,6 +8635,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4.6,
      "bigCage": false,
      "capsules": {
@@ -8666,7 +8704,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8790,6 +8828,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 3.4223999999999997,
      "bigCage": false,
      "capsules": {
@@ -8862,7 +8901,7 @@
       "coinsEarned": "2448.88",
       "playTime": 399.99999999996487
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8989,6 +9028,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 1.8974666666665596,
      "bigCage": false,
      "capsules": {
@@ -9061,7 +9101,7 @@
       "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9188,6 +9228,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 1.8974666666665596,
      "bigCage": false,
      "capsules": {
@@ -9285,7 +9326,7 @@
       "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9412,6 +9453,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 4.278,
      "bigCage": false,
      "capsules": {
@@ -9484,7 +9526,7 @@
       "coinsEarned": "14655.28",
       "playTime": 489.999999999883
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9604,6 +9646,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 1.2500000000000004,
      "bigCage": false,
      "capsules": {
@@ -9693,7 +9736,7 @@
       "coinsEarned": "711.55",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "6",
      "skins": {
@@ -9826,6 +9869,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": true,
      "capsules": {
@@ -9887,7 +9931,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -9994,6 +10038,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -10088,7 +10133,7 @@
       "coinsEarned": "769",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -10198,6 +10243,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
@@ -10293,7 +10339,7 @@
       "coinsEarned": "1849.11",
       "playTime": 119.99999999999447
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "35",
      "skins": {
@@ -10419,6 +10465,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 1.2500000000000004,
      "bigCage": false,
      "capsules": {
@@ -10515,7 +10562,7 @@
       "coinsEarned": "58502387.04",
       "playTime": 150.0000000000115
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "35",
      "skins": {
@@ -10646,6 +10693,7 @@
       "retire": false,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 2.249999999999997,
      "bigCage": false,
      "capsules": {
@@ -10798,7 +10846,7 @@
       "coinsEarned": "25113839808002.71",
       "playTime": 389.99999999997397
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1",
      "seedsEarned": "35",
      "skins": {
@@ -10944,6 +10992,7 @@
       "retire": true,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 3.6799999999999997,
      "bigCage": false,
      "capsules": {
@@ -11077,7 +11126,7 @@
       "coinsEarned": "2095.07",
       "playTime": 19.000000000000203
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1132",
      "seedsEarned": "3989",
      "skins": {
@@ -11224,6 +11273,7 @@
       "retire": true,
       "share": 0.25
      },
+     "autoPaused": false,
      "autoTimer": 3.4223999999999997,
      "bigCage": false,
      "capsules": {
@@ -11358,7 +11408,7 @@
       "coinsEarned": "10550.16",
       "playTime": 78.9999999999968
      },
-     "saveVersion": 13,
+     "saveVersion": 14,
      "seeds": "1132",
      "seedsEarned": "3989",
      "skins": {

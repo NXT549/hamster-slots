@@ -1,5 +1,5 @@
 {
- "saveVersion": 13,
+ "saveVersion": 14,
  "coins": "648.37",
  "upgrades": {
   "cheeks": 9,
@@ -65,6 +65,17 @@
  "stars": {},
  "bigCage": false,
  "helper": true,
+ "colony": 0,
+ "colonyCoins": "2028219.29",
+ "whiskers": "0",
+ "perks": {},
+ "trial": null,
+ "trialsDone": {},
+ "auto": {
+  "retire": false,
+  "share": 0.25,
+  "plant": true
+ },
  "tokens": "19",
  "diary": {
   "firstSpin": true,
@@ -165,6 +176,12 @@
   "seedDropEdges": 0,
   "prizesBought": 0,
   "doubleWins": 0,
-  "helperBuys": 0
+  "helperBuys": 0,
+  "migrations": 0,
+  "whiskersEarned": "0",
+  "trialsCompleted": 0,
+  "autoRetires": 0,
+  "mysteryBoxes": 0,
+  "bestBoxes": 0
  }
 }

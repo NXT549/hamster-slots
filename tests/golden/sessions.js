@@ -40,7 +40,7 @@ const PICKS = ['collect', 'red', 'hearts', 'black', 'collect', 'spades', 'red', 
 // was made with v7, where it was a plain number.
 export const MONEY_STATS = ['coinsWon', 'coinsSpent', 'deliveryCoins', 'coinsEarned', 'tokensEarned', 'biggestWin', 'offlineCoins', 'freeSpinCoins',
   'chipsBought', 'chipsEarned', 'biggestCasinoWin', // (M11's, in v11 saves)
-  'whiskersEarned']; // (1.4.0's, in v13 saves)
+  'whiskersEarned']; // (1.4.0's, in v14 saves)
 export function moneyFields(save) {
   const fields = [[save, 'coins'], [save, 'seeds'], [save, 'seedsEarned'], [save, 'tokens'], [save, 'colonyCoins'], [save, 'whiskers']];
   if (save.run) fields.push([save.run, 'coinsEarned']);

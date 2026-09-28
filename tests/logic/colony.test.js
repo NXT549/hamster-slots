@@ -1,7 +1,7 @@
 // colony.test.js — 1.4.0, The Great Migration: the mega rebirth (a new colony:
 // the generation, Heirloom Seeds, the tree and Machine Stars start again, for Golden
 // Whiskers), colony perks, the seed softcap, Colony Trials, the Wise Elders
-// (automation), Moving Day (the 8th machine, with boxes) and the colony traits; save v13.
+// (automation), Moving Day (the 8th machine, with boxes) and the colony traits; save v14.
 
 import { describe } from 'vitest';
 import { check } from '../check.js';
@@ -418,7 +418,7 @@ describe('Moving Day (the 8th machine) and the colony traits', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-describe('save v13', () => {
+describe('save v14', () => {
   const g = trialFamily(361);
   g.state.whiskers = money(20);
   g.buyPerk('colonyPride');
@@ -426,28 +426,32 @@ describe('save v13', () => {
   g.state.trialsDone[col.trials[0].id] = true;
   g.setAuto({ retire: true, share: col.autoRetire.shares[2], plant: false });
   const save = g.toSaveData();
-  check('a save is v13, with the colony', save.saveVersion === SAVE_VERSION && SAVE_VERSION === 13 && save.colony === 1 && save.whiskers === '19'
+  check('a save is v14, with the colony', save.saveVersion === SAVE_VERSION && SAVE_VERSION === 14 && save.colony === 1 && save.whiskers === '19'
     && save.perks.colonyPride === 1 && save.trial === col.trials[1].id && save.trialsDone[col.trials[0].id] === true
     && deepEqual(save.auto, { retire: true, share: col.autoRetire.shares[2], plant: false }) && typeof save.colonyCoins === 'string');
   const h = newGame(362);
   check('… and loads back the same', h.loadSaveData(JSON.parse(JSON.stringify(save))) && deepEqual(h.toSaveData(), save));
 
-  // v12 → v13: the seeds pending stay the same, on the new curve.
+  // v13 → v14: the seeds pending stay the same, on the new curve. A v12 save (from
+  // before 1.3.2's pause toggle too) goes through both steps and ends up the same.
   const r = data.retirement;
-  for (const coins of [0, 5e4, 3e8, 1e15, 1e24]) {
-    const v12 = JSON.parse(JSON.stringify(newGame(363).toSaveData()));
-    v12.saveVersion = 12;
-    for (const k of ['colony', 'colonyCoins', 'whiskers', 'perks', 'trial', 'trialsDone', 'auto']) delete v12[k];
-    for (const k of ['migrations', 'whiskersEarned', 'trialsCompleted', 'autoRetires', 'mysteryBoxes', 'bestBoxes']) delete v12.stats[k];
-    const oldTotal = Math.floor(Math.pow(coins / r.seedDivisor, r.seedExponent) + 1e-9);
-    const earned = Math.floor(oldTotal / 2);
-    v12.stats.coinsEarned = String(coins);
-    v12.seedsEarned = String(earned);
-    const k = newGame(364);
-    const loaded = k.loadSaveData(v12);
-    check(`v12 → v13 (${coins} coins earned): the same seeds are pending as before (${oldTotal - earned})`,
-      loaded && num(k.getPendingSeeds()) === oldTotal - earned && k.state.colony === 0 && num(k.state.whiskers) === 0 && k.state.trial === null
-      && k.state.auto.retire === false && k.state.stats.migrations === 0, `${num(k.getPendingSeeds())}`);
+  for (const version of [13, 12]) {
+    for (const coins of [0, 5e4, 3e8, 1e15, 1e24]) {
+      const old = JSON.parse(JSON.stringify(newGame(363).toSaveData()));
+      old.saveVersion = version;
+      for (const k of ['colony', 'colonyCoins', 'whiskers', 'perks', 'trial', 'trialsDone', 'auto']) delete old[k];
+      for (const k of ['migrations', 'whiskersEarned', 'trialsCompleted', 'autoRetires', 'mysteryBoxes', 'bestBoxes']) delete old.stats[k];
+      if (version === 12) delete old.autoPaused;
+      const oldTotal = Math.floor(Math.pow(coins / r.seedDivisor, r.seedExponent) + 1e-9);
+      const earned = Math.floor(oldTotal / 2);
+      old.stats.coinsEarned = String(coins);
+      old.seedsEarned = String(earned);
+      const k = newGame(364);
+      const loaded = k.loadSaveData(old);
+      check(`v${version} → v14 (${coins} coins earned): the same seeds are pending as before (${oldTotal - earned})`,
+        loaded && num(k.getPendingSeeds()) === oldTotal - earned && k.state.colony === 0 && num(k.state.whiskers) === 0 && k.state.trial === null
+        && k.state.auto.retire === false && k.state.stats.migrations === 0 && k.state.autoPaused === false, `${num(k.getPendingSeeds())}`);
+    }
   }
   const bad = JSON.parse(JSON.stringify(save));
   bad.trial = 'nope';
@@ -460,11 +464,12 @@ describe('save v13', () => {
   check('junk colony fields are cleaned (unknown trials and perks, capped levels, a known share, stars capped at the max)',
     c.state.trial === null && deepEqual(c.state.perks, { colonyPride: 2, wiseElders: 1 }) && c.state.auto.retire === false
     && c.state.auto.share === col.autoRetire.shares[0] && c.state.colony === 0 && c.state.stars.clunky === c.getMaxStars(), JSON.stringify([c.state.perks, c.state.stars]));
-  check('migrateSave v12 → v13 without data keeps the lifetime coins as the colony\'s', (() => {
-    const v12 = JSON.parse(JSON.stringify(newGame(366).toSaveData()));
-    v12.saveVersion = 12;
-    v12.stats.coinsEarned = '12345';
-    return migrateSave(v12, null).colonyCoins === '12345';
+  check('migrateSave v13 → v14 without data keeps the lifetime coins as the colony\'s', (() => {
+    const v13 = JSON.parse(JSON.stringify(newGame(366).toSaveData()));
+    v13.saveVersion = 13;
+    delete v13.colonyCoins;
+    v13.stats.coinsEarned = '12345';
+    return migrateSave(v13, null).colonyCoins === '12345';
   })());
 });
 
