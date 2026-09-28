@@ -647,6 +647,7 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - Released without a playtest first (the user's call), like 1.3.0 and 1.3.1: it was checked on a branch preview (Chromium, mobile and desktop widths, the button actually clicked) but not yet on the user's own phone, which is where the original gap was found — worth a look once it's live.
 - The release commit moved the CHANGELOG's `[Unreleased]` to `[1.3.2] - 2026-09-28 · Rest Stop`, set 1.3.2 in package.json and package-lock (from 1.3.2-rc.1) and marked it released in the docs; `main` was fast-forwarded to it, and the deploy workflow puts it on the Pages link.
 - The tag `v1.3.2` is made locally on the release commit; tag pushes are cut off by the sessions' git proxy, so the user publishes the GitHub Release **"v1.3.2 · Rest Stop"** on the "Release 1.3.2" commit.
+- The deploy run (Actions run 13) passed; the live page serves the new build (checked with curl: the same hashed bundle as the local build, `assets/index-C-XVTqMk.js`, containing "1.3.2" and "Rest Stop").
 
 
 
