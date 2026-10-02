@@ -722,6 +722,36 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - The tag `v1.5.0` is made locally on the release commit; tag pushes are cut off by the sessions' git proxy, so the user publishes the GitHub Release **"v1.5.0 · The Glow Up"** on the "Release 1.5.0" commit (`bb98c2d`).
 - The deploy run (Actions run 18, on "Release 1.5.0") passed; the live page served the new build about 80 s after the push. Checked with curl: index.html and every file it loads (the bundle `assets/index-CHbtxspK.js`, with "1.5.0" and "The Glow Up" in it, the CSS, the icons, the manifest, the link card's picture) are byte for byte the local build's. The session's Chromium can't open the live site (it doesn't trust the session proxy's certificate, and certificate checks stay on), so the browser checks are the ones on those same files served locally (Playtest notes, 1.5.0-rc.1).
 
+**D156 — A full UI redesign: planned, and the user's picks** (the user, 2026-09-29: "Make a full plan to redesign the full UI"; DESIGN §31).
+- **Asked first, unlike 1.5.0 (D150):** "the full UI" could mean a new skin, a new layout, or both, and the look had real alternatives. So four questions went to the user before anything was written. **The user's picks:**
+  - **restyle + restructure** (over restyle only, or usability only);
+  - **the hamster's room**: painted wood, paper and brass (over a deeper cardboard toy box, an arcade machine, or a clean and bold style);
+  - the extras **a first-time guide** and **UI sounds** (not keyboard shortcuts, nor text-size and colour options);
+  - **"plan into docs only"**.
+- **Written down as DESIGN §31 and the roadmap row "Update 1.6.0 "New Digs"" (planned), like M15's plan (D131).** Nothing is built until the user asks. Then it's a branch and 1.6.0-rc.1, with a stop for the user's OK on the look after the Upgrades tab (part 3 of 9).
+- **Why a restructure as well as a new look:** the measurements (Playtest notes, 2026-10-02):
+  - on a 390×844 phone the tray's tab is 296 px tall (2 of 22 upgrade tiles in view);
+  - more than half the buttons are under 44 px, and text goes down to 9 px;
+  - the five tabs overflow at 360 px and on a phone on its side (which also scrolls the page by 150 px);
+  - a 5-reel machine's WIN meter is 8 px on a phone.
+
+  Reading the code found no shared pieces (six copies of the two-tap confirm, four of the buy button, eight progress bars …) and seven small bugs (§31 → Before).
+- **Chosen:**
+  - **One kit of pieces** in plain TypeScript (factories that build their DOM once and update through element references), so every screen looks and behaves alike.
+  - **Painted frames** from tokens with paint.ts, once at startup (no cost per frame).
+  - **Only the open tab renders.**
+  - **The guide works its steps out from the lifetime stats**, so the save doesn't change; its on/off switch and the UI sounds' are settings.
+  - **On a phone the main tabs move to a bottom bar**, and the detail card becomes a sheet *inside* the tray.
+- **Rejected:**
+  - **A UI framework** for the kit, and WebGL/PixiJS: rule 5. Plain factories with dirty checks already fit the frame loop.
+  - **A sheet over the cage:** it hides the machine (D132).
+  - **More or merged top-level tabs:** five already crowd a phone (D83). The bottom bar makes room instead.
+  - **Machine switching moved into a menu:** it must stay one tap, where you look (§12).
+  - **Canvas text for every word:** screen readers can't read it, and it's heavy. Pixel titles only for the few big labels.
+  - **Keeping the guide's progress in the save:** a save change for a view feature.
+  - **A full-screen casino page** (D136), **a title screen or a "what's new" pop-up** (D123).
+- **The name:** "New Digs" (a new place to live, and hamsters dig), as **1.6.0**: a minor version, like 1.2.0 and 1.5.0. The user can rename it.
+
 
 
 
@@ -838,6 +868,27 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-10-02 · 1.5.0 "The Glow Up" · the UI before the planned redesign (measured, not a real playtest)**
+- **Measured in Chromium** (`npm run dev`; a game with 1B coins and every upgrade on sale, then one retirement so all five tabs show), for DESIGN §31's "Before". **No code changed.**
+
+| | 1280×800 | 390×844 | 844×390 | 360×640 |
+|---|---|---|---|---|
+| The tray's open tab (height) | 653 px | 296 px | 395 px | — |
+| Hamster upgrade tiles fully in view (of 22) | 6 | 2 | 2 | — |
+| Buttons under 44 px | 32 of 57 | 31 of 55 | 30 of 55 | — |
+| Smallest text on screen | 10 px | 9 px | 9 px | — |
+| Places with text under 12 px | 24 | 27 | 27 | — |
+| The five tabs | fit, 29 px tall | just fit, 27 px tall, 13 px text | 28 px too wide | 24 px too wide |
+| The page scrolls | no | no | 150 px | — |
+| WIN meter, 5-reel machine (rig zoom) | 18 px (0.99) | 8 px (0.46) | 10 px (0.55) | — |
+| Roulette spots | — | ~20 px wide | — | ~18 px wide |
+
+- **What it means:**
+  - The game fits a computer's window well.
+  - On a phone the tray is small, and much of the UI is under finger size.
+  - The two-row casino sub-tabs and the tab row on a phone on its side are the tightest spots.
+- No console errors.
 
 **2026-09-28 · 1.5.0-rc.1 "The Glow Up" · the visual redesign (automated checks, not a real playtest)**
 - **Played in Chromium** (this session's headless browser) at 1280×800, 390×844 and 844×390, in `npm run dev` and in the built game (`npm run preview`, `?debug`), screenshotting every step before and after: a fresh game (the room, the window's drifting sky, the perspective cage, the bedding, the new hamster in the painted wheel); **all 8 machines' cabinets** (each machine bought and switched to; Moving Day after a pretend migration) with their bulbs, bezels, trays and knobs; spinning (the wheel's smear, the lever pulled, the reels' wind-up and blur); a **BIG WIN** and a **JACKPOT** celebration (the pixel-art titles in gold and orange, the two sets of rays, the glow, coins raining and clinking into the tray); **8 FREE SPINS** (the blue title, **the night room**: lamp on, moon and stars in the window, the machine's pulsing halo); the **Big Cage** before and after planting (the 64 px hamster, butterflies, the bird, petals) and a **real retirement** (the rebirth animation: the hamster runs in with the new run cycle, digs, plants); the **casino** (the table's wooden rail and felt); **skins** (the starry and casino rooms, the gold and oak wheels, the midnight and peach Old Clunky, the tuxedo and snowball furs with the crown and the top hat: all recoloured); **Motion "Less"** (nothing moves, nothing breaks). No console errors anywhere.

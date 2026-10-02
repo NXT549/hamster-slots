@@ -423,6 +423,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 | — | **Update 1.3.1 "Nuts & Bolts"** *(done; released in 1.3.1; §28)* | Not a milestone: the user's "a ton of new upgrades and improvements some gated behind rebirths… maybe some from achievements" (2026-09-27). 20 upgrades (3 for everyone, 6 rebirth upgrades, 11 sticker upgrades), 4 Family Tree traits (the Hamster Helper buys cheap upgrades for you), 7 stickers, Lucky Pennies (a win can pay double), save v12. And from now on **every update has a name** (the user's wish). |
 | — | **Update 1.4.0 "The Great Migration"** *(done; released in 1.4.0; §29)* | Not a milestone: the user's "a new update to keep late game interesting like a mega rebirth… I just want the late game to remain interesting and fun" (2026-09-27), with their picks: the **Great Migration** (the whole tree planted → a new colony: the generation, seeds, tree and stars start again, for **Golden Whiskers** and colony perks kept for good), **Colony Trials**, the **Wise Elders** (automation), **Moving Day** (an 8th machine with boxes that all open into one symbol), **colony traits**, and **longer late lives** (a softcap on the seed curve). Save v14. |
 | — | **Update 1.5.0 "The Glow Up"** *(done; released in 1.5.0; §30)* | Not a milestone: the user's "a full visual redesign of the game… a massive improvement in graphics/visuals, better animations, more detail, everything" (2026-09-28). Still pixel art, but painted to fit instead of CSS boxes: a cosy **room** round a **cage in perspective** (window with a drifting sky, curtains, shelf, portrait, deep bedding, sunlight; a night version in free spins), **painted cabinets** for all 8 machines with chasing **bulbs**, a **32×32 hamster** with a run cycle and expressions, a **wheel that really turns**, **32×32 reel symbols**, **pixel-art titles** (a font of our own), glints, reel wind-up and landing flash, coins into the tray, a **logo**, and tray, meadow and casino polish. View only. |
+| — | **Update 1.6.0 "New Digs"** *(planned, not built; §31)* | Not a milestone: the user's "make a full plan to redesign the full UI" (2026-09-29), with their picks: **restyle + restructure**, **the hamster's room** look (painted wood, paper and brass round 1.5.0's painted scene), a **first-time guide** and **UI sounds**, and "plan into docs only". The plan: one kit of pieces for every screen, a brass wallet with every currency, a control deck for Spin, Deliver and the bet, the main tabs at the bottom on a phone, a detail sheet inside the tray, readable sizes and finger-sized targets, safe areas. View only. Built only when the user asks. |
 | → | **Releases** | GitHub Pages from the start; then itch.io, Steam (Electron or Tauri), maybe mobile (Capacitor), all from the same web codebase. See PORTING_NOTES → The plan. |
 
 **Particles and animations are now a thread, not a milestone** (the user's "fun particle effects and animations"): every milestone ships the effects for what it adds (M7: dust puffs as each reel stops, sparkles per winning line, rolling WIN digits, a card flip, a clover sparkle when luck goes up; M8: the Big Cage scene and a star burst on a rebuild; and so on). **1.0 went through the whole game** (the user's "I also really want some cool animations and effects", §23). Motion "Less" keeps turning them all off.
@@ -438,6 +439,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 - **First M7 feedback (user, 2026-09-27):** "issue with 3 slots its based left to right meaning if you get 2 on the right it doesnt count" → the user picked **Pays Both Ways as an upgrade** (§3, D119), over "both ways always", "keep left to right, explain it better" and "both ways on Old Clunky only".
 - **M9 (user, 2026-09-27):** after 1.0 ("looks good keep going"), the user picked **all three** proposed machines (243 ways, hold & spin, a multiplier wheel) and placed them in the **late game**, "priced so lives from generation ~9 get longer again" (§24; that part didn't work out, §10).
 - **After 1.4.0 (user, 2026-09-28):** "I want you to do a full visual redesign of the game I mean I want a massive improvement in graphics/visuals better animations more detail everything" → update 1.5.0 "The Glow Up" (§30).
+- **After 1.5.0 (user, 2026-09-29):** "Make a full plan to redesign the full UI" → asked four questions, the user picked restyle + restructure, the hamster's room (wood, paper, brass), a first-time guide and UI sounds, and "plan into docs only" → planned as update 1.6.0 "New Digs" (§31).
 - **After 1.1.0 (user, 2026-09-27):** "i want an entire visual redesign" · "i want better ui for upgrades as having to scroll down is a pain" · "i want a rebirth animation" · "i want a separate screen where you spend heirloom seeds and you can only spend those seeds when you rebirth" → M15 (§26). The last two partly existed (1.0's iris and seed rain, M8's Big Cage page); asked what should change, the user picked: still pixel art, "a full cleaner way more user friendly ui for both big and small screens", the Big Cage and the animation "more detailed", "tree only apears when you rebirth", "the hamster planting an heirloom seed and a huge tree shoots up and the rebirth skill tree is branching off the huge tree", upgrades "similar to the rebirth… fit a bit better", and "build this now" (§26).
 - **After M6 (user, 2026-09-25):** new: "more slot machines" → M9 · "rebirths for slot machines" → M8 · "unlock/buy new seeds (carrot, sunflower, golden)", which the user explained as *unlockable symbols you don't start with, kept balanced* → M7 · "more new fun upgrades" → every milestone (luck M7, stars M8, casino M11) · "roulette, blackjack etc in a hamster casino" → M11 · "late game you can eventually start your own casino" → M12 · "hats & skins which both give unique changes and improvements" → M10 · "fun particle effects and animations" → every milestone. Balancing: "slow down spin speed… early game to feel like a slog" → M7 (the user picked "real slog") · "with new symbols added change how likely you are to actually get wins therefore making players buy the luck upgrade" → M7 · "a reason to both rebirth and hold heirloom seeds" → M8. Changes: "change how the double or nothing system works" → M7 (the user picked the pokies card gamble) · "make it more like slot machines… make them go one by one" → M7 · "luck upgrades so you can see how much luck you have… hamster luck and machine luck" → M7 · "when you rebirth it takes you to a fully in-depth page of just the upgrades" → M8.
 
@@ -450,7 +452,7 @@ The user asked for rebirth + skill tree next, then skins, so the old "Prestige" 
 
 ## 12. Look & feel (prototype): the hamster cage
 
-**Direction: the inside of a hamster cage** (milestone 5, the user's pick from four directions: hamster cage, night arcade, cozy cottage, candy toy shop). It is *not* the classic clicker layout (big button on the left, long text shop on the right). The game is a little cage you look into: wire bars, wood-shaving bedding, a coloured plastic base, a water bottle and a food bowl, and clear plastic tubes. The UI around it is **cardboard and paper**: the tray is a taped-up cardboard box, tiles and dialogs are paper cards, and every border is a crisp pixel-art frame. **The final look is open:** the 2D pixel-art cage is the current look, and the 2.5D look planned for the Godot rebuild went with it (D106). Whether the release keeps this look is decided later. **M15 (§26) redesigned the layout** (the user's "entire visual redesign", still pixel art): the whole game fits the window, with the tray **beside the cage** on wide screens and **under it** on phones; the tables below describe the parts, and §26 how they fit together. **1.5.0 "The Glow Up" (§30) repainted it all**: the cage, the room behind it, the wheel and every machine's cabinet are pixel art painted in code to fit (no longer CSS shapes), the hamster and the reel symbols are 32×32, and the big moments, the tray and the HUD got far more detail and motion. Where a row below and §30 differ, §30 is the current look.
+**Direction: the inside of a hamster cage** (milestone 5, the user's pick from four directions: hamster cage, night arcade, cozy cottage, candy toy shop). It is *not* the classic clicker layout (big button on the left, long text shop on the right). The game is a little cage you look into: wire bars, wood-shaving bedding, a coloured plastic base, a water bottle and a food bowl, and clear plastic tubes. The UI around it is **cardboard and paper**: the tray is a taped-up cardboard box, tiles and dialogs are paper cards, and every border is a crisp pixel-art frame. **The final look is open:** the 2D pixel-art cage is the current look, and the 2.5D look planned for the Godot rebuild went with it (D106). Whether the release keeps this look is decided later. **M15 (§26) redesigned the layout** (the user's "entire visual redesign", still pixel art): the whole game fits the window, with the tray **beside the cage** on wide screens and **under it** on phones; the tables below describe the parts, and §26 how they fit together. **1.5.0 "The Glow Up" (§30) repainted it all**: the cage, the room behind it, the wheel and every machine's cabinet are pixel art painted in code to fit (no longer CSS shapes), the hamster and the reel symbols are 32×32, and the big moments, the tray and the HUD got far more detail and motion. Where a row below and §30 differ, §30 is the current look. **A full UI redesign is planned (§31, not built yet):** the UI round the scene as the hamster's room (painted wood, paper and brass), one kit of pieces, and a restructured layout.
 
 | Area | What's there | Why |
 |---|---|---|
@@ -1920,3 +1922,343 @@ All 14 are redrawn at **32×32** with five-step ramps (six new deep-shade colour
 - Are the pixel titles readable on a phone? Is the logo too big on a small laptop?
 - Does anything feel slow on your phone?
 - Is "The Glow Up" the right name?
+
+## 31. New Digs: a full UI redesign (update 1.6.0, planned)
+
+> **Status: planned, not built** (2026-09-29, the user's request after 1.5.0; PORTING_NOTES D156). The user picked "plan into docs only": this section is the plan, and **nothing is built until the user asks**. When it is, it's built on a branch as **1.6.0-rc.1** and reaches players only at the user's "publish". **View only:** no rules, balance or save changes (the golden run, the save fixtures and the simulator stay untouched).
+
+*"Make a full plan to redesign the full UI"* (the user, 2026-09-29)
+
+**The user's picks** (their answers to four questions):
+- **How deep:** *restyle + restructure*. Every panel, button, tile, card and dialog gets a new look, **and** the layout is rethought.
+- **The look:** *the hamster's room*. Wood, paper and brass, like furniture in the painted room (over a deeper cardboard toy box, an arcade machine, or a clean and bold style).
+- **Extras:** *a first-time guide* and *UI sounds* (not keyboard shortcuts, nor text-size and colour options).
+- **Next:** *plan into docs only*.
+
+### Why
+
+1.2.0 (§26) fixed the **layout**: the game fits the window. 1.5.0 (§30) **painted the scene**: the room, the cage, the machines, the hamster and the symbols. Everything round the scene is still M5's flat cardboard-and-paper CSS (§12), with 1.5.0's polish on top: the HUD, the Spin, Deliver and bet controls, the tray and its tabs, every tab's tiles and cards, the dialogs, the Big Cage's panels and the casino's chrome. Next to the painted room it looks flat and busy, and on a phone much of it is small and cramped.
+
+### Before (1.5.0)
+
+**Measured** in headless Chromium (2026-10-02; `npm run dev`, a game with 1B coins and every upgrade on sale, then one retirement so all five tabs show):
+
+| | 1280×800 | 390×844 (phone) | 844×390 (phone on its side) | 360×640 |
+|---|---|---|---|---|
+| The tray's open tab (height) | 653 px | **296 px** | 395 px | — |
+| Hamster upgrade tiles fully in view (of 22) | 6 | **2** | 2 | — |
+| Buttons under 44 px (finger size) | 32 of 57 | 31 of 55 | 30 of 55 | — |
+| Smallest text on screen | 10 px | **9 px** | 9 px | — |
+| Text under 12 px | 24 places | 27 | 27 | — |
+| The five tabs | fit (29 px tall) | just fit (27 px tall, 13 px text) | **28 px too wide** | **24 px too wide** |
+| The page scrolls | no | no | **150 px** | — |
+| The WIN meter on a 5-reel machine (the rig zoomed) | 18 px | **8 px** (zoom 0.46) | 10 px | — |
+| Roulette spots | — | ~20 px wide | — | ~18 px wide |
+
+**Read in the code:**
+- **No shared pieces.** `createSubTabs` (dom.ts) is the only reusable widget. Everything else is copied:
+  - the two-tap confirm, 6 times (Retire, Reset, Rebuild, Migrate in two places, Load a save), each with different words, sound and timer, and none that *looks* armed;
+  - painting a buy button, 4 times;
+  - tile markup, 4 times (upgrades, perks, prizes, skins);
+  - the detail card, twice (the shop's and the Big Cage's);
+  - progress bars, 8 ways;
+  - on/off switches, 5 of them, with 3 different "off" looks.
+- **style.css** is 1,868 lines in release order:
+  - ~30 font sizes and no spacing or type tokens;
+  - ~77 raw colours outside `:root`;
+  - three ways to draw a box (9-slice frames, notched corners, rounded corners);
+  - frames at in-between scales (`--fw` 6, 10 and 18 px are 1.5×, 2.5× and 4.5×);
+  - dead rules, and a few animations with no `.less-motion` rule.
+- **Bugs found:**
+  - `.line-label` is two different things (the win show's strip and the Info tab's payline captions), so both are styled wrongly.
+  - The Rebuild card's gold frame never draws.
+  - `.btn-small` only works in dialogs.
+  - The boost badges' tooltips can't be reached.
+  - The Upgrades and Info tabs never get a dot.
+  - Four state classes have no CSS.
+  - Numbers appear in the pixel font in about 8 places (against rule 11).
+- **On a phone:**
+  - a tile has two tap areas and a 34 px buy button;
+  - the detail card covers much of the 296 px tab, and its × is 28 px;
+  - ×1/×10/Max shrinks to one button that cycles;
+  - machine cards are the densest thing in the game;
+  - the Diary is 57 rows in data order;
+  - skin tiles stack four lines of 10.5–13 px text;
+  - the paytable scrolls sideways;
+  - chips can only be bought on the Prizes sub-tab;
+  - the Big Cage's trait card is a fixed 150 px with its own scroll, and its labels are 9.5 px;
+  - nothing keeps clear of notches or home bars.
+- **Speed and access:**
+  - ui.ts (1,622 lines) renders every tab every frame, hidden ones too (only the colony and the casino check).
+  - The tabs have no `aria-selected` or tab panels.
+  - The hamster's speech bubble, the game's main voice, isn't announced to screen readers.
+  - Emoji (⏸ ▶ 🔒) sit in a pixel UI.
+
+### Goals
+
+1. **One world:** the UI is part of the hamster's room, painted by the same rules as the cage (`cage.ts`: 2 screen pixels a painted pixel, light from the top-left, an outline per part, dithered blends, token colours).
+2. **Clearer and friendlier:** one type scale, nothing under 12 px, finger-sized targets (44 px), fewer taps, every currency in view, and always a clear "what can I do now".
+3. **One kit:** every screen built from the same pieces, instead of one-off styles.
+4. **Phone first** (the user plays on a phone, D134), still great on a computer and a phone on its side, and ready for the phone app (safe areas).
+5. **Welcoming:** a first-time guide and soft UI sounds.
+
+### What stays
+
+- **View only.** The two new things kept between visits are *settings* (`uiSounds`, `guide`), stored apart from the save like the others (Reset keeps them), so `SAVE_VERSION` doesn't change.
+- **The painted scene stays** as 1.5.0 made it (the room, the cage, the cabinets, the hamster, the wheel, the symbols, the meadow and the tree). Only the controls and labels on it change.
+- **Nothing is lost:** every feature, number, setting and key stays reachable.
+- **Never cover the machine** (D132 rejected a sheet over the cage; D124: celebrations never cover Spin or Deliver). The tray's open tab is still the only thing that scrolls.
+- **The art rules** (rules 9 and 11):
+  - sprites in art.ts; painted pieces through paint.ts; whole-number scales only;
+  - every colour a token in the first `:root` block (the tests read only that block);
+  - the pixel font for words (weight 500), Nunito for numbers;
+  - highlights behind symbols; every animation with its `.less-motion` rule;
+  - skins still recolour the stage.
+- **No UI framework, no new dependency** (rule 5).
+- **No slower than 1.5.0:** 54 frames a second in D153's test, with no animated CSS filters.
+- **Kept on purpose:**
+  - one tap buys from a tile (D132);
+  - two taps for the big choices (D24);
+  - the cage steps aside for the casino on a phone (D136);
+  - no title screen and no "what's new" pop-up (D123).
+
+### The direction: the hamster's room
+
+The UI is the furniture and paperwork of the room the cage stands in, each part in its own material:
+
+| Material | Where | Painted as |
+|---|---|---|
+| **Wood** (the room's wainscot and shelf) | The tray (a wooden cabinet), the HUD (a shelf plank), dialog frames (picture frames), the control deck (a wooden console on the cage tray's front) | A 9-slice frame from `--wood*`: grain, a bevel, corner joints |
+| **Paper** (cream index cards) | Tiles, cards, the detail sheet, tables (ruled lines), notes (a torn edge) | A paper frame with a soft shadow. Its coloured edges keep today's meanings: green = you can buy it, gold = maxed or running, heirloom = planted, blue = selected |
+| **Brass** (fittings) | Tab plates, the currency counters, button rims, switches, screws at frame corners, progress gauges | New tokens `--brass`, `--brass-light`, `--brass-dark`, `--brass-ink`, with a bright top-left glint |
+| **Enamel** (arcade buttons) | Spin, Deliver, the main buttons | Domed buttons in today's action colours (`--primary`, `--soft`, `--buy` …); pressing one pushes the face down into its lip |
+| **Felt** (as now) | The casino's tables, and now the card gamble too | The felt and wooden rail of 1.5.0 |
+
+- **Colour:** the room's warm neutrals; the action colours keep their token names (skins and tests use them); the raw colours outside `:root` become tokens. **The machine stays the brightest thing on screen** (§30).
+- **Type:** six sizes (`--text-xs` … `--text-2xl`, about 12/14/16/20/24/32 px), nothing under 12 px (13 on a phone).
+  - The few big labels (dialog titles, the tray's heading, the Big Cage's name) use the crisp pixel titles of `pixelfont.ts`.
+  - Other words use Pixelify Sans 500, and numbers and long text use Nunito.
+- **Spacing:** a 4 px grid (`--space-1` … `--space-6`). Corners come from the frames (pixel steps), not rounded CSS corners.
+- **Icons:** a 16×16 icon (12×12 for currencies) for every tab, sub-tab, currency, setting and main button, from art.ts; pixel icons replace the emoji.
+- **Motion:** three durations; `steps()` where it should feel like pixel frames; presses, sheets and tab changes move with `transform` and `opacity` only.
+
+### The kit: one set of pieces
+
+Every screen is built from these, and they replace the copies listed in Before:
+
+| Piece | What it is |
+|---|---|
+| **Button** | Enamel or wood, small to extra large (Spin), with pressed, disabled and busy states |
+| **BuyButton** | The cost with its currency, a fill as you save up; ready, saving, maxed, locked or "switch" |
+| **ConfirmButton** | The two-tap choice. The first tap *arms* it: a brass "Tap again" plate, a fuse that burns down, a tick. The second confirms. It disarms after 4 s. Retire, Reset, Rebuild, Migrate and Load a save all use it |
+| **Toggle** | A brass lever switch (`aria-pressed`) with one "off" look: the Hamster Helper, the Wise Elders, sound, the auto-spin pause |
+| **Segmented** | A brass selector, all options always showing: ×1/×10/Max, Motion, Reels, Numbers, the Colony Trials |
+| **Stepper** | − value +: the bet, the casino's bets |
+| **Tabs / SubTabs** | Brass tab plates and paper index tabs, with dots and proper tab roles (`createSubTabs` grows into it) |
+| **Tile** | Icon, name, level, a short effect, pips. **The whole tile is one tap target** (it opens the sheet), and its buy button is a separate 44 px target. Upgrades, perks, prizes and skins all use it |
+| **Sheet** | The detail card, rising from the bottom **of the tray** (never over the cage): header, words, now → next, one action, a big close. The shop, the Big Cage and the capsule reveal share it |
+| **Card** | Paper on wood with a header and a tone (plain, gold, heirloom, locked): the retire, migration, rebuild, capsule, Wise Elders, trials and cashier cards |
+| **ListRow** | Icon, title, a line under it, a value at the end, an optional bar: the Diary, trials, recent wins, the Derby's lanes |
+| **StatRow / StatTile** | A label and a number: Stats, the Big Cage's numbers, the retire and migration numbers |
+| **Chip / Badge** | Small labels in a few tones, and the "new" dot |
+| **Gauge** | One progress bar, a brass-rimmed glass tube, for all 8 kinds |
+| **Amount** | A number with its currency icon, at a whole-number scale |
+| **Dialog** | A picture frame with a pixel title plate and an action row: the Menu, Stats, Save backup, Welcome back, the crash screen |
+| **More** | A "How it works" fold for the long notes (the paytable, the features, the casino's odds, the retire card) |
+| **CoachMark** | The guide's pointing paw (below) |
+
+- **Plain TypeScript factories:** `tile(options) → { el, update(…) }`.
+  - Each builds its DOM once and updates it through element references with dirty checks (`setText` as today).
+  - Lists render by key through one small helper; today several places each do it by hand.
+- **Only the open tab renders.** Hidden tabs skip their work, the way the colony and the casino already do.
+- **A kit gallery** (`tools/kit.html`, like `tools/sprites.html`) shows every piece in every state at phone and desktop widths.
+
+### The layout and navigation
+
+**Wide screens** (960 px and up, or a phone on its side from 700 px: M15's split stays):
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│ HAMSTER SLOTS   [coin 1.22M +2.9/s] [seed 12] [token 4] [chip 250]   [♪][☰] │ ← shelf plank, brass wallet
+├─────────────────────────────────────────┬─────────────────────────────┤
+│ [Clunky][Stacker]  ← signs on hooks       │ [Upgrades][Family][Capsules]… │ ← brass tab plates
+│                                         │  Hamster | Old Clunky | Machines │
+│        (the painted room and cage)      │  [tile]  [tile]              │
+│                                         │  [tile]  [tile]              │
+│ ╔═ the control deck ═══════════════════╗ │ ┌─ the sheet (in the tray) ─┐│
+│ ║ (Deliver) (((  SPIN 25  ))) [⏸] − ×1 + ║ │ └───────────────────────────┘│
+│ ╚══════════════════════════════════════╝ │                             │
+└─────────────────────────────────────────┴─────────────────────────────┘
+```
+
+**Phones:**
+```
+┌───────────────────────────┐
+│ 🐹 [coin 1.22M +3/s][+3] ☰ │ ← "+3" opens the other currencies
+├───────────────────────────┤
+│   (the cage, ≤ 44% high)  │
+│ (Deliver)((SPIN))[⏸] −×1+ │ ← the control deck, one row
+├───────────────────────────┤
+│ Hamster|Old Clunky|Machines │ ← paper sub-tabs, they stay put
+│ [tile]  [tile]            │
+│ [tile]  [tile]            │ ← only this scrolls
+├───────────────────────────┤
+│ Upgrades Family Capsules  │ ← the main tabs, in thumb reach,
+│ Casino Info  (icons)      │   above the home bar
+└───────────────────────────┘
+```
+
+- **The wallet.** Every currency the family has, as brass counters: coins (always, with the income rate), Heirloom Seeds, Hamster Tokens, Casino Chips and Golden Whiskers, each once it exists.
+  - Tap one for a note on what it is and where it's spent, with a button to that tab.
+  - On a phone, coins show and the rest fold into a "+N" counter.
+- **The control deck.** A wooden console on the front of the cage's plastic tray.
+  - **Spin** is the hero: an extra-large enamel arcade button with the cost and bet. It turns gold in free spins.
+  - **Deliver** shows the trip's pay and time, and fills while the hamster is out. The tube in the scene stays; its label moves onto the button.
+  - **The auto-spin pause** is a brass lever with a lamp, instead of the ⏸/▶ glyphs.
+  - **The bet** is a Stepper with its hint.
+  - The keys stay the same.
+- **Switching machines stays one tap, where you look** (§12). The tags become little wooden signs on hooks, icons only past four machines, as now.
+- **The tray** is a wooden cabinet with paper inside.
+  - **Wide:** the main tabs are brass plates along its top. The open one always shows its name, and the others show icons when the names don't fit.
+  - **Phone:** the main tabs move to **a bar at the bottom** (five 64 px tabs fit a 320 px phone), so they no longer crowd the tray's top. The sub-tabs stay at the top of the tray.
+- **The sheet** rises from the bottom of the tray to at most ~60% of it, with a big close button. The tile you tapped scrolls into view above it, and it never covers the cage.
+- **The machine's small labels on a phone.** The payline tags, the pot plaques, the WIN meter and the win show's line label keep a readable size by scaling back up against the rig's zoom, as the speech bubble already does (`--rig-zoom`).
+- **Kept:** on a phone the cage still steps aside while the casino is open (D136). A phone on its side keeps the wide layout, with the tabs on the tray (no room for a bar), and stops scrolling the page.
+- **Safe areas:** `viewport-fit=cover` with `env(safe-area-inset-*)` padding on the page, the bottom bar, the dialogs and the Big Cage, for notches and home bars (PORTING_NOTES → Mobile).
+- **One breakpoint, written once:** today the wide/phone switch is written 5 times in the CSS and again in ui.ts. It becomes one constant in a small `layout.ts`, and a test checks that every copy in the CSS matches (browsers don't support CSS `@custom-media` yet).
+
+### Screen by screen
+
+| Screen | What changes |
+|---|---|
+| **On the machine** | The pots become brass plaques and the Luck and Hot Streak badges enamel pins. **The card gamble moves onto the casino's felt and rail.** The WIN meter, the line label and the hold & spin board get chrome frames. The trial and boost badges become pins on the cage (with working tooltips). The speech bubble stays paper, and screen readers now announce it |
+| **Upgrades** | **Tiles:** a tap on the tile opens the sheet (the description, the whole now → next line with hit rates and average wins, "ready in", the buy button); the tile's own buy button is 44 px. **×1/×10/Max** always shows all three (on a line of its own in a narrow tray). **The Hamster Helper's switch** sits at the top of both upgrade sub-tabs, since it buys the machine's upgrades too. **One meaning of "locked":** a tile that needs another upgrade stays in place and says what it needs; rebirth and sticker upgrades sit in one **Locked drawer**, each saying how it opens ("with your 4th hamster", "earn the On Fire sticker"). **Machine cards** become catalogue pages: icon, name, one line of numbers, the features as icon chips (named in the sheet), stars and one action; the description moves to the sheet. **Rebuild:** one framed workshop ticket with a ConfirmButton, worded the same on the machine card |
+| **Family** | **The retire card** is a letter from the pup: portrait and name, the big line "Retire now: +N Heirloom Seeds", the bonus now → after, a gauge to the next seed, and a ConfirmButton; what resets and what's kept goes in a "How it works" fold. **Planted traits** are chips you can tap (a sheet says what each does; today it's a hover tooltip, which a phone can't show) |
+| **Colony** | The migration card: a progress gauge, the whiskers it would bring, a ConfirmButton; the long explanation in a fold. **Perks** become real tiles with a sheet, like the upgrades. The Wise Elders get Toggles and a Segmented; the trials become ListRows |
+| **The Big Cage** | **The meadow, the tree, the rebirth animation and `treeLayout()` don't change.** The numbers become StatTiles on a wooden garden sign. The trait card is the shop's Sheet, with no fixed 150 px height and no scroll inside it: it rises over the lower meadow, and the scene shifts so the tapped trait stays in view. The trial picker is a Segmented with icons, Start an extra-large enamel button, the Migration a ConfirmButton. Nothing under 12 px |
+| **Capsules** | **The reveal** is a sheet with "Wear it" and a close button. **The Wardrobe** shows five hangers (one per slot) with what's worn, and the buffs as StatRows (not one long sentence). Skin tiles show the preview, the name and a rarity chip; a tap opens a sheet, also for skins not found yet ("how to get it"). **The Diary** puts the stickers in progress first (nearest first) and folds the done ones under "Done (N)", with sticker upgrades marked |
+| **Info** | **The paytable** on a phone is one card per symbol with its pays as chips, so nothing scrolls sideways. **Paylines** as now (its captions fixed). **Features:** each card leads with its key number; the explanation is in a fold. **Recent wins** become a receipt roll |
+| **Casino** | **The chip bar** stays at the top with **"+ Chips"**, which opens the cashier from any table. The games become icon sub-tabs (one row on a phone). **Roulette** gets finger-sized spots on a phone (the board in two halves, or zoomed) and an "undo last chip". The long odds notes go in folds; "not enough chips" is said one way; the prizes become kit tiles |
+| **Menu** | A wooden board in three parts (two columns when wide). **Settings:** Sound (volume, on/off), UI sounds, Motion, Reels, Numbers, Guide. **Game:** Stats, Save backup, Reset (a ConfirmButton). **About:** the version and its name, What's new, the keys, "the coins are pretend", and the debug panel when it's allowed |
+| **Dialogs** | **Stats:** a ledger of StatRows in groups (spins, wins, features, family, casino). **Save backup:** the kit's pieces, working the same. **Welcome back:** a letter from the hamster. **The crash screen:** the kit's Dialog. **The debug panel** keeps its own look (it's for testing), but stops covering a phone's whole screen |
+
+### The first-time guide
+
+**Every step is worked out from the game's own state**, so the save doesn't change. The lifetime stats already count everything it needs (`stats.spins`, `deliveries`, `upgradesBought`, `capsulesOpened`, `casinoGames`, the generation, the tree).
+- A step ends by itself once the player has done the thing.
+- An old save that's past a step never sees it.
+- A Reset brings the guide back (Reset clears the stats).
+
+| Step | Shows while | Points at |
+|---|---|---|
+| Spin | no spin yet | Spin: "Tap Spin! Each spin costs coins; match symbols to win." (today's first hint) |
+| Deliver | coins below a spin's cost, no delivery yet | Deliver: "Out of coins? Send me on a delivery: it always pays." |
+| First upgrade | an upgrade is affordable, none bought yet | That tile |
+| Auto-spin | Wheel Training is affordable, not bought, the first hamster | Its tile |
+| Retire | the first hamster can retire | The Family tab, then the retire button |
+| Plant | in the Big Cage with nothing planted | The first trait, then Start |
+| Capsules | the tab is open, no capsule pulled yet | Pull |
+| Casino | the tab is open, no game played yet | The first table |
+
+- **How it looks:** the hamster says the line in its speech bubble (already the game's voice), and **a pixel paw** bounces beside the target with a soft ring round it.
+  - It never blocks a tap.
+  - It waits while a celebration, the gamble, the iris or the rebirth animation plays.
+  - Motion "Less" stills the paw. Screen readers announce the line.
+  - Today's Spin glow and sleepy hint stay.
+- **Control:** "Skip the guide" on the note, and Menu → Settings → Guide (on/off; a setting, so Reset keeps it).
+- **Tested:** `guideStep(game)` is a pure function (`src/view/guide.ts`, no page needed), tested in Node on games made with the test helpers, like `treeLayout()` and `cageLayout()`.
+
+### UI sounds
+
+- **Short synthesized sounds in sound.ts** (no audio files):
+  - a paper flip for a tab;
+  - a soft tick for a sub-tab;
+  - a wooden click for a press;
+  - a brass click for a switch;
+  - a slide for a sheet opening and closing;
+  - a fuse tick when a ConfirmButton arms;
+  - a soft bonk for "can't afford";
+  - a pop for a guide step.
+- **How they play:**
+  - quieter than the game's own sounds;
+  - rate-limited, so a burst of taps never buzzes;
+  - never doubled up: buying, planting and spinning keep their own sounds.
+- **`playUi(name)`** checks the new **UI sounds** setting (on at first) as well as the volume and mute. The kit's pieces call it, so every screen gets it.
+
+### How it's built
+
+| File | Its part |
+|---|---|
+| `src/view/kit.ts` (new) | The kit's pieces and the keyed-list helper. The helpers copied round today (`$`, `ordinal`, `pct`, the currency labels) end up in one place each |
+| `src/view/frames.ts` (new) | Paints the wood, paper, brass and enamel frames and textures from tokens with paint.ts (`Pixmap`, `Mask`, `Ramp`, dither), like theme.ts's wallpaper and fibres. **Once at startup**, into CSS variables, never per frame. Lists its tokens (`FRAME_TOKENS`) for the tests |
+| `src/view/theme.ts` | Keeps the button and felt frames and calls frames.ts. The plain paper and card frames take their colours from tokens too (today they use the palette's, so changing `:root` doesn't touch them) |
+| `src/view/layout.ts` (new) | The wide/phone breakpoint, and `fitRig()`'s maths as a pure function |
+| `src/view/guide.ts` (new) | `guideStep()` and the paw |
+| `hud.ts`, `deck.ts`, `family.ts`, `menu.ts` (new) | Split out of ui.ts: the wallet, the control deck, the Family tab, the Menu and dialogs. ui.ts keeps the stage, the events and the frame loop, and renders only the open tab |
+| shop.ts, capsules.ts, payouts.ts, colony.ts, casino.ts, bigcage.ts, backup.ts | Rebuilt on the kit, one at a time |
+| sound.ts | The UI sounds and `playUi` |
+| art.ts | New 16×16 icons: the tabs, settings, the wallet, the paw, the lever's lamp |
+| `src/platform/save.ts` | Settings gain `uiSounds` and `guide`, with defaults (tests/platform.test.js too). No `SAVE_VERSION` change |
+| index.html | The new skeleton (the wallet, the deck, the tray, the bottom bar, the sheet, the dialogs), `viewport-fit=cover`, tab panels |
+| style.css | Keeps **the first `:root` block** (the tests read only that), with the new type, spacing and brass tokens. It `@import`s files by part (base, layout, kit, stage, one per screen; Vite bundles them). Frames replace the notched and rounded boxes, every animation gets its `.less-motion` rule, and dead rules and tokens go |
+
+- **Reused:**
+  - paint.ts;
+  - theme.ts's frames-to-CSS-variables;
+  - dom.ts's `setText`, `replayClass`, `popText`, `iconHTML` and number formats;
+  - pixelfont.ts (`titleLetters`, `rampFromTokens`);
+  - fx.ts, sound.ts's synth and `describeEffect`.
+- **The bugs** listed in Before are fixed as their screens are rebuilt, each with a test where one can catch it.
+- **Speed:**
+  - no animated CSS filters (D153);
+  - `transform` and `opacity` for motion;
+  - only the open tab renders;
+  - element references instead of HTML strings full of icon data;
+  - the layout read at most once a frame.
+
+### Build order (when the user asks)
+
+On a branch, as **1.6.0-rc.1**. Every part leaves the game playable, passes the tests and the build, and gets screenshots. The whole update is one milestone (rule 8).
+
+| Part | What |
+|---|---|
+| 1. Foundations | The tokens, frames.ts, kit.ts, layout.ts, style.css split into files, the kit gallery. The game itself doesn't change yet |
+| 2. The shell | The wallet, the wooden tray and brass tabs, the phone's bottom bar, safe areas, the control deck, the labels on the machine |
+| 3. Upgrades | Tiles, the sheet, the Locked drawer, machine cards, Rebuild, the Helper's switch. **Then a stop: screenshots for the user to OK the look** before the rest is redone |
+| 4. Family | The retire letter, the traits, the Colony, the Big Cage's panels |
+| 5. Capsules and Info | The reveal, the Wardrobe, the Diary, the paytable cards, the features, recent wins |
+| 6. Casino | The chip bar and cashier, the tables, the roulette spots, the prizes |
+| 7. Menu and dialogs | The Menu board, Stats, Save backup, Welcome back, the crash screen |
+| 8. Guide and sounds | guide.ts, `playUi`, the two settings |
+| 9. Polish | Motion "Less", access (contrast, 44 px targets, focus rings, tab roles), speed, skins, docs, the CHANGELOG |
+
+### Tests and checks
+
+- **Kept:** every test passes. The golden run, the save fixtures and the simulator don't change (view only).
+- **New tests:**
+  - every token frames.ts reads is a `#rrggbb` in `:root`, and every painted frame's edges repeat;
+  - `WHEEL_TOKENS` too (no test checks it today);
+  - `guideStep()` at every step;
+  - the new settings' defaults, and old settings loading with them;
+  - every copy of the breakpoint matches `layout.ts`;
+  - the rig's fit maths;
+  - a test for each fixed bug where one can catch it (e.g. no class shared by two components' rules).
+- **In the browser:** Chromium at 1280×800, 1920×1080, 390×844, 360×640, 844×390 and 320 px wide, in dev and in the built game:
+  - every tab, sheet and dialog; all 8 machines;
+  - a real retirement and the Big Cage; the casino;
+  - the guide from a fresh game; the UI sounds;
+  - skins and Motion "Less"; no console errors.
+- **Speed:** frames a second in D153's test, at least 1.5.0's 54.
+- **Not checkable in a session:** a real phone, Firefox and Safari. They go to the user's playtest.
+
+### Version and name
+
+**1.6.0**, a minor version (a new look, the guide and UI sounds; no new content), like 1.2.0 and 1.5.0. The working name is **"New Digs"** (a new place to live, and hamsters dig); the user can rename it.
+
+### Questions the playtest must answer
+
+- Is the tray easier to use on your phone? Do the tabs at the bottom feel right?
+- Is the wood, paper and brass cosy, or too brown or heavy? Does the machine still stand out?
+- Is the sheet better than the old detail card? Is anything too small to read or tap?
+- Is the guide helpful or in the way? Are the UI sounds nice, or too many?
+- Does anything you used to find easily feel lost?
+- Is "New Digs" the right name?
