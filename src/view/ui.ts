@@ -27,6 +27,7 @@ import { createCageScene } from './cage.ts';
 import { createCabinet } from './cabinet.ts';
 import { createWheel } from './wheel.ts';
 import { titleLetters, rampFromTokens } from './pixelfont.ts';
+import { wideMedia, rigRoom, rigZoom } from './layout.ts';
 import { effectAs } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
@@ -133,7 +134,7 @@ export function createUI(
     whiskerPill: $('whisker-pill'), whiskerCount: $('whisker-count'), trialBadge: $('trial-badge'), familyPanel: $('tab-family'),
     menuBtn: $('menu-btn'), menu: $<HTMLDialogElement>('menu'), debugBtn: $('debug-btn'), debugKey: $('debug-key'), resetBtn: $('reset-btn'),
     stage: $('stage'), wall: $('wall'), rig: document.querySelector<HTMLElement>('.rig')!, machineTags: $('machine-tags'),
-    bubble: $('bubble'), spokes: $('spokes'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
+    bubble: $('bubble'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
     machine: $('machine'), machineName: $('machine-name'), reels: $('reels'), winLayer: $('win-layer'),
     spinBtn: $<HTMLButtonElement>('spin-btn'), spinTitle: $('spin-title'), spinMeta: $('spin-meta'),
     deliverBtn: $<HTMLButtonElement>('deliver-btn'), deliverMeta: $('deliver-meta'), autoBtn: $<HTMLButtonElement>('auto-btn'),
@@ -1055,18 +1056,18 @@ export function createUI(
   // On a phone it's wider than the screen; on a wide screen (M15: the cage beside
   // the tray, in a window of its own height) it can be taller than the cage. CSS zoom
   // scales everything inside it; --rig-zoom lets the CSS keep the bubble text readable.
-  const WIDE = window.matchMedia('(min-width: 960px), (min-width: 700px) and (orientation: landscape)');
+  const WIDE = wideMedia(); // (layout.ts: the one wide/phone breakpoint)
   function fitRig() {
     const pad = getComputedStyle(el.wall);
-    const availableW = el.wall.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight);
+    const availW = el.wall.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight);
     // Beside the tray the wall's height is set by the window; stacked (a phone) the cage
-    // may take up to 44% of the screen's height, and the tray gets the rest.
-    const availableH = WIDE.matches ? el.wall.clientHeight - parseFloat(pad.paddingTop) : window.innerHeight * 0.44;
+    // may take up to 44% of the screen's height, and the tray gets the rest (layout.ts rigRoom).
+    const availH = rigRoom({ wide: WIDE.matches, wallH: el.wall.clientHeight, padTop: parseFloat(pad.paddingTop), innerH: window.innerHeight });
     el.rig.style.zoom = '1'; // measure its full size first
     const rig = el.rig.getBoundingClientRect();
     const style = getComputedStyle(el.rig);
     const height = rig.height + parseFloat(style.marginTop) + parseFloat(style.marginBottom); // + the room for the bubble
-    const zoom = Math.max(0.3, Math.min(1, availableW / rig.width, availableH / height));
+    const zoom = rigZoom({ availW, availH, rigW: rig.width, rigH: height });
     el.rig.style.zoom = String(zoom);
     el.rig.style.setProperty('--rig-zoom', String(zoom));
     // The shadows under the wheel and the machine follow them (again once a switch-in has settled).

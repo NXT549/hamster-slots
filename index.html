@@ -67,16 +67,15 @@
           <div class="wheel-unit">
             <div class="bubble hidden" id="bubble"></div>
             <!-- During a jackpot wheel the hamster wheel becomes a prize wheel (the face + a pointer) -->
-            <div class="wheel" id="wheel"><div class="spokes" id="spokes"></div><div class="prize-face" id="prize-face"></div></div>
+            <div class="wheel" id="wheel"><div class="prize-face" id="prize-face"></div></div>
             <span class="prize-pointer"></span>
             <img class="hamster" id="hamster" data-sprite="hamster" data-size="64" alt="">
-            <div class="wheel-stand"></div>
           </div>
           <div class="belt" id="belt"></div>
 
           <!-- The slot machine. data-machine says which one (it changes its look). -->
           <div class="machine" id="machine" data-machine="clunky">
-            <div class="marquee"><span class="bulbs"></span><span id="machine-name">Old Clunky</span><span class="marquee-stars" id="machine-stars"></span><span class="bulbs"></span></div>
+            <div class="marquee"><span id="machine-name">Old Clunky</span><span class="marquee-stars" id="machine-stars"></span></div>
             <!-- Jackpot pots (machines with a jackpot wheel): live coin values at your bet -->
             <div class="pots hidden" id="pots"></div>
             <div class="reel-window">
@@ -89,7 +88,6 @@
             </div>
             <!-- The WIN meter: counts up to what the last spin paid (a tap on the reels skips the show) -->
             <div class="win-meter" id="win-meter"><span class="win-meter-label">Win</span><span class="win-meter-value" id="win-meter-value"></span></div>
-            <div class="coin-tray"></div>
             <!-- Luck (Hamster Luck + Machine Luck): a clover on the machine's corner -->
             <div class="luck-badge hidden" id="luck-badge"><img data-sprite="clover" data-size="16" alt=""><span id="luck-text"></span></div>
             <!-- Hot Streak: shows the bonus the next win gets -->

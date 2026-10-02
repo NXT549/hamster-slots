@@ -11,7 +11,8 @@
 // casino.ts); the wheel, the cards, the race and the seed only show it (D92), and
 // the chips counter waits for them, so a win lands when the ball does.
 
-import { formatCoins, setText, setHTML, iconHTML, createSubTabs, replayClass, mix } from './dom.ts';
+import { formatCoins, setText, setHTML, iconHTML, replayClass, mix } from './dom.ts';
+import { createSubTabs } from './kit.ts';
 import { spriteImg, applySprite, runFrame, SUIT_SPRITES } from './art.ts';
 import { furPalette, skinPreview } from './skins.ts';
 import { WHEEL_ORDER, POCKETS, pocketColor } from '../logic/roulette.ts';

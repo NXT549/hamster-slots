@@ -9,8 +9,9 @@
 // buyPerk, setAuto). ui.ts creates it and calls render() every frame.
 
 import { spriteImg, perkIcon } from './art.ts';
-import { describeEffect, ordinal } from './shop.ts';
-import { formatWhole, setText, setHTML, createSubTabs, replayClass, popText, iconHTML } from './dom.ts';
+import { describeEffect } from './shop.ts';
+import { formatWhole, setText, setHTML, replayClass, popText, iconHTML } from './dom.ts';
+import { createSubTabs, ordinal } from './kit.ts';
 import { divide } from '../logic/money.ts';
 import type { Game } from '../logic/game.ts';
 import type { PerkDef } from '../logic/types.ts';

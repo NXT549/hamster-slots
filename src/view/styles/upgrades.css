@@ -1,0 +1,141 @@
+/* upgrades.css — the Upgrades tab (shop.ts): machine cards and their feature chips, the upgrade tiles,
+   the locked upgrades, the Hamster Helper's switch, the detail card, and Rebuild for a star. */
+
+.buy-amount { margin-left: auto; }
+
+/* Machine cards */
+.machine-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+.machine-card { display: grid; grid-template-columns: 52px 1fr; gap: 4px 10px; align-items: center; padding: 0 2px 2px; }
+.machine-card .tile-desc { font-size: 12px; line-height: 1.3; }
+.machine-card .buy-btn { min-height: 34px; font-size: 15px; }
+.machine-card.active { --frame: var(--frame-paper-gold); }
+.machine-card.bought { animation: bought 0.4s ease-out; }
+.mc-icon { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; }
+.mc-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mc-action { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; }
+.mc-action .buy-btn { flex: 1; }
+.mc-stats { text-transform: none; letter-spacing: 0; font-size: 12px; }
+.mc-features { display: flex; flex-wrap: wrap; gap: 4px; }
+.mc-features:empty { display: none; }
+/* Bonus-feature chips (machine cards, the paytable) */
+.feature-chip {
+  display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px 1px 3px; clip-path: var(--notch);
+  font-family: var(--font-body); font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; color: var(--ink);
+  background: var(--paper-2);
+}
+.feature-chip img { width: 16px; height: 16px; }
+.chip-wild { background: color-mix(in srgb, var(--gold) 50%, var(--paper)); }
+.chip-free { background: color-mix(in srgb, var(--soft) 50%, var(--paper)); }
+.chip-pots { background: color-mix(in srgb, var(--palace) 35%, var(--paper)); }
+.chip-luck { background: color-mix(in srgb, var(--luck) 40%, var(--paper)); }
+.chip-seeds { background: color-mix(in srgb, var(--heirloom) 40%, var(--paper)); }
+.chip-blank { background: var(--paper-2); }
+.chip-both { background: color-mix(in srgb, var(--buy) 40%, var(--paper)); }
+.chip-ways { background: color-mix(in srgb, var(--maze) 40%, var(--paper)); }
+.chip-hold { background: color-mix(in srgb, var(--gold) 45%, var(--paper)); }
+.chip-wheel { background: color-mix(in srgb, var(--cheese-rind) 35%, var(--paper)); }
+
+/* Upgrade tiles (M15): small paper cards, like the Family Tree's traits. The top is a
+   button (tap it for the detail card); the buy button buys, as always. */
+.upgrade-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(164px, 1fr)); gap: 8px; }
+.tile { display: flex; flex-direction: column; gap: 5px; padding: 0 2px 2px; min-width: 0; box-shadow: 0 3px 0 -1px rgba(74, 52, 40, 0.16); transition: transform 0.12s, box-shadow 0.12s; }
+@media (hover: hover) { .tile:hover { transform: translateY(-2px); box-shadow: 0 5px 0 -1px rgba(74, 52, 40, 0.2); } }
+.tile.ready { --frame: var(--frame-paper-ready); }
+.tile.selected { --frame: var(--frame-paper-selected); }
+.tile.bought { animation: bought 0.35s ease-out; }
+@keyframes bought { 40% { transform: scale(1.03); } }
+.tile-info {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: start;
+  padding: 0; border: none; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+}
+.tile-info:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+.tile-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tile-top { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; }
+.tile-icon {
+  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  background: var(--paper-2); clip-path: var(--notch);
+}
+.tile-info .tile-icon { width: 40px; height: 40px; }
+.tile-name { font-family: var(--font-display); font-weight: 500; font-size: 16px; line-height: 1.1; }
+.tile-info .tile-name { font-size: 14px; }
+.tile-tag { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; }
+.tile-level { font-size: 10.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.tile-desc { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; line-height: 1.35; }
+.tile-effect { font-size: 13.5px; }
+.tile-info .tile-effect { font-size: 12px; line-height: 1.3; margin-top: 2px; }
+.tile-effect .next { color: var(--buy-dark); }
+.pips { display: flex; gap: 3px; }
+.pip { flex: 1; height: 5px; background: var(--line); clip-path: var(--notch); }
+.pip.on { background: var(--buy-dark); }
+.tile .buy-btn { min-height: 34px; font-size: 15px; }
+/* 1.3.1: rebirth and sticker upgrades that are still locked: folded under the list,
+   faded, with what opens them (never recoloured into another colour, rule 11) */
+.locked-group { margin-top: 12px; }
+.locked-group > summary {
+  cursor: pointer; font-family: var(--font-display); font-weight: 500; font-size: 15px; color: var(--ink-soft);
+  padding: 4px 2px; list-style-position: inside;
+}
+.locked-group > summary .note { font-family: var(--font-body); font-size: 12px; }
+.locked-group > .upgrade-grid { margin-top: 6px; }
+.tile.locked { opacity: 0.8; }
+.tile.locked .tile-icon img { filter: grayscale(0.85); opacity: 0.75; }
+.tile.locked .pips, .tile.locked .buy-btn { display: none; }
+/* 1.3.1: the Hamster Helper's switch */
+.helper-row { --frame: var(--frame-paper-heirloom); display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 0 4px; }
+.helper-row.off { --frame: var(--frame-paper); }
+.helper-icon { flex: none; width: 32px; height: 32px; }
+.helper-text { flex: 1; min-width: 0; font-size: 13px; line-height: 1.3; }
+.helper-text .note { font-size: 12px; }
+.helper-btn { flex: none; min-width: 64px; font-size: 15px; }
+.helper-row.off .helper-btn { --frame: var(--frame-btn-card); }
+.wait-hint { font-size: 11.5px; color: var(--ink-soft); text-align: center; min-height: 1em; }
+.wait-hint:empty { display: none; }
+/* The detail card: sticks to the bottom of the Upgrades tab while the tiles scroll */
+.upgrade-detail {
+  --frame: var(--frame-paper-selected); --fw: 8px;
+  position: sticky; bottom: 0; z-index: 4; margin-top: 10px; padding: 0 4px 2px;
+  display: flex; flex-direction: column; gap: 5px;
+  border-style: solid; border-color: transparent; border-width: var(--fw);
+  border-image: var(--frame) 4 fill / var(--fw) stretch; image-rendering: pixelated;
+  box-shadow: 0 -8px 12px -8px rgba(74, 52, 40, 0.55);
+  animation: rise-in 0.2s ease-out;
+}
+.upgrade-detail .tile-top { grid-template-columns: 44px 1fr auto; }
+.ud-close {
+  align-self: start; width: 28px; height: 28px; padding: 0; border: none; background: var(--paper-2); cursor: pointer;
+  font-family: var(--font-num); font-weight: 900; font-size: 18px; line-height: 1; color: var(--ink-soft); clip-path: var(--notch);
+}
+.ud-foot { display: flex; align-items: center; gap: 10px; }
+.ud-foot .buy-btn { flex: 1; margin: 0; }
+.ud-foot .wait-hint { flex: none; max-width: 45%; text-align: left; }
+
+/* (A machine with a star gets a gold trim: its cabinet is painted with a gold outline, cabinet.ts.) */
+.mc-stars { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-top: 2px; }
+.mc-stars:empty { display: none; }
+.mc-stars img { width: 16px; height: 16px; }
+.mc-stars .note, .rebuild-text .note { margin-left: 4px; }
+.rebuild-btn { margin-top: 6px; }
+.rebuild-card {
+  --frame: var(--frame-paper-gold);
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; padding: 4px 6px;
+}
+.rebuild-text { flex: 1 1 260px; line-height: 1.45; font-size: 14px; }
+.rebuild-text img { width: 16px; height: 16px; vertical-align: -3px; }
+.rebuild-card .btn { flex: none; }
+
+.chip-box { background: color-mix(in srgb, var(--box) 45%, var(--paper)); }
+/* A colony machine before the first migration: a locked card, a goal */
+.machine-card.closed { opacity: 0.8; }
+.machine-card.closed .mc-icon img { filter: grayscale(0.7); opacity: 0.8; }
+
+@container tray (max-width: 560px) {
+  .machine-list { grid-template-columns: 1fr; }
+}
+/* A phone's tray: ×1 / ×10 / Max is one button that cycles (shop.ts), so it fits beside the sub-tabs. */
+@container tray (max-width: 390px) {
+  .buy-amount .seg-btn:not(.active) { display: none; }
+  .upgrade-grid { gap: 6px; }
+}
+.less-motion .tile.bought, .less-motion .machine-card.bought { animation: none; }
+.less-motion .tile { transition: none; }
+.less-motion .upgrade-detail { animation: none !important; }

@@ -1,0 +1,57 @@
+/* dialogs.css — the dialogs (the Menu, Save backup, Stats, Welcome back) and the boot and crash screens. */
+
+/* ── Dialogs (Menu, Stats, Welcome back): paper ──────── */
+.dialog {
+  --fw: 12px; padding: 8px 10px; width: min(420px, 92vw);
+  color: var(--ink); box-shadow: 0 20px 60px rgba(74, 52, 40, 0.3); overflow: visible;
+}
+.dialog::backdrop { background: rgba(58, 40, 30, 0.5); }
+.dialog[open] { animation: dialog-in 0.28s cubic-bezier(0.2, 1.4, 0.4, 1); } /* 1.0: dialogs pop in */
+.dialog[open]::backdrop { animation: fade-in 0.25s ease-out; }
+@keyframes dialog-in { from { transform: translateY(12px) scale(0.9); opacity: 0; } }
+@keyframes fade-in { from { opacity: 0; } }
+.dialog h2 { font-family: var(--font-display); font-weight: 500; margin: 0 0 10px; }
+.dialog .btn { width: 100%; margin-top: 10px; }
+.dialog form { margin: 0; }
+.menu-foot { margin: 12px 0 2px; text-align: center; font-size: 12px; line-height: 1.5; }
+.menu-foot a { color: var(--soft-dark); }
+.menu-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 2px dashed var(--paper-2); font-size: 14px; flex-wrap: wrap; }
+.sound-controls { display: flex; align-items: center; gap: 10px; }
+.sound-controls input[type="range"] { width: 120px; accent-color: var(--primary); }
+.dialog .btn.btn-small { width: auto; margin: 0; padding: 0 6px 1px; font-size: 14px; }
+.btn.off { --frame: var(--frame-btn-off); color: var(--ink-soft); }
+
+/* Save backup (Menu → Save backup): the code boxes and the check under them */
+#backup { max-height: 92vh; overflow: auto; }
+.backup-intro { margin: 0 0 4px; line-height: 1.45; }
+.backup-head { font-family: var(--font-display); font-weight: 500; font-size: 16px; margin: 12px 0 6px; }
+.code-box {
+  display: block; width: 100%; box-sizing: border-box; resize: none; padding: 6px 8px;
+  font: 12px/1.35 ui-monospace, "Cascadia Mono", Consolas, monospace; word-break: break-all;
+  color: var(--ink); background: var(--paper-2); border: 2px solid var(--paper-edge); border-radius: 8px;
+}
+.code-box:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+.backup-status { margin: 8px 0 0; min-height: 1.4em; font-size: 13px; line-height: 1.45; color: var(--ink-soft); font-weight: 600; }
+.backup-status.good { color: var(--ink); }
+.backup-status.bad { color: var(--danger-dark); }
+.backup-status b { font-family: var(--font-num); font-weight: 900; }
+
+.stats-list { display: flex; flex-direction: column; max-height: 60vh; overflow: auto; }
+.stat-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 2px dashed var(--paper-2); font-size: 14px; }
+.stat-row span { color: var(--ink-soft); font-weight: 600; }
+.stat-row b { font-family: var(--font-num); font-weight: 900; text-align: right; }
+
+.welcome-body { display: flex; align-items: center; gap: 12px; }
+.welcome-body img { flex: none; }
+.welcome-body p { margin: 0; font-size: 14px; line-height: 1.45; }
+.welcome-coins {
+  display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px;
+  font-family: var(--font-num); font-weight: 900; font-size: 30px; color: var(--gold-dark);
+}
+
+/* ── Boot error ──────────────────────────────────────── */
+.boot-error { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(74, 52, 40, 0.6); z-index: 50; padding: 16px; }
+.crash-text { max-height: 160px; overflow: auto; font-size: 11px; white-space: pre-wrap; background: var(--paper-2); padding: 6px; }
+.dialog-card { --fw: 12px; padding: 12px; max-width: 520px; line-height: 1.5; background: var(--paper); }
+
+.less-motion .dialog[open] { animation: none !important; }

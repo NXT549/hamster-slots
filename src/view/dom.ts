@@ -1,5 +1,6 @@
 // dom.ts — VIEW helpers shared by the view files (ui, shop, capsules, debug …).
-// Small, boring functions that make drawing every frame cheap.
+// Small, boring functions that make drawing every frame cheap. (The shared pieces of the UI,
+// sub-tabs included since 1.6.0, are in kit.ts.)
 
 import { SPRITES, spriteURL, spriteScale } from './art.ts';
 import { money, isFiniteMoney } from '../logic/money.ts';
@@ -113,59 +114,6 @@ export function iconHTML(sprite: string, size = 24): string {
   if (!rows) return '';
   const scale = spriteScale(sprite, size);
   return `<img class="sprite" src="${spriteURL(sprite)}" width="${rows[0].length * scale}" height="${rows.length * scale}" alt="">`;
-}
-
-// Sub-tabs inside a tray tab. `nav` holds buttons with data-sub="name"; `root`
-// holds the matching <div class="subpanel" data-sub="name">. Opening one hides the
-// others. The choice is remembered in settings.subTabs[key] (a view setting, not
-// game progress). Returns helpers to open a sub-tab, show a dot on one ("something
-// here is ready") and rename or hide one.
-// Only the part of the settings (save.ts) that sub-tabs use.
-interface SubTabSettings {
-  subTabs?: Record<string, string>;
-}
-
-export function createSubTabs(
-  nav: HTMLElement,
-  root: HTMLElement,
-  { key, settings, onSettingsChange }: { key: string; settings?: SubTabSettings | null; onSettingsChange: () => void },
-) {
-  const buttons = [...nav.querySelectorAll<HTMLElement>('[data-sub]')];
-  const panels = [...root.querySelectorAll<HTMLElement>('.subpanel')];
-  const names = buttons.map((b) => b.dataset.sub!);
-  let current: string | null = null;
-
-  function open(name: string, remember = true): void {
-    if (!names.includes(name)) name = names[0];
-    current = name;
-    for (const b of buttons) b.classList.toggle('active', b.dataset.sub === name);
-    for (const p of panels) p.classList.toggle('hidden', p.dataset.sub !== name);
-    if (remember && settings) {
-      settings.subTabs = { ...(settings.subTabs || {}), [key]: name };
-      onSettingsChange();
-    }
-  }
-  for (const b of buttons) {
-    b.addEventListener('click', (e) => {
-      (e.currentTarget as HTMLElement).blur();
-      open(b.dataset.sub!);
-    });
-  }
-  open((settings && settings.subTabs && settings.subTabs[key]) || names[0], false);
-
-  const button = (name: string) => buttons.find((b) => b.dataset.sub === name);
-  return {
-    open,
-    get current() { return current; },
-    setDot(name: string, on: unknown) { const b = button(name); if (b) b.classList.toggle('alert', !!on && current !== name); },
-    setLabel(name: string, text: string) { const b = button(name); if (b) setText(b, text); },
-    setHidden(name: string, hidden: unknown) {
-      const b = button(name);
-      if (!b) return;
-      b.classList.toggle('hidden', !!hidden);
-      if (hidden && current === name) open(names[0], false);
-    },
-  };
 }
 
 // Seconds for labels: 18 → "18s", 0.64 → "0.64s"

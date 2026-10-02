@@ -1,0 +1,35 @@
+/* base.css — the page itself: box sizing, the room's wallpaper behind the game, and small
+   shared helpers (hidden, notes, sprites). */
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 700;
+  /* the room the cage sits in: a quilted wallpaper (1.5.0: a pixel tile, theme.ts),
+     a little darker towards the edges so the game stands out */
+  background:
+    radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(74, 52, 40, 0.12)),
+    var(--tile-page) 0 0 / 48px 48px repeat,
+    var(--page);
+  image-rendering: pixelated;
+}
+
+.hidden { display: none !important; }
+.note { font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+.sprite { image-rendering: pixelated; display: block; }
+img { image-rendering: pixelated; }
+.sprite-fallback {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; border-radius: 10px;
+  background: var(--line); font-family: var(--font-display); font-weight: 500; font-size: 26px;
+}
+kbd { font-family: var(--font-display); font-weight: 500; border: 2px solid var(--ink-faint); border-radius: 4px; padding: 0 5px; }
+
+/* 1.6.0: nothing on a phone is smaller than 13 px (the type scale's smallest step, --text-xs). */
+@media (max-width: 640px) {
+  :root { --text-xs: 13px; }
+}

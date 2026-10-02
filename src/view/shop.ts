@@ -8,7 +8,8 @@
 // and reads state.
 
 import { spriteImg, upgradeIcon, MACHINE_SPRITES } from './art.ts';
-import { formatCoins, formatSeconds, formatWait, formatDuration, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
+import { formatCoins, formatSeconds, formatWait, formatDuration, setText, setHTML, replayClass, iconHTML } from './dom.ts';
+import { createSubTabs, ordinal } from './kit.ts';
 import { effectAs } from '../logic/game.ts';
 import { divide } from '../logic/money.ts';
 import type { Game } from '../logic/game.ts';
@@ -84,12 +85,6 @@ function effectFormats(game: Game): Record<string, (def: Def) => [string, Format
     whiskerGain: () => ['Golden Whiskers', (v) => `+${Math.round(v * 100)}%`],
     autoRetire: () => ['The Wise Elders', (v) => (v ? 'yes' : 'no')],
   };
-}
-
-// "1st", "2nd", "3rd", "5th" … (colony.ts uses it too)
-export function ordinal(n: number): string {
-  if (n % 100 >= 11 && n % 100 <= 13) return `${n}th`;
-  return `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] || 'th'}`;
 }
 
 // 1.3.1: what a rebirth or sticker upgrade is still waiting for, short (a tile) or

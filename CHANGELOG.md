@@ -8,7 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased]
+## [Unreleased] · 1.6.0 "New Digs"
+
+**A full redesign of everything around the cage, in the hamster's room: wood, paper and brass. Being built: the screens arrive one by one.**
+
+### Fixed
+
+- A machine with every upgrade maxed now really shows its gold "Rebuild for a star" card frame.
+- The win show's line label ("Line 4 · Baby Carrot ×3 · 150") has its proper size again, and the Info tab's payline captions are plain captions.
+- A few frames (the card gamble's suit buttons, the casino's bet and chip buttons, the table rails, the boost and trial badges) were drawn at in-between sizes, which blurred their pixels a little; they're crisp now.
 
 ## [1.5.0] - 2026-09-28 · The Glow Up
 

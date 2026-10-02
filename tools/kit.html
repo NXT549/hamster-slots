@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hamster Slots · kit gallery</title>
+  <!-- A dev page (1.6.0): every piece of the UI kit (src/view/kit.ts) in every state, in a phone-sized
+       column and a computer-sized one, on the tray's wood. Open it with the game's server running:
+       http://localhost:8765/tools/kit.html (like tools/sprites.html). -->
+  <link rel="stylesheet" href="../src/view/style.css">
+  <style>
+    body { padding: 16px; }
+    .gallery { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+    .col { padding: 12px; background: var(--tx-panel) 0 0 / 64px 64px, var(--panel); border-radius: 0; }
+    .col.phone { width: 390px; }
+    .col.wide { width: 960px; max-width: 100%; }
+    .col h1 { font: 500 20px var(--font-display); margin: 0 0 8px; }
+    .sec { margin: 0 0 16px; }
+    .sec > h2 { font: 500 14px var(--font-display); color: var(--ink-soft); margin: 0 0 6px; text-transform: uppercase; letter-spacing: 1px; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 8px; }
+    .sheet-host { position: relative; height: 260px; background: var(--tx-panel) 0 0 / 64px 64px, var(--panel-dark); }
+    .frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+    .frames div { --fw: 12px; height: 64px; display: flex; align-items: center; justify-content: center; font: 600 11px var(--font-body); text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="gallery" id="gallery"></div>
+  <script type="module">
+    import '@fontsource/pixelify-sans/500.css';
+    import '@fontsource/nunito/600.css';
+    import '@fontsource/nunito/700.css';
+    import '@fontsource/nunito/800.css';
+    import '@fontsource/nunito/900.css';
+    import { applyTheme } from '../src/view/theme.ts';
+    import { applyFrames, paintFrames, FRAME_TOKENS } from '../src/view/frames.ts';
+    import { readTokens } from '../src/view/paint.ts';
+    import * as kit from '../src/view/kit.ts';
+    import { money } from '../src/logic/money.ts';
+
+    applyTheme();
+    applyFrames();
+    const frameNames = Object.keys(paintFrames(readTokens(document.documentElement, FRAME_TOKENS)));
+    const cssName = (n) => n.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+
+    function section(col, title) {
+      const s = kit.h('div', 'sec');
+      s.append(kit.h('h2', '', title));
+      col.append(s);
+      return s;
+    }
+    const row = (sec, cls = 'row') => sec.appendChild(kit.h('div', cls));
+
+    function build(kind, width) {
+      const col = kit.h('div', `col ${kind}`);
+      col.append(kit.h('h1', '', `${kind} (${width} px)`));
+
+      // Every painted frame (frames.ts), drawn at 3×
+      const f = row(section(col, 'Frames (frames.ts, at 3×)'), 'frames');
+      for (const n of frameNames) {
+        const d = kit.h('div', 'fr', n);
+        d.style.setProperty('--frame', `var(--fr-${cssName(n)})`);
+        f.append(d);
+      }
+
+      // Buttons: every tone, every size, disabled and pressed-looking
+      let s = section(col, 'Buttons');
+      let r = row(s);
+      for (const tone of ['wood', 'primary', 'soft', 'buy', 'gold', 'danger', 'token', 'heirloom', 'brass', 'luck', 'black', 'off']) r.append(kit.button({ tone, label: tone }).el);
+      r = row(s);
+      for (const size of ['sm', 'md', 'lg']) r.append(kit.button({ tone: 'primary', size, label: `Size ${size}` }).el);
+      const off = kit.button({ tone: 'buy', label: 'Disabled' });
+      off.update({ disabled: true });
+      r.append(off.el, kit.button({ tone: 'soft', label: 'Deliver', icon: 'scooter', meta: '+20 · 45s' }).el);
+      r = row(s);
+      const spin = kit.button({ tone: 'primary', size: 'xl', label: 'Spin', meta: '5 coins' });
+      r.append(spin.el, kit.button({ tone: 'gold', size: 'xl', label: 'Free', meta: '7 left · ×2' }).el);
+
+      // Buy buttons in every state
+      s = section(col, 'Buy buttons');
+      r = row(s);
+      const states = [['ready', {}], ['saving', { progress: 0.35 }], ['saving', { progress: 0.85, count: 10 }], ['maxed', {}], ['locked', {}], ['switch', {}], ['running', {}]];
+      for (const [state, extra] of states) {
+        const b = kit.buyButton({ onClick: () => {} });
+        b.update({ state, cost: money(1234567), ...extra });
+        r.append(b.el);
+      }
+      r = row(s);
+      for (const currency of ['coin', 'seed', 'token', 'chip', 'whisker']) {
+        const b = kit.buyButton({ onClick: () => {} });
+        b.update({ state: 'ready', cost: 42, currency });
+        r.append(b.el);
+      }
+
+      // The two-tap button (tap it once to see it armed)
+      s = section(col, 'Confirm (two taps)');
+      r = row(s);
+      const c1 = kit.confirmButton({ label: 'Retire to the Big Cage', armedLabel: 'Tap again to retire', onConfirm: () => alert('Confirmed') });
+      const c2 = kit.confirmButton({ label: 'Rebuild for a star', armedLabel: 'Tap again: reset its upgrades', onConfirm: () => {} });
+      r.append(c1.el, c2.el);
+      c2.el.click();
+
+      // Toggles and the lever
+      s = section(col, 'Toggles');
+      r = row(s);
+      const t1 = kit.toggle({ label: 'Hamster Helper', onChange: (on) => t1.update(on) });
+      t1.update(true);
+      const t2 = kit.toggle({ onChange: (on) => t2.update(on) });
+      t2.update(false);
+      const t3 = kit.toggle({ onChange: () => {} });
+      t3.update(true, true);
+      const lev = kit.toggle({ kind: 'lever', ariaLabel: 'Auto-spin', onChange: (on) => lev.update(on) });
+      lev.update(true);
+      const lev2 = kit.toggle({ kind: 'lever', ariaLabel: 'Auto-spin', onChange: (on) => lev2.update(on) });
+      lev2.update(false);
+      r.append(t1.el, t2.el, t3.el, lev.el, lev2.el);
+
+      // Segmented and stepper
+      s = section(col, 'Segmented and stepper');
+      r = row(s);
+      const seg = kit.segmented({ ariaLabel: 'How many', options: [{ value: 1, label: '×1' }, { value: 10, label: '×10' }, { value: 'max', label: 'Max' }], onPick: (v) => seg.update(v) });
+      seg.update(10);
+      const motion = kit.segmented({ ariaLabel: 'Motion', options: [{ value: 'auto', label: 'Auto' }, { value: 'less', label: 'Less' }, { value: 'full', label: 'Full' }], onPick: (v) => motion.update(v) });
+      motion.update('auto');
+      const st = kit.stepper({ label: 'Bet', onStep: () => {} });
+      st.update({ value: '×2', hint: 'up to ×5', canDown: true, canUp: true });
+      const st2 = kit.stepper({ label: 'Bet', onStep: () => {} });
+      st2.update({ value: '×10', hint: 'spins ×5', canDown: true, canUp: false, warn: true });
+      r.append(seg.el, motion.el, st.el, st2.el);
+
+      // Tiles in every tone
+      s = section(col, 'Tiles (tap one)');
+      const grid = row(s, 'grid');
+      const tiles = [
+        ['cheeks', 'Chubby Cheeks', 'ready', 'Lv 3/10', 'Payouts ×1.30 → <span class="next">×1.45</span>', 3, ['ready', {}]],
+        ['wheel', 'Wheel Training', 'plain', 'Lv 1/4', 'Auto-spin 4.6s → <span class="next">3.9s</span>', 1, ['saving', { progress: 0.4 }]],
+        ['clover', 'Four-Leaf Clover', 'maxed', 'MAX', 'Luck 25 <span class="note">(max)</span>', 5, ['maxed', {}]],
+        ['moon', 'Night Shift', 'plain', 'Lv 0/5', '<span class="note">Needs Wheel Training</span>', 0, ['locked', {}]],
+        ['pennies', 'Lucky Pennies', 'selected', 'Lv 2/5', 'Wins paid double 4% → <span class="next">6%</span>', 2, ['ready', {}]],
+        ['roots', 'Deep Roots', 'locked', '', '<span class="note">Opens with your 4th hamster</span>', 0, null],
+      ];
+      for (const [icon, name, tone, level, effect, n, buyState] of tiles) {
+        const buy = buyState ? kit.buyButton({ onClick: () => {} }) : null;
+        if (buy) buy.update({ state: buyState[0], cost: money(2500), ...buyState[1] });
+        const t = kit.tile({ icon, name, buy, pips: 5, onOpen: () => openSheet(name, icon) });
+        t.update({ level, effect, pips: n, tone });
+        grid.append(t.el);
+      }
+      const d = kit.drawer('Locked');
+      d.update(3, 'retire, or earn diary stickers');
+      for (const [icon, name, why] of [['nest', 'Cosy Nest', 'Opens with your 2nd hamster'], ['album', 'Sticker Album', 'Earn the On Fire sticker'], ['coupon', 'Coupon Book', 'Opens with your 6th hamster']]) {
+        const t = kit.tile({ icon, name, onOpen: () => openSheet(name, icon) });
+        t.update({ effect: `<span class="note">${why}</span>`, tone: 'locked' });
+        d.body.append(t.el);
+      }
+      s.append(d.el);
+
+      // The sheet, inside a host like the tray
+      s = section(col, 'Sheet (inside its host)');
+      const host = row(s, 'sheet-host');
+      const sheet = kit.createSheet(host);
+      function openSheet(name, icon) {
+        if (sheet.show(name, { icon, title: name, tag: 'Hamster · every machine · Lv 3 of 10' })) {
+          sheet.body.append(kit.h('p', '', 'Bigger cheeks carry more snacks: every win pays a little more, on every machine.'));
+          const fx = kit.h('div', '');
+          fx.innerHTML = 'Payouts ×1.30 → <span class="next">×1.45</span>';
+          sheet.body.append(fx);
+          const b = kit.buyButton({ onClick: () => {} });
+          b.update({ state: 'ready', cost: money(2500) });
+          sheet.foot.append(b.el);
+        }
+      }
+      openSheet('Chubby Cheeks', 'cheeks');
+
+      // Cards, rows, stats, chips, gauges, amounts, folds
+      s = section(col, 'Cards, rows, stats, chips, gauges');
+      const cards = row(s, 'grid');
+      for (const tone of ['plain', 'gold', 'heirloom', 'ready', 'selected', 'locked']) {
+        const c = kit.card({ tone, title: `A ${tone} card`, icon: 'star' });
+        c.body.append(kit.h('span', '', 'Paper on the tray\'s wood, with a header and a tone.'));
+        cards.append(c.el);
+      }
+      r = row(s, 'grid');
+      const lr = kit.listRow({ icon: 'heart', title: 'On Fire', bar: true });
+      lr.update({ sub: 'Win 5 spins in a row', value: '3/5', fraction: 0.6 });
+      const sr = kit.statRow('Spins');
+      sr.update('12,345');
+      const stt = kit.statTile('Seeds held');
+      stt.updateHTML(kit.amountHTML('seed', 42, 16));
+      r.append(lr.el, sr.el, stt.el);
+      r = row(s);
+      for (const [text, tone, icon] of [['Wild', 'gold', 'wildIcon'], ['Free spins', 'soft', 'ballIcon'], ['Luck 12', 'luck', 'clover'], ['Rare', 'token', null], ['New', 'danger', null]]) r.append(kit.chip(text, tone, icon).el);
+      r = row(s, 'grid');
+      for (const [tone, v] of [['buy', 0.3], ['gold', 0.75], ['heirloom', 1], ['token', 0.05], ['whisker', 0.5]]) {
+        const g = kit.gauge({ tone });
+        g.update(v);
+        r.append(g.el);
+      }
+      r = row(s);
+      for (const cur of ['coin', 'seed', 'token', 'chip', 'whisker']) {
+        const a = kit.amount(cur);
+        a.update(cur === 'coin' ? money(1220000) : 42);
+        r.append(a.el);
+      }
+      const m = kit.more();
+      m.body.textContent = 'A new pup starts over: coins, upgrades and machines reset. The family keeps its Heirloom Seeds, the Family Tree and Machine Stars.';
+      s.append(m.el);
+      return col;
+    }
+
+    const gallery = document.getElementById('gallery');
+    gallery.append(build('phone', 390), build('wide', 960));
+  </script>
+</body>
+</html>

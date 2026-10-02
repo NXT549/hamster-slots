@@ -2332,6 +2332,46 @@ const bird2 = [
   '............',
 ];
 
+// ── 1.6.0 (New Digs): UI icons (16×16) ──
+// A padlock (locked upgrades, the Locked drawer): a grey shackle on a gold body with a keyhole.
+const lock = [
+  '................',
+  '.....KKKKKK.....',
+  '....KQqqqqQK....',
+  '...KQK....KQK...',
+  '...KQK....KQK...',
+  '...KQK....KQK...',
+  '..VVVVVVVVVVVV..',
+  '..VhhhhhhhhhhV..',
+  '..VhyyyyyyyyYV..',
+  '..VyyyykkyyyYV..',
+  '..VyyyykkyyyYV..',
+  '..VyyyyykyyyYV..',
+  '..VyyyyykyyyYV..',
+  '..VYYYYYYYYYYV..',
+  '...VVVVVVVVVV...',
+  '................',
+];
+// A close cross (the sheet's close button).
+const close = [
+  '................',
+  '................',
+  '..kk........kk..',
+  '..kkk......kkk..',
+  '...kkk....kkk...',
+  '....kkk..kkk....',
+  '.....kkkkkk.....',
+  '......kkkk......',
+  '......kkkk......',
+  '.....kkkkkk.....',
+  '....kkk..kkk....',
+  '...kkk....kkk...',
+  '..kkk......kkk..',
+  '..kk........kk..',
+  '................',
+  '................',
+];
+
 export const SPRITES: Record<string, string[]> = {
   seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple,
   hamster, hamsterRun1, hamsterRun2, hamsterRun3, hamsterRun4, hamsterBlink, hamsterSleep, hamsterCheer, coin, chip, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
@@ -2343,6 +2383,7 @@ export const SPRITES: Record<string, string[]> = {
   pennies, jar, moon, nest, shoe, coupon, album, paw, roots, // 1.3.1
   box, machineMoving, boxIcon, whisker, whiskerIcon, glasses, // 1.4.0
   butterfly, butterfly2, bird, bird2, // 1.5.0
+  lock, close, // 1.6.0
   frameCard, framePaper, frameTab, frameButton, frameRail, bubbleTail,
 };
 

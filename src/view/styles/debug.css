@@ -1,0 +1,15 @@
+/* debug.css — the debug panel (` key, or ?debug in a built game; debug.ts). */
+
+/* ── Debug panel (` key) ─────────────────────────────── */
+.debug {
+  position: fixed; left: 12px; bottom: 12px; width: 350px; max-height: calc(100vh - 24px); overflow: auto; z-index: 10;
+  background: rgba(40, 30, 24, 0.94); color: #f6e7c8; border-radius: 16px; padding: 14px;
+  font: 12px/1.45 ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+.debug h3 { margin: 0 0 8px; font-size: 13px; color: var(--gold); }
+.debug pre { margin: 0 0 10px; white-space: pre-wrap; font: inherit; }
+.debug .row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; align-items: center; }
+.debug .row-label { width: 100%; color: #b9a58f; }
+.debug button { font: inherit; font-weight: 700; cursor: pointer; padding: 3px 9px; border-radius: 8px; border: none; background: #5a4636; color: #f6e7c8; }
+.debug button.active { background: var(--gold); color: var(--ink); }
+.debug .status { color: var(--buy); min-height: 1em; }

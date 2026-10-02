@@ -1,0 +1,354 @@
+/* kit.css — the shared pieces every screen is built from (1.6.0, "New Digs"; DESIGN §31): the
+   pixel frames, buttons, buy buttons, segmented toggles and sub-tabs. kit.ts builds the new pieces;
+   the older screens still use the classes here until they are rebuilt on the kit. */
+
+/* ── Pixel frames ───────────────────────────────────────
+   These elements get a crisp pixel-art border: a 12×12 frame from src/view/art.ts,
+   sliced into corners + edges + middle (see theme.ts). --frame says which frame,
+   --fw how wide the border is: 8px = the frame drawn at 2×, 12px = 3×.
+   Whole-number scales keep the pixels square.
+   1.6.0: the kit's pieces carry .fr and use the painted frames from frames.ts (--fr-wood,
+   --fr-paper-ready, --fr-brass, --fr-enamel-primary …). --fw is always the 4 px corner drawn at a
+   whole number: 4, 8, 12 or 16 px (tests/kit.test.js checks).
+   Every framed element sets its own --frame and --fw here, because custom
+   properties are inherited: without this, a paper tile inside the cardboard tray
+   would pick up the tray's cardboard frame. Later rules pick other frames. */
+.tray, .tile, .machine-card, .dialog, .capsule-card, .retire-card, .tree-detail, .bt-icon, .skin-tile,
+.diary-row, .reveal-card, .tag, .bubble, .bc-bubble, .machine-tag, .line-card, .dialog-card, .gamble, .rebuild-card,
+.btn, .buy-btn, .seg-btn, .icon-btn, .tab, .subtab, .felt, .boost-badge, .helper-row, .trial-badge, .bc-banner, .migrate-card,
+.fr {
+  --frame: var(--frame-paper);
+  --fw: 8px;
+  border-style: solid;
+  border-color: transparent;
+  border-width: var(--fw);
+  border-image-source: var(--frame);
+  border-image-slice: 4 fill;
+  border-image-width: var(--fw);
+  border-image-repeat: stretch;
+  background: none;
+  image-rendering: pixelated;
+}
+
+/* ── Buttons (pixel frames from theme.ts) ───────────── */
+.btn {
+  --frame: var(--frame-btn-card);
+  font-family: var(--font-display); font-weight: 500; font-size: 17px; color: var(--ink);
+  padding: 2px 10px 4px; cursor: pointer;
+  transition: transform 0.06s, filter 0.15s;
+}
+.btn:active:not(:disabled) { transform: translateY(2px); }
+.btn:disabled { cursor: default; filter: saturate(0.3); opacity: 0.6; }
+.btn:focus-visible, .tab:focus-visible, .buy-btn:focus-visible, .seg-btn:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+.btn-primary { --frame: var(--frame-btn-primary); }
+.btn-soft { --frame: var(--frame-btn-soft); }
+.btn-danger { --frame: var(--frame-btn-danger); }
+.btn-gold { --frame: var(--frame-btn-gold); }
+.btn-black { --frame: var(--frame-btn-black); color: var(--paper); }
+.btn-token { --frame: var(--frame-btn-token); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn.poor { filter: saturate(0.35); }
+.btn.shake { animation: shake 0.3s; }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+/* Segmented toggles: ×1/×10/Max, and the Menu settings */
+.seg { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.seg-btn {
+  --frame: var(--frame-btn-card); --fw: 8px;
+  font-family: var(--font-num); font-weight: 900; font-size: 13px; color: var(--ink); padding: 0 4px 1px; cursor: pointer; min-width: 44px;
+}
+.buy-amount .seg-btn { --fw: 8px; min-width: 38px; font-size: 12px; padding: 0 3px 1px; }
+.seg-btn.active { --frame: var(--frame-btn-buy); }
+.seg-btn:active { transform: translateY(1px); }
+
+/* Sub-tabs: a row of small paper labels inside a tab (dom.ts createSubTabs).
+   It stays at the top of the tab while the rest scrolls under it. */
+.subtab-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 4; margin: 0 -4px 8px; padding: 2px 6px 6px; background: var(--tray);
+  box-shadow: 0 4px 6px -5px rgba(74, 52, 40, 0.5);
+}
+.subtabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.subtab {
+  --frame: var(--frame-btn-card); --fw: 8px; position: relative;
+  font-family: var(--font-display); font-weight: 500; font-size: 14px; color: var(--kraft-edge); padding: 0 6px 2px; cursor: pointer;
+}
+.subtab.active { --frame: var(--frame-paper-selected); color: var(--ink); }
+.subtab.alert::after { /* "something ready here" dot, like the tabs */
+  content: ""; position: absolute; top: -8px; right: -8px; width: 9px; height: 9px;
+  background: var(--primary); box-shadow: 0 0 0 2px var(--paper); clip-path: var(--notch);
+}
+.subtab:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+
+.buy-btn {
+  --frame: var(--frame-btn-buy);
+  position: relative; overflow: hidden; margin-top: auto;
+  font-family: var(--font-display); font-weight: 500; font-size: 16px; color: var(--ink);
+  padding: 0 4px 2px; cursor: pointer; min-height: 40px;
+}
+.buy-btn:active:not(.poor):not(.maxed):not(:disabled) { transform: translateY(2px); }
+.buy-btn.poor { --frame: var(--frame-btn-off); color: var(--ink-soft); cursor: default; }
+.buy-btn.maxed { --frame: var(--frame-btn-gold); cursor: default; }
+.buy-btn.switch { --frame: var(--frame-btn-soft); }
+.buy-btn:disabled { cursor: default; }
+/* Saving up: the button fills with green candy stripes that slowly march along (1.5.0) */
+.buy-fill {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+  background: repeating-linear-gradient(-45deg, rgba(130, 209, 177, 0.72) 0 6px, rgba(175, 228, 205, 0.72) 6px 12px) 0 0 / 17px 17px;
+  box-shadow: inset -2px 0 0 rgba(47, 111, 87, 0.35);
+  animation: fill-march 1.2s steps(6) infinite;
+}
+@keyframes fill-march { to { background-position: 17px 0; } }
+.buy-label { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--font-num); font-weight: 900; }
+.buy-btn.maxed .buy-label { font-family: var(--font-display); font-weight: 500; }
+
+/* A glint sweeps across every buy button you can afford, now and then (hard-edged, like pixel art) */
+.buy-btn::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 46%; pointer-events: none; opacity: 0;
+  background: linear-gradient(100deg, transparent 0 28%, rgba(255, 255, 255, 0.55) 28% 50%, transparent 50% 62%, rgba(255, 255, 255, 0.35) 62% 72%, transparent 72%);
+  transform: translateX(-120%);
+}
+.buy-btn:not(.poor):not(.maxed):not(:disabled)::after { opacity: 1; animation: glint 3.4s ease-in-out infinite; }
+.upgrade-grid > :nth-child(2n) .buy-btn::after { animation-delay: 0.5s; }
+.upgrade-grid > :nth-child(3n) .buy-btn::after { animation-delay: 1.1s; }
+@keyframes glint { 0% { transform: translateX(-120%); } 28%, 100% { transform: translateX(330%); } }
+
+/* Buttons light up a little under the mouse */
+@media (hover: hover) {
+  .btn:hover:not(:disabled):not(.poor), .buy-btn:hover:not(.poor):not(.maxed):not(:disabled) { filter: brightness(1.06); }
+}
+
+@container tray (max-width: 560px) {
+  .subtab { font-size: 13px; padding: 0 4px 2px; }
+}
+.less-motion .btn.shake, .less-motion .buy-fill { animation: none; }
+.less-motion .buy-btn::after { animation: none !important; }
+
+/* ════════════════════ The kit (1.6.0, "New Digs"): the pieces kit.ts builds ════════════════════
+   Wood, paper, brass and enamel, painted by frames.ts. Sizes come from the type scale and the
+   4 px grid in :root; every target is at least a finger wide (--tap, 44 px). */
+
+/* ── Buttons: enamel (or a wooden key, tone "wood"). Pressed, the face sinks into its lip. ── */
+.k-btn {
+  --frame: var(--fr-enamel-wood); --frame-down: var(--fr-enamel-wood-down); --fw: 8px;
+  position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none;
+  min-width: var(--tap); min-height: var(--tap); padding: 0 var(--space-2) 2px;
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-md); line-height: 1.1; color: var(--ink);
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.k-btn-face { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1); flex-wrap: wrap; min-width: 0; }
+.k-btn-meta { flex-basis: 100%; text-align: center; font-family: var(--font-num); font-weight: 900; font-size: var(--text-xs); line-height: 1.1; }
+.k-btn-face .sprite { flex: none; }
+.k-btn:active:not(:disabled) { --frame: var(--frame-down); }
+.k-btn:active:not(:disabled) .k-btn-face { transform: translateY(2px); }
+.k-btn:disabled { --frame: var(--fr-enamel-off); --frame-down: var(--fr-enamel-off-down); color: var(--ink-soft); cursor: default; }
+.k-btn:focus-visible, .k-seg-opt:focus-visible, .k-toggle:focus-visible, .k-tile-hit:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+.k-btn.tone-primary { --frame: var(--fr-enamel-primary); --frame-down: var(--fr-enamel-primary-down); }
+.k-btn.tone-soft { --frame: var(--fr-enamel-soft); --frame-down: var(--fr-enamel-soft-down); }
+.k-btn.tone-buy { --frame: var(--fr-enamel-buy); --frame-down: var(--fr-enamel-buy-down); }
+.k-btn.tone-gold { --frame: var(--fr-enamel-gold); --frame-down: var(--fr-enamel-gold-down); }
+.k-btn.tone-danger { --frame: var(--fr-enamel-danger); --frame-down: var(--fr-enamel-danger-down); }
+.k-btn.tone-token { --frame: var(--fr-enamel-token); --frame-down: var(--fr-enamel-token-down); }
+.k-btn.tone-heirloom { --frame: var(--fr-enamel-heirloom); --frame-down: var(--fr-enamel-heirloom-down); }
+.k-btn.tone-off { --frame: var(--fr-enamel-off); --frame-down: var(--fr-enamel-off-down); color: var(--ink-soft); }
+.k-btn.tone-black { --frame: var(--fr-enamel-black); --frame-down: var(--fr-enamel-black-down); color: var(--paper); }
+.k-btn.tone-brass { --frame: var(--fr-enamel-brass); --frame-down: var(--fr-enamel-brass-down); color: var(--brass-ink); }
+.k-btn.tone-luck { --frame: var(--fr-enamel-luck); --frame-down: var(--fr-enamel-luck-down); }
+.k-btn.size-sm { min-height: 36px; min-width: 36px; padding: 0 6px 2px; font-size: var(--text-sm); }
+.k-btn.size-lg { --fw: 12px; min-height: 52px; font-size: var(--text-lg); padding: 0 var(--space-3) 3px; }
+.k-btn.size-xl { --fw: 12px; min-height: 64px; font-size: var(--text-2xl); padding: 0 var(--space-4) 3px; }
+.k-btn.is-busy { cursor: progress; }
+@media (hover: hover) {
+  .k-btn:hover:not(:disabled) .k-btn-face, .k-seg-opt:hover:not(:disabled) > * { transform: translateY(-1px); }
+}
+
+/* ── Buy buttons: the price, and candy stripes that fill it while you save up ── */
+.k-buy { overflow: hidden; min-width: 96px; }
+.k-buy-fill {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--buy) 72%, transparent) 0 6px,
+    color-mix(in srgb, var(--buy) 45%, var(--paper)) 6px 12px) 0 0 / 17px 17px;
+  box-shadow: inset -2px 0 0 color-mix(in srgb, var(--buy-dark) 50%, transparent);
+  animation: fill-march 1.2s steps(6) infinite;
+}
+.k-buy .k-btn-label.num { font-family: var(--font-num); font-weight: 900; }
+.k-buy.is-saving { cursor: default; }
+.k-buy.is-locked .k-btn-label { font-size: var(--text-sm); }
+
+/* ── The two-tap button: armed, it's a lit brass plate, and a fuse burns along its bottom ── */
+.k-confirm.is-armed { --frame: var(--fr-brass-lit); --frame-down: var(--fr-brass); color: var(--brass-ink); }
+.k-fuse { position: absolute; left: 4px; right: 4px; bottom: 0; height: 3px; transform-origin: 0 50%; transform: scaleX(0); background: var(--danger); pointer-events: none; }
+.k-fuse.burning { animation: fuse var(--fuse-ms, 4s) linear forwards; }
+.k-confirm:not(.is-armed) .k-fuse { visibility: hidden; }
+@keyframes fuse { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* ── Switches: a brass slot with an enamel knob (switch), or a lever with a lamp (lever) ── */
+.k-toggle {
+  display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap); padding: 0 var(--space-1);
+  border: 0; background: none; color: var(--ink); cursor: pointer; font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm);
+}
+.k-toggle:disabled { cursor: default; opacity: 0.55; }
+.k-toggle-track { --frame: var(--fr-brass-slot); --fw: 4px; position: relative; width: 56px; height: 28px; }
+.k-toggle-knob { --frame: var(--fr-enamel-off); --fw: 8px; position: absolute; left: -2px; top: -2px; width: 28px; height: 28px; transition: transform var(--dur-1) steps(3); }
+.k-toggle.is-on .k-toggle-knob { --frame: var(--fr-enamel-buy); transform: translateX(28px); }
+.k-toggle-state { min-width: 3ch; font-size: var(--text-sm); color: var(--ink-soft); }
+.k-toggle.is-on .k-toggle-state { color: var(--buy-dark); }
+/* The lever (the auto-spin pause): up and lit = running, down and red = paused */
+.k-toggle.kind-lever { flex-direction: column; justify-content: center; gap: 3px; width: var(--tap); padding: 0; }
+.k-lamp {
+  width: 12px; height: 12px; flex: none; clip-path: var(--notch);
+  background: var(--danger-dark); box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--danger) 60%, white);
+}
+.k-toggle.is-on .k-lamp { background: var(--luck); box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--luck) 40%, white), 0 0 8px 1px color-mix(in srgb, var(--luck) 70%, transparent); }
+.k-lever { --frame: var(--fr-brass-slot); --fw: 4px; position: relative; width: 20px; height: 34px; }
+.k-lever-knob { --frame: var(--fr-enamel-danger); --fw: 8px; position: absolute; left: -6px; top: 10px; width: 24px; height: 22px; transition: transform var(--dur-1) steps(3); }
+.k-toggle.is-on .k-lever-knob { --frame: var(--fr-enamel-wood); transform: translateY(-14px); }
+
+/* ── Segmented: brass keys in a row, the chosen one lit green ── */
+.k-seg { display: inline-flex; gap: 2px; flex-wrap: wrap; }
+.k-seg-opt {
+  --frame: var(--fr-brass); --fw: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  min-height: var(--tap); min-width: var(--tap); padding: 0 var(--space-2) 1px; cursor: pointer;
+  font-family: var(--font-num); font-weight: 900; font-size: var(--text-sm); color: var(--brass-ink);
+}
+.k-seg-opt.is-on { --frame: var(--fr-enamel-buy); color: var(--ink); }
+.k-seg-opt:active:not(:disabled) > * { transform: translateY(1px); }
+.k-seg-opt:disabled { opacity: 0.5; cursor: default; }
+
+/* ── Stepper: − value + ── */
+.k-stepper { display: inline-flex; align-items: stretch; gap: var(--space-1); }
+.k-step-btn { font-family: var(--font-num); font-weight: 900; font-size: var(--text-lg); }
+.k-btn.is-locked { --frame: var(--fr-enamel-off); --frame-down: var(--fr-enamel-off-down); color: var(--ink-soft); }
+.k-step-value {
+  --frame: var(--fr-paper); --fw: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 64px; padding: 0 4px; line-height: 1; text-align: center;
+}
+.k-step-label { font-family: var(--font-display); font-weight: 500; font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); }
+.k-step-num { font-family: var(--font-num); font-weight: 900; font-size: var(--text-lg); line-height: 1.1; }
+.k-step-hint { font-weight: 700; font-size: var(--text-xs); color: var(--ink-soft); white-space: nowrap; }
+.k-stepper.is-warn .k-step-hint { color: var(--danger-dark); }
+
+/* ── Tiles: paper cards in rows. The whole tile opens its sheet; the buy button buys. ── */
+.k-tile {
+  --frame: var(--fr-paper); --fw: 8px; position: relative;
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: var(--space-2);
+  min-width: 0; padding: 0 2px 2px; box-shadow: 0 3px 0 -1px color-mix(in srgb, var(--ink) 16%, transparent);
+  transition: transform var(--dur-1);
+}
+.k-tile-hit { position: absolute; inset: calc(-1 * var(--fw)); z-index: 0; padding: 0; border: 0; background: none; cursor: pointer; }
+.k-tile > :not(.k-tile-hit) { position: relative; z-index: 1; pointer-events: none; }
+.k-tile > .k-buy { pointer-events: auto; z-index: 2; }
+.k-tile-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--paper-2); clip-path: var(--notch); }
+.k-tile-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.k-tile-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); min-width: 0; }
+.k-tile-name { font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); line-height: 1.15; min-width: 0; }
+.k-tile-level { flex: none; font-weight: 800; font-size: var(--text-xs); color: var(--ink-soft); white-space: nowrap; }
+.k-tile-effect { font-weight: 700; font-size: var(--text-xs); line-height: 1.3; color: var(--ink); }
+.k-tile-effect .next { color: var(--buy-dark); }
+.k-tile-effect .note { font-size: var(--text-xs); }
+.k-pips { display: flex; gap: 2px; margin-top: 1px; }
+.k-pips i { flex: 1; height: 4px; max-width: 18px; background: var(--line); }
+.k-pips i.on { background: var(--buy-dark); }
+.k-tile.is-ready { --frame: var(--fr-paper-ready); }
+.k-tile.is-maxed { --frame: var(--fr-paper-gold); }
+.k-tile.is-maxed .k-pips i.on { background: var(--gold-dark); }
+.k-tile.is-selected { --frame: var(--fr-paper-selected); }
+.k-tile.is-planted { --frame: var(--fr-paper-heirloom); }
+.k-tile.is-locked { --frame: var(--fr-paper-locked); }
+.k-tile.is-locked .k-tile-icon img { filter: grayscale(0.85); opacity: 0.75; }
+.k-tile.bought { animation: bought 0.35s ease-out; }
+@media (hover: hover) { .k-tile:hover { transform: translateY(-2px); } }
+
+/* ── The sheet: rises from the bottom of the tray (never over the cage) ── */
+.k-sheet {
+  --frame: var(--fr-paper-selected); --fw: 8px;
+  position: absolute; left: var(--space-1); right: var(--space-1); bottom: var(--space-1); z-index: 8;
+  display: flex; flex-direction: column; gap: var(--space-2); max-height: 60%; padding: 2px var(--space-1) var(--space-1);
+  box-shadow: 0 -10px 18px -10px color-mix(in srgb, var(--ink) 60%, transparent);
+  animation: sheet-up var(--dur-2) ease-out;
+}
+.k-sheet-head { display: flex; align-items: center; gap: var(--space-2); flex: none; }
+.k-sheet-icon { flex: none; display: flex; align-items: center; justify-content: center; min-width: 40px; height: 40px; background: var(--paper-2); clip-path: var(--notch); }
+.k-sheet-icon:empty { display: none; }
+.k-sheet-titles { flex: 1; min-width: 0; }
+.k-sheet-title { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); line-height: 1.1; }
+.k-sheet-tag { font-weight: 800; font-size: var(--text-xs); color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; }
+.k-sheet-body { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: var(--space-2); font-weight: 600; font-size: var(--text-sm); line-height: 1.4; }
+.k-sheet-body .next { color: var(--buy-dark); }
+.k-sheet-foot { flex: none; display: flex; align-items: center; gap: var(--space-2); }
+.k-sheet-foot:empty { display: none; }
+.k-sheet-foot > .k-btn { flex: 1; }
+@keyframes sheet-up { from { transform: translateY(28px); opacity: 0; } }
+/* The tray's panels leave room for it, so the tile you tapped scrolls into view above it. */
+.has-sheet .tab-panel { padding-bottom: calc(var(--sheet-h, 0px) + var(--space-2)); scroll-padding-bottom: calc(var(--sheet-h, 0px) + var(--space-2)); }
+
+/* ── Cards: paper on the tray's wood, with a header and a tone ── */
+.k-card { --frame: var(--fr-paper); --fw: 8px; display: flex; flex-direction: column; gap: var(--space-2); padding: 2px var(--space-1) var(--space-1); }
+.k-card-head { display: flex; align-items: center; gap: var(--space-2); font-family: var(--font-display); font-weight: 500; font-size: var(--text-md); }
+.k-card-body { display: flex; flex-direction: column; gap: var(--space-2); font-weight: 600; font-size: var(--text-sm); line-height: 1.4; }
+.k-card.tone-gold { --frame: var(--fr-paper-gold); }
+.k-card.tone-heirloom { --frame: var(--fr-paper-heirloom); }
+.k-card.tone-ready { --frame: var(--fr-paper-ready); }
+.k-card.tone-selected { --frame: var(--fr-paper-selected); }
+.k-card.tone-locked { --frame: var(--fr-paper-locked); }
+
+/* ── Rows, stats, chips ── */
+.k-row { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-2); background: var(--paper); clip-path: var(--notch); }
+.k-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.k-row-title { font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); }
+.k-row-sub { font-weight: 600; font-size: var(--text-xs); color: var(--ink-soft); line-height: 1.3; }
+.k-row-sub:empty { display: none; }
+.k-row-value { flex: none; font-family: var(--font-num); font-weight: 900; font-size: var(--text-sm); }
+.k-stat-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: 6px 0; border-bottom: 2px dashed var(--paper-2); font-size: var(--text-sm); }
+.k-stat-label { color: var(--ink-soft); font-weight: 700; }
+.k-stat-value { font-family: var(--font-num); font-weight: 900; text-align: right; }
+.k-stat-tile { --frame: var(--fr-paper); --fw: 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 var(--space-1) 2px; text-align: center; }
+.k-stat-tile .k-stat-label { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.5px; }
+.k-stat-tile .k-stat-value { font-size: var(--text-md); }
+.k-chip {
+  display: inline-flex; align-items: center; gap: 3px; min-height: 20px; padding: 0 6px 0 4px; clip-path: var(--notch);
+  font-weight: 800; font-size: var(--text-xs); line-height: 1.2; color: var(--ink); background: var(--paper-2);
+}
+.k-chip.tone-gold { background: color-mix(in srgb, var(--gold) 50%, var(--paper)); }
+.k-chip.tone-buy { background: color-mix(in srgb, var(--buy) 45%, var(--paper)); }
+.k-chip.tone-soft { background: color-mix(in srgb, var(--soft) 50%, var(--paper)); }
+.k-chip.tone-token { background: color-mix(in srgb, var(--token) 45%, var(--paper)); }
+.k-chip.tone-heirloom { background: color-mix(in srgb, var(--heirloom) 45%, var(--paper)); }
+.k-chip.tone-luck { background: color-mix(in srgb, var(--luck) 40%, var(--paper)); }
+.k-chip.tone-danger { background: color-mix(in srgb, var(--danger) 40%, var(--paper)); }
+/* The "something new here" dot */
+.k-dot { position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background: var(--primary); box-shadow: 0 0 0 2px var(--paper); clip-path: var(--notch); pointer-events: none; }
+
+/* ── Gauges: a glass tube in a brass rim ── */
+.k-gauge { --frame: var(--fr-glass); --fw: 4px; --g: var(--buy-dark); position: relative; height: 14px; overflow: hidden; }
+.k-gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(color-mix(in srgb, var(--g) 55%, white) 0 2px, var(--g) 2px); transition: width var(--dur-2); }
+.k-gauge.tone-gold { --g: var(--gold-dark); }
+.k-gauge.tone-heirloom { --g: var(--heirloom-dark); }
+.k-gauge.tone-token { --g: var(--token-dark); }
+.k-gauge.tone-soft { --g: var(--soft-dark); }
+.k-gauge.tone-whisker { --g: var(--whisker-dark); }
+.k-gauge.tone-primary { --g: var(--primary); }
+
+/* ── Amounts: a number with its currency icon (always the clean number font) ── */
+.k-amount { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.k-amount .sprite { flex: none; }
+
+/* ── "How it works" folds, and the Locked drawer ── */
+.k-more > summary {
+  display: flex; align-items: center; gap: 6px; min-height: 32px; cursor: pointer; list-style: none;
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); color: var(--ink-soft);
+}
+.k-more > summary::-webkit-details-marker, .k-drawer > summary::-webkit-details-marker { display: none; }
+.k-more > summary::before { content: "+"; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; font-family: var(--font-num); font-weight: 900; background: var(--paper-2); clip-path: var(--notch); }
+.k-more[open] > summary::before { content: "−"; }
+.k-more-body { font-weight: 600; font-size: var(--text-sm); line-height: 1.45; color: var(--ink-soft); }
+.k-drawer { margin-top: var(--space-3); }
+.k-drawer-head {
+  display: flex; align-items: center; gap: var(--space-2); min-height: var(--tap); padding: 0 var(--space-1); cursor: pointer; list-style: none;
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-md); color: var(--ink-soft);
+}
+.k-drawer-head::after { content: "▾"; margin-left: auto; font-family: var(--font-num); }
+.k-drawer[open] > .k-drawer-head::after { content: "▴"; }
+.k-drawer-body { display: grid; gap: var(--space-2); margin-top: var(--space-1); }
+
+.less-motion .k-buy-fill, .less-motion .k-fuse.burning, .less-motion .k-sheet, .less-motion .k-tile.bought { animation: none; }
+.less-motion .k-tile, .less-motion .k-toggle-knob, .less-motion .k-lever-knob, .less-motion .k-gauge-fill { transition: none; }

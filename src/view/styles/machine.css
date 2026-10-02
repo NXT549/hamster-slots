@@ -1,0 +1,339 @@
+/* machine.css — the slot machines: the cabinet's layout over its painting (cabinet.ts), the sign, the
+   reels and their cells, the paylines and line tags, the lever, the hold & spin board, the jackpot pots,
+   the badges on the machine, the card gamble, the WIN meter and the win show's line label. */
+
+/* ── The slot machines ──
+   1.5.0: every cabinet is painted as pixel art to fit its machine (cabinet.ts: Old
+   Clunky's mint plastic, the Stacker's awning, the Palace's velvet and crown …), with
+   real bulbs round the sign. The elements here only lay the machine out on top of it;
+   isolation keeps the painting (z-index -1) behind every part of the machine. */
+.machine {
+  position: relative; flex: none; isolation: isolate;
+  padding: 17px 23px 37px; /* (1.4's padding + its old 3 px border) */
+}
+.cabinet-canvas { position: absolute; z-index: -1; image-rendering: pixelated; pointer-events: none; }
+/* The sign: a lit panel on a dark board (the board and its bulbs are painted). */
+.marquee {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: fit-content; margin: 0 auto 20px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.55) 0 2px, transparent 2px calc(100% - 4px), rgba(74, 52, 40, 0.16) calc(100% - 4px)),
+    var(--marquee);
+  box-shadow: inset 0 0 0 2px rgba(74, 52, 40, 0.28);
+  padding: 4px 12px 5px; font-family: var(--font-display); font-weight: 500; font-size: 19px; text-transform: uppercase; letter-spacing: 1px;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.55);
+}
+/* 1.0: a win flashes the sign; a teasing reel makes the reel window throb. (Each reel
+   landing gives the machine a tiny thump: ui.ts, with element.animate, so it never
+   fights the machine's own animations like the big-win flash.) */
+.machine.winning .marquee { animation: marquee-flash 0.24s steps(2) 6; }
+@keyframes marquee-flash { 50% { background: #fff8d8; box-shadow: inset 0 0 0 2px var(--gold), 0 0 16px 4px color-mix(in srgb, var(--gold) 70%, transparent); } }
+.machine.teasing .reel-window { animation: heartbeat 0.5s ease-in-out infinite; }
+@keyframes heartbeat { 20% { transform: scale(1.015); } 40% { transform: scale(1); } }
+.machine.big-win { animation: cab-flash 0.3s steps(2) 5; }
+@keyframes cab-flash { 50% { filter: brightness(1.22) saturate(1.2); } }
+@keyframes glow { 50% { background: var(--gold); } }
+.machine.switch-in { animation: switch-in 0.35s ease-out; }
+@keyframes switch-in { 0% { transform: translateY(-10px) scale(0.96); opacity: 0.4; } 60% { transform: translateY(2px); } }
+
+.reel-window {
+  position: relative; width: fit-content; margin: 0 auto;
+  background: var(--outline-ink); padding: 5px;
+}
+.reels { position: relative; display: flex; gap: 6px; }
+/* A reel is a drum: lit across the middle, curving away into shade at the top and bottom
+   (hard steps, like pixel art). */
+.reel {
+  position: relative; width: 78px; height: calc(var(--cell) * 3);
+  overflow: hidden; background: var(--reel-bg);
+  background: linear-gradient(
+    color-mix(in srgb, var(--reel-bg) 70%, var(--reel-shade)) 0 6px, color-mix(in srgb, var(--reel-bg) 84%, var(--reel-shade)) 6px 16px,
+    color-mix(in srgb, var(--reel-bg) 93%, var(--reel-shade)) 16px 34px, var(--reel-bg) 34px calc(100% - 34px),
+    color-mix(in srgb, var(--reel-bg) 93%, var(--reel-shade)) calc(100% - 34px) calc(100% - 16px),
+    color-mix(in srgb, var(--reel-bg) 84%, var(--reel-shade)) calc(100% - 16px) calc(100% - 6px), color-mix(in srgb, var(--reel-bg) 70%, var(--reel-shade)) calc(100% - 6px));
+}
+/* A one-row machine: shade the rows above and below the payline (they're decoration) */
+.reels[data-rows="1"] .reel::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: linear-gradient(rgba(74, 52, 40, 0.38), rgba(74, 52, 40, 0.06) 33.3%, transparent 33.4%,
+    transparent 66.6%, rgba(74, 52, 40, 0.06) 66.7%, rgba(74, 52, 40, 0.38));
+}
+/* A three-row machine: every row counts, so just a soft line between rows */
+.reels[data-rows="3"] .reel::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background:
+    linear-gradient(transparent calc(33.33% - 1px), rgba(74, 52, 40, 0.12) calc(33.33% - 1px) 33.33%, transparent 33.33%
+      calc(66.66% - 1px), rgba(74, 52, 40, 0.12) calc(66.66% - 1px) 66.66%, transparent 66.66%),
+    linear-gradient(rgba(74, 52, 40, 0.14), transparent 12%, transparent 88%, rgba(74, 52, 40, 0.14));
+}
+.strip { position: relative; z-index: 1; will-change: transform; }
+.reel.fast .strip { filter: blur(1.2px); } /* a motion blur while the reel races (reels.ts); gone before it lands */
+.cell { height: var(--cell); display: flex; align-items: center; justify-content: center; }
+/* A winning cell glows BEHIND its symbol (the symbol's colours must stay true) */
+.cell.win {
+  background: color-mix(in srgb, var(--lc, var(--gold)) 30%, transparent);
+  box-shadow: inset 0 0 0 3px var(--lc, var(--gold)), inset 0 0 0 5px rgba(255, 255, 255, 0.55);
+  animation: win-pulse 0.6s ease-in-out infinite alternate;
+}
+/* 1.5.0: a reel flashes as it lands (behind its symbols: an inner glow that fades) */
+.reel.landed { animation: reel-land 0.32s ease-out; }
+@keyframes reel-land { 0% { box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.95), inset 0 0 22px 4px rgba(255, 243, 184, 0.95); } }
+@keyframes win-pulse { to { background: color-mix(in srgb, var(--lc, var(--gold)) 55%, transparent); } }
+/* 1.0: winning symbols dance, a beat apart from reel to reel, so the line ripples */
+.cell.win .sprite, .cell.feature .sprite { animation: sym-dance 0.7s ease-in-out infinite; }
+.reel:nth-child(2) .cell .sprite { animation-delay: 0.08s; }
+.reel:nth-child(3) .cell .sprite { animation-delay: 0.16s; }
+.reel:nth-child(4) .cell .sprite { animation-delay: 0.24s; }
+.reel:nth-child(5) .cell .sprite { animation-delay: 0.32s; }
+@keyframes sym-dance {
+  0%, 70%, 100% { transform: translateY(0) scale(1, 1); }
+  20% { transform: translateY(-6px) scale(0.94, 1.08); }
+  40% { transform: translateY(0) scale(1.1, 0.9); }
+  55% { transform: translateY(-2px) scale(0.98, 1.02); }
+}
+.payline-arrow {
+  position: absolute; top: 50%; width: 0; height: 0; margin-top: -8px;
+  border: 8px solid transparent;
+}
+.payline-arrow.left { left: -12px; border-left-color: var(--danger); }
+.payline-arrow.right { right: -12px; border-right-color: var(--danger); }
+.machine[data-rows="3"] .payline-arrow { display: none; }
+
+/* Payline colours: every element for line N gets class line-(N-1) */
+.line-0 { --lc: var(--line-1); } .line-1 { --lc: var(--line-2); } .line-2 { --lc: var(--line-3); }
+.line-3 { --lc: var(--line-4); } .line-4 { --lc: var(--line-5); } .line-5 { --lc: var(--line-6); }
+.line-6 { --lc: var(--line-7); } .line-7 { --lc: var(--line-8); } .line-8 { --lc: var(--line-9); }
+.line-9 { --lc: var(--line-10); }
+/* Numbered tags at the ends of each payline, in the window's frame */
+.line-tag {
+  position: absolute; z-index: 4; width: 18px; height: 18px; margin-top: -9px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-num); font-weight: 900; font-size: 11px; color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  background: var(--lc); clip-path: var(--notch); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+}
+.line-tag.left { left: -25px; }
+.line-tag.right { right: -25px; }
+.line-tag.locked { background: var(--ink-faint); color: var(--paper); opacity: 0.5; }
+.line-tag.won { animation: tag-pop 0.5s ease-in-out infinite alternate; }
+/* Many-line machines: the number sits on the start of each winning line instead */
+.line-tag.badge { z-index: 5; box-shadow: 0 0 0 2px var(--outline-ink), inset 0 -3px 0 rgba(0, 0, 0, 0.18); }
+@keyframes tag-pop { to { transform: scale(1.25); } }
+/* The winning lines, drawn over the reels */
+.win-lines { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; overflow: visible; }
+.win-lines polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.win-lines .under { stroke: var(--outline-ink); stroke-width: 8; opacity: 0.5; }
+.win-lines .over { stroke: var(--lc); stroke-width: 4; }
+/* 1.0: each line draws itself across, left to right (--len = its length, reels.ts) */
+.win-lines polyline { stroke-dasharray: var(--len); animation: trace 0.35s ease-out backwards; }
+@keyframes trace { from { stroke-dashoffset: var(--len); } }
+
+/* The lever: a chrome stick and a glossy ball (cabinet.ts paints the ball in each machine's
+   colours). Pulled, the stick pushes down into its mount and the ball comes with it. */
+.lever { position: absolute; right: -32px; top: 72px; width: 26px; height: 96px; }
+.lever-stick {
+  position: absolute; left: 9px; top: 18px; width: 8px; height: 78px; transform-origin: 50% 100%; transition: transform 0.12s;
+  background: linear-gradient(90deg, var(--chrome-dark) 0 2px, var(--chrome-light) 2px 4px, var(--chrome) 4px 6px, var(--chrome-dark) 6px);
+  box-shadow: 0 0 0 2px var(--outline-ink);
+}
+.lever-knob {
+  position: absolute; left: 0; top: 0; width: 26px; height: 26px; transition: transform 0.12s;
+  background: var(--knob-sprite, none) 0 0 / 100% 100% no-repeat; image-rendering: pixelated;
+}
+.machine.pulled .lever-stick { transform: scaleY(0.5); }
+.machine.pulled .lever-knob { transform: translateY(39px); }
+
+/* Each machine: its padding (room round the reels for its cabinet) and its sign's colour.
+   The Snack Stacker has a push button instead of a lever, and room for the payline tags. */
+.machine[data-machine="stacker"] { padding: 15px 37px 37px; }
+.machine[data-machine="stacker"] .marquee { --marquee: var(--stacker-marquee); }
+.machine[data-machine="stacker"] .lever { top: 104px; height: 40px; right: -26px; }
+.machine[data-machine="stacker"] .lever-stick { display: none; }
+.machine[data-machine="stacker"] .lever-knob { width: 22px; height: 22px; top: 8px; }
+.machine[data-machine="stacker"].pulled .lever-knob { transform: translateX(-5px); }
+.machine[data-machine="bonanza"] { padding: 25px 25px 37px; }
+.machine[data-machine="bonanza"] .marquee { --marquee: var(--bonanza-light); }
+.machine[data-machine="palace"] { padding: 17px 25px 37px; }
+.machine[data-machine="palace"] .marquee { --marquee: var(--palace-gold); }
+.machine[data-machine="bonanza"] .payline-arrow, .machine[data-machine="palace"] .payline-arrow { display: none; }
+.machine[data-machine="maze"] { padding: 19px 25px 37px; }
+.machine[data-machine="maze"] .marquee { --marquee: var(--maze-path); }
+.machine[data-machine="vault"] { padding: 17px 25px 37px; }
+.machine[data-machine="vault"] .marquee { --marquee: var(--gold); }
+.machine[data-machine="cheese"] { padding: 21px 25px 37px; }
+.machine[data-machine="cheese"] .marquee { --marquee: var(--cheese-light); }
+.machine[data-machine="maze"] .payline-arrow, .machine[data-machine="vault"] .payline-arrow, .machine[data-machine="cheese"] .payline-arrow { display: none; }
+
+/* Hold & spin (M9): a board over the reels. Locked acorns show their coins; empty cells shimmer. */
+.hold-board {
+  position: absolute; left: 5px; right: 5px; top: 5px; bottom: 5px; z-index: 6;
+  display: grid; grid-template-rows: repeat(3, 1fr); column-gap: 6px;
+}
+.hold-cell {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--acorn-cell); border-radius: 5px; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
+.hold-cell .sprite { opacity: 0; transform: scale(0.4); transition: opacity 0.15s, transform 0.2s; }
+.hold-cell:not(.filled)::after { /* a respinning cell: a faint shimmer running down it */
+  content: ""; position: absolute; inset: 0; border-radius: 5px;
+  background: linear-gradient(transparent 0 30%, rgba(255, 243, 184, 0.14) 45% 55%, transparent 70%) 0 0 / 100% 300%;
+  animation: respin 0.9s linear infinite;
+}
+@keyframes respin { from { background-position: 0 100%; } to { background-position: 0 -200%; } }
+.hold-cell.filled { background: color-mix(in srgb, var(--gold) 30%, var(--acorn-cell)); box-shadow: inset 0 0 0 3px var(--gold); }
+.hold-cell.filled .sprite { opacity: 1; transform: scale(1); }
+.hold-cell.landed { animation: acorn-land 0.45s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes acorn-land { 0% { transform: scale(1.35); filter: brightness(1.6); } }
+.hold-value {
+  position: absolute; bottom: 3px; left: 0; right: 0; text-align: center;
+  font-family: var(--font-num); font-weight: 900; font-size: 12px; color: #fff; text-shadow: 0 1px 0 var(--outline-ink), 1px 0 var(--outline-ink), -1px 0 var(--outline-ink);
+}
+.hold-board.full .hold-cell { animation: glow-cell 0.3s steps(2) infinite; }
+@keyframes glow-cell { 50% { box-shadow: inset 0 0 0 3px #fff; } }
+
+/* The cheese wheel (M9): the prize wheel's wedges say what they multiply by */
+.prize-label {
+  position: absolute; left: 50%; top: 50%; width: 30px; margin: -9px 0 0 -15px; text-align: center; transform-origin: 50% 50%;
+  font-family: var(--font-num); font-weight: 900; font-size: 13px; line-height: 18px; color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.wheel.prize.cheese { box-shadow: inset 0 0 0 9px var(--cheese-rind), inset 0 0 0 12px var(--cheese-dark), 0 0 0 4px var(--cheese-rind); }
+
+/* Jackpot pots: four little plaques above the reels */
+.pots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: -4px auto 10px; }
+.pot {
+  display: flex; flex-direction: column; align-items: center; padding: 2px 4px 3px;
+  background: var(--paper); border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch);
+  box-shadow: inset 0 -3px 0 rgba(74, 52, 40, 0.15);
+}
+.pot-name { font-family: var(--font-display); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.pot-value { font-family: var(--font-num); font-weight: 900; font-size: 15px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.pot-0 { background: color-mix(in srgb, var(--soft) 45%, var(--paper)); }
+.pot-1 { background: color-mix(in srgb, var(--buy) 45%, var(--paper)); }
+.pot-2 { background: color-mix(in srgb, var(--token) 45%, var(--paper)); }
+.pot-3 { background: color-mix(in srgb, var(--gold) 55%, var(--paper)); }
+.pot.lit { animation: glow 0.3s steps(2) 8; }
+
+/* Hot Streak badge on the machine's top corner */
+.streak-badge {
+  position: absolute; right: -14px; top: -16px; z-index: 6; display: flex; align-items: center; gap: 3px;
+  padding: 3px 8px 3px 5px; background: var(--paper); border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch);
+  font-family: var(--font-num); font-weight: 900; font-size: 15px; color: var(--primary-dark);
+}
+.streak-badge.hot { background: var(--gold); color: var(--ink); animation: pop 0.6s ease-in-out infinite; }
+
+/* Wilds and scatters glow softly BEHIND themselves (never tint a symbol) */
+.cell.sym-wild { background: radial-gradient(circle, color-mix(in srgb, var(--gold) 40%, transparent) 0 45%, transparent 70%); }
+.cell.sym-scatter { background: radial-gradient(circle, color-mix(in srgb, var(--soft) 45%, transparent) 0 45%, transparent 70%); }
+/* Scatters that started a feature */
+.cell.feature {
+  background: color-mix(in srgb, var(--gold) 45%, transparent); box-shadow: inset 0 0 0 3px var(--gold-dark);
+  animation: win-pulse 0.4s ease-in-out infinite alternate;
+}
+/* Anticipation: reels that could still complete a feature shimmer while they spin */
+.reel.tease { box-shadow: 0 0 0 3px var(--gold), 0 0 14px 4px color-mix(in srgb, var(--gold) 70%, transparent); animation: tease 0.25s steps(2) infinite; }
+@keyframes tease { 50% { box-shadow: 0 0 0 3px var(--primary), 0 0 18px 6px color-mix(in srgb, var(--primary) 60%, transparent); } }
+
+/* Free-spins mode: a golden glow around the machine */
+/* (1.5.0: the glow round the machine is painted by cabinet.ts on its lights canvas, pulsing) */
+
+/* The card gamble: a paper panel over the reels. A face-down card, the last few
+   cards, Red / Black (×2), the four suits (×4) and Take win. */
+.gamble {
+  --frame: var(--frame-paper-gold);
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 7;
+  width: 300px; max-width: 92vw; padding: 2px 6px 6px; display: flex; flex-direction: column; gap: 5px;
+  animation: pop-in 0.25s ease-out;
+}
+.gamble-top { display: flex; align-items: center; gap: 10px; }
+.gamble-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.gamble-title { font-family: var(--font-display); font-weight: 500; font-size: 16px; line-height: 1.1; }
+.gamble-title .num, .gamble-buttons .num, .gamble .btn .num { font-family: var(--font-num); font-weight: 900; }
+.gamble-buttons { display: flex; gap: 5px; }
+.gamble-buttons .btn { flex: 1; min-width: 0; font-size: 14px; padding: 0 4px 2px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; }
+.gamble-suits .btn { --fw: 8px; padding: 0 1px 2px; font-size: 13px; }
+.gamble-timer { height: 5px; background: var(--paper-2); clip-path: var(--notch); overflow: hidden; }
+.gamble-timer-fill { height: 100%; background: var(--primary); }
+.gamble.started .gamble-timer { display: none; }
+/* The card: face down (the card back sprite), or turned over after a pick */
+.gamble-card {
+  flex: none; width: 50px; height: 66px; display: flex; align-items: center; justify-content: center;
+  background: var(--reel-bg); border: var(--outline-thin) solid var(--outline-ink); border-radius: 6px;
+  box-shadow: 0 3px 0 rgba(74, 52, 40, 0.25);
+}
+/* Face down, the card back sprite IS the card (drawn at 4×, a little bigger than the box) */
+.gamble-card.back { background: none; border-color: transparent; box-shadow: none; }
+.gamble-card.flip { animation: card-flip 0.35s ease-out; }
+.gamble-card.win { box-shadow: 0 0 0 3px var(--gold), 0 3px 0 rgba(74, 52, 40, 0.25); }
+.gamble-card.lose { filter: saturate(0.4); }
+@keyframes card-flip { 0% { transform: scaleX(1); } 45% { transform: scaleX(0.05); } 100% { transform: scaleX(1); } }
+/* The last few cards: little paper chips, newest first */
+.gamble-history { display: flex; gap: 3px; min-height: 22px; }
+.gamble-history .mini-card {
+  width: 18px; height: 22px; display: flex; align-items: center; justify-content: center;
+  background: var(--reel-bg); border: 1px solid var(--outline-ink); border-radius: 3px;
+}
+.gamble-history .mini-card:first-child { box-shadow: 0 0 0 2px var(--gold); }
+
+/* The WIN meter: a little dark screen under the reels, the pokie "win" display */
+.win-meter {
+  display: flex; align-items: baseline; justify-content: center; gap: 8px;
+  width: fit-content; min-width: 150px; margin: 8px auto 0; padding: 1px 12px 2px;
+  /* (1.5.0: faint scanlines, like a little LCD) */
+  background: repeating-linear-gradient(rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 3px), var(--lcd);
+  border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch);
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+.win-meter-label { font-family: var(--font-display); font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: color-mix(in srgb, var(--lcd-glow) 55%, var(--lcd)); }
+.win-meter-value { font-family: var(--font-num); font-weight: 900; font-size: 18px; color: var(--lcd-glow); font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; }
+.win-meter.counting .win-meter-value { text-shadow: 0 0 6px color-mix(in srgb, var(--lcd-glow) 70%, transparent); }
+/* The line the win show is naming, on a strip at the bottom of the reel window */
+.line-label {
+  position: absolute; left: 50%; bottom: -2px; transform: translate(-50%, 50%); z-index: 6; white-space: nowrap;
+  padding: 1px 10px 2px; background: var(--lc, var(--gold)); color: var(--ink); border: var(--outline-thin) solid var(--outline-ink);
+  clip-path: var(--notch); font-family: var(--font-display); font-weight: 500; font-size: 14px;
+}
+.line-label .num { font-family: var(--font-num); font-weight: 900; }
+.reels.show-skip { cursor: pointer; }
+
+/* Luck: a clover badge on the machine's other top corner */
+.luck-badge {
+  position: absolute; left: -14px; top: -16px; z-index: 6; display: flex; align-items: center; gap: 3px;
+  padding: 3px 8px 3px 5px; background: var(--paper); border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch);
+  font-family: var(--font-num); font-weight: 900; font-size: 15px; color: var(--luck-dark);
+}
+.luck-badge.up { animation: pop 0.5s ease-in-out 2; }
+
+/* The jackpot wheel: the hamster wheel's face becomes a 4-colour prize wheel */
+.prize-face { position: absolute; inset: 9px; border-radius: 50%; display: none; box-shadow: inset 0 0 0 2px var(--gold-dark); }
+.wheel.prize .prize-face { display: block; }
+/* (the gold rim with its bulbs is painted by wheel.ts while .wheel has .prize) */
+.prize-pointer {
+  position: absolute; left: 87px; top: -6px; width: 16px; height: 16px; z-index: 4; display: none;
+  background: var(--danger); border: var(--outline-thin) solid var(--outline-ink);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.wheel.prize + .prize-pointer { display: block; }
+
+/* Machine Stars (M8): stars on the marquee, a gold trim, stars + Rebuild on the cards */
+.marquee-stars { display: inline-flex; gap: 1px; }
+.marquee-stars:empty { display: none; }
+.marquee-stars img { width: 16px; height: 16px; }
+.marquee-stars.new img:last-child { animation: star-land 0.7s cubic-bezier(0.3, 1.6, 0.5, 1); } /* a new star pops on (1.0) */
+@keyframes star-land { 0% { transform: scale(3) rotate(-90deg); opacity: 0; } 60% { transform: scale(0.8) rotate(10deg); opacity: 1; } }
+
+/* Moving Day (the 8th machine): a big cardboard box, taped shut, with a blue label (cabinet.ts) */
+.machine[data-machine="moving"] { padding: 21px 25px 37px; }
+.machine[data-machine="moving"] .marquee { --marquee: var(--box-label); }
+.machine[data-machine="moving"] .payline-arrow { display: none; }
+
+@media (max-width: 640px) {
+  .gamble-buttons .btn { font-size: 13px; }
+}
+.less-motion .machine.switch-in, .less-motion .line-tag.won, .less-motion .cell.win, .less-motion .cell.feature,
+.less-motion .reel.tease, .less-motion .machine.free-spins, .less-motion .streak-badge.hot, .less-motion .pot.lit,
+.less-motion .gamble, .less-motion .gamble-card.flip, .less-motion .luck-badge.up, .less-motion .machine.winning .marquee,
+.less-motion .machine.teasing .reel-window, .less-motion .cell .sprite, .less-motion .win-lines polyline,
+.less-motion .reel.landed { animation: none; }
+.less-motion .reel.fast .strip { filter: none; }
+.less-motion .hold-cell, .less-motion .hold-cell::after, .less-motion .hold-board.full .hold-cell,
+.less-motion .marquee-stars.new img { animation: none !important; }

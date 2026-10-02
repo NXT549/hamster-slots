@@ -1,0 +1,219 @@
+/* stage.css — the cage: the painted room behind it, the wall, the bedding and the floor bands, the
+   wheel and the hamster, the speech bubble, the props, the machine tags, the badges in the corner,
+   and the controls on the front of the tray (Deliver, Spin, the pause button, the bet) and the delivery tube. */
+
+/* ── Stage: the cage ────────────────────────────────── */
+/* Three bands: the WALL (bars; the wheel and machine stand at its bottom edge),
+   the BEDDING they stand in, and the FLOOR: the front of the plastic base, with
+   the buttons and the delivery tube on it. */
+.stage {
+  position: relative; overflow: hidden;
+  border-radius: 30px 30px 18px 18px;
+  box-shadow: var(--lift), 0 0 0 3px var(--wire-dark);
+  background: var(--wall-top); /* until the painting is ready */
+  /* A column: the wall takes the room that's left (wide screens), and the machine
+     rig stands at its bottom. ui.ts fitRig() zooms the rig to fit. */
+  display: flex; flex-direction: column; min-height: 0;
+  container: stage / inline-size; /* the props only show when the cage is wide enough */
+}
+/* 1.5.0: the cage, the room and the bedding are one pixel-art painting behind everything
+   (cage.ts), 2 screen pixels per painted pixel. The bands below (wall, bedding, floor)
+   only lay the game out on top of it. A second painting (the room at night) fades in
+   during free spins; the sky outside the window is a layer behind both, so it can drift. */
+.cage-canvas { position: absolute; left: 0; top: 0; z-index: 0; image-rendering: pixelated; pointer-events: none; }
+.cage-night { opacity: 0; transition: opacity 0.9s ease-in-out; }
+.stage.night .cage-night { opacity: 1; }
+.cage-sky { position: absolute; z-index: 0; overflow: hidden; pointer-events: none; }
+.cage-sky > div { position: absolute; inset: 0; image-rendering: pixelated; background-repeat: no-repeat; }
+.cage-sky-clouds { background-repeat: repeat-x !important; animation: cloud-drift 90s linear infinite; }
+@keyframes cloud-drift { from { background-position: 0 0; } to { background-position: var(--drift, 200px) 0; } }
+.wall {
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end;
+  position: relative; z-index: 2; padding: 26px 20px 0;
+}
+.bedding { flex: none; position: relative; z-index: 1; height: 26px; margin-top: -2px; }
+.floor { flex: none; position: relative; z-index: 1; padding: 14px 20px 12px; color: var(--floor-ink); }
+
+/* width: fit-content + side padding (room for the lever) lets ui.ts measure the rig
+   and shrink it with CSS zoom until it fits the stage (phones, 4 reels). */
+.rig {
+  position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: center;
+  width: fit-content; padding: 0 40px; margin: 52px auto -12px; /* sinks a little into the bedding */
+}
+
+/* Hamster wheel */
+/* 1.5.0: the wheel is painted (wheel.ts), turning pixel by pixel on its canvas, with its
+   stand; .wheel is just the round window the jackpot wheel's prize face shows in. */
+.wheel-unit { position: relative; width: 190px; height: 212px; flex: none; }
+.wheel-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; pointer-events: none; }
+.wheel { position: absolute; left: 9px; top: 4px; width: 172px; height: 172px; border-radius: 50%; }
+.hamster {
+  position: absolute; left: 61px; top: 104px;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.hamster.away { opacity: 0; transform: translateX(40px); }
+
+/* The tube from the wheel to the machine: seeds roll along it (ui.ts moves the stripes) */
+.belt {
+  position: relative; width: 44px; height: 18px; margin: 0 -6px 113px; flex: none; z-index: 1;
+  border-radius: 9px; border: var(--outline-thin) solid var(--tube-edge);
+  background:
+    linear-gradient(var(--tube-shine) 0 3px, transparent 3px),
+    radial-gradient(circle at 50% 60%, #6a6158 0 2.5px, transparent 3px) 0 0 / 16px 100% repeat-x,
+    var(--tube);
+}
+
+/* Speech bubble: hints come from the hamster */
+/* It stays in the space above the wheel and the tube, so it never covers the reels. */
+.bubble {
+  position: absolute; left: -6px; bottom: calc(100% + 12px); width: 214px; z-index: 6;
+  padding: 2px 6px; font-size: 13px; line-height: 1.35;
+}
+.bubble::after { /* the tail (a pixel sprite), pointing at the hamster */
+  content: ""; position: absolute; left: 70px; bottom: -30px; width: 24px; height: 24px;
+  background: var(--bubble-tail) 0 0 / 24px 24px no-repeat; image-rendering: pixelated;
+}
+
+/* Props in the cage (wide screens only) */
+.prop { position: absolute; z-index: 1; pointer-events: none; }
+.prop-bottle { right: 118px; top: 22px; }
+.prop-bowl { left: 22px; bottom: -14px; z-index: 3; }
+@container stage (max-width: 899px) { .prop { display: none; } }
+
+/* Paper tags on the bars: switch machines */
+.machine-tags { position: absolute; left: 18px; top: 16px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; max-width: 60%; }
+.machine-tag {
+  --fw: 8px; position: relative; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 2px; cursor: pointer;
+  font-family: var(--font-display); font-weight: 500; font-size: 13px; color: var(--ink);
+  transition: transform 0.12s;
+}
+.machine-tag::before { /* the string it hangs from */
+  content: ""; position: absolute; left: 50%; top: -24px; width: 2px; height: 16px; background: var(--wire-dark);
+}
+.machine-tag:hover { transform: rotate(-2deg); }
+.machine-tag.active { --frame: var(--frame-paper-gold); }
+.machine-tag:not(.active) { opacity: 0.85; }
+.machine-tag:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+.machine-tags.many .machine-tag span { display: none; } /* 5+ machines (M9): icons only, one row */
+
+/* A dozing hamster lets out a "z" now and then */
+.zzz {
+  position: absolute; left: 112px; top: 96px; z-index: 5; pointer-events: none;
+  font-family: var(--font-display); font-weight: 500; font-size: 18px; color: var(--soft-dark);
+  text-shadow: 2px 2px 0 var(--paper); animation: zzz 2.4s ease-out forwards;
+}
+@keyframes zzz {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(26px, -60px) scale(1.4); opacity: 0; }
+}
+/* Free spins: the cage goes to night, a purple glow around its edges (the stars are particles) */
+.wall { transition: box-shadow 0.6s; }
+.wall.free-mode { box-shadow: inset 0 0 110px 40px rgba(80, 56, 160, 0.45); }
+.hamster.idle { transform-origin: 50% 100%; animation: breathe 2.6s ease-in-out infinite; } /* resting: it breathes */
+@keyframes breathe { 50% { transform: scale(1.04, 0.97); } }
+.hamster.hop { animation: hop 0.45s ease-out 2; }
+@keyframes hop { 40% { transform: translateY(-14px); } }
+.stage.shake-stage { animation: stage-shake 0.5s; }
+@keyframes stage-shake {
+  20% { transform: translate(-4px, 2px); } 40% { transform: translate(4px, -2px); }
+  60% { transform: translate(-3px, 1px); } 80% { transform: translate(2px, -1px); }
+}
+
+.controls { display: flex; justify-content: center; align-items: stretch; gap: 12px; }
+.btn-title { display: block; }
+.btn-meta { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 13px; font-family: var(--font-body); }
+.btn-spin { --fw: 12px; min-width: 210px; font-size: 28px; padding: 0 20px 2px; }
+.btn-spin.free { --frame: var(--frame-btn-gold); }
+.btn-spin.free:disabled { filter: none; opacity: 1; }
+.btn-deliver { min-width: 130px; }
+/* Pause/resume auto-spin: a small square toggle, only shown once Wheel Training is
+   owned. Neutral (running) or a warning frame (paused), like a real pause light. */
+.btn-auto { --fw: 8px; width: 44px; font-size: 22px; line-height: 1; flex: none; }
+.btn-auto.paused { --frame: var(--frame-btn-danger); }
+
+/* The bet box: − BET ×5 + */
+.bet-box { display: flex; align-items: stretch; gap: 4px; }
+.bet-btn { --fw: 8px; width: 40px; padding: 0 0 3px; font-family: var(--font-num); font-weight: 900; font-size: 22px; line-height: 1; }
+.bet-btn.locked { filter: saturate(0.3); opacity: 0.7; }
+.bet-value {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 64px; padding: 2px 6px;
+  background: var(--paper); border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch); color: var(--ink);
+}
+.bet-label { font-family: var(--font-display); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); line-height: 1; }
+.bet-amount { font-family: var(--font-num); font-weight: 900; font-size: 22px; line-height: 1.05; }
+.bet-hint { font-size: 10px; color: var(--ink-soft); line-height: 1; white-space: nowrap; }
+.bet-box.stepped .bet-hint { color: var(--danger-dark); }
+/* Spin glows when the hamster's waiting for you (no auto-spin yet) */
+.btn-spin.attract { animation: attract 1.6s ease-in-out infinite; }
+@keyframes attract { 50% { transform: scale(1.04); filter: brightness(1.08) drop-shadow(0 0 8px color-mix(in srgb, var(--primary) 70%, transparent)); } }
+
+/* The delivery route: a clear tube along the front of the cage base */
+.road {
+  position: relative; height: 40px; margin-top: 12px;
+  border: var(--outline-thin) solid var(--tube-edge); border-radius: 20px;
+  background: linear-gradient(var(--tube-shine) 0 4px, transparent 4px 70%, rgba(0, 0, 0, 0.05)), var(--tube);
+  overflow: hidden;
+}
+.road-track { position: absolute; left: 10px; right: 10px; bottom: 5px; height: 4px; }
+.road-fill { height: 100%; width: 0; background: var(--soft-dark); clip-path: var(--notch); }
+.road-hamster { position: absolute; top: 3px; left: 10px; opacity: 0; transition: opacity 0.3s; }
+.road.active .road-hamster { opacity: 1; }
+.road-label { position: absolute; right: 14px; top: 9px; font-size: 12px; color: var(--floor-ink); opacity: 0.85; }
+
+/* ── Capsules tab: Capsule Machine, Wardrobe, Hamster Diary ── */
+
+/* The little capsule machine in the corner of the cage (wide screens only) */
+.stage-gacha {
+  position: absolute; right: 26px; bottom: -8px; z-index: 3;
+  background: none; border: none; padding: 0; cursor: pointer;
+  transition: transform 0.15s;
+}
+.stage-gacha:hover { transform: translateY(-3px); }
+.stage-gacha.ready { animation: gacha-bob 1.6s ease-in-out infinite; }
+@keyframes gacha-bob { 50% { transform: translateY(-4px); } }
+@container stage (max-width: 899px) { .stage-gacha { display: none !important; } }
+
+/* The boosts running now, on the cage's top-right corner */
+.stage-badges { position: absolute; right: 12px; top: 12px; z-index: 6; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; pointer-events: none; max-width: 48%; }
+.boost-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.boost-badges:empty { display: none; }
+.boost-badge { --frame: var(--frame-paper-gold); --fw: 8px; display: flex; align-items: center; gap: 3px; padding: 0 4px 0 2px; font-size: 13px; }
+.boost-badge .num { font-family: var(--font-num); font-weight: 900; }
+/* A Colony Trial under way, in the cage's corner */
+.trial-badge { --frame: var(--frame-paper-gold); --fw: 8px; display: flex; flex-direction: column; align-items: flex-end; padding: 0 5px 1px; font-size: 12px; line-height: 1.25; pointer-events: auto; }
+.trial-badge b { font-family: var(--font-display); font-weight: 500; font-size: 13px; }
+.trial-badge .num { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-num); font-weight: 900; }
+
+/* ── Small screens ── The rig is zoomed out to fit (ui.ts sets --rig-zoom). Divide by it so the
+   bubble text stays readable at its real on-screen size. */
+@media (max-width: 640px) {
+  .bubble { font-size: calc(11.5px / var(--rig-zoom, 1)); line-height: 1.25; }
+  .wall { padding: 22px 8px 0; }
+  .machine-tags { left: 10px; top: 12px; max-width: 90%; }
+  .machine-tag span { display: none; } /* just the machine icons */
+  .machine-tags.many { gap: 4px; max-width: calc(100% - 20px); } /* seven icons still fit in one row */
+  .machine-tags.many .machine-tag { padding: 0 2px; }
+}
+/* A narrow cage (a phone, or a small window): Deliver, Spin and the bet share one row. */
+@container stage (max-width: 560px) {
+  .controls { gap: 6px; }
+  .btn-deliver { min-width: 0; flex: 1 1 0; font-size: 15px; padding: 0 4px 2px; }
+  .btn-deliver .btn-meta { font-size: 11px; }
+  .btn-spin { --fw: 8px; min-width: 0; flex: 1.4 1 0; font-size: 22px; padding: 0 6px 2px; }
+  .btn-auto { width: 32px; font-size: 17px; }
+  .bet-box { flex: none; gap: 3px; }
+  .bet-btn { width: 30px; font-size: 18px; }
+  .bet-value { min-width: 48px; padding: 1px 3px; }
+  .bet-amount { font-size: 18px; }
+  .bet-hint { font-size: 9px; }
+  .floor { padding: 10px 8px 8px; }
+  /* The delivery tube only shows while the hamster is out (Deliver says the trip's pay and time). */
+  .road { display: none; height: 38px; margin-top: 8px; }
+  .road.active { display: block; }
+  .road-hamster { top: 1px; }
+  .road-label { top: 5px; right: 10px; font-size: 11px; }
+  .bedding { height: 18px; background-size: 36px 36px; }
+}
+.less-motion .hamster.hop, .less-motion .stage.shake-stage, .less-motion .stage-gacha.ready, .less-motion .cage-sky-clouds { animation: none; }
+.less-motion .hamster.idle, .less-motion .btn-spin.attract { animation: none !important; }

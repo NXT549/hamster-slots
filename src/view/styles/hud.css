@@ -1,0 +1,57 @@
+/* hud.css — the HUD across the top: the logo, the coin counter and the other currencies, the Menu button. */
+
+/* ── HUD ─────────────────────────────────────────────── */
+.hud { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 500; font-size: 22px; }
+/* 1.5.0: the name is a pixel-art logo (pixelfont.ts); now and then a wave runs through it */
+.brand-logo { display: inline-flex; --px: 2px; }
+@media (min-width: 1200px) { .brand-logo { --px: 3px; } }
+.brand-logo .px-char { animation: logo-bob 7s ease-in-out infinite; animation-delay: calc(var(--i) * 0.06s); }
+@keyframes logo-bob { 0%, 8%, 100% { transform: translateY(0); } 4% { transform: translateY(-3px); } }
+/* The coin on the counter turns over now and then (steps: like pixel-art frames) */
+#coin-pill > img { animation: coin-turn 5s steps(1) infinite; }
+@keyframes coin-turn {
+  0%, 88% { transform: scaleX(1); } 89.5% { transform: scaleX(0.7); } 91% { transform: scaleX(0.35); } 92.5% { transform: scaleX(0.12); }
+  94% { transform: scaleX(0.35); } 95.5% { transform: scaleX(0.7); } 97% { transform: scaleX(1); }
+}
+
+/* Price-tag style counters, with a little string hole on the left */
+.tag { position: relative; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 14px; }
+.tag::before {
+  content: ""; position: absolute; left: 0; top: 50%; width: 6px; height: 6px; margin-top: -3px;
+  background: var(--page); box-shadow: 0 0 0 2px var(--paper-edge); clip-path: var(--notch);
+}
+.coin-tag { min-height: 48px; }
+.coin-count { font-family: var(--font-num); font-weight: 900; font-size: 28px; line-height: 1; min-width: 3ch; font-variant-numeric: tabular-nums; }
+.coin-rate { font-size: 13px; color: var(--buy-dark); }
+.coin-tag.gain { animation: pop 0.25s ease-out; }
+@keyframes pop { 50% { transform: scale(1.06); } }
+
+.hud-center { display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; }
+.seed-tag { --frame: var(--frame-paper-heirloom); min-height: 44px; gap: 6px; }
+.seed-count { font-family: var(--font-num); font-weight: 900; font-size: 20px; line-height: 1; color: var(--heirloom-dark); }
+.seed-tag.gain { animation: pop 0.35s ease-out 2; }
+
+.icon-btn {
+  --frame: var(--frame-btn-card);
+  justify-self: end; width: 48px; height: 48px; padding: 0; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+}
+.icon-btn span { width: 16px; height: 3px; background: var(--kraft-edge); }
+.icon-btn:active { transform: translateY(2px); }
+
+/* Golden Whiskers on the HUD, and wherever an amount of them shows */
+.whisker-tag { --frame: var(--frame-paper-gold); min-height: 44px; gap: 6px; }
+.whisker-count { font-family: var(--font-num); font-weight: 900; font-size: 20px; line-height: 1; color: var(--whisker-dark); }
+.whisker-tag.gain { animation: pop 0.35s ease-out 2; }
+
+@media (max-width: 640px) {
+  .hud { grid-template-columns: auto 1fr auto; gap: 8px; }
+  .brand span { display: none; } /* keep just the hamster icon */
+  .coin-count { font-size: 22px; }
+  .coin-tag { min-height: 42px; }
+  .icon-btn { width: 42px; height: 42px; }
+  .tag { padding: 0 8px 0 12px; gap: 6px; }
+}
+.less-motion .coin-tag.gain, .less-motion .seed-tag.gain, .less-motion .whisker-tag.gain,
+.less-motion .brand-logo .px-char, .less-motion #coin-pill > img { animation: none; }

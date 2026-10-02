@@ -5,7 +5,8 @@
 // Like ui.ts, it only calls game actions (pullCapsule, equipSkin) and reads state.
 
 import { CAPSULE_SPRITES } from './art.ts';
-import { formatCoins, formatWhole, setText, setHTML, replayClass, iconHTML, createSubTabs } from './dom.ts';
+import { formatCoins, formatWhole, setText, setHTML, replayClass, iconHTML } from './dom.ts';
+import { createSubTabs } from './kit.ts';
 import { skinPreview } from './skins.ts';
 import type { Sound } from './sound.ts';
 import type { Fx } from './fx.ts';

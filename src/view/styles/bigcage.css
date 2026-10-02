@@ -1,0 +1,176 @@
+/* bigcage.css — the Big Cage between lives (M8; a meadow scene since M15; bigcage.ts). */
+
+/* ── The Big Cage (M8; a scene of its own since M15): the page between lives ──
+   The whole window: a meadow where the family's huge tree grows (bigtree.ts paints it
+   on a canvas), the traits on its branches (bigcage.ts places them), and beside it (a
+   phone: above and below) the numbers, the trait you tapped, and Start. */
+.big-cage {
+  width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: none;
+  background: var(--paper); color: var(--ink); overflow: hidden;
+}
+.big-cage[open] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "top" "scene" "detail" "foot";
+}
+@media (min-width: 960px), (min-width: 700px) and (orientation: landscape) {
+  .big-cage[open] {
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 380px);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "scene top" "scene detail" "scene foot";
+  }
+  .big-cage .bc-scene { box-shadow: 4px 0 0 var(--paper-edge); }
+}
+.big-cage::backdrop { background: var(--outline-ink); }
+.bc-scene {
+  grid-area: scene; position: relative; overflow: hidden; min-height: 0;
+  background: linear-gradient(var(--sky-top), var(--sky-bottom) 80%, var(--soil) 90%);
+}
+.bc-scene.rumble { animation: stage-shake 0.5s; }
+.bc-world { position: absolute; top: 0; }
+.bc-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+.bc-nodes { position: absolute; inset: 0; z-index: 3; }
+.bc-hamster { position: absolute; z-index: 2; transform-origin: 50% 100%; }
+.bc-hamster.idle { animation: breathe 2.6s ease-in-out infinite; }
+.bc-hamster.hop { animation: hop 0.45s ease-out 2; }
+.bc-hamster.digging { animation: dig 0.24s ease-in-out infinite; }
+@keyframes dig { 50% { transform: translateY(3px) scale(1.08, 0.9) rotate(-8deg); } }
+.bc-seed { position: absolute; z-index: 4; filter: drop-shadow(0 0 5px var(--gold)); }
+/* 1.5.0: butterflies and a bird (bigcage.ts moves them); they never catch a tap */
+.bc-critter { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; }
+.bc-bubble {
+  position: absolute; z-index: 6; width: 210px; transform: translate(-30px, -100%); margin-top: -18px;
+  padding: 2px 6px; font-size: 13px; line-height: 1.35; pointer-events: none;
+}
+.bc-bubble::after { /* the tail, pointing down at the hamster */
+  content: ""; position: absolute; left: 22px; bottom: -30px; width: 24px; height: 24px;
+  background: var(--bubble-tail) 0 0 / 24px 24px no-repeat; image-rendering: pixelated;
+}
+.bc-skip { position: absolute; right: 10px; bottom: 10px; z-index: 7; font-size: 13px; padding: 0 6px 2px; }
+
+/* The traits on the tree: a paper box with the icon, the cost under it, the name on big screens */
+.bt-node {
+  position: absolute; width: var(--nw); display: flex; flex-direction: column; align-items: center;
+  padding: 0; border: none; background: none; font: inherit; color: var(--ink); cursor: pointer;
+}
+.bt-icon { --fw: 8px; width: 60px; height: 58px; display: flex; align-items: center; justify-content: center; }
+.bt-node.ready .bt-icon { --frame: var(--frame-paper-ready); }
+.bt-node.owned .bt-icon { --frame: var(--frame-paper-heirloom); }
+.bt-node.selected .bt-icon { --frame: var(--frame-paper-selected); }
+.bt-node.owned .bt-icon { box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent); }
+.bt-node .node-cost {
+  display: flex; align-items: center; gap: 3px; font-family: var(--font-num); font-weight: 900; color: var(--ink-soft);
+  margin-top: -5px; padding: 0 6px 1px; background: var(--paper); clip-path: var(--notch); box-shadow: inset 0 -2px 0 var(--paper-2);
+  font-size: 12px; white-space: nowrap; position: relative;
+}
+.bt-node.ready .node-cost { color: var(--buy-dark); }
+.bt-node.owned .node-cost { color: var(--heirloom-dark); }
+.bt-node .node-cost img { width: 12px; height: 12px; }
+.bt-name {
+  margin-top: 2px; max-width: 100%; padding: 0 5px 1px; text-align: center; line-height: 1.1;
+  font-family: var(--font-display); font-weight: 500; font-size: 12px;
+  background: color-mix(in srgb, var(--paper) 88%, transparent); clip-path: var(--notch);
+}
+.bt-node:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+.bt-node.unborn { visibility: hidden; } /* not planted or unlocked yet, or the tree hasn't grown out to it */
+.bt-node.sprout { transform-origin: 50% 100%; animation: sprout 0.55s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes sprout { 0% { transform: scale(0.6, 0.3); } 50% { transform: scale(0.94, 1.14); } 75% { transform: scale(1.05, 0.96); } }
+/* A smaller scene (a phone): just the icons and costs (tap one for its name) */
+.bc-scene.compact .bt-icon { --fw: 4px; width: 100%; height: 42px; }
+.bc-scene.compact .bt-icon img { width: 28px; height: 28px; }
+.bc-scene.compact .bt-name { display: none; }
+.bc-scene.compact .bt-node .node-cost { font-size: 10.5px; padding: 0 3px 1px; }
+
+/* The numbers: seeds held, the heirloom bonus, Machine Stars and the seed jar */
+.bc-top { grid-area: top; padding: 10px 12px 6px; background: var(--paper); z-index: 1; }
+.bc-head h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 22px; }
+.bc-head .note { margin: 2px 0 0; line-height: 1.4; }
+.bc-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0 0; }
+.bc-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 4px; background: var(--paper-2); clip-path: var(--notch); text-align: center; }
+.bc-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-soft); }
+.bc-value, .bc-stat .seed-amount { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; font-size: 16px; }
+.bc-value { color: var(--luck-dark); }
+/* The seed jar (M9): a full-width row under the three numbers, with a fill bar */
+.bc-jar { grid-column: 1 / -1; }
+.bc-jar-bar { width: min(320px, 90%); height: 8px; background: var(--paper); overflow: hidden; clip-path: var(--notch); }
+.bc-jar-fill { display: block; height: 100%; width: 0; background: var(--heirloom-dark); transition: width 0.4s; }
+.bc-jar.full .bc-jar-fill { background: var(--gold); }
+.bc-jar-text { font-size: 12px; color: var(--ink-soft); }
+.bc-stat img { width: 16px; height: 16px; }
+/* The trait you tapped */
+.big-cage .tree-detail {
+  grid-area: detail; --frame: var(--frame-paper-selected); margin: 4px 10px 0; padding: 0 4px 4px;
+  display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow: auto;
+}
+.tree-detail:empty { display: none; }
+.tree-detail .buy-btn { min-height: 40px; margin-top: 4px; }
+@media (min-width: 960px), (min-width: 700px) and (orientation: landscape) {
+  .big-cage .tree-detail { align-self: start; max-height: 100%; } /* only as tall as it needs */
+}
+.bc-foot { grid-area: foot; display: flex; flex-direction: column; gap: 8px; padding: 8px 12px 12px; background: var(--paper); }
+.bc-explain { margin: 0; line-height: 1.45; }
+.bc-foot .btn { width: 100%; font-size: 18px; }
+/* A phone: the card has a fixed height (so the tree doesn't jump when you tap
+   another trait), and the long explanation stays out of the way. */
+@media not ((min-width: 960px) or ((min-width: 700px) and (orientation: landscape))) {
+  .big-cage .tree-detail {
+    height: 150px; flex: none; margin-top: 6px;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: start; gap: 4px 8px;
+  }
+  .big-cage .tree-detail > * { grid-column: 1 / -1; }
+  .big-cage .tree-detail .tile-top { grid-column: 1; grid-template-columns: 36px 1fr; gap: 8px; }
+  .big-cage .tree-detail .tile-icon { width: 36px; height: 36px; }
+  .big-cage .tree-detail .buy-btn { grid-column: 2; grid-row: 1; min-height: 38px; align-self: center; font-size: 14px; padding: 0 8px 2px; }
+  .big-cage .tree-detail .tile-desc { font-size: 12px; }
+  .big-cage .tree-detail .tile-effect { font-size: 13px; }
+  .bc-explain { display: none; }
+  .bc-top { padding: 8px 10px 4px; box-shadow: 0 3px 0 var(--paper-edge); }
+  .bc-head h2 { font-size: 18px; }
+  .bc-head .note { font-size: 12px; }
+  .bc-summary { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr); gap: 4px; margin-top: 6px; }
+  .bc-jar { grid-column: auto; }
+  .bc-jar-text { display: none; }
+  .bc-stat { padding: 3px 2px; }
+  .bc-label { font-size: 9.5px; letter-spacing: 0; }
+  .bc-value, .bc-stat .seed-amount { font-size: 14px; }
+  .bc-foot { padding: 6px 10px 10px; }
+}
+/* A short screen (a phone on its side, a small phone): no long explanation or subtitle,
+   so the tree, the card and Start all fit. */
+@media (max-height: 600px) {
+  .bc-explain, .bc-head .note { display: none; }
+  .bc-top { padding-top: 6px; }
+  .bc-jar-text { display: none; }
+}
+@media (max-height: 700px) and (max-width: 699px) {
+  .bc-head .note { display: none; }
+  .big-cage .tree-detail { height: 128px; }
+}
+/* The rebirth animation: the numbers, the card and Start slide in once the tree has grown */
+.big-cage .tree-detail, .big-cage .bc-foot { transition: opacity 0.45s ease-out, transform 0.45s ease-out; }
+.big-cage.playing:not(.ui-in) .bc-summary, .big-cage.playing:not(.ui-in) .tree-detail, .big-cage.playing:not(.ui-in) .bc-foot {
+  opacity: 0; transform: translateY(14px); pointer-events: none;
+}
+.big-cage .bc-summary { transition: opacity 0.45s ease-out, transform 0.45s ease-out; }
+
+/* The Big Cage: the trial for the next life, the migration button and its banner */
+.bc-trials { display: flex; flex-direction: column; gap: 4px; }
+.bc-trial-picks { gap: 4px; }
+.bc-foot .bc-trial-picks .seg-btn { width: auto; font-family: var(--font-body); font-weight: 800; font-size: 12px; min-width: 0; padding: 0 6px 1px; }
+.bc-trial-picks .seg-btn:disabled { opacity: 0.5; cursor: default; }
+#bc-trial-note { margin: 0; font-size: 12px; line-height: 1.35; }
+.bc-foot .bc-migrate { font-size: 15px; }
+.bc-migrate img { width: 16px; height: 16px; vertical-align: -2px; }
+.bc-banner {
+  position: absolute; left: 50%; top: 16%; z-index: 5; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 14px 6px; text-align: center; pointer-events: none; white-space: nowrap;
+}
+.bc-banner b { font-family: var(--font-display); font-weight: 500; font-size: clamp(22px, 4vw, 40px); color: var(--whisker-dark); line-height: 1.1; }
+.bc-banner span { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-num); font-weight: 900; font-size: 16px; }
+.bc-banner.slam { animation: banner-slam 0.5s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes banner-slam { 0% { transform: translateX(-50%) scale(2.2); opacity: 0; } 60% { opacity: 1; } 100% { transform: translateX(-50%) scale(1); } }
+
+.less-motion .bc-banner.slam { animation: none; }
+.less-motion .bt-node.sprout, .less-motion .big-cage[open] *, .less-motion .bc-scene.rumble { animation: none !important; }
+.less-motion .big-cage .bc-summary, .less-motion .big-cage .tree-detail, .less-motion .big-cage .bc-foot { transition: none; }

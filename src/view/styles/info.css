@@ -1,0 +1,67 @@
+/* info.css — the Info tab (payouts.ts): the paytable, the payline diagrams, the features, recent wins. */
+
+/* Paytable rows for symbols you haven't unlocked yet: faded (never recoloured: a
+   grey Golden Seed would read as a Sunflower Seed, see rule 11), with how to unlock them */
+.paytable tr.locked-symbol td { opacity: 0.55; }
+
+/* Paytable tab: recent wins, the paytable, the paylines */
+.win-log { display: flex; flex-direction: column; gap: 4px; }
+.log-row {
+  display: flex; align-items: center; gap: 10px; padding: 3px 10px;
+  background: var(--paper); clip-path: var(--notch); font-size: 13px;
+}
+.log-lines { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+.log-line { display: inline-flex; align-items: center; gap: 2px; font-family: var(--font-num); font-weight: 900; }
+.log-pay { font-family: var(--font-num); font-weight: 900; font-size: 15px; color: var(--buy-dark); }
+.log-ago { font-size: 11px; color: var(--ink-soft); min-width: 58px; text-align: right; }
+.tier-chip {
+  padding: 1px 7px; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;
+  background: var(--soft); clip-path: var(--notch);
+}
+.tier-chip.tier-big { background: var(--primary); color: var(--paper); }
+.tier-chip.tier-jackpot { background: var(--gold); }
+.tier-chip.tier-free { background: var(--soft); }
+.tier-chip.tier-pot { background: var(--palace); color: var(--paper); }
+.tier-chip.tier-gamble { background: var(--token); }
+.log-bet { font-size: 11px; color: var(--ink-soft); align-self: center; }
+.log-pay.lost { color: var(--danger-dark); }
+.paytable td.scatter-note { font-family: var(--font-body); font-weight: 700; font-size: 13px; color: var(--ink-soft); }
+
+/* Info → Features: one card per bonus feature, with the real odds */
+.features { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.feature-card {
+  display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: start; padding: 8px 10px;
+  background: var(--paper); clip-path: var(--notch); box-shadow: inset 0 -3px 0 var(--paper-2);
+}
+.feature-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: var(--paper-2); clip-path: var(--notch); }
+.feature-card .tile-desc { margin-top: 3px; }
+.feature-card b { font-family: var(--font-num); font-weight: 900; color: var(--ink); }
+
+/* On a phone a 5-reel paytable is wider than the tray: it scrolls sideways on its
+   own instead of making the whole page scroll (the page must never scroll sideways). */
+.paytable-wrap { overflow-x: auto; }
+.paytable { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
+.paytable th { text-align: left; font-size: 12px; color: var(--kraft-edge); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 12px; }
+.paytable td { background: var(--paper); padding: 5px 12px; font-family: var(--font-num); font-weight: 900; font-size: 18px; box-shadow: inset 0 -3px 0 var(--paper-2); }
+.paytable td:first-child { clip-path: polygon(0 2px, 2px 2px, 2px 0, 100% 0, 100% 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px)); }
+.paytable td:last-child { clip-path: polygon(0 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 0 100%); }
+.paytable .sym-cell { display: flex; align-items: center; gap: 10px; font-family: var(--font-body); font-size: 14px; }
+.paytable td.locked { color: var(--ink-faint); }
+.paytable th.locked { color: var(--kraft-edge); opacity: 0.55; }
+.paylines-legend { display: flex; flex-wrap: wrap; gap: 10px; }
+.line-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 4px 2px; }
+.line-grid { display: grid; gap: 3px; }
+.line-grid span { width: 12px; height: 12px; background: var(--paper-2); clip-path: var(--notch); }
+.line-grid span.on { background: var(--lc); }
+.payline-caption { font-size: 11px; color: var(--ink-soft); } /* (1.6.0: was .line-label, the same class as the win show's strip) */
+.line-card.locked { opacity: 0.5; }
+.line-card.locked .line-grid span.on { background: var(--ink-faint); }
+#paytable-note { margin: 12px 2px 0; line-height: 1.45; }
+
+/* A tighter paytable in a narrow tray, so most machines' tables fit without scrolling */
+@container tray (max-width: 560px) {
+  .paytable th { padding: 0 5px; font-size: 11px; letter-spacing: 0; }
+  .paytable td { padding: 5px; font-size: 15px; }
+  .paytable .sym-cell { gap: 6px; font-size: 13px; }
+  .log-ago { display: none; }
+}

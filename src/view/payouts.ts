@@ -9,7 +9,8 @@
 //      View only: it's not saved, and it starts empty every session.
 
 import { symbolImg, MACHINE_SPRITES, SYMBOL_SPRITES } from './art.ts';
-import { formatCoins, iconHTML, setHTML, createSubTabs } from './dom.ts';
+import { formatCoins, iconHTML, setHTML } from './dom.ts';
+import { createSubTabs } from './kit.ts';
 import { effectAs } from '../logic/game.ts';
 import { mysteryOptions } from '../logic/machine.ts';
 import type { Game } from '../logic/game.ts';
@@ -225,7 +226,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
           }
         }
         const label = document.createElement('span');
-        label.className = 'line-label';
+        label.className = 'payline-caption';
         label.textContent = index >= active ? `Line ${index + 1} · locked` : `Line ${index + 1}`;
         box.append(grid, label);
         return box;
