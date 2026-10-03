@@ -26,6 +26,7 @@ One file per planned update. **Open a file only when the user tells you to work 
 | [itch-io.md](itch-io.md) | Release on itch.io | Ready whenever the user wants |
 | [steam.md](steam.md) | Steam (Electron or Tauri) | Later |
 | [mobile.md](mobile.md) | iOS and Android (Capacitor) | Maybe, later |
+| [balancing.md](balancing.md) | Later-colony pacing: softcap scaling vs a weaker Colony Pride | Needs the user's decisions |
 
 ## Ideas (not approved)
 
