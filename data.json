@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 15,
+  "schemaVersion": 16,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -1656,7 +1656,18 @@
       { "id": "visor", "name": "Dealer's Visor", "description": "A green dealer's visor for the hamster. Only at the casino.", "cost": 2500, "kind": "skin", "skin": "hatVisor" },
       { "id": "tuxedo", "name": "Tuxedo", "description": "A smart black-and-white coat. Only at the casino.", "cost": 3500, "kind": "skin", "skin": "furTuxedo" },
       { "id": "casinoNight", "name": "Casino Night", "description": "The cage in red velvet and gold. Only at the casino.", "cost": 3500, "kind": "skin", "skin": "roomCasino" }
-    ]
+    ],
+    "loyalty": {
+      "name": "Loyalty Card",
+      "memberName": "New Member",
+      "stampsPerTier": 10,
+      "tiers": [
+        { "id": "bronze", "name": "Bronze Paw", "wagered": 10000, "tokens": 1, "betSteps": [2000] },
+        { "id": "silver", "name": "Silver Paw", "wagered": 50000, "tokens": 2, "lounge": true },
+        { "id": "gold", "name": "Gold Paw", "wagered": 200000, "tokens": 3, "betSteps": [5000] },
+        { "id": "platinum", "name": "Platinum Paw", "wagered": 1000000, "tokens": 5, "betSteps": [10000] }
+      ]
+    }
   },
   "ownCasino": {
     "enabled": true,

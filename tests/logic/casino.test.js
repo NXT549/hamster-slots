@@ -414,3 +414,90 @@ describe('the casino in a save (v11)', () => {
   };
   check('the same seed replays every pocket, race and drop', deepEqual(run(7), run(7)) && !deepEqual(run(7), run(8)));
 });
+
+// ─────────────────────────────────────────────────────────────
+// The Loyalty Card (save v16): every chip bet at the tables counts towards the next
+// tier; a tier gives Hamster Tokens once and can open bigger bets or the VIP lounge.
+// It never changes a table's odds.
+describe('the Loyalty Card: tiers, stamps, bigger bets', () => {
+  const loyalty = casino.loyalty;
+  const tiers = loyalty.tiers;
+  const tableMax = casino.betSteps.at(-1);
+  check('every tier needs more chips bet than the one before', tiers.every((t, i) => i === 0 || t.wagered > tiers[i - 1].wagered) && tiers[0].wagered > 0);
+  const extra = tiers.flatMap((t) => t.betSteps || []);
+  check('its bigger bets are whole steps above the table\'s limit, and pay whole chips',
+    extra.length > 0 && extra.every((b) => b > tableMax && b % casino.betSteps[0] === 0)
+    && extra.every((b) => [...casino.derby.racers.map((r) => r.pays), ...casino.seedDrop.multipliers, 1 + casino.blackjack.blackjackPays, 2, 3, 36].every((x) => near(b * x, Math.round(b * x), 1e-9))));
+
+  const g = casinoGame(120);
+  const fresh = g.getLoyalty();
+  check('a new family is a New Member: a blank card, the table\'s own bets',
+    fresh.tier === 0 && fresh.tierName === loyalty.memberName && fresh.stamps === 0 && fresh.next.id === tiers[0].id && !fresh.lounge
+    && deepEqual(g.getCasinoBetSteps(), casino.betSteps));
+  g.addChips(1e7);
+  const odds = JSON.stringify(g.getCasinoOdds());
+  const coins = num(g.state.coins);
+  const tokens = num(g.state.tokens);
+  const events = [];
+  g.on('loyaltyTier', (e) => events.push(e));
+  check('a bigger bet than the table\'s limit is refused before its tier', !g.canBetChips(extra[0]) && !g.runDerby('nutmeg', extra[0]));
+
+  // Bet half of the first tier's chips: half the stamps.
+  const per = tiers[0].wagered / loyalty.stampsPerTier;
+  for (let i = 0; i < tiers[0].wagered / 2 / 100; i++) g.playRoulette([{ kind: 'red', pick: 0, amount: 100 }]);
+  const half = g.getLoyalty();
+  check(`every chip bet counts (win or lose): ${num(g.state.casino.wagered)} bet, ${half.stamps} stamps`,
+    num(g.state.casino.wagered) === tiers[0].wagered / 2 && half.stamps === loyalty.stampsPerTier / 2 && half.toNextStamp === per && events.length === 0);
+  while (num(g.state.casino.wagered) < tiers[0].wagered) g.runDerby('nutmeg', 100);
+  const bronze = g.getLoyalty();
+  check(`reaching ${tiers[0].name} gives its tokens once and opens its bets`,
+    events.length === 1 && events[0].id === tiers[0].id && num(g.state.tokens) === tokens + tiers[0].tokens
+    && bronze.tier === 1 && bronze.tierName === tiers[0].name && bronze.stamps === 0 && g.getCasinoBetSteps().includes(tiers[0].betSteps[0])
+    && g.canBetChips(tiers[0].betSteps[0]));
+  check('…a roulette spot holds the bigger limit too', g.playRoulette([{ kind: 'black', pick: 0, amount: tiers[0].betSteps[0] }]));
+  check('…and the tables\' odds don\'t change, nor the coins', JSON.stringify(g.getCasinoOdds()) === odds && num(g.state.coins) === coins);
+
+  // A doubled blackjack bet counts twice.
+  let doubled = false;
+  for (let i = 0; i < 50 && !doubled; i++) {
+    const before = num(g.state.casino.wagered);
+    g.dealBlackjack(100);
+    if (g.canDouble()) { g.doubleBlackjack(); doubled = num(g.state.casino.wagered) - before === 200; }
+    else if (g.state.casino.hand.outcome === null) g.standBlackjack();
+  }
+  check('a doubled blackjack bet counts twice', doubled);
+
+  // Every tier at once (a family that bet a lot before the data changed): every gift, once.
+  g.state.casino.wagered = g.state.casino.wagered.add(tiers.at(-1).wagered);
+  g.dropSeed(10);
+  const top = g.getLoyalty();
+  check('passing several tiers at once gives every one, in order',
+    events.map((e) => e.id).join() === tiers.map((t) => t.id).join() && num(g.state.tokens) === tokens + tiers.reduce((s, t) => s + t.tokens, 0));
+  check('the top tier: a full card, every bigger bet, the VIP lounge',
+    top.tier === tiers.length && top.next === null && top.stamps === loyalty.stampsPerTier && top.lounge && extra.every((b) => g.getCasinoBetSteps().includes(b)));
+  g.dropSeed(10);
+  check('…and nothing more to give after it', events.length === tiers.length);
+});
+
+describe('the Loyalty Card in a save (v16)', () => {
+  const g = casinoGame(121);
+  g.addChips(1e6);
+  for (let i = 0; i < 12; i++) g.runDerby('nutmeg', 1000);
+  const save = g.toSaveData();
+  check('the save keeps the chips bet (as text) and the tier', typeof save.casino.wagered === 'string' && save.casino.wagered === '12000' && save.casino.tier === 1);
+  const h = newGame(121);
+  h.loadSaveData(save);
+  check('…and loads them back', num(h.state.casino.wagered) === 12000 && h.state.casino.tier === 1 && h.getCasinoBetSteps().includes(casino.loyalty.tiers[0].betSteps[0]));
+  const bad = structuredClone(save);
+  bad.casino.wagered = 'lots';
+  bad.casino.tier = 99;
+  const b = newGame(121);
+  b.loadSaveData(bad);
+  check('a broken card is cleaned up: no chips bet, no more tiers than there are', num(b.state.casino.wagered) === 0 && b.state.casino.tier === casino.loyalty.tiers.length);
+  const old = structuredClone(save);
+  old.saveVersion = 15;
+  delete old.casino.wagered;
+  delete old.casino.tier;
+  const o = newGame(121);
+  check('a v15 save loads with a blank card', o.loadSaveData(old) && num(o.state.casino.wagered) === 0 && o.state.casino.tier === 0 && o.getLoyalty().tierName === casino.loyalty.memberName);
+});
