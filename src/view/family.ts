@@ -48,7 +48,9 @@ export function createFamilyView(game: Game, { sheet, say, sound, fx, settings, 
   // unlocked when the page loaded, it isn't announced again.
   const unlocked = () => {
     const s = game.state;
-    return s.generation > 1 || s.seeds.gt(0) || s.seedsEarned.gt(0) || game.canRetire();
+    // A migrated family (colony 2 on) starts again at generation 1 with no seeds, but its
+    // Colony sub-tab (the perks its Golden Whiskers buy) must stay reachable.
+    return s.colony > 0 || s.generation > 1 || s.seeds.gt(0) || s.seedsEarned.gt(0) || game.canRetire();
   };
   let shown = unlocked();
   let fresh = false; // a dot on the tab until you open it
