@@ -10,6 +10,15 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Added
+
+- **Menu → Card gamble: Offer · Never.** Pick *Never* and a win you pulled yourself no longer opens the card gamble, so tapping Spin again just spins. Wins pay exactly the same.
+- **`[` and `]` switch machines** (the ones you own, in order) on a keyboard.
+
+### Changed
+
+- **Out of coins?** Tapping Spin when you can't afford one now wiggles the **Deliver** button, and the hamster says to tap it, instead of only shaking Spin.
+
 ## [1.9.0] - 2026-10-03 · Welcome Mat
 
 **New players get a friendly guide, and everything you unlock now has its own little moment.**

@@ -143,6 +143,10 @@
 }
 .deck-deliver { flex: 0 1 auto; min-width: 128px; overflow: hidden; }
 .deck-deliver .k-btn-meta { font-size: var(--text-xs); }
+/* 1.9.1: a refused spin (no coins) wiggles Deliver twice: "tap me". */
+.deck-deliver.nudge { animation: deliver-nudge 0.9s ease-in-out; }
+@keyframes deliver-nudge { 15%, 55% { transform: translateY(-4px) rotate(-3deg); } 35%, 75% { transform: translateY(-4px) rotate(3deg); } 100% { transform: none; } }
+.less-motion .deck-deliver.nudge { animation: none; }
 .deck-fill { /* the trip, filling the button while the hamster is out */
   position: absolute; left: 0; top: 0; bottom: 0; width: 0; pointer-events: none;
   background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--soft-dark) 55%, transparent) 0 6px, color-mix(in srgb, var(--soft-dark) 30%, transparent) 6px 12px) 0 0 / 17px 17px;

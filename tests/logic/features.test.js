@@ -231,6 +231,32 @@ describe('the card gamble', () => {
   }
   check('(a seed whose first spin wins was found)', found);
 
+  // 1.9.1: Menu → Card gamble → Never. Wins pay the same; no offer, and a queued click spins on.
+  const n = newGame(121);
+  n.addCoins(1e6);
+  n.setGambleOffers(false);
+  let nOffers = 0;
+  let nWins = 0;
+  n.on('gambleOffered', () => nOffers++);
+  n.on('spinResolved', (e) => { if (num(e.payout) > 0) nWins++; });
+  for (let i = 0; i < 40; i++) { n.spin('manual'); land(n); }
+  check('with offers turned off, manual wins never offer the gamble', nWins > 0 && nOffers === 0 && n.getGambleInfo() === null);
+  let queuedOn = false;
+  for (let seed = 200; seed < 300 && !queuedOn; seed++) {
+    const x = newGame(seed);
+    x.addCoins(1e6);
+    x.setGambleOffers(false);
+    x.spin();
+    x.spin(); // queued
+    let won = false;
+    x.on('spinResolved', (e) => { if (num(e.payout) > 0) won = true; });
+    x.update(clunky.spinDuration + 0.05);
+    if (!won) continue;
+    queuedOn = true;
+    check('with offers turned off, a click queued during a winning spin spins straight on', x.state.stats.spins === 2);
+  }
+  check('(a winning first spin with offers off was found)', queuedOn);
+
   const a = newGame(122);
   a.addCoins(1e6);
   a.buyUpgrade('wheel', 10);

@@ -60,6 +60,7 @@ export function clearSave(platform: Platform): void {
 //   subTabs    which sub-tab each tray tab last showed, e.g. { upgrades: "machine" }
 //   uiSounds   (1.9.0) soft clicks and ticks for the buttons, tabs and sheets
 //   guide      (1.9.0) the first-time guide: the hamster's tips and the pointing paw
+//   gambleOffer (1.9.1) false = never offer the card gamble after a win, so you can keep spinning
 export interface Settings {
   muted: boolean;
   volume: number;
@@ -70,9 +71,10 @@ export interface Settings {
   subTabs: Record<string, string>;
   uiSounds: boolean;
   guide: boolean;
+  gambleOffer: boolean;
 }
 
-const DEFAULT_SETTINGS: Settings = { muted: false, volume: 0.6, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: {}, uiSounds: true, guide: true };
+const DEFAULT_SETTINGS: Settings = { muted: false, volume: 0.6, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: {}, uiSounds: true, guide: true, gambleOffer: true };
 
 // Only short word-like names survive (the view checks them against its own list).
 function cleanSubTabs(raw: unknown): Record<string, string> {
@@ -100,6 +102,7 @@ export function loadSettings(platform: Platform): Settings {
       subTabs: cleanSubTabs(raw.subTabs),
       uiSounds: typeof raw.uiSounds === 'boolean' ? raw.uiSounds : d.uiSounds,
       guide: typeof raw.guide === 'boolean' ? raw.guide : d.guide,
+      gambleOffer: typeof raw.gambleOffer === 'boolean' ? raw.gambleOffer : d.gambleOffer,
     };
   } catch (err) {
     return { ...DEFAULT_SETTINGS, subTabs: {} };

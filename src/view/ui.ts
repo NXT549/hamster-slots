@@ -129,6 +129,7 @@ const SETTING_ROWS: Record<string, [keyof Settings, [unknown, string][]]> = {
   'set-numbers': ['numbers', [['short', '47.2K'], ['full', '47,275']]],
   'set-uisounds': ['uiSounds', [[true, 'On'], [false, 'Off']]], // 1.9.0
   'set-guide': ['guide', [[true, 'On'], [false, 'Off']]], // 1.9.0
+  'set-gamble': ['gambleOffer', [[true, 'Offer'], [false, 'Never']]], // 1.9.1
 };
 
 export function createUI(
@@ -424,6 +425,7 @@ export function createUI(
   function applySettings() {
     setNumberStyle(settings.numbers);
     sound.setUiSounds(settings.uiSounds);
+    game.setGambleOffers(settings.gambleOffer);
     document.body.classList.toggle('less-motion', lessMotion());
     for (const [id, [key, options]] of Object.entries(SETTING_ROWS)) {
       [...$(id).children].forEach((b, i) => b.classList.toggle('active', options[i][0] === settings[key]));
@@ -634,8 +636,10 @@ export function createUI(
     // On a pricey machine, a cheaper one you own is the other way out.
     const cheaper = game.data.machines.find((m) => m.id !== activeId() && game.ownsMachine(m.id)
       && game.getMachineInfo(m.id)!.spinCost.lte(game.state.coins));
-    say(cheaper ? `Not enough coins for a spin here. Switch to ${cheaper.name}, or send me on a delivery?`
-      : 'Not enough coins for a spin. Send me on a delivery?');
+    // …and Deliver always is: its key wiggles so you can see where to tap.
+    if (!game.state.delivery.active) deck.nudgeDeliver();
+    say(cheaper ? `Not enough coins for a spin here. Switch to ${cheaper.name}, or tap Deliver and I'll earn some!`
+      : "Not enough coins for a spin. Tap Deliver and I'll earn some!");
   });
 
   game.on('coinsChanged', (e) => {
@@ -1004,6 +1008,8 @@ export function createUI(
       // every other key needs a fresh tap too
     } else if (e.code === 'KeyD') {
       game.startDelivery();
+    } else if (e.code === 'BracketLeft' || e.code === 'BracketRight') {
+      nextMachine(e.code === 'BracketLeft' ? -1 : 1);
     } else if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
       deck.changeBet(-1);
     } else if (e.code === 'Equal' || e.code === 'NumpadAdd') {
@@ -1019,6 +1025,14 @@ export function createUI(
       sound.play('coin');
     }
   });
+
+  // [ and ] step through the machines you own, in the machine tags' order (wrapping round).
+  function nextMachine(step: number): void {
+    const owned = game.data.machines.filter((m) => game.ownsMachine(m.id));
+    if (owned.length < 2) return;
+    const at = owned.findIndex((m) => m.id === activeId());
+    game.switchMachine(owned[(at + step + owned.length) % owned.length].id);
+  }
 
   function buildStats() {
     const s = game.state;

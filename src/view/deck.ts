@@ -6,6 +6,7 @@
 //            lamp = the hamster runs it, down with a red lamp = paused
 //   bet      − ×2 +, with a hint (how high it goes, or "spins ×1" when a spin steps down)
 // The keys stay what they were (ui.ts): Space spins, D delivers, - and = change the bet.
+// A spin refused for coins wiggles Deliver (nudgeDeliver), the way out of being broke.
 // It only calls game actions (spin, startDelivery, setAutoPaused, setBet) and reads state.
 
 import { formatCoins, formatSeconds, setText, replayClass } from './dom.ts';
@@ -118,6 +119,8 @@ export function createDeck(game: Game, { host, sound, say }: { host: HTMLElement
     spinEl: spin.el,
     // A refused spin shakes the button.
     shake() { replayClass(spin.el, 'shake'); },
+    // Broke: point at Deliver (1.9.1), since a delivery always pays.
+    nudgeDeliver() { replayClass(deliver.el, 'nudge'); },
   };
 }
 export type Deck = ReturnType<typeof createDeck>;

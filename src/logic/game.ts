@@ -1446,9 +1446,18 @@ export function createGame(initialData: GameData, rng: Rng) {
   // would count toward Heirloom Seeds and losses wouldn't, and gambling would farm seeds.
   function offerGamble(machine: MachineState, stake: Money): void {
     const g = data.gamble;
-    if (!g) return;
+    if (!g || !gambleOffers) return;
     state.gamble = { machineId: machine.typeId, stake, rounds: 0, won: money(0), started: false, timer: g.offerSeconds };
     events.emit('gambleOffered', { machineId: machine.typeId, stake });
+  }
+
+  // 1.9.1: the player can turn the offer off (Menu → Card gamble), so a win never
+  // takes the place of the spin they queued. It's a preference, not saved progress:
+  // the view sets it from its settings. Turning it off changes no odds, since the
+  // gamble is exactly fair (on average it never pays).
+  let gambleOffers = true;
+  function setGambleOffers(on: boolean): void {
+    gambleOffers = on;
   }
 
   function canGamble(): boolean {
@@ -2721,7 +2730,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
     // actions
     update, spin, startDelivery, buyUpgrade, buyMachine, switchMachine, retire, leaveBigCage, buyTreeNode, rebuild, pullCapsule, equipSkin,
-    setBet, gamble, collectGamble, setHelper, setAutoPaused,
+    setBet, gamble, collectGamble, setGambleOffers, setHelper, setAutoPaused,
     applyOfflineEarnings, addCoins, addSeeds, addTokens, addFreeSpins, triggerJackpot, triggerGamble, triggerHold, openBigCage, ownAllSkins, setData,
     unlockAllUpgrades,
 

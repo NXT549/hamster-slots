@@ -134,13 +134,13 @@ describe('saving and loading', () => {
 describe('settings', () => {
   test('no settings yet: the defaults', () => {
     expect(loadSettings(createMemoryPlatform())).toEqual({
-      muted: false, volume: 0.6, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: {}, uiSounds: true, guide: true,
+      muted: false, volume: 0.6, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: {}, uiSounds: true, guide: true, gambleOffer: true,
     });
   });
 
   test('settings load back exactly, under their own name', () => {
     const p = createMemoryPlatform();
-    const settings = { muted: true, volume: 0.3, motion: 'less', quickReels: true, numbers: 'full', buyAmount: 'max', subTabs: { upgrades: 'machine' }, uiSounds: false, guide: false };
+    const settings = { muted: true, volume: 0.3, motion: 'less', quickReels: true, numbers: 'full', buyAmount: 'max', subTabs: { upgrades: 'machine' }, uiSounds: false, guide: false, gambleOffer: false };
     saveSettings(p, settings);
     expect([...p.stored.keys()]).toEqual([SETTINGS_KEY]);
     expect(loadSettings(p)).toEqual(settings);
@@ -149,10 +149,10 @@ describe('settings', () => {
   test('odd values fall back to safe ones', () => {
     const p = createMemoryPlatform();
     p.stored.set(SETTINGS_KEY, JSON.stringify({
-      muted: 'yes', volume: 7, motion: 'wild', quickReels: 1, numbers: 'long', buyAmount: 3, subTabs: { 'Upgrades!': 'x', info: 'odds', family: 5 }, uiSounds: 'no', guide: 0,
+      muted: 'yes', volume: 7, motion: 'wild', quickReels: 1, numbers: 'long', buyAmount: 3, subTabs: { 'Upgrades!': 'x', info: 'odds', family: 5 }, uiSounds: 'no', guide: 0, gambleOffer: 'never',
     }));
     expect(loadSettings(p)).toEqual({
-      muted: false, volume: 1, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: { info: 'odds' }, uiSounds: true, guide: true,
+      muted: false, volume: 1, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: { info: 'odds' }, uiSounds: true, guide: true, gambleOffer: true,
     });
   });
 
