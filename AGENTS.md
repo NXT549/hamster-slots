@@ -14,6 +14,7 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 | `PORTING_NOTES.md` | Platform plan, platform layer, invariants any rewrite keeps, then logs: **Decisions** (D1…D160: chosen, rejected, why), **Balance log**, **Playtest notes**, Prototype history |
 | `CHANGELOG.md` | What players got per version; `[Unreleased]` on top |
 | `docs/DEBUG.md` | Console and debug-panel recipes to reach any feature fast |
+| `docs/updates/` | One implementation plan per planned update, indexed in its `README.md`. **Open a plan only when told to work on that update** |
 | `README.md` | Public front page; keep it true |
 | `src/logic/types.ts`, `game.ts` | The real reference for state, events (`GameEvents`), data (`GameData`) and the game API |
 
