@@ -690,6 +690,11 @@ Headless tests can check round-trips, and a new platform only swaps the storage.
 - Released after the user saw screenshots, without a playtest first (the user's call), like 1.3.0–1.5.0; not yet checked on a real phone, Firefox or Safari. DESIGN §31's questions are the ones to answer. Tests were also run on Node 24 (D149).
 - The tag `v1.6.0` is made locally; tag pushes are cut off by the git proxy, so the user publishes the GitHub Release **"v1.6.0 · New Digs"** on the "Release 1.6.0" commit (`6558459`). The deploy passed and the live files match the local build.
 
+**D161 — Machine skins paint every machine, and five new ones ("Fresh Coat", for 1.6.1)** (the user, 2026-10-03: "add new skins since skins currently only work on the first slot machine", then "All together" on the plan's question).
+- **Chosen:** a machine skin sets one paint (`--paint`, `--paint-dark`, `--paint-light`; cabinet.ts `painted()` swaps it in for every cabinet's body tokens), plus `--paint-marquee` for every sign. Each machine keeps its shape and own details (grass, rind, tape, gold). Five new skins (2 Common, 2 Rare, 1 Epic) with the usual machine buffs; the Epic, Arcade Neon, gets a 5% double-win twist (the Lucky Pennies effect, so the EV stays exact). The old skins are renamed "… Paint" (ids kept, so saves don't change). *Rejected:* hand-picked colours per machine per skin (9 skins × 8 machines to keep in step); tinting each machine's own colours towards the skin (dark skins turned the cheese olive); setting the family tokens themselves on the stage (the Big Cheese's wheel and other UI read them too).
+- No save change. The golden run was re-recorded: its capsule pulls now draw from 29 skins (an approved content change). Collecting every capsule skin takes ~194 pulls (was ~151).
+- Released as **1.6.1 "Fresh Coat"** (the user's "aprove all", 2026-10-03), without a playtest, like 1.3.0–1.6.0. Tags can't be pushed, so the user publishes the GitHub Release **"v1.6.1 · Fresh Coat"** on the "Release 1.6.1" commit.
+
 
 ---
 
@@ -754,6 +759,7 @@ Every `data.json` change: date · value · old → new · why.
 | 2026-09-28 | Moving Day (new, `colony: 1`) | — → **250B** · 5×3 · 20 paylines (10 at first) · spin 120,000 / 3.4 s · box weight 9, boxes open into carrot 30, corn 26, apple 20, golden 14, wild 10 · fresh RTP 1,566% (Vault 1,246%, Cheese 1,322%); fully upgraded ~16.7M profit a spin (Vault ~4.0M, Cheese ~30M) | Sits between the Vault (25B) and the Cheese (2.5T). Payouts in DESIGN §29. |
 | 2026-09-28 | Moving Day upgrades | — → Packing Tape 12B × 1.3ⁿ · More Rooms 24B × 2.5ⁿ · Bubble Wrap 30B × 2.2ⁿ (+2 box weight) · Valuables 40B · Lucky Van 24B × 2ⁿ · Pays Both Ways 10T | Like the Cheese's set, scaled to price. |
 | 2026-09-28 | Colony traits (new, `colony: 1`) | — → Moving Boxes 40 × 2ⁿ (+2 box weight, max 2) · Whisker Wisdom 60 × 2ⁿ (+25% whiskers, max 2) · Pack Leader 50 × 2ⁿ (+50% payouts, max 3) · Starry Roots 60 × 2ⁿ (+1 star, max 2) | For a colony's late part (the rest of the tree costs ~250 seeds). |
+| 2026-10-03 | Machine skins (1.6.1) | 4 → 9 (+Bubblegum, Moss: spins 5% cheaper · Copper Pipes, Seaside: 10% · Arcade Neon: 15% + 5% double-win chance) | The user's "add new skins" (D161). Same buff sizes as the old ones; the capsule pool grows 24 → 29, so the full set takes ~194 pulls (was ~151). No sim run: the buffs match the existing machine skins, and the simulator wears the rarest skin it owns (§25). |
 
 ---
 
