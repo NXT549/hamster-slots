@@ -80,6 +80,9 @@ describe('Blackjack: the house rules and their exact odds', () => {
   check('the hints are basic strategy: double 11 v 6, hit 16 v 10, stand 12 v 4, hit soft 18 v 9, stand 17 v Ace',
     bestPlay(cards(5, 6), card(6)) === 'double' && bestPlay(cards(10, 6), card(10)) === 'hit' && bestPlay(cards(10, 2), card(4)) === 'stand'
     && bestPlay(cards(1, 7), card(9)) === 'hit' && bestPlay(cards(10, 7), card(1)) === 'stand');
+  // 1.8.x fix: with too few chips to double, the hint fell back to "hit" every time.
+  check('soft 18 v 3 doubles, but stands when it can\'t double (not "hit"); 11 v 6 hits then',
+    bestPlay(cards(1, 7), card(3)) === 'double' && bestPlay(cards(1, 7), card(3), false) === 'stand' && bestPlay(cards(5, 6), card(6), false) === 'hit');
 
   // Played in the game by its hint, many hands return about what the maths says.
   const g = casinoGame(83);

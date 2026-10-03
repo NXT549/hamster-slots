@@ -1649,6 +1649,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     state.stats.upgradesBought += count;
     if (helper) state.stats.helperBuys += count;
     if (def.effect.type === 'unlockSymbol') state.stats.symbolsUnlocked += count;
+    if (def.effect.type === 'potSeedBonus') raisePotsToSeeds(); // the pots in play grow to the new seed now
     events.emit('upgradeBought', { id, level, cost, count, helper });
     checkDiary();
     return true;
@@ -1887,6 +1888,16 @@ export function createGame(initialData: GameData, rng: Rng) {
     return names.length ? names[(generation - 1 + state.colony * 4) % names.length] : `Hamster ${generation}`;
   }
 
+  // Golden Pouches (M8) and Deep Pockets: a pot below its (bigger) seed starts at the seed.
+  // Run when a life starts, a machine is bought, and Deep Pockets is bought mid-life (else
+  // the pots in play only caught up at the next reload, which then changed them).
+  function raisePotsToSeeds(): void {
+    for (const m of state.machines) {
+      const jp = getMachineData(m).jackpot;
+      if (jp) for (const pot of jp.pots) if (potBase(m, pot).lt(potSeed(pot))) m.pots[pot.id] = potSeed(pot);
+    }
+  }
+
   // Family tree nodes like Warm-up Laps give free upgrade levels. Raise any
   // upgrade that is below its free level (never lower one the player bought).
   // A machine upgrade is only raised on the machines that sell it.
@@ -1903,11 +1914,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       machine.bet = getBetIndex();
       state.machines.push(machine);
     }
-    // Golden Pouches (M8): a pot below its (bigger) seed starts at the seed.
-    for (const m of state.machines) {
-      const jp = getMachineData(m).jackpot;
-      if (jp) for (const pot of jp.pots) if (potBase(m, pot).lt(potSeed(pot))) m.pots[pot.id] = potSeed(pot);
-    }
+    raisePotsToSeeds();
     for (const def of data.upgrades) {
       const free = getStartingLevel(def.id);
       if (free <= 0) continue;
@@ -2170,8 +2177,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   // ── Colony Trials ──
   // From the first migration on, a life can be a trial: a twist (no family
   // bonuses, no auto-spin, no stars, bets ×1 only, nothing worn; 1.10 adds five more
-  // and Double Trouble, two at once) until the life's pending seeds reach the goal. Beating it pays whiskers and lifts the twist at
-  // once (the rest of the life is ordinary). Each trial pays once a colony.
+  // and Double Trouble, two at once) until the life's pending seeds reach the goal.
+  // Beating it pays whiskers and lifts the twist at once (the rest of the life is
+  // ordinary). Each trial pays once a colony.
 
   function getTrialDef(id: string | null): TrialDef | null {
     return (id && data.colony && data.colony.trials.find((t) => t.id === id)) || null;
