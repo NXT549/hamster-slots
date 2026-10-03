@@ -155,6 +155,7 @@ src/view/        draws the game, turns input into actions
   reels.ts winshow.ts celebrate.ts fx.ts sound.ts dom.ts
   guide.ts       the first-time guide (1.9.0): guideStep() (pure, tested) and the pointing paw
   unlock.ts      unlock moments (1.9.0): the padlock over anything new, waiting until it can be seen
+  announce.ts    what screen readers hear about a spin (the #sr-live line; spinAnnouncement is tested)
   shop.ts        Upgrades tab (describeEffect is reused by colony + Big Cage)
   family.ts      Family tab: the retire letter, planted traits; colony.ts is its Colony sub-tab
   payouts.ts capsules.ts casino.ts bigcage.ts backup.ts debug.ts   the other tabs/pages

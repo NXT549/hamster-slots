@@ -15,6 +15,7 @@ import { applySprite, spriteImg, treeIcon, hamsterSprite, runFrame, MACHINE_SPRI
 import type { HamsterFrame } from './art.ts';
 import { createReels } from './reels.ts';
 import { createWinShow } from './winshow.ts';
+import { spinAnnouncement, freshText } from './announce.ts';
 import { formatCoins, formatWhole, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle, popText } from './dom.ts';
 import { furColors, applyStageSkins, hatOf } from './skins.ts';
 import { createCapsulesView } from './capsules.ts';
@@ -300,7 +301,11 @@ export function createUI(
   }
   function say(text: string, ms = 2600): void {
     speech = { text, until: performance.now() + ms };
-    setText(el.srLive, text); // (1.6.0) screen readers hear what the hamster says
+    announce(text); // (1.6.0) screen readers hear what the hamster says
+  }
+  // Puts a line in the hidden live region for screen readers (announce.ts).
+  function announce(text: string): void {
+    setText(el.srLive, freshText(el.srLive.textContent || '', text));
   }
   // Hearts floating up from the hamster (it's happy).
   function hearts(count: number): void {
@@ -451,6 +456,8 @@ export function createUI(
   game.on('spinResolved', (e) => {
     const here = e.machineId === activeId();
     if (here) winShow.start(e); // lights the wins and the feature scatters, and counts the meter up
+    const line = here ? spinAnnouncement(e, lastSpinSource === 'manual') : '';
+    if (line) announce(line); // screen readers hear how the spin went
     if (e.payout.lte(0)) return;
     const tierFx = WIN_FX[e.tier] || WIN_FX.win;
     const big = e.tier !== 'win';
@@ -1491,7 +1498,7 @@ export function createUI(
     const guideLine = lineOf ? lineOf(game) : '';
     if (guideLine !== lastGuideLine) {
       lastGuideLine = guideLine;
-      if (guideLine) setText(el.srLive, guideLine); // screen readers hear the guide's tips too
+      if (guideLine) announce(guideLine); // screen readers hear the guide's tips too
     }
 
     // Speech bubble: a fresh line if there is one, otherwise the most useful hint.
