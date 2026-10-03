@@ -10,6 +10,11 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Added
+
+- **Five new Colony Trials:** From Scratch (no head start from the Family Tree), Slow Wheel (every spin takes half as long again), Bad Luck Day (no Luck at all), Thin Cheeks (your upgrades add no payouts) and Picky Eater (no new symbols on the reels). Each pays 2 Golden Whiskers, once a colony.
+- **Double Trouble:** beat two trials one at a time and they come back together as a harder trial for 5 Golden Whiskers. There are four: Rainy Day, Penny Pinching, Back to Basics and Total Stranger.
+
 ## [1.9.0] - 2026-10-03 · Welcome Mat
 
 **New players get a friendly guide, and everything you unlock now has its own little moment.**

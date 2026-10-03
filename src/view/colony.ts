@@ -249,10 +249,12 @@ export function createColonyView(game: Game, { sheet, say, sound, fx, settings, 
         const beaten = !!s.trialsDone[r.def.id];
         const now = s.trial === r.def.id;
         const whiskers = game.getTrialWhiskers(r.def.id);
-        const key = `${beaten}${now}${formatWhole(whiskers)}`;
+        const locked = !game.isTrialUnlocked(r.def.id); // Double Trouble (1.10): beat both halves first
+        const key = `${beaten}${now}${locked}${formatWhole(whiskers)}`;
         if (key === r.key) continue;
         r.key = key;
-        r.row.update({ valueHTML: beaten ? 'Beaten' : now ? 'Under way' : `+${amountHTML('whisker', whiskers)}` });
+        r.row.update({ valueHTML: beaten ? 'Beaten' : now ? 'Under way' : locked ? 'Beat both first' : `+${amountHTML('whisker', whiskers)}` });
+        r.row.el.classList.toggle('is-locked', locked && !beaten);
         r.row.el.classList.toggle('is-done', beaten);
         r.row.el.classList.toggle('is-now', now);
       }

@@ -49,3 +49,4 @@
 .colony-trial-list .k-row.is-done { opacity: 0.7; }
 .colony-trial-list .k-row.is-done .k-row-value { color: var(--buy-dark); }
 .colony-trial-list .k-row.is-now { background: color-mix(in srgb, var(--whisker) 35%, var(--paper)); }
+.colony-trial-list .k-row.is-locked { opacity: 0.55; }

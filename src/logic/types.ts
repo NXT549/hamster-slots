@@ -215,12 +215,17 @@ export interface PerkDef extends Priced {
 // A Colony Trial: a life with a twist. Beat its goal (this life's coins would bring
 // `goalShare` × the Heirloom Seeds the family has earned this colony, at least
 // `minSeeds`) for its Golden Whiskers, once a colony.
-export type TrialRule = 'noFamily' | 'noAuto' | 'noStars' | 'betCap' | 'noWardrobe';
+// 1.10: a trial can have two twists ("Double Trouble"); it opens once every trial it
+// `needs` has been beaten this colony.
+export type TrialRule = 'noFamily' | 'noAuto' | 'noStars' | 'betCap' | 'noWardrobe'
+  | 'noHeadStart' | 'slowWheel' | 'noLuck' | 'noUpgradePayouts' | 'noUnlocks';
 export interface TrialDef {
   id: string;
   name: string;
   description: string;
-  rule: TrialRule;
+  rules: TrialRule[];
+  needs?: string[]; // Double Trouble: the trials to beat first (this colony)
+  slowdown?: number; // slowWheel: spin time and the auto-spin interval × this
   goalShare: number;
   minSeeds: number;
   whiskers: number;

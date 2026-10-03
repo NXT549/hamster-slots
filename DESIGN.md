@@ -1624,6 +1624,22 @@ From the first migration on, **from each colony's 4th hamster**, a life can be a
 | **Rusty Machines** | Machine Stars don't count (no stars' payouts or Luck) | 2 |
 | **Small Pockets** | Bets ×1 only | 3 |
 | **Plain Hamster** | Nothing worn does anything, and no casino boosts | 2 |
+| **From Scratch** *(1.10)* | No head start: the tree's free levels and starting machines (Old Friends too) arrive only when the trial is beaten | 2 |
+| **Slow Wheel** *(1.10)* | Spin time and the auto-spin interval × 1.5 (`slowdown`; auto-spin still waits for spin + rest) | 2 |
+| **Bad Luck Day** *(1.10)* | No Luck at all: Hamster Luck, Machine Luck and the stars' Luck are 0 (the odds are the machine's base odds, which rule 4 already covers) | 2 |
+| **Thin Cheeks** *(1.10)* | The coin upgrades' payout group counts as ×1 (Chubby Cheeks, the Sticker Album …) | 2 |
+| **Picky Eater** *(1.10)* | Every lockable symbol stays locked (every unlock step is a setup rule 4 already covers) | 2 |
+
+**Double Trouble** *(1.10, the user's "you decide" on the brainstorm, D166)*: four trials that are two twists at once. Each opens once **both its halves are beaten this colony** (`needs`), so it's always something the family has already managed one twist at a time; until then it's hidden in the Big Cage (it gets an unlock moment when it appears) and shows "Beat both first" in Family → Colony. Same goal (a quarter of the colony's seeds), more whiskers:
+
+| Double Trouble | Twists | Whiskers |
+|---|---|---:|
+| **Rainy Day** | Bad Luck Day + Rusty Machines | 5 |
+| **Penny Pinching** | Small Pockets + Thin Cheeks | 5 |
+| **Back to Basics** | From Scratch + Picky Eater | 5 |
+| **Total Stranger** | Fresh Start + Plain Hamster | 5 |
+
+All 14 trials pay 42 whiskers a colony (12 before 1.10), next to a migration's 65–70 by the second one: a family that beats every trial gets less than one more Colony Pride level for it (1 × 1.6ⁿ). The simulator doesn't play trials, so their pacing is a playtest question.
 
 (The first three hamsters of a colony have little a twist could take away, so trials wait for the 4th.) A tile's "now → next" ignores a trial's twist: Wheel Training still says what it gives during Tired Paws.
 
@@ -1715,6 +1731,7 @@ New Horizons (a migration, 10 tokens) · Far, Far Away (three migrations, 8) · 
 - Is "the whole tree planted" the right moment, and "the family, the tree and the stars" the right size of reset?
 - Are generations 11–15 long enough now? Is the climb after generation ~16 a good nudge to migrate, or a wall?
 - Which Colony Trials are fun, and which are chores (Tired Paws for an idle player)? Is a quarter of the colony's seeds the right goal, and the 4th hamster the right start?
+- (1.10) Are the five new twists different enough from each other? Is Double Trouble a fun step up, or just a longer life?
 - Do the Wise Elders make the late game better (less clicking) or empty (nothing to do)?
 - Moving Day: do the boxes feel exciting? Is it in the right place (between the Acorn Vault and the Big Cheese)?
 - Later colonies go much faster, and their late lives are short again: fun, or too fast?

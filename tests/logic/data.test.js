@@ -49,9 +49,21 @@ describe('data.json sanity', () => {
   check('every colony perk has a known effect type, a price and a unique id',
     col.perks.every((p) => perkTypes.includes(p.effect.type) && p.baseCost >= 1 && p.growthRate >= 1)
     && new Set([...allIds, ...col.perks.map((p) => p.id)]).size === allIds.length + col.perks.length);
-  check('every Colony Trial has a known twist, a goal and whiskers, and the ids are unique',
-    col.trials.every((t) => ['noFamily', 'noAuto', 'noStars', 'betCap', 'noWardrobe'].includes(t.rule) && t.goalShare > 0 && t.minSeeds >= 1 && t.whiskers >= 1)
+  const rules = ['noFamily', 'noAuto', 'noStars', 'betCap', 'noWardrobe', 'noHeadStart', 'slowWheel', 'noLuck', 'noUpgradePayouts', 'noUnlocks'];
+  check('every Colony Trial has known twists, a goal and whiskers, and the ids are unique',
+    col.trials.every((t) => t.rules.length >= 1 && t.rules.every((r) => rules.includes(r)) && t.goalShare > 0 && t.minSeeds >= 1 && t.whiskers >= 1)
     && new Set(col.trials.map((t) => t.id)).size === col.trials.length);
+  check('a Slow Wheel trial slows things down (never speeds them up)',
+    col.trials.every((t) => !t.rules.includes('slowWheel') || t.slowdown > 1));
+  // 1.10: Double Trouble needs exactly the one-twist trials whose twists it combines.
+  const single = col.trials.filter((t) => t.rules.length === 1);
+  check('every twist has a one-twist trial',
+    rules.every((r) => single.some((t) => t.rules[0] === r)));
+  check('Double Trouble needs the one-twist trials of its twists, and pays more than either',
+    col.trials.filter((t) => t.rules.length > 1).every((t) => {
+      const needs = (t.needs || []).map((id) => single.find((x) => x.id === id));
+      return needs.length === t.rules.length && needs.every((x) => x && t.rules.includes(x.rules[0]) && t.whiskers > x.whiskers);
+    }) && single.every((t) => !t.needs));
   check('the Wise Elders\' choices go up, and they plant at most the seeds held',
     col.autoRetire.shares.length > 0 && col.autoRetire.shares.every((x, i) => x > 0 && (i === 0 || x > col.autoRetire.shares[i - 1]))
     && col.autoRetire.minSeeds >= 1 && col.autoRetire.plantShare > 0 && col.autoRetire.plantShare <= 1);

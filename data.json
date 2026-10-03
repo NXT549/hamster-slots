@@ -1486,11 +1486,20 @@
       }
     ],
     "trials": [
-      { "id": "freshStart", "name": "Fresh Start", "description": "No Family Tree and no heirloom bonus: a pup on its own.", "rule": "noFamily", "goalShare": 0.25, "minSeeds": 5, "whiskers": 3 },
-      { "id": "tiredPaws", "name": "Tired Paws", "description": "No auto-spin: every spin by hand.", "rule": "noAuto", "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
-      { "id": "rustyMachines", "name": "Rusty Machines", "description": "Machine Stars don't count (no stars' payouts or Luck).", "rule": "noStars", "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
-      { "id": "smallPockets", "name": "Small Pockets", "description": "Bets \u00d71 only.", "rule": "betCap", "goalShare": 0.25, "minSeeds": 5, "whiskers": 3 },
-      { "id": "plainHamster", "name": "Plain Hamster", "description": "Nothing worn does anything, and no casino boosts.", "rule": "noWardrobe", "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 }
+      { "id": "freshStart", "name": "Fresh Start", "description": "No Family Tree and no heirloom bonus: a pup on its own.", "rules": ["noFamily"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 3 },
+      { "id": "tiredPaws", "name": "Tired Paws", "description": "No auto-spin: every spin by hand.", "rules": ["noAuto"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "rustyMachines", "name": "Rusty Machines", "description": "Machine Stars don't count (no stars' payouts or Luck).", "rules": ["noStars"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "smallPockets", "name": "Small Pockets", "description": "Bets \u00d71 only.", "rules": ["betCap"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 3 },
+      { "id": "plainHamster", "name": "Plain Hamster", "description": "Nothing worn does anything, and no casino boosts.", "rules": ["noWardrobe"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "fromScratch", "name": "From Scratch", "description": "No head start: the Family Tree's free levels and machines wait until the trial is beaten.", "rules": ["noHeadStart"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "slowWheel", "name": "Slow Wheel", "description": "A creaky wheel: every spin and auto-spin takes half as long again.", "rules": ["slowWheel"], "slowdown": 1.5, "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "badLuckDay", "name": "Bad Luck Day", "description": "No Luck at all: no Hamster Luck and no Machine Luck (the stars' Luck too).", "rules": ["noLuck"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "thinCheeks", "name": "Thin Cheeks", "description": "The hamster's own upgrades add no payouts (Chubby Cheeks, the Sticker Album and friends).", "rules": ["noUpgradePayouts"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "pickyEater", "name": "Picky Eater", "description": "No new symbols: every symbol you unlock stays off the reels.", "rules": ["noUnlocks"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 2 },
+      { "id": "rainyDay", "name": "Rainy Day", "description": "Double Trouble: Bad Luck Day and Rusty Machines at once.", "rules": ["noLuck", "noStars"], "needs": ["badLuckDay", "rustyMachines"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 5 },
+      { "id": "pennyPinching", "name": "Penny Pinching", "description": "Double Trouble: Small Pockets and Thin Cheeks at once.", "rules": ["betCap", "noUpgradePayouts"], "needs": ["smallPockets", "thinCheeks"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 5 },
+      { "id": "backToBasics", "name": "Back to Basics", "description": "Double Trouble: From Scratch and Picky Eater at once.", "rules": ["noHeadStart", "noUnlocks"], "needs": ["fromScratch", "pickyEater"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 5 },
+      { "id": "totalStranger", "name": "Total Stranger", "description": "Double Trouble: Fresh Start and Plain Hamster at once.", "rules": ["noFamily", "noWardrobe"], "needs": ["freshStart", "plainHamster"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 5 }
     ]
   },
   "tokens": {

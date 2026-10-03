@@ -380,6 +380,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     const stickers = countStickers();
     for (const x of effectsOfType('stickerPayout', overrides)) add(x, x.effect.perLevel * x.level * stickers);
     for (const x of effectsOfType('generationPayout', overrides)) add(x, x.effect.perLevel * x.level * state.generation);
+    if (trialRule('noUpgradePayouts')) upgrades = 1; // the Colony Trial "Thin Cheeks" (1.10)
     return family.mul(upgrades).mul(wardrobe).mul(boost).mul(colony);
   }
 
@@ -437,7 +438,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // Quick Paws: a multiplier on spin time AND the auto-spin interval (both get faster together).
   function getSpinDuration(overrides?: Overrides, machine: MachineState = activeMachine()): number {
-    return getMachineData(machine).spinDuration * productOf('spinSpeed', overrides, machine);
+    return getMachineData(machine).spinDuration * productOf('spinSpeed', overrides, machine) * trialSlowdown();
   }
 
   // Wheel Training: null = no auto-spin; otherwise seconds between auto-spin starts:
@@ -456,7 +457,8 @@ export function createGame(initialData: GameData, rng: Rng) {
       rest = Math.max(rest, e.rest || 0);
     }
     if (interval === null) return null;
-    return Math.max(interval * productOf('spinSpeed', overrides, machine), getSpinDuration(overrides, machine) + rest);
+    // (Slow Wheel slows both, so the floor still holds: rule 4.)
+    return Math.max(interval * productOf('spinSpeed', overrides, machine) * trialSlowdown(), getSpinDuration(overrides, machine) + rest);
   }
 
   // The pause toggle (a QoL control, not a balance change): while true, auto-spin
@@ -536,6 +538,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function isSymbolLocked(symbolId: string, overrides?: Overrides, machine: MachineState = activeMachine()): boolean {
     const s = getMachineData(machine).symbols.find((x) => x.id === symbolId);
     if (!s || !s.locked) return false;
+    if (trialRule('noUnlocks')) return true; // the Colony Trial "Picky Eater" (1.10): no new symbols
     return !effectsOfType('unlockSymbol', overrides, machine).some((x) => x.effect.symbols.slice(0, x.level).includes(symbolId));
   }
 
@@ -548,6 +551,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   //   Hamster Luck: the hamster's own upgrades (and family traits): every machine.
   //   Machine Luck: this machine's upgrades only.
   function getLuck(overrides?: Overrides, machine: MachineState = activeMachine()): { hamster: number; machine: number; total: number } {
+    if (trialRule('noLuck')) return { hamster: 0, machine: 0, total: 0 }; // the Colony Trial "Bad Luck Day" (1.10)
     let hamster = 0;
     let own = 0;
     for (const { effect, level, scope } of effectsOfType('luck', overrides, machine)) {
@@ -1887,6 +1891,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   // upgrade that is below its free level (never lower one the player bought).
   // A machine upgrade is only raised on the machines that sell it.
   function applyStartingLevels(): void {
+    // The Colony Trial "From Scratch" (1.10): no head start until it's beaten (checkTrial
+    // calls this again then, so the free levels and machines arrive at once).
+    if (trialRule('noHeadStart')) return;
     // Snack Inheritance (M8): every pup starts owning these machines (it stays on
     // the machine it's running; a new one starts at the bet you use).
     for (const { effect, level } of effectsOfType('startingMachine')) {
@@ -2161,9 +2168,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // ── Colony Trials ──
-  // From the first migration on, a life can be a trial: one twist (no family
-  // bonuses, no auto-spin, no stars, bets ×1 only, or nothing worn) until the life's
-  // pending seeds reach the goal. Beating it pays whiskers and lifts the twist at
+  // From the first migration on, a life can be a trial: a twist (no family
+  // bonuses, no auto-spin, no stars, bets ×1 only, nothing worn; 1.10 adds five more
+  // and Double Trouble, two at once) until the life's pending seeds reach the goal. Beating it pays whiskers and lifts the twist at
   // once (the rest of the life is ordinary). Each trial pays once a colony.
 
   function getTrialDef(id: string | null): TrialDef | null {
@@ -2172,7 +2179,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function trialRule(rule: TrialRule): boolean {
     if (previewing) return false; // a preview shows what a buy does for the family, twist or not
     const t = getTrialDef(state.trial);
-    return !!t && t.rule === rule;
+    return !!t && t.rules.includes(rule);
   }
   function trialsOpen(): boolean {
     return !!data.colony && state.colony >= data.colony.trialsFrom && state.generation >= data.colony.trialGeneration;
@@ -2190,7 +2197,19 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
   // Chosen in the Big Cage before the life starts (a fresh life, nothing played yet).
   function canStartTrial(id: string): boolean {
-    return state.bigCage && trialsOpen() && !!getTrialDef(id) && !state.trialsDone[id] && state.run.playTime === 0;
+    return state.bigCage && trialsOpen() && isTrialUnlocked(id) && !state.trialsDone[id] && state.run.playTime === 0;
+  }
+  // 1.10: Double Trouble (two twists at once) opens once both its halves are beaten this
+  // colony, so it's always something the family has managed one twist at a time.
+  function isTrialUnlocked(id: string): boolean {
+    const t = getTrialDef(id);
+    return !!t && (t.needs || []).every((n) => !!state.trialsDone[n]);
+  }
+  // Slow Wheel (1.10): spin time and the auto-spin interval × this (1 otherwise).
+  function trialSlowdown(): number {
+    if (previewing) return 1;
+    const t = getTrialDef(state.trial);
+    return t && t.rules.includes('slowWheel') ? t.slowdown ?? 1 : 1;
   }
   // startTrial(null) goes back to an ordinary life.
   function startTrial(id: string | null): boolean {
@@ -2753,7 +2772,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     migrate, buyPerk, startTrial, setAuto, addWhiskers,
     canMigrate, isTreeComplete, getTreeProgress, getPendingWhiskers, getMigrationSeeds, getWhiskerGain, getSeedGain, getMaxStars,
     getPerkDef, getPerkLevel, getPerkCost, isPerkMaxed, canBuyPerk, previewPerk,
-    trialsOpen, getTrialDef, getTrialGoal, getTrialWhiskers, canStartTrial, hasAutoRetire, getAutoShares, getAutoRetireGoal, isMachineOpen: (id: string) => {
+    trialsOpen, getTrialDef, getTrialGoal, isTrialUnlocked, getTrialWhiskers, canStartTrial, hasAutoRetire, getAutoShares, getAutoRetireGoal, isMachineOpen: (id: string) => {
       const md = data.machines.find((m) => m.id === id);
       return !!md && isMachineOpen(md);
     },
