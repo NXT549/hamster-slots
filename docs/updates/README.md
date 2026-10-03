@@ -18,7 +18,7 @@ One file per planned update. **Open a file only when the user tells you to work 
 | [ui-5-capsules-info.md](ui-5-capsules-info.md) | New Digs part 5: Capsules (reveal, Wardrobe, Diary) and Info | Planned (DESIGN §31) |
 | [ui-6-casino.md](ui-6-casino.md) | New Digs part 6: Casino chrome, cashier, roulette spots, prizes | Planned (DESIGN §31) |
 | [ui-7-menu-dialogs.md](ui-7-menu-dialogs.md) | New Digs part 7: Menu, Stats, Save backup, Welcome back, crash screen | Planned (DESIGN §31) |
-| [ui-8-guide-sounds.md](ui-8-guide-sounds.md) | New Digs part 8: first-time guide and UI sounds (two new settings) | Planned (DESIGN §31) |
+| [ui-8-guide-sounds.md](ui-8-guide-sounds.md) | New Digs part 8: first-time guide and UI sounds (two new settings), plus unlock moments | Done: released in 1.9.0 "Welcome Mat" (D165) |
 | [ui-9-polish.md](ui-9-polish.md) | New Digs part 9: access, motion, speed, skins, cleanup | Planned (DESIGN §31) |
 | [playtest-fixes.md](playtest-fixes.md) | 1.6.x: fixes from playtest feedback | Waiting on feedback |
 | [m12-own-casino.md](m12-own-casino.md) | M12 Your own casino (late game) | Done: released in 1.8.0 "Grand Opening" (DESIGN §32, D164) |

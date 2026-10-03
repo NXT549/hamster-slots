@@ -54,7 +54,7 @@
         <div class="rig">
           <!-- Hamster wheel, joined to the machine by a tube: the hamster powers it -->
           <div class="wheel-unit">
-            <div class="bubble hidden" id="bubble"></div>
+            <div class="bubble hidden" id="bubble"><span id="bubble-text"></span><button class="bubble-skip hidden" id="bubble-skip" type="button">Skip guide</button></div>
             <!-- During a jackpot wheel the hamster wheel becomes a prize wheel (the face + a pointer) -->
             <div class="wheel" id="wheel"><div class="prize-face" id="prize-face"></div></div>
             <span class="prize-pointer"></span>
@@ -359,6 +359,8 @@
     <div class="menu-row"><span>Motion <span class="note">(particles, hops, shakes, flying coins)</span></span><span class="seg" id="set-motion"></span></div>
     <div class="menu-row"><span>Reels <span class="note">(spins take the same time)</span></span><span class="seg" id="set-reels"></span></div>
     <div class="menu-row"><span>Numbers</span><span class="seg" id="set-numbers"></span></div>
+    <div class="menu-row"><span>UI sounds <span class="note">(soft clicks for buttons and tabs)</span></span><span class="seg" id="set-uisounds"></span></div>
+    <div class="menu-row"><span>Guide <span class="note">(tips and a pointing paw for new players)</span></span><span class="seg" id="set-guide"></span></div>
     <button class="btn btn-soft" id="backup-btn">Save backup</button>
     <button class="btn btn-soft" id="stats-btn">Stats</button>
     <button class="btn btn-soft" id="debug-btn">Toggle debug panel</button>

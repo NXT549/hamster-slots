@@ -24,14 +24,15 @@ import type { Sound } from './sound.ts';
 import type { Money } from '../logic/money.ts';
 
 // What kind of moment it is: it picks the colours (style.css .kind-…) and how much flies.
-export type CelebrationKind = 'big' | 'jackpot' | 'grand' | 'pot' | 'free' | 'star';
+export type CelebrationKind = 'big' | 'jackpot' | 'grand' | 'pot' | 'free' | 'star' | 'unlock';
 
 export interface CelebrationOptions {
   kind: CelebrationKind;
   titles: string[]; // the title climbs through these as the amount counts up
   amount?: Money | null; // counted up from 0 under the title
   sub?: string; // a small line under it
-  icon?: string; // a sprite over the title (the star)
+  icon?: string; // a sprite over the title (the star, the new symbol)
+  iconSize?: number; // its size in screen pixels: a whole scale of the sprite (64 = a 32×32 at 2×, 72 = a 24×24 at 3×)
 }
 
 // Real seconds the amount takes to count up, and how long it stays after that.
@@ -42,9 +43,10 @@ const TIMING: Record<CelebrationKind, { count: number; hold: number }> = {
   pot: { count: 2.2, hold: 1.4 },
   free: { count: 1.8, hold: 1.3 },
   star: { count: 0, hold: 2.6 },
+  unlock: { count: 0, hold: 2.8 },
 };
 // Gold coins a second raining over the cage while it counts (0 = a fountain at the start only).
-const RAIN: Record<CelebrationKind, number> = { big: 0, jackpot: 26, grand: 40, pot: 14, free: 0, star: 0 };
+const RAIN: Record<CelebrationKind, number> = { big: 0, jackpot: 26, grand: 40, pot: 14, free: 0, star: 0, unlock: 0 };
 const OUT_SECONDS = 0.35; // the fade out (style.css .celebration.out)
 
 interface Show {
@@ -79,6 +81,7 @@ export function createCelebration({ host, fx, sound, lessMotion }: { host: HTMLE
   const rampOf = (face: string, dark: string) => rampFromTokens(face, dark);
   function titleRamp(text: string, kind: CelebrationKind): TitleRamp {
     if (kind === 'free') return rampOf('--soft', '--soft-dark');
+    if (kind === 'unlock') return rampOf('--buy', '--buy-dark'); // green: something new to play with
     if (/HUGE/.test(text)) return rampOf('--primary', '--primary-dark');
     if (/^MINI\b/.test(text)) return rampOf('--soft', '--soft-dark');
     if (/^MINOR\b/.test(text)) return rampOf('--buy', '--buy-dark');
@@ -114,7 +117,7 @@ export function createCelebration({ host, fx, sound, lessMotion }: { host: HTMLE
       holdFor: t.hold * 1000,
     };
     root.className = `celebration kind-${opts.kind}`;
-    parts.icon.replaceChildren(...(opts.icon ? [spriteImg(opts.icon, 64)] : []));
+    parts.icon.replaceChildren(...(opts.icon ? [spriteImg(opts.icon, opts.iconSize || 64)] : []));
     parts.icon.classList.toggle('hidden', !opts.icon);
     parts.amount.classList.toggle('hidden', !hasAmount);
     parts.amount.textContent = hasAmount ? `+${formatCoins(show.countFor ? opts.amount!.mul(0) : opts.amount!)}` : '';
@@ -127,6 +130,7 @@ export function createCelebration({ host, fx, sound, lessMotion }: { host: HTMLE
     const c = fx.centerOf(parts.title);
     fx.ring(c.x, c.y, { count: 28, speed: 420, palette: fx.colors.gold });
     if (opts.kind === 'star') fx.spriteBurst('star', c.x, c.y, { count: 10, speed: 320, scale: 2, spin: 0 });
+    else if (opts.kind === 'unlock') fx.burstAt(parts.icon, { count: 36, palette: fx.colors.party, speed: 300 });
     else if (opts.kind !== 'free') fx.coinFountain(parts.title, (opts.kind === 'big' ? 18 : 26) * (small() ? 0.6 : 1), { scale: coinScale() });
     else fx.burstAt(parts.title, { count: 30, palette: fx.colors.party, speed: 260 });
   }

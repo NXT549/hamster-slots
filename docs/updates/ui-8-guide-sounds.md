@@ -1,6 +1,6 @@
 # New Digs part 8: first-time guide and UI sounds
 
-**Status:** planned, build when asked (the user picked both on 2026-09-29). **Version:** next minor. **Read:** DESIGN §31 "The first-time guide" and "UI sounds" (`grep -n "^### The first-time guide\|^### UI sounds" DESIGN.md`), §15 (sound), D157 (the `uiSound` hook).
+**Status:** done, released in 1.9.0 "Welcome Mat" (2026-10-03, D165), with unlock moments added at the user's ask (DESIGN §31 → Unlock moments). Planned 2026-09-29 (the user picked both). **Version:** next minor. **Read:** DESIGN §31 "The first-time guide" and "UI sounds" (`grep -n "^### The first-time guide\|^### UI sounds" DESIGN.md`), §15 (sound), D157 (the `uiSound` hook).
 
 ## Goal
 

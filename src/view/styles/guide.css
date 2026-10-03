@@ -1,0 +1,31 @@
+/* guide.css — 1.9.0: the first-time guide's paw and ring (guide.ts, DESIGN §31 → The first-time guide).
+   Fixed over the page (or inside the Big Cage while it's open), and never in the way of a tap. */
+.coach { position: fixed; inset: 0; z-index: 38; pointer-events: none; }
+.coach * { pointer-events: none; }
+
+/* A soft ring round the thing to tap: a gold line with an ink edge, breathing in pixel steps. */
+.coach-ring {
+  position: fixed; box-sizing: border-box; border: 3px solid var(--gold);
+  box-shadow: 0 0 0 2px var(--outline-ink), inset 0 0 0 2px var(--outline-ink);
+  animation: coach-breathe 1.2s steps(4) infinite alternate;
+}
+@keyframes coach-breathe { from { opacity: 0.95; } to { opacity: 0.45; } }
+
+/* The paw: the hamster's arm reaching down at it, bouncing (below it, it's flipped to point up). */
+.coach-paw { position: fixed; width: var(--paw, 48px); height: var(--paw, 48px); image-rendering: pixelated; animation: coach-bounce 0.7s steps(4) infinite alternate; }
+.coach-paw img { display: block; }
+.coach-paw.below { animation-name: coach-bounce-up; }
+@keyframes coach-bounce { from { transform: translateY(-6px); } to { transform: translateY(2px); } }
+@keyframes coach-bounce-up { from { transform: scaleY(-1) translateY(-6px); } to { transform: scaleY(-1) translateY(2px); } }
+
+/* Motion "Less": the paw and the ring keep still. */
+.less-motion .coach-ring, .coach.still .coach-ring { animation: none; opacity: 0.9; }
+.less-motion .coach-paw, .coach.still .coach-paw { animation: none; }
+.less-motion .coach-paw.below, .coach.still .coach-paw.below { transform: scaleY(-1); }
+
+/* "Skip guide" on the speech bubble while the guide is talking (the bubble itself lets taps through). */
+.bubble-skip {
+  pointer-events: auto; display: inline-block; margin-left: 6px; padding: 0 4px; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: 0.85em; color: var(--ink-soft); text-decoration: underline;
+}
+.bubble-skip:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 1px; }

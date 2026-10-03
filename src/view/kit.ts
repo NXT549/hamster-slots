@@ -85,6 +85,19 @@ export function uiSound(name: string): void {
   uiSoundFn(name);
 }
 
+// ─────────────────────── unlock moments (1.9.0) ───────────────────────
+
+// A piece that appears for the first time while you play (a sub-tab, a purse counter …)
+// tells ui.ts here, which plays its unlock moment (unlock.ts). Silent until ui.ts plugs in.
+// `instead` is where to play it if the piece itself can't be seen (a purse folded into "+N" on a phone).
+let appearFn: (el: HTMLElement, key: string, instead?: HTMLElement) => void = () => {};
+export function setAppearHook(fn: (el: HTMLElement, key: string, instead?: HTMLElement) => void): void {
+  appearFn = fn;
+}
+export function appeared(el: HTMLElement, key: string, instead?: HTMLElement): void {
+  appearFn(el, key, instead);
+}
+
 // ─────────────────────── two taps (pure, tested) ───────────────────────
 
 // The two-tap rule for big choices (D24: retire, reset, rebuild, migrate, load a save): the
@@ -402,6 +415,7 @@ export function createSubTabs(
   const panels = [...root.querySelectorAll<HTMLElement>('.subpanel')];
   const names = buttons.map((b) => b.dataset.sub!);
   let current: string | null = null;
+  const wasHidden = new Set<string>(); // sub-tabs set hidden while you played (an unlock when they show)
   nav.setAttribute('role', 'tablist');
   const labels = new Map<string, HTMLElement>();
   for (const b of buttons) {
@@ -480,8 +494,13 @@ export function createSubTabs(
     },
     setHidden(name: string, hidden: unknown) {
       const b = button(name);
-      if (!b || b.classList.contains('hidden') === !!hidden) return;
+      if (!b) return;
+      if (hidden) wasHidden.add(name);
+      if (b.classList.contains('hidden') === !!hidden) return;
       b.classList.toggle('hidden', !!hidden);
+      // A sub-tab that was hidden while you played and shows now has just unlocked (1.9.0).
+      // (One that's already there when the game loads isn't news: it was never hidden here.)
+      if (!hidden && wasHidden.has(name)) appeared(b, `sub:${name}`);
       if (hidden && current === name) open(names[0], false);
       fit();
     },

@@ -1,0 +1,43 @@
+/* unlock.css — 1.9.0: the unlock moments (unlock.ts, DESIGN §31 → Unlock moments).
+   A padlock over the new thing shakes, springs open and hops off; the thing pops in. */
+
+/* The padlock: a 16×16 sprite at a whole scale, over everything but the flying sparks. */
+.unlock-lock {
+  position: fixed; z-index: 39; pointer-events: none; image-rendering: pixelated;
+  animation: unlock-shake 0.48s steps(8) both;
+}
+.unlock-lock img { display: block; }
+/* Open: the shackle has sprung (unlock.ts swaps the sprite); it hops up and away and fades. */
+.unlock-lock.open { animation: unlock-hop 0.62s ease-out forwards; }
+@keyframes unlock-shake {
+  0% { transform: translateY(8px) scale(0.5); opacity: 0; }
+  20% { transform: translateY(0) scale(1); opacity: 1; }
+  35% { transform: rotate(-12deg); }
+  50% { transform: rotate(12deg); }
+  65% { transform: rotate(-8deg); }
+  80% { transform: rotate(8deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes unlock-hop {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  45% { transform: translate(6px, -22px) rotate(14deg); opacity: 1; }
+  100% { transform: translate(14px, 6px) rotate(30deg); opacity: 0; }
+}
+
+/* The new thing waits dimmed behind the padlock, then pops in. (The `scale` property, not
+   `transform`, so it never fights the element's own transforms: a pressed key, a hanging sign.) */
+.unlock-wait { opacity: 0.35; }
+.unlock-pop { animation: unlock-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+@keyframes unlock-pop {
+  0% { scale: 0.6; opacity: 0.35; }
+  100% { scale: 1; opacity: 1; }
+}
+
+/* Motion "Less": no padlock or pop (unlock.ts skips them): a still gold outline for a moment.
+   (A no-motion animation, so dom.ts replayClass takes the class off again when it ends.) */
+.unlock-still { animation: unlock-still 1.6s steps(1) both; }
+@keyframes unlock-still {
+  0% { box-shadow: 0 0 0 3px var(--gold); }
+  100% { box-shadow: none; }
+}
+.less-motion .unlock-lock, .less-motion .unlock-pop { animation: none; }
