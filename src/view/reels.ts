@@ -20,6 +20,10 @@
 // 1.4.0, Moving Day's boxes: the game has already opened them (spinStarted says which
 // cells were boxes and what they became), so the reels land them as boxes, and once
 // the last reel stops they all pop open into that symbol, just before the win shows.
+//
+// 1.10.0, Burrow Party: Zoomies (the hamster dashes across the reel window, and the
+// reels it ran over land all wild, glowing) and Sticky Wilds (wilds held from an
+// earlier free spin land with a honey glow). Both glows sit BEHIND the symbols.
 
 import { symbolImg } from './art.ts';
 import { replayClass } from './dom.ts';
@@ -96,8 +100,9 @@ export const lineClass = (index: number) => `line-${index % LINE_COLOURS}`;
 export function createReels(
   container: HTMLElement,
   game: Game,
-  { onLand = () => {}, onTease = () => {}, onOpen = () => {}, quick = () => false }: {
+  { onLand = () => {}, onTease = () => {}, onOpen = () => {}, quick = () => false, runner = null }: {
     onLand?: (i: number) => void; onTease?: () => void; onOpen?: (cells: HTMLElement[]) => void; quick?: () => boolean;
+    runner?: (() => HTMLElement) | null; // 1.10.0: the hamster sprite that dashes across for Zoomies
   } = {},
 ) {
   let reels: Reel[] = []; // { col, strip, ids, from, to, landed, stop, tease }
@@ -109,6 +114,8 @@ export function createReels(
   let teasingNow = false; // a reel is teasing right now (the machine's heartbeat, ui.ts)
   let buildKey = '';
   let boxes: { cells: Cell[]; symbol: string } | null = null; // 1.4.0: boxes still closed on the reels
+  let marks = new Map<string, string>(); // 1.10.0: "reel,row" → a glow class ('zoomed', 'sticky') shown once that reel lands
+  let dash: HTMLElement | null = null; // 1.10.0: the Zoomies runner, while it runs
 
   const md = () => game.getMachineData();
   const realRows = () => game.getRowCount(); // 1 = only the middle row counts
@@ -234,7 +241,7 @@ export function createReels(
 
   // Called on the game's "spinStarted" event with the (already decided) result, and
   // (Moving Day) the boxes the game opened: they land as boxes and open later.
-  function startSpin(result: Grid, mystery: { cells: Cell[]; symbol: string } | null = null): void {
+  function startSpin(result: Grid, mystery: { cells: Cell[]; symbol: string } | null = null, extra: { zoom?: number[]; sticky?: Cell[] } = {}): void {
     const box = md().mystery ? md().mystery!.symbol : null;
     const grid = mystery && box ? result.map((column, r) => column.map((id, row) => (mystery.cells.some(([cr, crow]) => cr === r && crow === row) ? box : id))) : result;
     boxes = mystery && box ? mystery : null;
@@ -265,6 +272,32 @@ export function createReels(
       });
     }
     clearWin();
+    // 1.10.0: which cells glow once their reel lands, and the hamster's dash.
+    marks = new Map();
+    const zoom = extra.zoom || [];
+    for (const r of zoom) for (let row = 0; row < realRows(); row++) marks.set(`${r},${row}`, 'zoomed');
+    for (const [r, row] of extra.sticky || []) marks.set(`${r},${row}`, 'sticky');
+    if (dash) dash.remove();
+    dash = null;
+    if (zoom.length && runner) {
+      const el = document.createElement('div');
+      el.className = 'zoomies-runner';
+      el.style.setProperty('--reels-width', `${container.offsetWidth}px`); // (where the dash ends: past the last reel)
+      el.appendChild(runner());
+      el.addEventListener('animationend', () => el.remove());
+      container.appendChild(el);
+      dash = el;
+    }
+  }
+
+  // Light up the marked cells of reel i (1.10.0), behind the symbols.
+  function applyMarks(i: number): void {
+    for (const [key, cls] of marks) {
+      const [r, row] = key.split(',').map(Number);
+      if (r !== i) continue;
+      const cell = cellAt(r, row);
+      if (cell) cell.classList.add(cls);
+    }
   }
 
   // Which row of the window a machine row is drawn in (a one-row machine uses the middle).
@@ -341,6 +374,7 @@ export function createReels(
     for (const t of tags) for (const el of t.el) el.classList.remove('won');
     for (const b of container.querySelectorAll('.line-tag.badge')) b.remove();
     if (svg) svg.replaceChildren();
+    reels.forEach((reel, i) => { if (reel.landed !== false) applyMarks(i); }); // (the glows stay through the win show)
   }
 
   // The cells lit up right now, with their line colour class (for the particles).
@@ -396,6 +430,7 @@ export function createReels(
       if (t >= 1 && reel.landed === false) {
         reel.landed = true;
         replayClass(reel.col, 'landed'); // (1.5.0) a flash of light as it lands
+        applyMarks(i);
         onLand(i);
       }
     });

@@ -146,6 +146,7 @@ export function createSound({ volume = 0.6, muted = false, uiSounds = true }: { 
     respin: () => note(420, 0, 0.18, { type: 'triangle', gain: 0.06, to: 300 }), // a respin that lands nothing
     chip: () => [0, 0.035].forEach((at, i) => note(1500 - i * 300, at, 0.03, { type: 'square', gain: 0.04 })), // M11: chips clacking on the felt
     peg: (i = 0) => note(700 + (i % 4) * 90, 0, 0.04, { type: 'triangle', gain: 0.05 }), // M11: a seed bouncing off a peg
+    zoomies: () => [0, 0.06, 0.12, 0.18, 0.24, 0.3].forEach((at, i) => note(500 + i * 110, at, 0.04, { type: 'square', gain: 0.05 })), // 1.10.0: tiny paws pitter-pattering across the reels
     // 1.4.0: Moving Day's boxes popping open (a cardboard thup, then a bright ping), and the Great Migration's fanfare
     box: (n = 1) => { note(180, 0, 0.08, { type: 'triangle', gain: 0.12, to: 120 }); note(NOTE.E6 + Math.min(n, 8) * 40, 0.07, 0.14, { gain: 0.09 }); },
     migrate: () => {

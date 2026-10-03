@@ -1,6 +1,6 @@
 {
  "recordedWith": {
-  "schemaVersion": 15
+  "schemaVersion": 16
  },
  "sessions": {
   "firstLife": [
@@ -94,7 +94,7 @@
       "coinsEarned": "330",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -152,6 +152,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 42,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -161,7 +162,8 @@
       "upgradesBought": 0,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 10
+      "wins": 10,
+      "zoomies": 0
      },
      "tokens": "5",
      "tree": {},
@@ -262,7 +264,7 @@
       "coinsEarned": "707",
       "playTime": 599.999999999783
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -320,6 +322,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 85,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -329,7 +332,8 @@
       "upgradesBought": 0,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 21
+      "wins": 21,
+      "zoomies": 0
      },
      "tokens": "6",
      "tree": {},
@@ -431,7 +435,7 @@
       "coinsEarned": "1084",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -489,6 +493,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 136,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -498,7 +503,8 @@
       "upgradesBought": 0,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 32
+      "wins": 32,
+      "zoomies": 0
      },
      "tokens": "9",
      "tree": {},
@@ -602,7 +608,7 @@
       "coinsEarned": "1603",
       "playTime": 1199.9999999992374
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -660,6 +666,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 183,
+      "stickyWilds": 0,
       "suitWins": 1,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -669,7 +676,8 @@
       "upgradesBought": 1,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 48
+      "wins": 48,
+      "zoomies": 0
      },
      "tokens": "12",
      "tree": {},
@@ -777,7 +785,7 @@
       "coinsEarned": "2493.25",
       "playTime": 1499.9999999989645
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -835,6 +843,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 239,
+      "stickyWilds": 0,
       "suitWins": 5,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -844,7 +853,8 @@
       "upgradesBought": 3,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 71
+      "wins": 71,
+      "zoomies": 0
      },
      "tokens": "13",
      "tree": {},
@@ -954,7 +964,7 @@
       "coinsEarned": "3410.75",
       "playTime": 1799.9999999986917
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1012,6 +1022,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 305,
+      "stickyWilds": 0,
       "suitWins": 7,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -1021,7 +1032,8 @@
       "upgradesBought": 6,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 90
+      "wins": 90,
+      "zoomies": 0
      },
      "tokens": "15",
      "tree": {},
@@ -1131,7 +1143,7 @@
       "coinsEarned": "3848.75",
       "playTime": 2099.9999999991282
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1189,6 +1201,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 361,
+      "stickyWilds": 0,
       "suitWins": 7,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -1198,7 +1211,8 @@
       "upgradesBought": 6,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 98
+      "wins": 98,
+      "zoomies": 0
      },
      "tokens": "16",
      "tree": {},
@@ -1309,7 +1323,7 @@
       "coinsEarned": "5032.75",
       "playTime": 2400.000000002948
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1367,6 +1381,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 442,
+      "stickyWilds": 0,
       "suitWins": 9,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -1376,7 +1391,8 @@
       "upgradesBought": 10,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 112
+      "wins": 112,
+      "zoomies": 0
      },
      "tokens": "16",
      "tree": {},
@@ -1487,7 +1503,7 @@
       "coinsEarned": "7310.5",
       "playTime": 2700.000000006768
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1545,6 +1561,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 533,
+      "stickyWilds": 0,
       "suitWins": 11,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -1554,7 +1571,8 @@
       "upgradesBought": 15,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 133
+      "wins": 133,
+      "zoomies": 0
      },
      "tokens": "16",
      "tree": {},
@@ -1668,7 +1686,7 @@
       "coinsEarned": "10245.5",
       "playTime": 3000.000000010588
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1726,6 +1744,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 603,
+      "stickyWilds": 0,
       "suitWins": 13,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -1735,7 +1754,8 @@
       "upgradesBought": 19,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 152
+      "wins": 152,
+      "zoomies": 0
      },
      "tokens": "22",
      "tree": {},
@@ -1843,7 +1863,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "2",
      "seedsEarned": "2",
      "skins": {
@@ -1901,6 +1921,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 603,
+      "stickyWilds": 0,
       "suitWins": 13,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -1910,7 +1931,8 @@
       "upgradesBought": 19,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 152
+      "wins": 152,
+      "zoomies": 0
      },
      "tokens": "28",
      "tree": {},
@@ -2016,7 +2038,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -2074,6 +2096,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 603,
+      "stickyWilds": 0,
       "suitWins": 13,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -2083,7 +2106,8 @@
       "upgradesBought": 19,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 152
+      "wins": 152,
+      "zoomies": 0
      },
      "tokens": "28",
      "tree": {
@@ -2203,7 +2227,7 @@
       "coinsEarned": "1671.64",
       "playTime": 599.999999999783
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -2261,6 +2285,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 751,
+      "stickyWilds": 0,
       "suitWins": 14,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -2270,7 +2295,8 @@
       "upgradesBought": 21,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 192
+      "wins": 192,
+      "zoomies": 0
      },
      "tokens": "28",
      "tree": {
@@ -2292,12 +2318,12 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 36,
+     "coinsChanged": 38,
      "machineBought": 3,
      "machineSwitched": 7,
      "stickerEarned": 7,
      "tokensChanged": 7,
-     "upgradeBought": 32
+     "upgradeBought": 34
     },
     "label": "bought everything",
     "paid": 0,
@@ -2322,7 +2348,7 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "1598452",
+     "coins": "1298452",
      "colony": 0,
      "colonyCoins": "0",
      "delivery": {
@@ -2408,6 +2434,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -2431,9 +2459,9 @@
        "streak": 0,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -2452,7 +2480,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2510,16 +2538,18 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 0,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "19",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 0
+      "wins": 0,
+      "zoomies": 0
      },
      "tokens": "19",
      "tree": {},
@@ -2543,7 +2573,7 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 123,
+     "coinsChanged": 125,
      "gambleEnded": 14,
      "gambleOffered": 14,
      "gambleResolved": 10,
@@ -2553,7 +2583,7 @@
      "spinStarted": 56,
      "stickerEarned": 13,
      "tokensChanged": 13,
-     "upgradeBought": 32
+     "upgradeBought": 34
     },
     "label": "played the clunky",
     "paid": 418950.02,
@@ -2578,7 +2608,7 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "2044341.77",
+     "coins": "1744341.77",
      "colony": 0,
      "colonyCoins": "418950.02",
      "delivery": {
@@ -2680,6 +2710,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -2703,9 +2735,9 @@
        "streak": 0,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -2724,7 +2756,7 @@
       "coinsEarned": "418950.02",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2782,16 +2814,18 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 56,
+      "stickyWilds": 0,
       "suitWins": 2,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "32",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 21
+      "wins": 21,
+      "zoomies": 0
      },
      "tokens": "32",
      "tree": {},
@@ -2815,7 +2849,7 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 242,
+     "coinsChanged": 244,
      "gambleEnded": 38,
      "gambleOffered": 38,
      "gambleResolved": 29,
@@ -2825,7 +2859,7 @@
      "spinStarted": 108,
      "stickerEarned": 17,
      "tokensChanged": 17,
-     "upgradeBought": 32
+     "upgradeBought": 34
     },
     "label": "played the stacker",
     "paid": 14285684.52,
@@ -2850,7 +2884,7 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "14684434.23",
+     "coins": "14384434.23",
      "colony": 0,
      "colonyCoins": "14285684.52",
      "delivery": {
@@ -2977,6 +3011,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -3000,9 +3036,9 @@
        "streak": 0,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -3021,7 +3057,7 @@
       "coinsEarned": "14285684.52",
       "playTime": 360.00000000000125
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3079,16 +3115,18 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 108,
+      "stickyWilds": 0,
       "suitWins": 5,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "42",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
       "wildWins": 21,
-      "wins": 69
+      "wins": 69,
+      "zoomies": 0
      },
      "tokens": "42",
      "tree": {},
@@ -3112,7 +3150,7 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 340,
+     "coinsChanged": 342,
      "freeSpinsEnded": 1,
      "freeSpinsStarted": 1,
      "gambleEnded": 57,
@@ -3124,10 +3162,10 @@
      "spinStarted": 154,
      "stickerEarned": 18,
      "tokensChanged": 18,
-     "upgradeBought": 32
+     "upgradeBought": 34
     },
     "label": "played the bonanza",
-    "paid": 94183950.29,
+    "paid": 472407450.29,
     "rng": 4113136118,
     "save": {
      "activeMachine": 2,
@@ -3149,9 +3187,9 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "96262283.9",
+     "coins": "474185783.9",
      "colony": 0,
-     "colonyCoins": "94183950.29",
+     "colonyCoins": "472407450.29",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -3303,6 +3341,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -3326,9 +3366,9 @@
        "streak": 0,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -3344,10 +3384,10 @@
      },
      "perks": {},
      "run": {
-      "coinsEarned": "94183950.29",
+      "coinsEarned": "472407450.29",
       "playTime": 539.9999999998375
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3367,21 +3407,21 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "9567984.38",
+      "biggestWin": "353970000",
       "blackjacks": 0,
       "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "94183950.29",
+      "coinsEarned": "472407450.29",
       "coinsSpent": "24449.7",
-      "coinsWon": "94183950.29",
+      "coinsWon": "472407450.29",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 13,
-      "freeSpinCoins": "11077000",
+      "freeSpinCoins": "389300500",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
       "gambleLosses": 31,
@@ -3405,16 +3445,18 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 154,
+      "stickyWilds": 10,
       "suitWins": 7,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "45",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
-      "wildWins": 41,
-      "wins": 111
+      "wildWins": 44,
+      "wins": 111,
+      "zoomies": 0
      },
      "tokens": "45",
      "tree": {},
@@ -3438,26 +3480,26 @@
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 433,
+     "coinsChanged": 442,
      "freeSpinsEnded": 1,
      "freeSpinsStarted": 1,
-     "gambleEnded": 74,
-     "gambleOffered": 74,
-     "gambleResolved": 57,
+     "gambleEnded": 75,
+     "gambleOffered": 75,
+     "gambleResolved": 58,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 11,
-     "spinBlocked": 4,
-     "spinResolved": 201,
-     "spinStarted": 202,
+     "spinBlocked": 5,
+     "spinResolved": 204,
+     "spinStarted": 205,
      "stickerEarned": 21,
      "tokensChanged": 21,
-     "upgradeBought": 32
+     "upgradeBought": 34
     },
     "label": "played the palace",
-    "paid": 303604028.43,
-    "rng": 2070348611,
+    "paid": 653351278.43,
+    "rng": 1622760232,
     "save": {
      "activeMachine": 3,
      "auto": {
@@ -3466,7 +3508,7 @@
       "share": 0.25
      },
      "autoPaused": false,
-     "autoTimer": 4.4,
+     "autoTimer": 1.2500000000000004,
      "bigCage": false,
      "capsules": {
       "sincePity": 0
@@ -3478,9 +3520,9 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "1028424551.64",
+     "coins": "1474129319.74",
      "colony": 0,
-     "colonyCoins": "1114478903.43",
+     "colonyCoins": "1463922628.43",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -3635,6 +3677,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -3644,49 +3688,49 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3000750",
-        "major": "300960",
-        "mini": "30540",
-        "minor": "75780"
+        "grand": "3000600",
+        "major": "300768",
+        "mini": "30456",
+        "minor": "75648"
        },
        "result": [
         [
-         "blank",
          "seed",
-         "apple"
-        ],
-        [
-         "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "strawberry",
+         "blueberry",
          "seed"
         ],
         [
-         "seed",
-         "seed",
-         "pouch"
+         "blank",
+         "apple",
+         "blueberry"
         ],
         [
-         "blank",
-         "wild",
+         "seed",
+         "seed",
          "blueberry"
+        ],
+        [
+         "seed",
+         "blank",
+         "seed"
+        ],
+        [
+         "apple",
+         "pouch",
+         "blank"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
-       "spinSource": "manual",
-       "spinTimer": 0.9666666666666759,
+       "spinSource": "auto",
+       "spinTimer": 2.366666666666671,
        "spinning": true,
-       "streak": 2,
+       "streak": 1,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -3702,10 +3746,10 @@
      },
      "perks": {},
      "run": {
-      "coinsEarned": "1114478903.43",
-      "playTime": 732.8666666663288
+      "coinsEarned": "1463922628.43",
+      "playTime": 743.2666666663193
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3715,7 +3759,7 @@
      "stars": {},
      "stats": {
       "autoRetires": 0,
-      "autoSpins": 74,
+      "autoSpins": 76,
       "bestBoxes": 0,
       "bestGambleRun": 1,
       "bestLuck": 120,
@@ -3725,25 +3769,25 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "714031875",
+      "biggestWin": "713811000",
       "blackjacks": 0,
       "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "1114478903.43",
-      "coinsSpent": "127760.1",
-      "coinsWon": "303604028.43",
+      "coinsEarned": "1463922628.43",
+      "coinsSpent": "134217",
+      "coinsWon": "653351278.43",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "doubleWins": 16,
-      "freeSpinCoins": "11077000",
+      "doubleWins": 19,
+      "freeSpinCoins": "389300500",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
-      "gambleLosses": 41,
-      "gambleWins": 16,
+      "gambleLosses": 37,
+      "gambleWins": 21,
       "goldenJackpots": 0,
       "grandJackpots": 1,
       "helperBuys": 0,
@@ -3751,28 +3795,30 @@
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 123,
+      "manualSpins": 124,
       "migrations": 0,
-      "mostLinesWon": 13,
+      "mostLinesWon": 12,
       "mostSeedsHeld": 0,
       "mysteryBoxes": 0,
       "offlineCoins": "0",
-      "playTime": 732.8666666663288,
+      "playTime": 743.2666666663193,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 202,
-      "suitWins": 8,
+      "spins": 205,
+      "stickyWilds": 10,
+      "suitWins": 10,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "58",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
-      "wildWins": 56,
-      "wins": 139
+      "wildWins": 54,
+      "wins": 142,
+      "zoomies": 0
      },
      "tokens": "58",
      "tree": {},
@@ -3791,31 +3837,31 @@
      },
      "whiskers": "0"
     },
-    "t": 732.868
+    "t": 743.268
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 438,
+     "coinsChanged": 451,
      "freeSpinsEnded": 1,
      "freeSpinsStarted": 1,
-     "gambleEnded": 75,
-     "gambleOffered": 75,
-     "gambleResolved": 57,
+     "gambleEnded": 76,
+     "gambleOffered": 76,
+     "gambleResolved": 58,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
-     "spinBlocked": 4,
-     "spinResolved": 205,
-     "spinStarted": 206,
+     "spinBlocked": 5,
+     "spinResolved": 209,
+     "spinStarted": 210,
      "stickerEarned": 21,
      "tokensChanged": 21,
-     "upgradeBought": 32
+     "upgradeBought": 34
     },
     "label": "switched mid-spin",
-    "paid": 304245278.43,
-    "rng": 3710090833,
+    "paid": 667552175.31,
+    "rng": 1870948720,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -3836,9 +3882,9 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "1029065629.54",
+     "coins": "1488327892.22",
      "colony": 0,
-     "colonyCoins": "1115120153.43",
+     "colonyCoins": "1478123525.31",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -3878,13 +3924,13 @@
        "pots": {},
        "result": [
         [
-         "golden"
-        ],
-        [
-         "golden"
-        ],
-        [
          "blank"
+        ],
+        [
+         "seed"
+        ],
+        [
+         "seed"
         ]
        ],
        "spinBet": 10,
@@ -3892,7 +3938,7 @@
        "spinSource": "auto",
        "spinTimer": 0.4000000000000056,
        "spinning": true,
-       "streak": 0,
+       "streak": 1,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -3911,23 +3957,23 @@
        "result": [
         [
          "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "carrot",
-         "carrot",
-         "seed"
+         "blueberry",
+         "carrot"
         ],
         [
          "seed",
          "seed",
-         "blueberry"
+         "seed"
         ],
         [
+         "seed",
+         "blueberry",
+         "carrot"
+        ],
+        [
+         "blueberry",
          "carrot",
-         "carrot",
-         "seed"
+         "golden"
         ]
        ],
        "spinBet": 10,
@@ -3935,7 +3981,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 8,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -3993,6 +4039,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -4002,36 +4050,36 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3000750",
-        "major": "300960",
-        "mini": "30540",
-        "minor": "75780"
+        "grand": "3000720",
+        "major": "300816",
+        "mini": "30468",
+        "minor": "75672"
        },
        "result": [
         [
-         "blank",
-         "seed",
-         "apple"
-        ],
-        [
-         "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "strawberry",
-         "seed"
-        ],
-        [
-         "seed",
+         "wild",
          "seed",
          "pouch"
         ],
         [
          "blank",
-         "wild",
-         "blueberry"
+         "apple",
+         "seed"
+        ],
+        [
+         "seed",
+         "blueberry",
+         "seed"
+        ],
+        [
+         "seed",
+         "seed",
+         "apple"
+        ],
+        [
+         "blank",
+         "seed",
+         "blank"
         ]
        ],
        "spinBet": 10,
@@ -4042,9 +4090,9 @@
        "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -4060,10 +4108,10 @@
      },
      "perks": {},
      "run": {
-      "coinsEarned": "1115120153.43",
-      "playTime": 744.333333332985
+      "coinsEarned": "1478123525.31",
+      "playTime": 759.733333332971
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4073,7 +4121,7 @@
      "stars": {},
      "stats": {
       "autoRetires": 0,
-      "autoSpins": 77,
+      "autoSpins": 79,
       "bestBoxes": 0,
       "bestGambleRun": 1,
       "bestLuck": 120,
@@ -4083,25 +4131,25 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "714031875",
+      "biggestWin": "713811000",
       "blackjacks": 0,
       "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "1115120153.43",
-      "coinsSpent": "127932.2",
-      "coinsWon": "304245278.43",
+      "coinsEarned": "1478123525.31",
+      "coinsSpent": "136541.4",
+      "coinsWon": "667552175.31",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "doubleWins": 16,
-      "freeSpinCoins": "11077000",
+      "doubleWins": 19,
+      "freeSpinCoins": "389300500",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
-      "gambleLosses": 41,
-      "gambleWins": 16,
+      "gambleLosses": 37,
+      "gambleWins": 21,
       "goldenJackpots": 0,
       "grandJackpots": 1,
       "helperBuys": 0,
@@ -4109,28 +4157,30 @@
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 124,
+      "manualSpins": 126,
       "migrations": 0,
-      "mostLinesWon": 13,
+      "mostLinesWon": 12,
       "mostSeedsHeld": 0,
       "mysteryBoxes": 0,
       "offlineCoins": "0",
-      "playTime": 744.333333332985,
+      "playTime": 759.733333332971,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 206,
-      "suitWins": 8,
+      "spins": 210,
+      "stickyWilds": 10,
+      "suitWins": 10,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "58",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
-      "wildWins": 56,
-      "wins": 140
+      "wildWins": 55,
+      "wins": 146,
+      "zoomies": 0
      },
      "tokens": "58",
      "tree": {},
@@ -4149,31 +4199,31 @@
      },
      "whiskers": "0"
     },
-    "t": 743.835
+    "t": 759.235
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 440,
+     "coinsChanged": 453,
      "freeSpinsEnded": 1,
      "freeSpinsStarted": 1,
-     "gambleEnded": 76,
-     "gambleOffered": 76,
-     "gambleResolved": 58,
+     "gambleEnded": 77,
+     "gambleOffered": 77,
+     "gambleResolved": 59,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
-     "spinBlocked": 4,
-     "spinResolved": 206,
-     "spinStarted": 206,
+     "spinBlocked": 5,
+     "spinResolved": 210,
+     "spinStarted": 210,
      "stickerEarned": 21,
      "tokensChanged": 21,
-     "upgradeBought": 32
+     "upgradeBought": 34
     },
     "label": "card gamble",
-    "paid": 304311778.43,
-    "rng": 3078255163,
+    "paid": 667560190.94,
+    "rng": 1239113050,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -4194,9 +4244,9 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "1029131879.54",
+     "coins": "1488335657.85",
      "colony": 0,
-     "colonyCoins": "1115186653.43",
+     "colonyCoins": "1478131540.94",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -4236,13 +4286,13 @@
        "pots": {},
        "result": [
         [
-         "golden"
-        ],
-        [
-         "golden"
-        ],
-        [
          "blank"
+        ],
+        [
+         "seed"
+        ],
+        [
+         "seed"
         ]
        ],
        "spinBet": 10,
@@ -4250,7 +4300,7 @@
        "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 1,
+       "streak": 2,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -4269,23 +4319,23 @@
        "result": [
         [
          "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "carrot",
-         "carrot",
-         "seed"
+         "blueberry",
+         "carrot"
         ],
         [
          "seed",
          "seed",
-         "blueberry"
+         "seed"
         ],
         [
+         "seed",
+         "blueberry",
+         "carrot"
+        ],
+        [
+         "blueberry",
          "carrot",
-         "carrot",
-         "seed"
+         "golden"
         ]
        ],
        "spinBet": 10,
@@ -4293,7 +4343,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 8,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -4351,6 +4401,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -4360,36 +4412,36 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3000750",
-        "major": "300960",
-        "mini": "30540",
-        "minor": "75780"
+        "grand": "3000720",
+        "major": "300816",
+        "mini": "30468",
+        "minor": "75672"
        },
        "result": [
         [
-         "blank",
-         "seed",
-         "apple"
-        ],
-        [
-         "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "strawberry",
-         "seed"
-        ],
-        [
-         "seed",
+         "wild",
          "seed",
          "pouch"
         ],
         [
          "blank",
-         "wild",
-         "blueberry"
+         "apple",
+         "seed"
+        ],
+        [
+         "seed",
+         "blueberry",
+         "seed"
+        ],
+        [
+         "seed",
+         "seed",
+         "apple"
+        ],
+        [
+         "blank",
+         "seed",
+         "blank"
         ]
        ],
        "spinBet": 10,
@@ -4400,9 +4452,9 @@
        "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -4418,10 +4470,10 @@
      },
      "perks": {},
      "run": {
-      "coinsEarned": "1115186653.43",
-      "playTime": 744.7333333329847
+      "coinsEarned": "1478131540.94",
+      "playTime": 760.1333333329707
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4431,7 +4483,7 @@
      "stars": {},
      "stats": {
       "autoRetires": 0,
-      "autoSpins": 77,
+      "autoSpins": 79,
       "bestBoxes": 0,
       "bestGambleRun": 1,
       "bestLuck": 120,
@@ -4441,25 +4493,25 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "714031875",
+      "biggestWin": "713811000",
       "blackjacks": 0,
       "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "1115186653.43",
-      "coinsSpent": "127932.2",
-      "coinsWon": "304311778.43",
+      "coinsEarned": "1478131540.94",
+      "coinsSpent": "136541.4",
+      "coinsWon": "667560190.94",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "doubleWins": 16,
-      "freeSpinCoins": "11077000",
+      "doubleWins": 19,
+      "freeSpinCoins": "389300500",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
-      "gambleLosses": 42,
-      "gambleWins": 16,
+      "gambleLosses": 38,
+      "gambleWins": 21,
       "goldenJackpots": 0,
       "grandJackpots": 1,
       "helperBuys": 0,
@@ -4467,28 +4519,30 @@
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 124,
+      "manualSpins": 126,
       "migrations": 0,
-      "mostLinesWon": 13,
+      "mostLinesWon": 12,
       "mostSeedsHeld": 0,
       "mysteryBoxes": 0,
       "offlineCoins": "0",
-      "playTime": 744.7333333329847,
+      "playTime": 760.1333333329707,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 206,
-      "suitWins": 8,
+      "spins": 210,
+      "stickyWilds": 10,
+      "suitWins": 10,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "58",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
-      "wildWins": 56,
-      "wins": 141
+      "wildWins": 55,
+      "wins": 147,
+      "zoomies": 0
      },
      "tokens": "58",
      "tree": {},
@@ -4507,32 +4561,32 @@
      },
      "whiskers": "0"
     },
-    "t": 744.235008
+    "t": 759.635008
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 441,
+     "coinsChanged": 454,
      "freeSpinsEnded": 1,
      "freeSpinsStarted": 1,
-     "gambleEnded": 76,
-     "gambleOffered": 76,
-     "gambleResolved": 58,
+     "gambleEnded": 77,
+     "gambleOffered": 77,
+     "gambleResolved": 59,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
      "offlineEarned": 1,
-     "spinBlocked": 4,
-     "spinResolved": 206,
-     "spinStarted": 206,
+     "spinBlocked": 5,
+     "spinResolved": 210,
+     "spinStarted": 210,
      "stickerEarned": 22,
      "tokensChanged": 22,
-     "upgradeBought": 32
+     "upgradeBought": 34
     },
     "label": "an hour away",
-    "paid": 304311778.43,
-    "rng": 3078255163,
+    "paid": 667560190.94,
+    "rng": 1239113050,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -4553,9 +4607,9 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "1036537360.37",
+     "coins": "1495741138.68",
      "colony": 0,
-     "colonyCoins": "1122592134.26",
+     "colonyCoins": "1485537021.77",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -4596,13 +4650,13 @@
        "pots": {},
        "result": [
         [
-         "golden"
-        ],
-        [
-         "golden"
-        ],
-        [
          "blank"
+        ],
+        [
+         "seed"
+        ],
+        [
+         "seed"
         ]
        ],
        "spinBet": 10,
@@ -4610,7 +4664,7 @@
        "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 1,
+       "streak": 2,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -4629,23 +4683,23 @@
        "result": [
         [
          "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "carrot",
-         "carrot",
-         "seed"
+         "blueberry",
+         "carrot"
         ],
         [
          "seed",
          "seed",
-         "blueberry"
+         "seed"
         ],
         [
+         "seed",
+         "blueberry",
+         "carrot"
+        ],
+        [
+         "blueberry",
          "carrot",
-         "carrot",
-         "seed"
+         "golden"
         ]
        ],
        "spinBet": 10,
@@ -4653,7 +4707,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 8,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -4711,6 +4765,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -4720,36 +4776,36 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3000750",
-        "major": "300960",
-        "mini": "30540",
-        "minor": "75780"
+        "grand": "3000720",
+        "major": "300816",
+        "mini": "30468",
+        "minor": "75672"
        },
        "result": [
         [
-         "blank",
-         "seed",
-         "apple"
-        ],
-        [
-         "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "strawberry",
-         "seed"
-        ],
-        [
-         "seed",
+         "wild",
          "seed",
          "pouch"
         ],
         [
          "blank",
-         "wild",
-         "blueberry"
+         "apple",
+         "seed"
+        ],
+        [
+         "seed",
+         "blueberry",
+         "seed"
+        ],
+        [
+         "seed",
+         "seed",
+         "apple"
+        ],
+        [
+         "blank",
+         "seed",
+         "blank"
         ]
        ],
        "spinBet": 10,
@@ -4760,9 +4816,9 @@
        "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -4778,10 +4834,10 @@
      },
      "perks": {},
      "run": {
-      "coinsEarned": "1122592134.26",
-      "playTime": 744.7333333329847
+      "coinsEarned": "1485537021.77",
+      "playTime": 760.1333333329707
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4791,7 +4847,7 @@
      "stars": {},
      "stats": {
       "autoRetires": 0,
-      "autoSpins": 77,
+      "autoSpins": 79,
       "bestBoxes": 0,
       "bestGambleRun": 1,
       "bestLuck": 120,
@@ -4801,25 +4857,25 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "714031875",
+      "biggestWin": "713811000",
       "blackjacks": 0,
       "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "1122592134.26",
-      "coinsSpent": "127932.2",
-      "coinsWon": "304311778.43",
+      "coinsEarned": "1485537021.77",
+      "coinsSpent": "136541.4",
+      "coinsWon": "667560190.94",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "doubleWins": 16,
-      "freeSpinCoins": "11077000",
+      "doubleWins": 19,
+      "freeSpinCoins": "389300500",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
-      "gambleLosses": 42,
-      "gambleWins": 16,
+      "gambleLosses": 38,
+      "gambleWins": 21,
       "goldenJackpots": 0,
       "grandJackpots": 1,
       "helperBuys": 0,
@@ -4827,28 +4883,30 @@
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 124,
+      "manualSpins": 126,
       "migrations": 0,
-      "mostLinesWon": 13,
+      "mostLinesWon": 12,
       "mostSeedsHeld": 0,
       "mysteryBoxes": 0,
       "offlineCoins": "7405480.83",
-      "playTime": 744.7333333329847,
+      "playTime": 760.1333333329707,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 206,
-      "suitWins": 8,
+      "spins": 210,
+      "stickyWilds": 10,
+      "suitWins": 10,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "60",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
-      "wildWins": 56,
-      "wins": 141
+      "wildWins": 55,
+      "wins": 147,
+      "zoomies": 0
      },
      "tokens": "60",
      "tree": {},
@@ -4867,32 +4925,32 @@
      },
      "whiskers": "0"
     },
-    "t": 744.235008
+    "t": 759.635008
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 441,
+     "coinsChanged": 454,
      "freeSpinsEnded": 1,
      "freeSpinsStarted": 1,
-     "gambleEnded": 76,
-     "gambleOffered": 76,
-     "gambleResolved": 58,
+     "gambleEnded": 77,
+     "gambleOffered": 77,
+     "gambleResolved": 59,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
      "offlineEarned": 1,
-     "spinBlocked": 4,
-     "spinResolved": 206,
-     "spinStarted": 206,
+     "spinBlocked": 5,
+     "spinResolved": 210,
+     "spinStarted": 210,
      "stickerEarned": 22,
      "tokensChanged": 22,
-     "upgradeBought": 32
+     "upgradeBought": 34
     },
     "label": "after save + load",
-    "paid": 304311778.43,
-    "rng": 3078255163,
+    "paid": 667560190.94,
+    "rng": 1239113050,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -4913,9 +4971,9 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "1036537360.37",
+     "coins": "1495741138.68",
      "colony": 0,
-     "colonyCoins": "1122592134.26",
+     "colonyCoins": "1485537021.77",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -4956,13 +5014,13 @@
        "pots": {},
        "result": [
         [
-         "golden"
-        ],
-        [
-         "golden"
-        ],
-        [
          "blank"
+        ],
+        [
+         "seed"
+        ],
+        [
+         "seed"
         ]
        ],
        "spinBet": 1,
@@ -4970,7 +5028,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 1,
+       "streak": 2,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -4989,23 +5047,23 @@
        "result": [
         [
          "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "carrot",
-         "carrot",
-         "seed"
+         "blueberry",
+         "carrot"
         ],
         [
          "seed",
          "seed",
-         "blueberry"
+         "seed"
         ],
         [
+         "seed",
+         "blueberry",
+         "carrot"
+        ],
+        [
+         "blueberry",
          "carrot",
-         "carrot",
-         "seed"
+         "golden"
         ]
        ],
        "spinBet": 1,
@@ -5013,7 +5071,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 8,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -5071,6 +5129,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -5080,36 +5140,36 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3000750",
-        "major": "300960",
-        "mini": "30540",
-        "minor": "75780"
+        "grand": "3000720",
+        "major": "300816",
+        "mini": "30468",
+        "minor": "75672"
        },
        "result": [
         [
-         "blank",
-         "seed",
-         "apple"
-        ],
-        [
-         "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "strawberry",
-         "seed"
-        ],
-        [
-         "seed",
+         "wild",
          "seed",
          "pouch"
         ],
         [
          "blank",
-         "wild",
-         "blueberry"
+         "apple",
+         "seed"
+        ],
+        [
+         "seed",
+         "blueberry",
+         "seed"
+        ],
+        [
+         "seed",
+         "seed",
+         "apple"
+        ],
+        [
+         "blank",
+         "seed",
+         "blank"
         ]
        ],
        "spinBet": 1,
@@ -5120,9 +5180,9 @@
        "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -5138,10 +5198,10 @@
      },
      "perks": {},
      "run": {
-      "coinsEarned": "1122592134.26",
-      "playTime": 744.7333333329847
+      "coinsEarned": "1485537021.77",
+      "playTime": 760.1333333329707
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5151,7 +5211,7 @@
      "stars": {},
      "stats": {
       "autoRetires": 0,
-      "autoSpins": 77,
+      "autoSpins": 79,
       "bestBoxes": 0,
       "bestGambleRun": 1,
       "bestLuck": 120,
@@ -5161,25 +5221,25 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "714031875",
+      "biggestWin": "713811000",
       "blackjacks": 0,
       "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "1122592134.26",
-      "coinsSpent": "127932.2",
-      "coinsWon": "304311778.43",
+      "coinsEarned": "1485537021.77",
+      "coinsSpent": "136541.4",
+      "coinsWon": "667560190.94",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "doubleWins": 16,
-      "freeSpinCoins": "11077000",
+      "doubleWins": 19,
+      "freeSpinCoins": "389300500",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
-      "gambleLosses": 42,
-      "gambleWins": 16,
+      "gambleLosses": 38,
+      "gambleWins": 21,
       "goldenJackpots": 0,
       "grandJackpots": 1,
       "helperBuys": 0,
@@ -5187,28 +5247,30 @@
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 124,
+      "manualSpins": 126,
       "migrations": 0,
-      "mostLinesWon": 13,
+      "mostLinesWon": 12,
       "mostSeedsHeld": 0,
       "mysteryBoxes": 0,
       "offlineCoins": "7405480.83",
-      "playTime": 744.7333333329847,
+      "playTime": 760.1333333329707,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 206,
-      "suitWins": 8,
+      "spins": 210,
+      "stickyWilds": 10,
+      "suitWins": 10,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "60",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
-      "wildWins": 56,
-      "wins": 141
+      "wildWins": 55,
+      "wins": 147,
+      "zoomies": 0
      },
      "tokens": "60",
      "tree": {},
@@ -5227,32 +5289,32 @@
      },
      "whiskers": "0"
     },
-    "t": 744.235008
+    "t": 759.635008
    },
    {
     "events": {
      "betChanged": 4,
-     "coinsChanged": 505,
+     "coinsChanged": 511,
      "freeSpinsEnded": 1,
      "freeSpinsStarted": 1,
-     "gambleEnded": 87,
+     "gambleEnded": 86,
      "gambleOffered": 87,
-     "gambleResolved": 67,
+     "gambleResolved": 66,
      "jackpotStarted": 4,
      "jackpotWon": 4,
      "machineBought": 3,
      "machineSwitched": 13,
      "offlineEarned": 1,
-     "spinBlocked": 4,
-     "spinResolved": 242,
-     "spinStarted": 243,
-     "stickerEarned": 23,
-     "tokensChanged": 24,
-     "upgradeBought": 32
+     "spinBlocked": 5,
+     "spinResolved": 247,
+     "spinStarted": 247,
+     "stickerEarned": 22,
+     "tokensChanged": 22,
+     "upgradeBought": 34
     },
     "label": "played on after loading",
-    "paid": 305078725.34,
-    "rng": 2431266893,
+    "paid": 667855462.83,
+    "rng": 656065977,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -5273,9 +5335,9 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "1037281543.03",
+     "coins": "1495995002.57",
      "colony": 0,
-     "colonyCoins": "1123359081.17",
+     "colonyCoins": "1485832293.66",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -5288,7 +5350,6 @@
       "firstWin": true,
       "freeRide": true,
       "fullCage": true,
-      "goldenJackpot": true,
       "grandHamster": true,
       "highRoller": true,
       "luck50": true,
@@ -5317,21 +5378,21 @@
        "pots": {},
        "result": [
         [
-         "carrot"
-        ],
-        [
-         "blank"
+         "seed"
         ],
         [
          "seed"
+        ],
+        [
+         "carrot"
         ]
        ],
        "spinBet": 10,
        "spinFree": false,
        "spinSource": "manual",
-       "spinTimer": 1.766666666666671,
-       "spinning": true,
-       "streak": 2,
+       "spinTimer": 0,
+       "spinning": false,
+       "streak": 1,
        "typeId": "clunky",
        "upgrades": {
         "clunkyBothWays": 1,
@@ -5350,23 +5411,23 @@
        "result": [
         [
          "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "carrot",
-         "carrot",
-         "seed"
+         "blueberry",
+         "carrot"
         ],
         [
          "seed",
          "seed",
-         "blueberry"
+         "seed"
         ],
         [
+         "seed",
+         "blueberry",
+         "carrot"
+        ],
+        [
+         "blueberry",
          "carrot",
-         "carrot",
-         "seed"
+         "golden"
         ]
        ],
        "spinBet": 1,
@@ -5374,7 +5435,7 @@
        "spinSource": "manual",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 0,
+       "streak": 8,
        "typeId": "stacker",
        "upgrades": {
         "fourthReel": 1,
@@ -5432,6 +5493,8 @@
         "bouncyBall": 5,
         "deeperDigging": 2,
         "moreTunnels": 5,
+        "partyClimb": 3,
+        "stickyWilds": 2,
         "tunnelGrease": 8
        }
       },
@@ -5441,36 +5504,36 @@
        "freeSpins": null,
        "hold": null,
        "pots": {
-        "grand": "3000750",
-        "major": "300960",
-        "mini": "30540",
-        "minor": "75780"
+        "grand": "3000720",
+        "major": "300816",
+        "mini": "30468",
+        "minor": "75672"
        },
        "result": [
         [
-         "blank",
-         "seed",
-         "apple"
-        ],
-        [
-         "seed",
-         "blank",
-         "strawberry"
-        ],
-        [
-         "blank",
-         "strawberry",
-         "seed"
-        ],
-        [
-         "seed",
+         "wild",
          "seed",
          "pouch"
         ],
         [
          "blank",
-         "wild",
-         "blueberry"
+         "apple",
+         "seed"
+        ],
+        [
+         "seed",
+         "blueberry",
+         "seed"
+        ],
+        [
+         "seed",
+         "seed",
+         "apple"
+        ],
+        [
+         "blank",
+         "seed",
+         "blank"
         ]
        ],
        "spinBet": 1,
@@ -5481,9 +5544,9 @@
        "streak": 3,
        "typeId": "palace",
        "upgrades": {
-        "charm": 1,
+        "charm": 3,
         "extraPouches": 4,
-        "pouchPolish": 3,
+        "pouchPolish": 2,
         "royalPantry": 1,
         "velvetGears": 8
        }
@@ -5499,10 +5562,10 @@
      },
      "perks": {},
      "run": {
-      "coinsEarned": "1123359081.17",
-      "playTime": 864.7333333328755
+      "coinsEarned": "1485832293.66",
+      "playTime": 880.1333333328615
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5522,56 +5585,58 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "714031875",
+      "biggestWin": "713811000",
       "blackjacks": 0,
       "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "0",
-      "coinsEarned": "1123359081.17",
-      "coinsSpent": "128727.7",
-      "coinsWon": "305078725.34",
+      "coinsEarned": "1485832293.66",
+      "coinsSpent": "137336.9",
+      "coinsWon": "667855462.83",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
-      "doubleWins": 17,
-      "freeSpinCoins": "11077000",
+      "doubleWins": 20,
+      "freeSpinCoins": "389300500",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
-      "gambleLosses": 48,
-      "gambleWins": 19,
-      "goldenJackpots": 1,
+      "gambleLosses": 44,
+      "gambleWins": 22,
+      "goldenJackpots": 0,
       "grandJackpots": 1,
       "helperBuys": 0,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 4,
       "machinesBought": 3,
-      "manualSpins": 150,
+      "manualSpins": 154,
       "migrations": 0,
-      "mostLinesWon": 13,
+      "mostLinesWon": 12,
       "mostSeedsHeld": 0,
       "mysteryBoxes": 0,
       "offlineCoins": "7405480.83",
-      "playTime": 864.7333333328755,
+      "playTime": 880.1333333328615,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 243,
-      "suitWins": 9,
+      "spins": 247,
+      "stickyWilds": 10,
+      "suitWins": 10,
       "symbolsUnlocked": 7,
       "takingsEarned": "0",
       "tillsEmptied": 0,
-      "tokensEarned": "64",
+      "tokensEarned": "60",
       "trialsCompleted": 0,
-      "upgradesBought": 209,
+      "upgradesBought": 215,
       "whiskersEarned": "0",
-      "wildWins": 56,
-      "wins": 159
+      "wildWins": 55,
+      "wins": 160,
+      "zoomies": 0
      },
-     "tokens": "64",
+     "tokens": "60",
      "tree": {},
      "trial": null,
      "trialsDone": {},
@@ -5588,7 +5653,7 @@
      },
      "whiskers": "0"
     },
-    "t": 864.235
+    "t": 879.635
    }
   ],
   "family": [
@@ -5661,7 +5726,7 @@
       "coinsEarned": "20000",
       "playTime": 0
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5719,6 +5784,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 0,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -5728,7 +5794,8 @@
       "upgradesBought": 0,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 0
+      "wins": 0,
+      "zoomies": 0
      },
      "tokens": "0",
      "tree": {},
@@ -5818,7 +5885,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5876,6 +5943,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 0,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -5885,7 +5953,8 @@
       "upgradesBought": 0,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 0
+      "wins": 0,
+      "zoomies": 0
      },
      "tokens": "8",
      "tree": {
@@ -5986,7 +6055,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -6073,6 +6142,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 0,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -6082,7 +6152,8 @@
       "upgradesBought": 0,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 0
+      "wins": 0,
+      "zoomies": 0
      },
      "tokens": "5",
      "tree": {
@@ -6197,7 +6268,7 @@
       "coinsEarned": "810.06",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -6284,6 +6355,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 65,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -6293,7 +6365,8 @@
       "upgradesBought": 3,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 17
+      "wins": 17,
+      "zoomies": 0
      },
      "tokens": "9",
      "tree": {
@@ -6405,7 +6478,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6492,6 +6565,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 65,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -6501,7 +6575,8 @@
       "upgradesBought": 3,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 17
+      "wins": 17,
+      "zoomies": 0
      },
      "tokens": "21",
      "tree": {
@@ -6635,7 +6710,7 @@
       "coinsEarned": "6136.48",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6722,6 +6797,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 160,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -6731,7 +6807,8 @@
       "upgradesBought": 18,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 44
+      "wins": 44,
+      "zoomies": 0
      },
      "tokens": "27",
      "tree": {
@@ -6912,7 +6989,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -6970,6 +7047,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 0,
+      "stickyWilds": 0,
       "suitWins": 0,
       "symbolsUnlocked": 6,
       "takingsEarned": "0",
@@ -6979,7 +7057,8 @@
       "upgradesBought": 303,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 0
+      "wins": 0,
+      "zoomies": 0
      },
      "tokens": "17",
      "tree": {},
@@ -7189,7 +7268,7 @@
       "coinsEarned": "68222700000",
       "playTime": 240.00000000008313
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7247,6 +7326,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 63,
+      "stickyWilds": 0,
       "suitWins": 2,
       "symbolsUnlocked": 6,
       "takingsEarned": "0",
@@ -7256,7 +7336,8 @@
       "upgradesBought": 303,
       "whiskersEarned": "0",
       "wildWins": 10,
-      "wins": 30
+      "wins": 30,
+      "zoomies": 0
      },
      "tokens": "38",
      "tree": {},
@@ -7495,7 +7576,7 @@
       "coinsEarned": "1274404575000",
       "playTime": 479.9999999998921
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7553,6 +7634,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 124,
+      "stickyWilds": 0,
       "suitWins": 4,
       "symbolsUnlocked": 6,
       "takingsEarned": "0",
@@ -7562,7 +7644,8 @@
       "upgradesBought": 303,
       "whiskersEarned": "0",
       "wildWins": 36,
-      "wins": 86
+      "wins": 86,
+      "zoomies": 0
      },
      "tokens": "45",
      "tree": {},
@@ -7827,7 +7910,7 @@
       "coinsEarned": "3028004780250",
       "playTime": 719.9999999996738
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7885,6 +7968,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 185,
+      "stickyWilds": 0,
       "suitWins": 8,
       "symbolsUnlocked": 6,
       "takingsEarned": "0",
@@ -7894,7 +7978,8 @@
       "upgradesBought": 303,
       "whiskersEarned": "0",
       "wildWins": 59,
-      "wins": 140
+      "wins": 140,
+      "zoomies": 0
      },
      "tokens": "45",
      "tree": {},
@@ -8221,7 +8306,7 @@
       "coinsEarned": "3339639158250",
       "playTime": 724.9999999996693
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -8279,6 +8364,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 185,
+      "stickyWilds": 0,
       "suitWins": 8,
       "symbolsUnlocked": 6,
       "takingsEarned": "0",
@@ -8288,7 +8374,8 @@
       "upgradesBought": 303,
       "whiskersEarned": "0",
       "wildWins": 60,
-      "wins": 141
+      "wins": 141,
+      "zoomies": 0
      },
      "tokens": "45",
      "tree": {},
@@ -8556,7 +8643,7 @@
       "coinsEarned": "3356837633250",
       "playTime": 784.9999999996147
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -8614,6 +8701,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 197,
+      "stickyWilds": 0,
       "suitWins": 8,
       "symbolsUnlocked": 6,
       "takingsEarned": "0",
@@ -8623,7 +8711,8 @@
       "upgradesBought": 303,
       "whiskersEarned": "0",
       "wildWins": 63,
-      "wins": 148
+      "wins": 148,
+      "zoomies": 0
      },
      "tokens": "45",
      "tree": {},
@@ -8746,7 +8835,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8804,6 +8893,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 71,
+      "stickyWilds": 0,
       "suitWins": 3,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -8813,7 +8903,8 @@
       "upgradesBought": 4,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 24
+      "wins": 24,
+      "zoomies": 0
      },
      "tokens": "16",
      "tree": {
@@ -8938,7 +9029,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8996,6 +9087,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 71,
+      "stickyWilds": 0,
       "suitWins": 3,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -9005,7 +9097,8 @@
       "upgradesBought": 4,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 24
+      "wins": 24,
+      "zoomies": 0
      },
      "tokens": "19",
      "tree": {
@@ -9137,7 +9230,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9199,6 +9292,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 71,
+      "stickyWilds": 0,
       "suitWins": 3,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -9208,7 +9302,8 @@
       "upgradesBought": 4,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 24
+      "wins": 24,
+      "zoomies": 0
      },
      "tokens": "22",
      "tree": {
@@ -9345,7 +9440,7 @@
       "coinsEarned": "2448.88",
       "playTime": 399.99999999996487
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9407,6 +9502,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 111,
+      "stickyWilds": 0,
       "suitWins": 4,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -9416,7 +9512,8 @@
       "upgradesBought": 24,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 31
+      "wins": 31,
+      "zoomies": 0
      },
      "tokens": "29",
      "tree": {
@@ -9556,7 +9653,7 @@
       "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9618,6 +9715,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 125,
+      "stickyWilds": 0,
       "suitWins": 4,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -9627,7 +9725,8 @@
       "upgradesBought": 24,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 33
+      "wins": 33,
+      "zoomies": 0
      },
      "tokens": "31",
      "tree": {
@@ -9792,7 +9891,7 @@
       "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9854,6 +9953,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 125,
+      "stickyWilds": 0,
       "suitWins": 4,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -9863,7 +9963,8 @@
       "upgradesBought": 24,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 33
+      "wins": 33,
+      "zoomies": 0
      },
      "tokens": "31",
      "tree": {
@@ -10003,7 +10104,7 @@
       "coinsEarned": "14655.28",
       "playTime": 489.999999999883
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -10065,6 +10166,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 135,
+      "stickyWilds": 0,
       "suitWins": 4,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
@@ -10074,7 +10176,8 @@
       "upgradesBought": 24,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 34
+      "wins": 34,
+      "zoomies": 0
      },
      "tokens": "31",
      "tree": {
@@ -10224,7 +10327,7 @@
       "coinsEarned": "711.55",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "6",
      "skins": {
@@ -10282,6 +10385,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 48,
+      "stickyWilds": 0,
       "suitWins": 1,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -10291,7 +10395,8 @@
       "upgradesBought": 2,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 19
+      "wins": 19,
+      "zoomies": 0
      },
      "tokens": "32",
      "tree": {
@@ -10430,7 +10535,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -10488,6 +10593,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 48,
+      "stickyWilds": 0,
       "suitWins": 1,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -10497,7 +10603,8 @@
       "upgradesBought": 2,
       "whiskersEarned": "15",
       "wildWins": 0,
-      "wins": 19
+      "wins": 19,
+      "zoomies": 0
      },
      "tokens": "50",
      "tree": {},
@@ -10644,7 +10751,7 @@
       "coinsEarned": "544.9",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -10702,6 +10809,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 78,
+      "stickyWilds": 0,
       "suitWins": 3,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -10711,7 +10819,8 @@
       "upgradesBought": 6,
       "whiskersEarned": "15",
       "wildWins": 0,
-      "wins": 26
+      "wins": 26,
+      "zoomies": 0
      },
      "tokens": "53",
      "tree": {},
@@ -10863,7 +10972,7 @@
       "coinsEarned": "1627.55",
       "playTime": 119.99999999999447
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -10921,6 +11030,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 114,
+      "stickyWilds": 0,
       "suitWins": 5,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -10930,7 +11040,8 @@
       "upgradesBought": 11,
       "whiskersEarned": "15",
       "wildWins": 0,
-      "wins": 39
+      "wins": 39,
+      "zoomies": 0
      },
      "tokens": "72",
      "tree": {
@@ -11093,7 +11204,7 @@
       "coinsEarned": "58501912.37",
       "playTime": 150.0000000000115
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -11151,6 +11262,7 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 124,
+      "stickyWilds": 0,
       "suitWins": 6,
       "symbolsUnlocked": 0,
       "takingsEarned": "0",
@@ -11160,7 +11272,8 @@
       "upgradesBought": 11,
       "whiskersEarned": "17",
       "wildWins": 0,
-      "wins": 41
+      "wins": 41,
+      "zoomies": 0
      },
      "tokens": "75",
      "tree": {
@@ -11188,12 +11301,12 @@
      "betChanged": 1,
      "bigCageLeft": 7,
      "chipsChanged": 107,
-     "coinsChanged": 413,
+     "coinsChanged": 411,
      "deliveryFinished": 3,
      "deliveryStarted": 3,
-     "gambleEnded": 71,
-     "gambleOffered": 71,
-     "gambleResolved": 55,
+     "gambleEnded": 72,
+     "gambleOffered": 72,
+     "gambleResolved": 56,
      "machineBought": 1,
      "machineSwitched": 1,
      "migrated": 1,
@@ -11209,11 +11322,11 @@
      "trialCompleted": 1,
      "trialEnded": 1,
      "trialStarted": 1,
-     "upgradeBought": 33
+     "upgradeBought": 34
     },
     "label": "played Moving Day",
-    "paid": 46915749883800.88,
-    "rng": 1017899009,
+    "paid": 34642675141570.26,
+    "rng": 3977677468,
     "save": {
      "activeMachine": 2,
      "auto": {
@@ -11234,9 +11347,9 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "18780824723431.49",
+     "coins": "37767935629242.64",
      "colony": 1,
-     "colonyCoins": "46915809520259.32",
+     "colonyCoins": "34642734778028.71",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -11324,29 +11437,29 @@
        "pots": {},
        "result": [
         [
-         "blank",
+         "apple",
          "carrot",
-         "seed"
+         "carrot"
         ],
         [
          "blank",
-         "carrot",
-         "wild"
-        ],
-        [
-         "blank",
-         "carrot",
-         "blank"
-        ],
-        [
-         "seed",
          "corn",
          "seed"
         ],
         [
+         "blank",
          "corn",
+         "corn"
+        ],
+        [
+         "apple",
+         "blank",
+         "seed"
+        ],
+        [
+         "golden",
          "seed",
-         "blank"
+         "apple"
         ]
        ],
        "spinBet": 10,
@@ -11354,7 +11467,7 @@
        "spinSource": "manual",
        "spinTimer": 0.5984083333333382,
        "spinning": true,
-       "streak": 2,
+       "streak": 6,
        "typeId": "moving",
        "upgrades": {
         "bubbleWrap": 4,
@@ -11383,10 +11496,10 @@
       "wiseElders": 1
      },
      "run": {
-      "coinsEarned": "46915808382604.41",
+      "coinsEarned": "34642733640373.83",
       "playTime": 389.99999999997397
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -11396,7 +11509,7 @@
      "stars": {},
      "stats": {
       "autoRetires": 0,
-      "autoSpins": 52,
+      "autoSpins": 53,
       "bestBoxes": 5,
       "bestGambleRun": 1,
       "bestLuck": 125,
@@ -11406,25 +11519,25 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "18649819004778.11",
+      "biggestWin": "23780693015305.77",
       "blackjacks": 0,
       "cabinetsBought": 1,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "1352",
-      "coinsEarned": "47915809570970.88",
+      "coinsEarned": "35642734828740.29",
       "coinsSpent": "31976960.05",
-      "coinsWon": "46915749883800.88",
+      "coinsWon": "34642675141570.26",
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 0,
-      "doubleWins": 10,
+      "doubleWins": 7,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
-      "gambleLosses": 36,
-      "gambleWins": 19,
+      "gambleLosses": 34,
+      "gambleWins": 22,
       "goldenJackpots": 1,
       "grandJackpots": 0,
       "helperBuys": 0,
@@ -11432,11 +11545,11 @@
       "holdGrands": 0,
       "jackpotsWon": 0,
       "machinesBought": 1,
-      "manualSpins": 152,
+      "manualSpins": 151,
       "migrations": 1,
-      "mostLinesWon": 16,
+      "mostLinesWon": 15,
       "mostSeedsHeld": 10000001,
-      "mysteryBoxes": 152,
+      "mysteryBoxes": 148,
       "offlineCoins": "0",
       "playTime": 749.9999999996465,
       "prizesBought": 0,
@@ -11444,16 +11557,18 @@
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
       "spins": 204,
-      "suitWins": 10,
+      "stickyWilds": 0,
+      "suitWins": 11,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "100",
       "trialsCompleted": 1,
-      "upgradesBought": 336,
+      "upgradesBought": 339,
       "whiskersEarned": "17",
-      "wildWins": 33,
-      "wins": 103
+      "wildWins": 27,
+      "wins": 99,
+      "zoomies": 1
      },
      "tokens": "100",
      "tree": {
@@ -11485,7 +11600,8 @@
       "runningShoes": 3,
       "starPolish": 2,
       "stickerAlbum": 3,
-      "wheel": 4
+      "wheel": 4,
+      "zoomies": 3
      },
      "whiskers": "2"
     },
@@ -11495,34 +11611,34 @@
     "events": {
      "autoChanged": 1,
      "betChanged": 1,
-     "bigCageLeft": 8,
-     "chipsChanged": 112,
-     "coinsChanged": 437,
+     "bigCageLeft": 9,
+     "chipsChanged": 114,
+     "coinsChanged": 425,
      "deliveryFinished": 3,
      "deliveryStarted": 3,
-     "gambleEnded": 75,
-     "gambleOffered": 75,
-     "gambleResolved": 57,
+     "gambleEnded": 72,
+     "gambleOffered": 72,
+     "gambleResolved": 56,
      "machineBought": 1,
      "machineSwitched": 1,
      "migrated": 1,
      "perkBought": 9,
-     "retired": 6,
+     "retired": 7,
      "seedsChanged": 137,
      "spinBlocked": 1,
      "spinResolved": 209,
-     "spinStarted": 213,
+     "spinStarted": 214,
      "stickerEarned": 31,
-     "tokensChanged": 38,
-     "treeNodeBought": 128,
+     "tokensChanged": 39,
+     "treeNodeBought": 127,
      "trialCompleted": 1,
      "trialEnded": 1,
      "trialStarted": 1,
-     "upgradeBought": 40
+     "upgradeBought": 35
     },
     "label": "the elders retired a hamster",
-    "paid": 46943723478722.35,
-    "rng": 1833981970,
+    "paid": 34642675141570.26,
+    "rng": 2962194616,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -11537,15 +11653,15 @@
       "sincePity": 0
      },
      "casino": {
-      "bestIncome": "60912668752.59769",
+      "bestIncome": "68691769712.569405",
       "boosts": {},
-      "chips": "1606",
+      "chips": "1857",
       "hand": null,
-      "spinsToChip": 1
+      "spinsToChip": 0
      },
-     "coins": "3340",
+     "coins": "60",
      "colony": 1,
-     "colonyCoins": "985943783115180.8",
+     "colonyCoins": "727642734778028.8",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -11584,7 +11700,7 @@
       "wildThing": true,
       "wiseOld": true
      },
-     "generation": 6,
+     "generation": 7,
      "helper": true,
      "machines": [
       {
@@ -11598,43 +11714,23 @@
          "carrot"
         ],
         [
-         "golden"
+         "seed"
         ],
         [
-         "golden"
+         "seed"
         ]
        ],
        "spinBet": 1,
        "spinFree": false,
        "spinSource": "manual",
-       "spinTimer": 0.5666666666666706,
+       "spinTimer": 0.9500000000000052,
        "spinning": true,
        "streak": 0,
        "typeId": "clunky",
        "upgrades": {
         "horseshoe": 5,
-        "lever": 2,
         "newSeeds": 2,
         "thirdReel": 1
-       }
-      },
-      {
-       "bet": 0,
-       "bonus": null,
-       "freeSpins": null,
-       "hold": null,
-       "pots": {},
-       "result": null,
-       "spinBet": 1,
-       "spinFree": false,
-       "spinSource": "manual",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 0,
-       "typeId": "bonanza",
-       "upgrades": {
-        "acorn": 5,
-        "deeperDigging": 2
        }
       },
       {
@@ -11655,6 +11751,25 @@
         "snackRestock": 2,
         "sprinkles": 5
        }
+      },
+      {
+       "bet": 0,
+       "bonus": null,
+       "freeSpins": null,
+       "hold": null,
+       "pots": {},
+       "result": null,
+       "spinBet": 1,
+       "spinFree": false,
+       "spinSource": "manual",
+       "spinTimer": 0,
+       "spinning": false,
+       "streak": 0,
+       "typeId": "bonanza",
+       "upgrades": {
+        "acorn": 5,
+        "deeperDigging": 2
+       }
       }
      ],
      "ownCasino": {
@@ -11664,7 +11779,7 @@
       "opened": true,
       "rewards": {},
       "takings": "0",
-      "till": "47.24800000003669",
+      "till": "47.28000000003673",
       "upgrades": {}
      },
      "perks": {
@@ -11675,20 +11790,20 @@
       "wiseElders": 1
      },
      "run": {
-      "coinsEarned": "6246.9",
-      "playTime": 19.60000000000017
+      "coinsEarned": "0",
+      "playTime": 19.000000000000203
      },
-     "saveVersion": 15,
-     "seeds": "242",
-     "seedsEarned": "4520",
+     "saveVersion": 16,
+     "seeds": "335",
+     "seedsEarned": "4253",
      "skins": {
       "equipped": {},
       "owned": {}
      },
      "stars": {},
      "stats": {
-      "autoRetires": 1,
-      "autoSpins": 56,
+      "autoRetires": 2,
+      "autoSpins": 53,
       "bestBoxes": 5,
       "bestGambleRun": 1,
       "bestLuck": 125,
@@ -11698,56 +11813,58 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "18649819004778.11",
+      "biggestWin": "23780693015305.77",
       "blackjacks": 0,
       "cabinetsBought": 1,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
-      "chipsEarned": "1606",
-      "coinsEarned": "986943783165892.4",
-      "coinsSpent": "32376702.45",
-      "coinsWon": "46943723478722.35",
+      "chipsEarned": "1857",
+      "coinsEarned": "728642734828740.4",
+      "coinsSpent": "32376709.85",
+      "coinsWon": "34642675141570.26",
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 0,
-      "doubleWins": 10,
+      "doubleWins": 7,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
-      "gambleLosses": 37,
-      "gambleWins": 20,
+      "gambleLosses": 34,
+      "gambleWins": 22,
       "goldenJackpots": 1,
       "grandJackpots": 0,
-      "helperBuys": 7,
+      "helperBuys": 1,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
       "machinesBought": 1,
-      "manualSpins": 157,
+      "manualSpins": 161,
       "migrations": 1,
-      "mostLinesWon": 16,
+      "mostLinesWon": 15,
       "mostSeedsHeld": 10000001,
       "mysteryBoxes": 152,
       "offlineCoins": "0",
-      "playTime": 770.5999999996278,
+      "playTime": 770.9999999996274,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 213,
+      "spins": 214,
+      "stickyWilds": 0,
       "suitWins": 11,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
       "tillsEmptied": 0,
-      "tokensEarned": "112",
+      "tokensEarned": "115",
       "trialsCompleted": 1,
-      "upgradesBought": 343,
+      "upgradesBought": 340,
       "whiskersEarned": "17",
-      "wildWins": 34,
-      "wins": 107
+      "wildWins": 27,
+      "wins": 99,
+      "zoomies": 1
      },
-     "tokens": "112",
+     "tokens": "115",
      "tree": {
       "ballPit": 3,
       "bigBackpack": 1,
@@ -11772,7 +11889,7 @@
       "selfStarter": 1,
       "snackInheritance": 1,
       "speedyScooter": 1,
-      "starryRoots": 2,
+      "starryRoots": 1,
       "warmUpLaps": 1,
       "whiskerWisdom": 2
      },
@@ -11781,47 +11898,46 @@
       "tiredPaws": true
      },
      "upgrades": {
-      "cheeks": 5,
       "clover": 2,
       "highRoller": 2,
       "wheel": 1
      },
      "whiskers": "2"
     },
-    "t": 770.6
+    "t": 771
    },
    {
     "events": {
      "autoChanged": 1,
      "betChanged": 1,
-     "bigCageLeft": 8,
-     "chipsChanged": 124,
-     "coinsChanged": 500,
+     "bigCageLeft": 9,
+     "chipsChanged": 126,
+     "coinsChanged": 488,
      "deliveryFinished": 3,
      "deliveryStarted": 3,
      "gambleEnded": 78,
-     "gambleOffered": 79,
+     "gambleOffered": 78,
      "gambleResolved": 59,
      "machineBought": 1,
      "machineSwitched": 1,
      "migrated": 1,
      "perkBought": 9,
-     "retired": 6,
+     "retired": 7,
      "seedsChanged": 137,
      "spinBlocked": 1,
-     "spinResolved": 234,
-     "spinStarted": 237,
+     "spinResolved": 233,
+     "spinStarted": 238,
      "stickerEarned": 31,
      "tokensChanged": 39,
-     "treeNodeBought": 128,
+     "treeNodeBought": 127,
      "trialCompleted": 1,
      "trialEnded": 1,
      "trialStarted": 1,
-     "upgradeBought": 73
+     "upgradeBought": 64
     },
     "label": "played on after loading",
-    "paid": 46943723713391.95,
-    "rng": 2962194616,
+    "paid": 34642675174702.01,
+    "rng": 2826735922,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -11836,15 +11952,15 @@
       "sincePity": 0
      },
      "casino": {
-      "bestIncome": "60912668752.59769",
+      "bestIncome": "68691769712.569405",
       "boosts": {},
-      "chips": "1618",
+      "chips": "1869",
       "hand": null,
-      "spinsToChip": 1
+      "spinsToChip": 0
      },
-     "coins": "191668.34",
+     "coins": "28694.09",
      "colony": 1,
-     "colonyCoins": "985943783349850.2",
+     "colonyCoins": "727642734811160.4",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -11883,7 +11999,7 @@
       "wildThing": true,
       "wiseOld": true
      },
-     "generation": 6,
+     "generation": 7,
      "helper": true,
      "machines": [
       {
@@ -11894,21 +12010,21 @@
        "pots": {},
        "result": [
         [
-         "carrot"
-        ],
-        [
-         "carrot"
+         "seed"
         ],
         [
          "seed"
+        ],
+        [
+         "carrot"
         ]
        ],
        "spinBet": 1,
        "spinFree": false,
        "spinSource": "manual",
-       "spinTimer": 0,
-       "spinning": false,
-       "streak": 1,
+       "spinTimer": 1.56666666666667,
+       "spinning": true,
+       "streak": 2,
        "typeId": "clunky",
        "upgrades": {
         "horseshoe": 5,
@@ -11930,10 +12046,10 @@
        "spinTimer": 0,
        "spinning": false,
        "streak": 0,
-       "typeId": "bonanza",
+       "typeId": "stacker",
        "upgrades": {
-        "acorn": 5,
-        "deeperDigging": 2
+        "snackRestock": 2,
+        "sprinkles": 5
        }
       },
       {
@@ -11949,10 +12065,10 @@
        "spinTimer": 0,
        "spinning": false,
        "streak": 0,
-       "typeId": "stacker",
+       "typeId": "bonanza",
        "upgrades": {
-        "snackRestock": 2,
-        "sprinkles": 5
+        "acorn": 5,
+        "deeperDigging": 2
        }
       }
      ],
@@ -11963,7 +12079,7 @@
       "opened": true,
       "rewards": {},
       "takings": "0",
-      "till": "52.048000000042556",
+      "till": "52.080000000042595",
       "upgrades": {}
      },
      "perks": {
@@ -11974,20 +12090,20 @@
       "wiseElders": 1
      },
      "run": {
-      "coinsEarned": "240916.5",
-      "playTime": 79.59999999999677
+      "coinsEarned": "33131.75",
+      "playTime": 78.9999999999968
      },
-     "saveVersion": 15,
-     "seeds": "242",
-     "seedsEarned": "4520",
+     "saveVersion": 16,
+     "seeds": "335",
+     "seedsEarned": "4253",
      "skins": {
       "equipped": {},
       "owned": {}
      },
      "stars": {},
      "stats": {
-      "autoRetires": 1,
-      "autoSpins": 60,
+      "autoRetires": 2,
+      "autoSpins": 59,
       "bestBoxes": 5,
       "bestGambleRun": 1,
       "bestLuck": 125,
@@ -11997,56 +12113,58 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "18649819004778.11",
+      "biggestWin": "23780693015305.77",
       "blackjacks": 0,
       "cabinetsBought": 1,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
-      "chipsEarned": "1618",
-      "coinsEarned": "986943783400561.9",
-      "coinsSpent": "32376775.61",
-      "coinsWon": "46943723713391.95",
+      "chipsEarned": "1869",
+      "coinsEarned": "728642734861871.9",
+      "coinsSpent": "32376796.32",
+      "coinsWon": "34642675174702.01",
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 0,
-      "doubleWins": 10,
+      "doubleWins": 7,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
-      "gambleLosses": 38,
-      "gambleWins": 21,
-      "goldenJackpots": 2,
+      "gambleLosses": 35,
+      "gambleWins": 24,
+      "goldenJackpots": 1,
       "grandJackpots": 0,
-      "helperBuys": 28,
+      "helperBuys": 20,
       "holdBonuses": 0,
       "holdGrands": 0,
       "jackpotsWon": 0,
       "machinesBought": 1,
-      "manualSpins": 177,
+      "manualSpins": 179,
       "migrations": 1,
-      "mostLinesWon": 16,
+      "mostLinesWon": 15,
       "mostSeedsHeld": 10000001,
       "mysteryBoxes": 152,
       "offlineCoins": "0",
-      "playTime": 830.5999999995732,
+      "playTime": 830.9999999995729,
       "prizesBought": 0,
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 237,
-      "suitWins": 11,
+      "spins": 238,
+      "stickyWilds": 0,
+      "suitWins": 12,
       "symbolsUnlocked": 1,
       "takingsEarned": "0",
       "tillsEmptied": 0,
-      "tokensEarned": "113",
+      "tokensEarned": "115",
       "trialsCompleted": 1,
-      "upgradesBought": 376,
+      "upgradesBought": 369,
       "whiskersEarned": "17",
-      "wildWins": 34,
-      "wins": 111
+      "wildWins": 27,
+      "wins": 106,
+      "zoomies": 1
      },
-     "tokens": "113",
+     "tokens": "115",
      "tree": {
       "ballPit": 3,
       "bigBackpack": 1,
@@ -12071,7 +12189,7 @@
       "selfStarter": 1,
       "snackInheritance": 1,
       "speedyScooter": 1,
-      "starryRoots": 2,
+      "starryRoots": 1,
       "warmUpLaps": 1,
       "whiskerWisdom": 2
      },
@@ -12080,19 +12198,16 @@
       "tiredPaws": true
      },
      "upgrades": {
-      "cardCounter": 1,
-      "cheeks": 21,
-      "clover": 4,
+      "cheeks": 16,
+      "clover": 3,
       "cosyNest": 1,
       "highRoller": 2,
-      "luckyPennies": 1,
-      "nightShift": 2,
-      "runningShoes": 1,
-      "wheel": 4
+      "nightShift": 1,
+      "wheel": 3
      },
      "whiskers": "2"
     },
-    "t": 830.6
+    "t": 831
    }
   ]
  }

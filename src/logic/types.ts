@@ -41,6 +41,14 @@ export interface FreeSpinsDef {
   awards: Record<string, number>; // scatters → free spins, e.g. { "3": 8, "4": 12, "5": 20 }
   multiplier: number; // every free-spin win × this
   pause: number; // seconds between free spins
+  climb?: number; // 1.10.0 (Burrow Party): the multiplier grows this much each free spin, as far as the Party Climb upgrade lets it
+}
+
+// 1.10.0: Zoomies. Now and then, on a paid spin, the hamster dashes across the reels
+// and turns whole reels wild: how many by weight, which ones at random.
+export interface ZoomiesDef {
+  minReels: number; // only machines with paylines and at least this many reels
+  reels: { count: number; weight: number }[];
 }
 
 export interface PotDef {
@@ -154,6 +162,10 @@ export type Effect =
   | { type: 'seedGain'; perLevel: number } // Seed Sense: every Heirloom Seed total × (1 + this) (per level)
   | { type: 'maxStars'; perLevel: number } // Trailblazer, Starry Roots: a machine can have this many more Machine Stars (per level)
   | { type: 'whiskerGain'; perLevel: number } // Whisker Wisdom: Golden Whiskers from migrating × (1 + this) (per level)
+  // 1.10.0 (Burrow Party): Zoomies and the Burrow Bonanza's free spins
+  | { type: 'zoomies'; perLevel: number } // Zoomies: a paid spin turns whole reels wild with this chance (per level)
+  | { type: 'stickyWilds'; perLevel: number } // a wild that lands in free spins stays this many more free spins (per level)
+  | { type: 'freeSpinClimb'; perLevel: number } // the free-spin multiplier can climb this many more steps (per level)
   | { type: 'autoRetire' } // Wise Elders: the Hamster Helper may retire and plant for you (the Colony tab's switch)
   | { type: 'shiftWeight'; from: string; to: string; amount: number }
   | { type: 'fullLineMultiplier'; multiplier: number }
@@ -385,6 +397,7 @@ export interface GameData {
   casino?: CasinoDef; // M11
   ownCasino?: OwnCasinoDef; // M12
   colony?: ColonyDef; // 1.4.0: The Great Migration
+  zoomies?: ZoomiesDef; // 1.10.0: Burrow Party
 }
 
 // ───────────────────────── Spins ─────────────────────────
@@ -435,6 +448,7 @@ export interface FreeSpinsState {
   bet: number; // the bet that won them
   won: Money; // coins paid so far
   timer: number; // seconds until the next one
+  sticky: number[]; // 1.10.0: every cell's sticky wild, as free spins it still stays (index = reel × rows + row; all 0 without Sticky Wilds)
 }
 
 export interface BonusState {
@@ -577,6 +591,9 @@ export interface Stats {
   takingsEarned: Money; // Takings ever banked from the till
   tillsEmptied: number;
   cabinetsBought: number; // cabinets put on the floor (the free first one included)
+  // 1.10.0 (save v16): Burrow Party
+  zoomies: number; // paid spins the hamster zoomed across (whole reels wild)
+  stickyWilds: number; // wilds Sticky Wilds held for another free spin
 }
 
 export interface GameState {
@@ -655,6 +672,9 @@ export interface GameEvents {
   spinStarted: {
     machineId: string; result: Grid; source: SpinSource; cost: Money; bet: number; free: boolean;
     mystery: { cells: Cell[]; symbol: string } | null; // 1.4.0: the moving boxes that landed and what they all turned into (result shows them turned)
+    zoom: number[]; // 1.10.0: the reels Zoomies turned wild (result shows them wild); [] = none
+    sticky: Cell[]; // 1.10.0: cells held wild by Sticky Wilds from an earlier free spin (result shows them wild)
+    multiplier: number; // 1.10.0: what this spin's wins are multiplied by as a feature (a free spin's ×2, ×3 …; 1 on a paid spin)
   };
   spinResolved: {
     machineId: string; result: Grid; wins: PaidWin[]; payout: Money; fullLine: boolean; tier: string;

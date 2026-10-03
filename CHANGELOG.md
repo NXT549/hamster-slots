@@ -8,7 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased]
+## [Unreleased] · 1.10.0 "Burrow Party"
+
+**Your hamster gets the zoomies, and the Burrow Bonanza's free spins turn into a party.**
+
+### Added
+
+- **Zoomies** (a new hamster upgrade from your 7th hamster). Now and then, on a paid spin, your hamster dashes right across the reels and turns one, two or even three whole reels wild. It works on every five-reel machine: the Burrow Bonanza, the Pouch Palace, the Acorn Vault, Moving Day and the Big Cheese.
+- **Sticky Wilds** (a Burrow Bonanza upgrade). In free spins, a Hamster Wild that lands sticks around for the next free spin or two, glowing like honey.
+- **Party Climb** (a Burrow Bonanza upgrade). Free spins pay more and more: ×2, then ×3, ×4, up to ×5. The machine's sign shows what the next win pays.
+- The Info tab explains both, with this machine's real odds.
 
 ## [1.9.1] - 2026-10-03 · Welcome Mat
 

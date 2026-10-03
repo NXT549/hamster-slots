@@ -2678,6 +2678,7 @@ const UPGRADE_ICONS_BY_TYPE: Record<string, string> = {
   doubleWin: 'pennies', offlineBonus: 'moon', offlineTime: 'nest', spinSpeed: 'shoe', stickerPayout: 'album', starPayout: 'star',
   streakCap: 'flame', fullLineMultiplier: 'star', jackpotTokens: 'goldenIcon', deliveryTokens: 'jar', gambleHistory: 'cardBack',
   potSeedBonus: 'pouchPolish', generationPayout: 'roots', autoBuy: 'paw',
+  zoomies: 'shoe', stickyWilds: 'wildIcon', freeSpinClimb: 'ballIcon', // 1.10.0: Burrow Party
 };
 export function upgradeIcon(def: { id: string; effect: { type: string } }): string | null {
   return UPGRADE_ICONS_BY_ID[def.id] || UPGRADE_ICONS_BY_TYPE[def.effect.type] || null;

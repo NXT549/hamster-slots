@@ -292,8 +292,15 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     }
     if (odds.freeSpins) {
       const f = odds.freeSpins;
+      // 1.10.0: Party Climb and Sticky Wilds change the free spins.
+      const climb = f.maxMultiplier > f.multiplier ? ` with Party Climb it climbs ×1 a spin, up to ×${f.maxMultiplier}` : '';
+      const sticky = f.sticky > 0 ? ` Sticky Wilds: a wild that lands stays put for ${f.sticky} more free spin${f.sticky === 1 ? '' : 's'}.` : '';
       cards.push(card('ballIcon', 'Free spins',
-        `3 or more Hamster Balls anywhere start free spins: ${oneIn(f.chance)}, ${f.perTrigger.toFixed(1)} spins on average (${f.perTriggerWithRetriggers.toFixed(1)} counting retriggers). They play by themselves, cost nothing, use the bet that won them, and every win is ×${f.multiplier}.`));
+        `3 or more Hamster Balls anywhere start free spins: ${oneIn(f.chance)}, ${f.perTrigger.toFixed(1)} spins on average (${f.perTriggerWithRetriggers.toFixed(1)} counting retriggers). They play by themselves, cost nothing, use the bet that won them, and every win is ×${f.multiplier}${climb ? `;${climb}` : ''}.${sticky}`));
+    }
+    if (odds.zoom) {
+      cards.push(card('shoe', 'Zoomies',
+        `On ${(odds.zoom.chance * 100).toFixed(1)}% of paid spins the hamster dashes across the reels and turns one to three whole reels wild (one most often). A wild reel can't land a scatter. Free spins never have Zoomies.`));
     }
     if (odds.jackpot) {
       const pots = game.getJackpotPots();

@@ -91,6 +91,10 @@ function effectFormats(game: Game): Record<string, (def: Def) => [string, Format
     maxStars: () => ['Most Machine Stars', String],
     whiskerGain: () => ['Golden Whiskers', (v) => `+${Math.round(v * 100)}%`],
     autoRetire: () => ['The Wise Elders', (v) => (v ? 'yes' : 'no')],
+    // 1.10.0: Burrow Party
+    zoomies: () => ['Paid spins with Zoomies', (v) => `${Number((v * 100).toFixed(1))}%`],
+    stickyWilds: () => ['A free-spin wild stays for', (v) => (v ? `${v} more spin${v === 1 ? '' : 's'}` : 'no more spins')],
+    freeSpinClimb: () => ['Free spins climb to', (v) => `×${v}`],
   };
 }
 

@@ -14,7 +14,8 @@ describe('data.json sanity', () => {
     'betSteps', 'winStreak', 'symbolWeight', 'extraFreeSpins', 'jackpotGrowth', 'luck', 'unlockSymbol', 'bothWays',
     'extraRespins', 'wheelBonus', // M9
     'doubleWin', 'offlineBonus', 'offlineTime', 'spinSpeed', 'stickerPayout', 'starPayout', 'streakCap', 'fullLineMultiplier',
-    'jackpotTokens', 'deliveryTokens', 'gambleHistory', 'potSeedBonus']; // 1.3.1
+    'jackpotTokens', 'deliveryTokens', 'gambleHistory', 'potSeedBonus', // 1.3.1
+    'zoomies', 'stickyWilds', 'freeSpinClimb']; // 1.10.0
   const treeTypes = ['payoutMultiplier', 'shiftWeight', 'fullLineMultiplier', 'startingLevel', 'spinSpeed',
     'deliveryTime', 'deliveryPayoutBonus', 'autoDelivery',
     'seedJar', 'luck', 'startingMachineLevel', 'startingMachine', 'symbolWeight', 'potSeedBonus', // M8

@@ -21,8 +21,12 @@
 //
 // 1.4.0: MOVING BOXES (Moving Day, "mystery" in data.json). Every box that lands
 // turns into the same symbol before the spin is scored (revealMystery below).
+//
+// 1.10.0 (Burrow Party): ZOOMIES turn whole reels wild on a paid spin, and on the
+// Burrow Bonanza STICKY WILDS stay put for a few free spins while the free-spin
+// multiplier CLIMBS. All three keep the maths exact: see the end of this file.
 
-import type { MachineDef, Payouts, SymbolRules, LineResult, LineWin, Grid, Cell, FreeSpinsDef, WheelDef } from './types.ts';
+import type { MachineDef, Payouts, SymbolRules, LineResult, LineWin, Grid, Cell, FreeSpinsDef, WheelDef, ZoomiesDef } from './types.ts';
 import type { Rng } from './rng.ts';
 
 // How many rows count on a machine. Old Clunky has 1: the rows above and below
@@ -581,10 +585,10 @@ export function minTrigger(awards: Record<string, number>): number {
 //   total      = the average number of free spins per trigger INCLUDING retriggers.
 //                Each free spin can retrigger with chance q, so total = N + q·N·total,
 //                which gives total = N / (1 − q·N).
-export function freeSpinStats(machineData: MachineDef, reelCount: number, extra = 0): { q: number; perTrigger: number; total: number } {
+// `cells` = how many cells can hold a scatter (fewer when Zoomies turned reels wild).
+export function freeSpinStats(machineData: MachineDef, reelCount: number, extra = 0, cells = reelCount * rowCount(machineData)): { q: number; perTrigger: number; total: number } {
   const fs = machineData.freeSpins;
   if (!fs) return { q: 0, perTrigger: 0, total: 0 };
-  const cells = reelCount * rowCount(machineData);
   const dist = scatterDistribution(symbolChance(machineData, fs.symbol), cells);
   let q = 0;
   let spins = 0;
@@ -604,10 +608,9 @@ export function freeSpinStats(machineData: MachineDef, reelCount: number, extra 
 // average each pot pays c × seed + growth per spin: everything that flows in
 // flows back out. (All in base units: before the bet and payout bonuses.)
 // seedMultiplier (Golden Pouches, M8): pots start again at seed × this after a win.
-export function jackpotStats(machineData: MachineDef, reelCount: number, growthMultiplier = 1, seedMultiplier = 1): { q: number; ev: number; pots: { id: string; chance: number }[] } {
+export function jackpotStats(machineData: MachineDef, reelCount: number, growthMultiplier = 1, seedMultiplier = 1, cells = reelCount * rowCount(machineData)): { q: number; ev: number; pots: { id: string; chance: number }[] } {
   const jp = machineData.jackpot;
   if (!jp) return { q: 0, ev: 0, pots: [] };
-  const cells = reelCount * rowCount(machineData);
   const dist = scatterDistribution(symbolChance(machineData, jp.symbol), cells);
   const q = dist.slice(jp.min).reduce((a, b) => a + b, 0);
   const totalWeight = jp.pots.reduce((sum, pot) => sum + pot.weight, 0);
@@ -631,7 +634,9 @@ export function jackpotStats(machineData: MachineDef, reelCount: number, growthM
 //   (the Grand), S = the average number of respins played.
 // Every coin's value is its own random pick, so the average bonus is
 //   F × (the average coin value) + G × grand.
-export function holdSpinStats(machineData: MachineDef, reelCount: number, extraRespins = 0): { q: number; ev: number; full: number; respins: number; coins: number } {
+// `cells` = how many cells can land a coin on the spin itself (fewer when Zoomies
+// turned reels wild); the bonus still plays on the whole board.
+export function holdSpinStats(machineData: MachineDef, reelCount: number, extraRespins = 0, cells = reelCount * rowCount(machineData)): { q: number; ev: number; full: number; respins: number; coins: number } {
   const hs = machineData.holdSpin;
   if (!hs) return { q: 0, ev: 0, full: 0, respins: 0, coins: 0 };
   const N = reelCount * rowCount(machineData);
@@ -665,7 +670,7 @@ export function holdSpinStats(machineData: MachineDef, reelCount: number, extraR
   }
   const totalWeight = hs.values.reduce((sum, v) => sum + v.weight, 0);
   const meanValue = hs.values.reduce((sum, v) => sum + v.value * v.weight, 0) / totalWeight;
-  const dist = scatterDistribution(symbolChance(machineData, hs.symbol), N);
+  const dist = scatterDistribution(symbolChance(machineData, hs.symbol), cells);
   let chance = 0;
   let ev = 0;
   let full = 0;
@@ -689,6 +694,231 @@ export function wheelAverage(wheel: WheelDef, bonus = 0): number {
   return wheel.wedges.reduce((sum, w) => sum + (w.multiplier + bonus) * w.weight, 0) / total;
 }
 
+// ─────────────── Zoomies (1.10.0), exactly ───────────────
+// On a paid spin, with chance z, the hamster dashes across the reels and turns
+// `count` whole reels wild (count by weight, then which reels, all equally likely).
+// Every other cell is still its own random pick, so the spin is an ordinary spin
+// whose zoomed reels hold a wild in every row. The maths below is the line maths
+// of expectedValue, but reel by reel (a zoomed reel's wild chance is 1).
+
+// Can Zoomies run on this machine with this many reels? (Paylines and a wild only.)
+export function canZoom(machineData: MachineDef, reelCount: number, def: ZoomiesDef | undefined): boolean {
+  return !!def && !machineData.ways && !!machineData.paylines && reelCount >= def.minReels && symbolRules(machineData).wild !== null;
+}
+
+// Every way Zoomies can land, with its chance (given that it happens).
+export function zoomCases(reelCount: number, def: ZoomiesDef): { reels: number[]; p: number }[] {
+  const options = def.reels.filter((o) => o.weight > 0 && o.count >= 1 && o.count <= reelCount);
+  const total = options.reduce((sum, o) => sum + o.weight, 0);
+  const out: { reels: number[]; p: number }[] = [];
+  for (const o of options) {
+    const sets: number[][] = [];
+    (function pick(from: number, set: number[]): void {
+      if (set.length === o.count) { sets.push(set); return; }
+      for (let r = from; r < reelCount; r++) pick(r + 1, [...set, r]);
+    })(0, []);
+    for (const reels of sets) out.push({ reels, p: o.weight / total / sets.length });
+  }
+  return out;
+}
+
+// Which reels the hamster runs over this time (in reel order).
+export function pickZoomReels(reelCount: number, def: ZoomiesDef, rng: Rng): number[] {
+  const count = Math.min(reelCount, rng.pickWeighted(def.reels.filter((o) => o.count >= 1)).count);
+  const reels = Array.from({ length: reelCount }, (_, i) => i);
+  // A partial shuffle: draw `count` different reels, one random number each.
+  for (let i = 0; i < count; i++) {
+    const j = i + Math.floor(rng.next() * (reelCount - i));
+    [reels[i], reels[j]] = [reels[j], reels[i]];
+  }
+  return reels.slice(0, count).sort((a, b) => a - b);
+}
+
+// Turn whole reels of a grid wild.
+export function zoomGrid(grid: Grid, reels: number[], wild: string): Grid {
+  return grid.map((column, reel) => (reels.includes(reel) ? column.map(() => wild) : column));
+}
+
+// ONE line's EV read from the left, when every reel has its own chances (reels[i]:
+// symbol id → chance). Same cases as expectedValue: j wilds first, then the first
+// real symbol, then the run goes on while cells are that symbol or a wild; only
+// the powers become products, reel by reel.
+function lineValueByReel(reels: Map<string, number>[], rules: SymbolRules, payouts: Payouts, fullLineMultiplier: number): { ev: number; fullEv: number } {
+  const R = reels.length;
+  const wildOn = (i: number) => (rules.wild ? reels[i].get(rules.wild) || 0 : 0);
+  const chanceOf = (i: number, id: string) => reels[i].get(id) || 0;
+  const wildPay = (j: number) => (j >= 2 ? payFor(payouts, rules.wild, j) : 0);
+  const ids = [...new Set(reels.flatMap((r) => [...r.keys()]))].filter((id) => id !== rules.wild);
+  let ev = 0;
+  let fullEv = 0;
+  const add = (chance: number, base: number, boosted: boolean, fullLine = boosted) => {
+    if (!(chance > 0) || !(base > 0)) return;
+    const value = chance * base * (boosted ? fullLineMultiplier : 1);
+    ev += value;
+    if (fullLine) fullEv += value;
+  };
+  if (rules.wild) {
+    let all = 1;
+    for (let i = 0; i < R; i++) all *= wildOn(i);
+    add(all, wildPay(R), true); // a line of wilds only
+  }
+  let lead = 1; // the chance the first j reels are all wild
+  for (let j = 0; j < R; j++) {
+    for (const id of ids) {
+      const p = chanceOf(j, id);
+      if (!(p > 0)) continue;
+      if (endsRun(rules, id)) {
+        add(lead * p, wildPay(j), false);
+        continue;
+      }
+      let run = lead * p; // reels j … count−1 hold this symbol or a wild (reel j: the symbol)
+      for (let count = j + 1; count <= R; count++) {
+        const next = count < R ? chanceOf(count, id) + wildOn(count) : 0;
+        const chance = run * (count < R ? Math.max(0, 1 - next) : 1);
+        const symbolPay = payFor(payouts, id, count);
+        if (symbolPay > 0 && symbolPay >= wildPay(j)) add(chance, symbolPay, count === R);
+        else add(chance, wildPay(j), false, count === R);
+        run *= next;
+      }
+    }
+    lead *= wildOn(j);
+  }
+  return { ev, fullEv };
+}
+
+// The chance that no line pays at one END of the lines: `pairs` gives each line's
+// rows on the end reel and its neighbour; a zoomed reel is all wild.
+//   neither zoomed: the usual count (gridHitRate)
+//   both zoomed:    two wilds always pay, so every line wins
+//   one zoomed:     a line wins when the other reel's cell is a line symbol (or a
+//                   wild), so the chance is that every such cell is a scatter or a blank
+function endMiss(machineData: MachineDef, pairs: number[][], zoomA: boolean, zoomB: boolean): number {
+  if (!zoomA && !zoomB) return 1 - gridHitRate(machineData, pairs);
+  if (zoomA && zoomB) return 0;
+  const rules = symbolRules(machineData);
+  const dead = chances(machineData).filter((s) => endsRun(rules, s.id)).reduce((sum, s) => sum + s.p, 0);
+  const rows = new Set(pairs.map((l) => (zoomA ? l[1] : l[0])));
+  return Math.pow(dead, rows.size);
+}
+
+// The lines of a spin where Zoomies turned `zoomed` reels wild: { ev, fullEv, hitRate },
+// like expectedValue. Moving boxes: the average over what they turn into, as there.
+// (Machines with Zoomies have 4+ reels, so with Pays Both Ways the two ends never share a reel.)
+function zoomLines(machineData: MachineDef, R: number, zoomed: number[], fullLineMultiplier: number, lineCount: number, bothWays: boolean): { ev: number; hitRate: number; fullEv: number } {
+  const options = mysteryOptions(machineData);
+  if (options.length) {
+    const out = { ev: 0, hitRate: 0, fullEv: 0 };
+    for (const o of options) {
+      const r = zoomLines(withReveal(machineData, o.symbol), R, zoomed, fullLineMultiplier, lineCount, bothWays);
+      out.ev += o.p * r.ev;
+      out.hitRate += o.p * r.hitRate;
+      out.fullEv += o.p * r.fullEv;
+    }
+    return out;
+  }
+  const rules = symbolRules(machineData);
+  const normal = new Map(chances(machineData).map((s) => [s.id, s.p] as [string, number]));
+  const allWild = new Map([[rules.wild!, 1]]);
+  const reels = Array.from({ length: R }, (_, i) => (zoomed.includes(i) ? allWild : normal));
+  const left = lineValueByReel(reels, rules, machineData.payouts, fullLineMultiplier);
+  let ev = left.ev;
+  const lines = allPaylines(machineData).slice(0, lineCount);
+  let miss = endMiss(machineData, lines.map((l) => [l[0], l[1]]), zoomed.includes(0), zoomed.includes(1));
+  if (bothWays && R > 2) {
+    // The right-hand reading pays on every line that isn't full (a full line pays once).
+    const right = lineValueByReel([...reels].reverse(), rules, machineData.payouts, fullLineMultiplier);
+    ev += right.ev - right.fullEv;
+    miss *= endMiss(machineData, lines.map((l) => [l[R - 1], l[R - 2]]), zoomed.includes(R - 1), zoomed.includes(R - 2));
+  }
+  return { ev: ev * lineCount, hitRate: 1 - miss, fullEv: left.fullEv * lineCount };
+}
+
+// ─────────────── Burrow Party's free spins (1.10.0), exactly ───────────────
+// STICKY WILDS: a wild that lands on a free spin stays for the next `sticky` free
+// spins (landing again starts its count again). Every cell still draws a symbol on
+// every spin, so a cell shows a wild on free spin k when ANY of its last
+// min(k, sticky + 1) draws was a wild, each cell on its own:
+//   P(wild)       = 1 − (1 − w)^min(k, sticky + 1)
+//   P(symbol s)   = p_s × (1 − w)^min(k − 1, sticky)   (no wild still held, then s)
+// so free spin k is an ordinary spin with those chances. The CLIMB: free spin k's
+// wins are × (multiplier + climb × min(k − 1, steps)).
+// Both stop changing after free spin K = max(sticky, steps) + 1. So the session is
+// worked out spin by spin up to K (the chances of how many spins are left, after
+// retriggers), and from K on every spin is the same: from r spins left, the spins
+// still to come are r / (1 − loop) on average (loop = the chance of a retrigger ×
+// its average award, as in freeSpinStats).
+
+// Free spin k's chances (k = 1, 2, …), as weights that add up to 1.
+export function stickyChances(machineData: MachineDef, k: number, sticky: number): MachineDef {
+  const rules = symbolRules(machineData);
+  if (!(sticky > 0) || !rules.wild) return machineData;
+  const w = symbolChance(machineData, rules.wild);
+  const clear = Math.pow(1 - w, Math.min(k - 1, sticky)); // no wild held from earlier spins
+  return {
+    ...machineData,
+    symbols: chances(machineData).map((s) => ({
+      ...machineData.symbols.find((x) => x.id === s.id)!,
+      weight: s.id === rules.wild ? 1 - Math.pow(1 - w, Math.min(k, sticky + 1)) : s.p * clear,
+    })),
+  };
+}
+
+// What free spins are worth, per number of free spins first awarded:
+//   value(N) = the average of Σ (multiplier × line EV) over every spin played, retriggers included
+//   spins(N) = the average number played
+export function freeSpinSession(
+  machineData: MachineDef, reelCount: number,
+  opts: { extra?: number; sticky?: number; steps?: number; fullLineMultiplier?: number; lines?: number; bothWays?: boolean; wheelBonus?: number },
+): (award: number) => { value: number; spins: number } {
+  const fs = machineData.freeSpins!;
+  const { extra = 0, sticky = 0, steps = 0, fullLineMultiplier = 1, lines = 1, bothWays = false, wheelBonus = 0 } = opts;
+  const average = machineData.wheel ? wheelAverage(machineData.wheel, wheelBonus) : 1;
+  const cells = reelCount * rowCount(machineData);
+  const K = Math.max(sticky, steps) + 1;
+  // Free spin k: its line EV, its multiplier, and the chances of each retrigger award.
+  const stage = (k: number) => {
+    const md = stickyChances(machineData, k, sticky);
+    const r = expectedValue(md, reelCount, fullLineMultiplier, lines, bothWays);
+    const awards = new Map<number, number>();
+    scatterDistribution(symbolChance(md, fs.symbol), cells).forEach((p, count) => {
+      const a = freeSpinAward(fs, count, extra);
+      awards.set(a, (awards.get(a) || 0) + p);
+    });
+    return { lineEv: r.ev + r.fullEv * (average - 1), multiplier: fs.multiplier + (fs.climb || 0) * Math.min(k - 1, steps), awards };
+  };
+  const stages = Array.from({ length: K }, (_, i) => stage(i + 1));
+  const last = stages[K - 1];
+  let loop = 0;
+  for (const [a, p] of last.awards) loop += a * p;
+  const tail = loop < 1 ? 1 / (1 - loop) : Infinity; // spins to come per spin left, from free spin K on
+  const memo = new Map<number, { value: number; spins: number }>();
+  return (award: number) => {
+    if (memo.has(award)) return memo.get(award)!;
+    let left = new Map<number, number>([[award, 1]]); // spins left → chance, before free spin k
+    let value = 0;
+    let spins = 0;
+    for (let k = 1; k < K; k++) {
+      const s = stages[k - 1];
+      const next = new Map<number, number>();
+      for (const [r, p] of left) {
+        if (r <= 0) continue; // it's over
+        value += p * s.multiplier * s.lineEv;
+        spins += p;
+        for (const [a, q] of s.awards) next.set(r - 1 + a, (next.get(r - 1 + a) || 0) + p * q);
+      }
+      left = next;
+    }
+    for (const [r, p] of left) {
+      if (r <= 0) continue;
+      value += p * r * tail * last.multiplier * last.lineEv;
+      spins += p * r * tail;
+    }
+    const out = { value, spins };
+    memo.set(award, out);
+    return out;
+  };
+}
+
 // What spinExpectation can be told (all optional).
 export interface SpinOptions {
   lines?: number;
@@ -703,6 +933,10 @@ export interface SpinOptions {
   extraRespins?: number; // hold & spin starts (and resets) with this many more respins (M9)
   wheelBonus?: number; // added to every wedge of the cheese wheel (M9)
   doubleChance?: number; // a winning paid spin pays double with this chance (Lucky Pennies, 1.3.1)
+  zoomChance?: number; // a paid spin has Zoomies with this chance (1.10.0)
+  zoomies?: ZoomiesDef; // how many reels Zoomies turns wild (data.json zoomies)
+  stickyWilds?: number; // free spins: a wild stays this many more free spins (1.10.0, Sticky Wilds)
+  climbSteps?: number; // free spins: the multiplier climbs this many steps (1.10.0, Party Climb)
 }
 
 // What a paid spin is worth, and where that comes from.
@@ -715,6 +949,7 @@ export interface SpinValue {
   jackpot: { chance: number; ev: number; pots: { id: string; chance: number }[] };
   hold: { chance: number; ev: number; full: number; respins: number; coins: number }; // M9: hold & spin (full = the Grand's chance per paid spin)
   wheel: { average: number; ev: number }; // M9: the cheese wheel (its average multiplier, and what it adds)
+  zoom: { chance: number; ev: number }; // 1.10.0: Zoomies' chance per paid spin, and what it adds to the lines
   extraSeconds: number;
 }
 
@@ -733,40 +968,129 @@ export interface SpinValue {
 // Hold & spin adds its average bonus (holdSpinStats), on paid spins.
 // 1.3.1: Lucky Pennies doubles a winning paid spin's lines with chance d. The coin
 // toss doesn't depend on the reels, so on average the lines pay × (1 + d).
+// 1.10.0: Zoomies. A paid spin is one of several CASES (no Zoomies, or these reels
+// wild), each an ordinary spin worked out on its own; the paid spin is the average
+// of the cases, weighted by their chances. A zoomed reel holds no scatters, so the
+// features' triggers are counted over fewer cells. Free spins never have Zoomies.
+// Sticky Wilds and the climb change only the free spins (freeSpinSession).
 export function spinExpectation(machineData: MachineDef, reelCount: number, opts: SpinOptions = {}): SpinValue {
   const {
     lines = 1, fullLineMultiplier = 1, streakPerStack = 0, streakCap = 0,
     extraFreeSpins = 0, jackpotGrowth = 1, spinDuration = machineData.spinDuration, bothWays = false, potSeedMultiplier = 1,
-    extraRespins = 0, wheelBonus = 0, doubleChance = 0,
+    extraRespins = 0, wheelBonus = 0, doubleChance = 0, zoomChance = 0, zoomies, stickyWilds = 0, climbSteps = 0,
   } = opts;
-  const lines0 = expectedValue(machineData, reelCount, fullLineMultiplier, lines, bothWays);
-  const hitRate = lines0.hitRate;
+  const rows = rowCount(machineData);
   const average = machineData.wheel ? wheelAverage(machineData.wheel, wheelBonus) : 1;
-  const wheelEv = lines0.fullEv * (average - 1);
-  const lineEv = lines0.ev + wheelEv;
+  const lines0 = expectedValue(machineData, reelCount, fullLineMultiplier, lines, bothWays);
+  const plainLineEv = lines0.ev + lines0.fullEv * (average - 1); // a spin without Zoomies (and every free spin)
+
+  // The cases a paid spin can be.
+  const z = canZoom(machineData, reelCount, zoomies) && zoomChance > 0 ? Math.min(1, zoomChance) : 0;
+  const cases: { reels: number[]; p: number }[] = [{ reels: [], p: 1 - z }];
+  if (z > 0) for (const c of zoomCases(reelCount, zoomies!)) cases.push({ reels: c.reels, p: z * c.p });
+
+  const fsData = machineData.freeSpins;
+  const hs = machineData.holdSpin;
+  // Free spins: the old closed form when nothing changes from spin to spin (so old
+  // numbers stay exactly the same), else the session worked out spin by spin.
+  const party = !!fsData && (stickyWilds > 0 || (climbSteps > 0 && !!fsData.climb));
+  const session = party ? freeSpinSession(machineData, reelCount, { extra: extraFreeSpins, sticky: stickyWilds, steps: fsData!.climb ? climbSteps : 0, fullLineMultiplier, lines, bothWays, wheelBonus }) : null;
+  const loopStats = fsData ? freeSpinStats(machineData, reelCount, extraFreeSpins) : null; // the retrigger loop (free spins have no Zoomies)
+  const plainLoop = loopStats ? loopStats.q * loopStats.perTrigger : 0;
+  const plainTail = plainLoop < 1 ? 1 / (1 - plainLoop) : Infinity;
+
+  let lineEv = 0;
+  let hitRate = 0;
+  let zoomEv = 0;
+  let fsChance = 0;
+  let fsAwards = 0; // free spins first awarded, per paid spin
+  let fsSpins = 0; // free spins played, per paid spin
+  let freeEv = 0;
+  const jp = { q: 0, ev: 0, pots: [] as { id: string; chance: number }[] };
+  const hold = { q: 0, ev: 0, full: 0, respins: 0, coins: 0 };
+  for (const c of cases) {
+    if (!(c.p > 0)) continue;
+    const r = c.reels.length ? zoomLines(machineData, reelCount, c.reels, fullLineMultiplier, lines, bothWays) : lines0;
+    const caseLineEv = c.reels.length ? r.ev + r.fullEv * (average - 1) : plainLineEv;
+    lineEv += c.p * caseLineEv;
+    hitRate += c.p * r.hitRate;
+    if (c.reels.length) zoomEv += c.p * (caseLineEv - plainLineEv);
+    const cells = (reelCount - c.reels.length) * rows; // a zoomed reel holds no scatters
+    if (fsData) {
+      const dist = scatterDistribution(symbolChance(machineData, fsData.symbol), cells);
+      dist.forEach((p, count) => {
+        const award = freeSpinAward(fsData, count, extraFreeSpins);
+        if (!(award > 0)) return;
+        fsChance += c.p * p;
+        fsAwards += c.p * p * award;
+        if (session) {
+          const v = session(award);
+          freeEv += c.p * p * v.value;
+          fsSpins += c.p * p * v.spins;
+        }
+      });
+    }
+    if (machineData.jackpot) {
+      const j = jackpotStats(machineData, reelCount, jackpotGrowth, potSeedMultiplier, cells);
+      jp.q += c.p * j.q;
+      jp.ev += c.p * j.ev;
+      j.pots.forEach((pot, i) => {
+        if (!jp.pots[i]) jp.pots[i] = { id: pot.id, chance: 0 };
+        jp.pots[i].chance += c.p * pot.chance;
+      });
+    }
+    if (hs) {
+      const h = holdSpinStats(machineData, reelCount, extraRespins, cells);
+      hold.q += c.p * h.q;
+      hold.ev += c.p * h.ev;
+      hold.full += c.p * h.full;
+      hold.respins += c.p * h.q * h.respins; // per trigger, below
+      hold.coins += c.p * h.q * h.coins;
+    }
+  }
+  if (hold.q > 0) { hold.respins /= hold.q; hold.coins /= hold.q; }
+  if (fsData && !session) {
+    fsSpins = fsAwards * plainTail;
+    freeEv = fsSpins * plainLineEv * fsData.multiplier;
+  }
+  if (cases.length === 1) {
+    // No Zoomies: worked out exactly as before 1.10.0, so the old numbers don't move
+    // by even the last digit (the golden run depends on them).
+    lineEv = plainLineEv;
+    hitRate = lines0.hitRate;
+    if (loopStats) {
+      fsChance = loopStats.q;
+      fsAwards = loopStats.q * loopStats.perTrigger;
+      if (!session) {
+        fsSpins = loopStats.q * loopStats.total;
+        freeEv = fsSpins * plainLineEv * fsData!.multiplier;
+      }
+    }
+    if (hs) Object.assign(hold, holdSpinStats(machineData, reelCount, extraRespins));
+  }
+  let perTrigger = fsChance > 0 ? fsAwards / fsChance : 0;
+  let perTriggerWithRetriggers = fsChance > 0 ? fsSpins / fsChance : 0;
+  if (cases.length === 1 && loopStats) {
+    perTrigger = loopStats.perTrigger;
+    if (!session) perTriggerWithRetriggers = loopStats.total;
+  }
+
   let streakSum = 0;
   for (let k = 1; k <= streakCap; k++) streakSum += Math.pow(hitRate, k);
   const streakFactor = 1 + streakPerStack * streakSum;
 
-  const fsData = machineData.freeSpins;
-  const fs = freeSpinStats(machineData, reelCount, extraFreeSpins);
-  const freeSpinsPerSpin = fs.q * fs.total;
-  const freeEv = fsData ? freeSpinsPerSpin * lineEv * fsData.multiplier : 0;
-
-  const jp = jackpotStats(machineData, reelCount, jackpotGrowth, potSeedMultiplier);
-  const hold = holdSpinStats(machineData, reelCount, extraRespins);
-  const hs = machineData.holdSpin;
-  const extraSeconds = (fsData ? freeSpinsPerSpin * (spinDuration + fsData.pause) : 0)
+  const extraSeconds = (fsData ? fsSpins * (spinDuration + fsData.pause) : 0)
     + (machineData.jackpot ? jp.q * machineData.jackpot.duration : 0)
     + (hs ? hold.q * (hold.respins * hs.respinSeconds + 2 * hs.pause) : 0);
 
   return {
     ev: lineEv * streakFactor * (1 + doubleChance) + freeEv + jp.ev + hold.ev,
     lineEv, hitRate, streakFactor,
-    freeSpins: { chance: fs.q, perTrigger: fs.perTrigger, perTriggerWithRetriggers: fs.total, perSpin: freeSpinsPerSpin, ev: freeEv },
+    freeSpins: { chance: fsChance, perTrigger, perTriggerWithRetriggers, perSpin: fsSpins, ev: freeEv },
     jackpot: { chance: jp.q, ev: jp.ev, pots: jp.pots },
     hold: { chance: hold.q, ev: hold.ev, full: hold.full, respins: hold.respins, coins: hold.coins },
-    wheel: { average, ev: wheelEv },
+    wheel: { average, ev: lines0.fullEv * (average - 1) },
+    zoom: { chance: z, ev: zoomEv },
     extraSeconds,
   };
 }
