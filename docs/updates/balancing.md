@@ -41,23 +41,24 @@ Reading: colony 1 is fine (softcap works). Every later colony is shorter than th
 
 Not touched: gen 1–8 of colony 1, any RTP or machine pay table, the rule 2/3 floor (§10), the card gamble, casino returns.
 
-## B1 + B2: the change
+## B1 + B2: what the variants showed (2026-10-03)
 
-Two levers, try both, pick with the sim. Both keep every §9 rule (neither touches odds; the seed curve still only grows: rule 4's "softcap bends it down, never up").
+Measured with `--migrate --lives 36 --seeds 3`, idle (`/tmp` variant files, not kept). "Short" = colony 2 life past gen 3.
 
-**Lever 1: a softcap that tightens per colony** (D146's named lever). New data field, e.g. `retirement.seedSoftcap.perColony` = factor applied from colony 2: `seeds_c = seeds × perColony^(c-1)` (or `exponent_c`; try both shapes). Code: `seedTotal` / `seedCoins` take the colony number (they are module-level and used by `migrateSave`, so pass it in; no new state, `state.colony` exists). Also try a lower colony-1 `seeds` (60–80) for B2; D146 only tried higher caps.
+| Variant | Colony 2 hours | Colony 2 gens 9–15 (median) | Colony 3 | Verdict |
+|---|---|---|---|---|
+| Baseline | 1.8–2.1 | 2.8–4.4 min | 2–5 min lives | the problem |
+| Softcap seeds ×0.5 / ×0.25 per colony | 1.9–2.5 | 4.5–5.8 | — | weak |
+| Softcap exponent ×0.75 / ×0.7 / ×0.65 per colony | 2.2–19 | 4–8 | 1–4 min | short lives stay; **a wall** at the colony's end (lives jump to the 120 min cap); ×0.5–0.6 never finishes |
+| Seeds cost ×2 / ×3 / ×5 more coins per colony (`seedDivisor`) | 1.7–2.3 | 3.0–5.3 | 1.5–5.6 | **no effect** |
+| Colony Pride +30%/level, or price growth 2.0 | 2.2–2.5 | 4–5.3 | 2–3.5 | weak |
+| **Family Tree ×2 / ×3 dearer per colony** | 2.3–3.0 / **3.0–4.6** | 2.8–5.5 / **4.8–6.1** | 3–7 min | **best**; colony 2's gens 1–12 last 5–20 min at ×3. Colony 3 still fast (+60–74 whiskers → more Pride) |
 
-**Lever 2: a gentler Colony Pride** (data only): `perLevel` 0.5 → 0.25–0.35, or `growthRate` 1.6 → 2.0–2.4. Pride stays the whisker sink (no max).
+**Why the seed curve can't fix it:** a player (and the bot, and the Wise Elders) retires when pending seeds reach a share of the seeds earned. That's a *relative* goal, so any multiplier on coins or on the divisor cancels out; only how fast the family's power climbs from one life to the next sets a life's length. Colony 2 climbs ~10× a life because the tree is replanted quickly with lots of seeds, and Pride stacks on top. Only the curve's exponent changes that, and it turns into a wall once the tree needs seeds the curve won't give.
 
-**Watch:** whiskers come from seeds earned this colony (`whiskersFor`), so fewer seeds = fewer whiskers. If migration 2 drops below ~25, retune `colony.whiskerDivisor`, not the curve.
+**So the lever is the climb, not the curve:** a dearer tree per colony (new optional `familyTree.costPerColony`, cost × k^colony after rule 3's formula; tested as a 3-line patch in `getTreeCost`, not committed), plus something for colony 3+: a gentler Pride (it compounds with the extra whiskers a longer colony pays) or a whisker formula that grows slower. The sim summary (`Colony N:` lines, `--colonies N`) is in tools/sim.mjs.
 
-Variants to run (each `--data variant.json --migrate --lives 34 --seeds 3`, idle and active; ~8 min each, run in background, in parallel):
-1. perColony 0.5 (seeds 100 → 50 → 25)
-2. exponent per colony 0.2 → 0.15 → 0.1
-3. Pride 0.3/level
-4. Pride growth 2.2
-5. best of 1–2 combined with best of 3–4
-6. B2: colony-1 seeds 70 on top of the pick
+Next variants once the user picks a direction: tree ×3 + Pride 0.3/level; tree ×3 + Pride growth 2.0; tree ×2.5 + Pride 0.35; each idle and active, `--lives 45` to see colony 3 finish. B2 (colony 1 gens 9–10): try `seedSoftcap.seeds` 70 on top.
 
 **Targets** (proposed; confirm with the user):
 - Colony 1 unchanged through gen 8; gens 9–13 ≥ 7 min idle, ≥ 4 active.
@@ -68,14 +69,14 @@ Variants to run (each `--data variant.json --migrate --lives 34 --seeds 3`, idle
 
 ## Ask first (one `ask_decision` card each, before editing data)
 
-1. **Which lever:** softcap per colony (late lives longer, early colony speed kept) · weaker Pride (every colony slower) · both. Recommend: softcap per colony, plus Pride only if colony 3 still runs away.
-2. **Save in progress:** a colony-2+ save's pending seeds shrink under a new curve (held seeds never change). Accept it (recommended: pending only, the life just runs a bit longer), or bump `SAVE_VERSION` 15 and rescale `colonyCoins` like the v13 → v14 step (D146).
+1. **Which direction:** a dearer tree per colony + gentler Pride (recommended: the only lever that worked) · accept fast later colonies as a quick replay the Wise Elders automate · a gentler seed curve per colony (longer last lives, but a wall).
+2. **Save in progress:** with a dearer tree, a colony-2+ save's next traits cost more (planted ones stay). No save change needed. (A curve change would instead shrink pending seeds and need `SAVE_VERSION` 15 like D146's v13 → v14 step.)
 3. **The targets above.**
 
 ## Steps
 
 1. Branch. Re-run the baseline; save outputs to a scratch dir.
-2. (If lever 1) add the field to `RetirementDef` (types.ts), colony-aware `seedTotal`/`seedCoins`, a data.json `schemaVersion` bump only if the loader needs it; tests: the curve only grows per colony, colony 1 identical, `migrateSave` v13 → v14 still gives the same pending seeds (fixtures).
+2. Add `costPerColony` to the family tree's type (types.ts) and `getTreeCost`; the Big Cage shows `getTreeCost`, so the view follows. Tests: colony 1 costs unchanged; colony c costs = floor(rule-3 cost × k^c); the Wise Elders and the sim's planter still plant (they read `getTreeCost`). Check rule 3's wording in AGENTS/DESIGN still holds (one formula, × a colony factor) and say so in the Decision.
 3. Run the variants; pick with the user against the targets.
 4. Apply the pick. `npm test`; `npm run build`. Golden run: re-record with `node tools/golden.mjs --confirm` only once the user approves the change, on Node 24, and say so in the commit.
 5. B3: `--casino --migrate`; if late lives are still cut > 25%, try `casino.chipsPerRetirement` 250 → 150 or Golden Hour 0.5 → 0.35 (ask first).
@@ -83,8 +84,7 @@ Variants to run (each `--data variant.json --migrate --lives 34 --seeds 3`, idle
 
 ## Sim additions (small, do first if useful)
 
-- A per-colony summary at the end: hours per colony, shortest life past gen 3, median life gens 9–15. Today it has to be read off 34 lines.
-- `--colonies N`: stop after N migrations instead of guessing `--lives`.
+- Done (2026-10-03): a per-colony summary at the end (hours per colony, shortest life past gen 3, median life gens 9–15) and `--colonies N`. A colony that walls makes `--colonies` run for hours: use `--lives` for risky variants.
 - Optional (B5): an `--away` mode that closes the game for N hours between sessions, so offline upgrades get valued.
 
 ## Interactions

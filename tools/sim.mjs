@@ -32,6 +32,7 @@ const HELP = `node tools/sim.mjs [options]
   --migrate              make the Great Migration (1.4.0) as soon as the whole tree is planted,
                          spend the Golden Whiskers on perks (cheapest first) and play on in the
                          new colony; --lives counts every life, in every colony
+  --colonies N           --migrate until N migrations are made (ignores --lives)
   --plant S              at the Big Cage, plant a trait if it costs at most S x the
                          seeds held (or 1 seed); hold the rest for their bonus   (default 0.25)
   --data FILE            another data.json to try                               (default data.json)
@@ -40,7 +41,7 @@ const HELP = `node tools/sim.mjs [options]
 // ───────────────────────── Options ─────────────────────────
 
 function parseArgs(argv) {
-  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true, casino: false, helper: true, migrate: false };
+  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true, casino: false, helper: true, migrate: false, colonies: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -48,6 +49,7 @@ function parseArgs(argv) {
     else if (a === '--player') opts.player = next();
     else if (a === '--seeds') opts.seeds = Number(next());
     else if (a === '--lives') opts.lives = Number(next());
+    else if (a === '--colonies') { opts.colonies = Number(next()); opts.migrate = true; opts.lives = Math.max(opts.lives, 1000); }
     else if (a === '--minutes') opts.minutes = Number(next());
     else if (a === '--retire') opts.retire = Number(next());
     else if (a === '--first-minutes') opts.firstMinutes = Number(next());
@@ -275,7 +277,8 @@ function playSeed(seed) {
   let nextClick = 0;
   let nextMachineCheck = 0;
 
-  while (lives.length < opts.lives) {
+  // --colonies N: stop when colony N+1 would start (N migrations), however many lives that takes.
+  while (lives.length < opts.lives && !(opts.colonies !== null && migrations.length >= opts.colonies)) {
     g.update(STEP);
     t += STEP;
     const lifeSeconds = t - life.start;
@@ -461,6 +464,17 @@ if (opts.migrate) {
     console.log(`Great Migration ${k + 1}: after ${range(m.map((x) => x.at))} hours, ${range(m.map((x) => x.generations)).replace(/\.0/g, '')} generations, ${range(m.map((x) => x.whiskers)).replace(/\.0/g, '')} Golden Whiskers (${m.length} of ${results.length} seeds).`);
   }
   if (!most) console.log('Great Migration: never (the whole tree wasn\'t planted in time).');
+  // Per-colony summary: how long each colony lasts, and how short its lives get past the
+  // first few (the late-lives problem shows up here without reading every line).
+  const colonyCount = Math.max(...runs.map((r) => Math.max(...r.map((l) => l.colony)) + 1));
+  for (let c = 0; c < colonyCount; c++) {
+    const per = runs.map((r) => r.filter((l) => l.colony === c));
+    // Hours only for seeds that finished the colony (migrated out of it).
+    const hours = per.filter((ls, k) => results[k].migrations.length > c).map((ls) => ls.reduce((sum, l) => sum + l.length, 0) / 60);
+    const shortest = per.map((ls) => Math.min(...ls.filter((l) => l.generation > 3).map((l) => l.length))).filter(Number.isFinite);
+    const late = per.map((ls) => median(ls.filter((l) => l.generation >= 9 && l.generation <= 15).map((l) => l.length))).filter((v) => v !== null);
+    console.log(`Colony ${c + 1}: ${hours.length ? `${range(hours)} h to migrate` : 'not finished'} · shortest life past gen 3 ${shortest.length ? range(shortest) : '—'} min · median life gens 9–15 ${late.length ? range(late) : '—'} min`);
+  }
 }
 console.log(`Planted after each life (seed 1): ${runs[0].map((l, i) => `gen ${i + 1}: ${l.planted.join(', ') || '-'}`).join(' | ')}`);
 console.log(`Took ${((Date.now() - started) / 1000).toFixed(1)} s.`);
