@@ -41,3 +41,4 @@ Proposals, not plans the user has picked. **Ask the user before building any of 
 | [content-family-album.md](content-family-album.md) | The Family Album: a page per retired hamster, family records |
 | [content-jukebox.md](content-jukebox.md) | The Jukebox: chiptune music made in code |
 | [content-pouch-finds.md](content-pouch-finds.md) | Pouch Finds: trinket sets that drop from wins |
+| [content-machine-skins.md](content-machine-skins.md) | Machine skins: recolour all 8 machines, plus five new machine skins |
