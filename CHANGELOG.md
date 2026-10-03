@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased] · 1.8.0 "Grand Opening"
+## [Unreleased]
+
+## [1.8.0] - 2026-10-03 · Grand Opening
 
 **After the Great Migration your family opens its own casino: hamster guests play cabinets of your machines, and the house's share fills a till with Takings.**
 

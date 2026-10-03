@@ -381,7 +381,7 @@ Web-first (PORTING_NOTES D106): one web codebase ships to GitHub Pages, then itc
 | 9 | More machines | Hamster Maze (243 ways), Acorn Vault (hold & spin), The Big Cheese (multiplier wheel), the seed jar | done, 1.1.0 (§24) |
 | 10 | Wardrobe buffs | Every skin buffs while worn, 6 hats, a twist on every Epic | done, 1.1.0 (§25) |
 | 11 | Hamster Casino | Roulette, blackjack, Derby, Seed Drop; Casino Chips; the Prize Counter | done, 1.3.0 (§27) |
-| 12 | **Your own casino (late game)** | The Family Casino: cabinets of your machines on the floor, hamster guests play them below 100%, the house edge comes in as Takings (a till you empty); decor, staff, a high-limit room; opens after the first Great Migration, kept for good | built, 1.8.0-rc.1 "Grand Opening" (§32) |
+| 12 | **Your own casino (late game)** | The Family Casino: cabinets of your machines on the floor, hamster guests play them below 100%, the house edge comes in as Takings (a till you empty); decor, staff, a high-limit room; opens after the first Great Migration, kept for good | done, 1.8.0 "Grand Opening" (§32) |
 | 13 | Delivery depth | Only if playtests say deliveries are fun: routes (short/safe vs long/lucrative), helper hamsters | idea |
 | 14 | Release prep | The 1.0 polish: celebrations, effects, icons, link card, version line | done, 1.0.0 (§23) |
 | 15 | Visual redesign | A layout that fits the window, small upgrade tiles, the Big Cage as a meadow with a growing tree, a rebirth animation | done, 1.2.0 (§26) |
@@ -2072,7 +2072,7 @@ On a branch, as **1.6.0-rc.1**. Every part leaves the game playable, passes the 
 
 ## 32. The Family Casino: your own casino (milestone 12)
 
-> **Status: built on the branch `claude/project-thread-oip2a6` as 1.8.0-rc.1 "Grand Opening"** (2026-10-03; PORTING_NOTES D164), not merged. The project was set up to "begin roadmap 12", and the user left every design call to Claude: *"you decide everything based on the current and future state of the game"*. The picks below are Claude's; the playtest questions at the end are where they get checked.
+> **Status: released in 1.8.0 "Grand Opening"** (2026-10-03, at the user's "publish it", before a playtest; PORTING_NOTES D164). Built on the branch `claude/project-thread-oip2a6`. The project was set up to "begin roadmap 12", and the user left every design call to Claude: *"you decide everything based on the current and future state of the game"*. The picks below are Claude's; the playtest questions at the end are where they get checked.
 
 **The idea:** the family opens its own casino. Cabinets of its machines stand on the floor, hamster guests play them, and the house's edge comes in as **Takings** while you play and while you're away. It's the late game's long goal: it opens with the Great Migration and is **kept for good**, so it keeps growing however short a colony's lives are.
 

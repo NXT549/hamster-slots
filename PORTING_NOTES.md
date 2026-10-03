@@ -710,11 +710,12 @@ Headless tests can check round-trips, and a new platform only swaps the storage.
 - **Open:** colony 3's middle lives stay 2–5 min (more whiskers from the longer colony 2). The casino boosts weren't re-measured on top (§27's "up to a third" may still hold). No save change: planted traits stay; only the next ones cost more.
 
 
-**D164 — M12, the Family Casino, built as 1.8.0-rc.1 "Grand Opening"** (2026-10-03; the project was set up to "begin roadmap 12", then the user left every call to Claude: "you decide everything based on the current and future state of the game"; DESIGN §32, plan `docs/updates/m12-own-casino.md`).
+**D164 — M12, the Family Casino, released as 1.8.0 "Grand Opening"** (2026-10-03; the project was set up to "begin roadmap 12", then the user left every call to Claude: "you decide everything based on the current and future state of the game"; DESIGN §32, plan `docs/updates/m12-own-casino.md`).
 - **Chosen:** opens in the first life after the first Great Migration; its own currency (Takings) for its own cabinets and floor upgrades, plus Chip Crates and Token Boxes at growing rule-3 prices; a small idle layer (8 cabinets, 5 upgrades, 2 back-office buys) with one chore, a till that holds 2 h (up to 12 h) of takings; a sub-tab of the Casino tab; kept through retirements and migrations; `ownCasino.enabled` (and `casino.enabled`) leave it out of a build. Guests play below 100% (92–95%, the Floor Manager trims to 88% at most), so rule 4's >100% for the player stays and the "house edge" is real; takings are an exact average (bet × edge ÷ (spin time + 2 s rest) × guests), so play and away share one formula and the RNG is never touched.
 - **Why no coins:** the open problem is short late lives (§10, §29, D163). Takings that paid coins or counted as earned would be a seed farm on top; Golden Whiskers would feed Colony Pride, which D163 just had to rein in. So the casino's power stays inside itself, and its links out (chips for boosts, tokens for capsules) are things the game already measures, priced to grow.
 - **Rejected:** a full page like the Big Cage (that page exists because time stands still there; the Casino tab's redesign, §31 part 6, will restyle the sub-tab with the rest); random guests (offline would need a second formula); unlocking at a generation (before the migration the family still has the tree to grow); a full management game with events and rooms (a second game in the tray); paying a small capped coin bonus (even +25% payouts shortens every life by about a fifth).
 - **Save v15** (`ownCasino`, three stats), data schema 15, three stickers (60). The golden run was re-recorded: only saves gained the new fields, and the migration session's colony checkpoints gained the Grand Opening sticker's 3 tokens (which also earned Sticker Book a little earlier, so a few later amounts moved); same recording on Node 22 and 24. New sim option `--owncasino [minutes]`. Checked in Chromium at 390×844, 1280×2200 and 844×390, no console errors; not checked on a real phone, Firefox or Safari.
+- **Released** as 1.8.0 "Grand Opening" (a minor version: a new system) at the user's "publish it", before a playtest. Tag pushes are refused (403), so the user publishes the GitHub Release **"v1.8.0 · Grand Opening"** on the "Release 1.8.0" commit.
 
 ---
 
@@ -795,6 +796,17 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-10-03 · 1.8.0 the Family Casino (simulator, not a real playtest)**
+- `node tools/sim.mjs --migrate --lives 45 --seeds 3 --casino`, without and with `--owncasino` (the bot empties the till every 10 min of play and buys cabinets and upgrades by payback; Chip Crates only once the floor is full):
+
+  | | `--casino` | `--casino --owncasino` |
+  |---|---|---|
+  | Great Migration 1 · 2 | 4.4–5.4 h · 7.6–12.0 h | the same |
+  | Colony 1 · 2, median life gens 9–15 | 8.0–11.1 · 5.5–8.0 min | the same |
+  | Colony 3, shortest life past gen 3 · median gens 9–15 | 2.0–2.4 · 3.9–4.7 min | 2.2–2.9 · 3.6–4.5 min |
+
+- So the coins' pacing doesn't move (the only difference is noise in colony 3, where the runs end). The floor, in hours of play after the grand opening: Snack Stacker 0.4, Burrow Bonanza 1.4, Pouch Palace 2.6, Hamster Maze 3.9, Acorn Vault 5.9, Moving Day 8.9 (2 of 3 seeds), the Big Cheese not within the runs; 40–91 tills emptied; no Chip Crates (the floor never filled). Slower than the greedy model in §32 (it empties the till every 10 min, and plays through Big Cage visits).
 
 **2026-10-03 · balancing pass: later colonies (simulator, not a real playtest)**
 - `node tools/sim.mjs --migrate --lives 45 --seeds 3` (the new `Colony N:` summary lines), before → after (tree ×3 per colony, Colony Pride +30%):
