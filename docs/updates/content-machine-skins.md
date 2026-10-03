@@ -1,4 +1,4 @@
-# Content idea: Machine skins for every machine
+# Machine skins for every machine (done)
 
 > **Built and released in 1.6.1 "Fresh Coat"** (2026-10-03, the user picked "All together"; PORTING_NOTES D161). Kept as the record of the plan; read only when told to work on machine skins. Picks made: Arcade Neon's twist is a 5% double-win chance; the old skins are renamed "… Paint".
 
