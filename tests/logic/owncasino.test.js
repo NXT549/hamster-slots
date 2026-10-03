@@ -293,7 +293,7 @@ describe('the rest of the game is untouched', () => {
     g.buyFloorUpgrade('neonSign');
     g.update(30);
     const save = g.toSaveData();
-    expect(save.saveVersion).toBe(16);
+    expect(save.saveVersion).toBe(17);
     const h = createGame(structuredClone(data), createRng(1));
     expect(h.loadSaveData(structuredClone(save))).toBe(true);
     expect(h.toSaveData().ownCasino).toEqual(save.ownCasino);

@@ -43,7 +43,7 @@ export function h<K extends keyof HTMLElementTagNameMap>(tag: K, className = '',
 }
 
 // The game's currencies: their icon (a 12×12 sprite) and their names.
-export type Currency = 'coin' | 'seed' | 'token' | 'chip' | 'whisker' | 'takings';
+export type Currency = 'coin' | 'seed' | 'token' | 'chip' | 'whisker' | 'takings' | 'candy';
 export const CURRENCIES: Record<Currency, { sprite: string; name: string; one: string }> = {
   coin: { sprite: 'coin', name: 'coins', one: 'coin' },
   seed: { sprite: 'heirloom', name: 'Heirloom Seeds', one: 'Heirloom Seed' },
@@ -51,6 +51,7 @@ export const CURRENCIES: Record<Currency, { sprite: string; name: string; one: s
   chip: { sprite: 'chip', name: 'Casino Chips', one: 'Casino Chip' },
   whisker: { sprite: 'whisker', name: 'Golden Whiskers', one: 'Golden Whisker' },
   takings: { sprite: 'takings', name: 'Takings', one: 'Taking' },
+  candy: { sprite: 'candy', name: 'candy', one: 'candy' }, // Pumpkin Night (only while a festival is on)
 };
 
 // An amount as text: coins with their K/M/B ("1.22M"), the rest as whole numbers.

@@ -16,6 +16,7 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 - **Fifteen harder stickers** for long-time families: 250 deliveries, 10 wins in a row, 10 paylines in one spin, Luck 100, 10 golden jackpots, 25 jackpot pots, every hat, every capsule skin, 250 casino games, 100 tills emptied, 100,000 spins, a trillion coins, 15 Colony Trials, five Great Migrations and 60 stickers. They pay 3–10 Hamster Tokens each.
 - **Five secret stickers.** The Diary shows only a hint until you earn one, then tells you what it was for. No spoilers here!
+- **Pumpkin Night (20 October to 3 November, every year).** Jack-o'-lanterns and bats move into the cage, and your hamster collects **candy** every few wins, from every delivery and while you're away. Spend it at the **festival stall** (Capsules → Pumpkin Night) on five spooky outfits you can only get then: Pumpkin Spice fur, a Witch Hat, a Jack-o'-Lantern Wheel, Haunted Paint and the Pumpkin Patch room. They're yours for good, and leftover candy turns into Hamster Tokens when the festival ends. Two new stickers: Trick or Treat and Dressed to Spook.
 - **Pet your hamster.** Tap the hamster in its wheel for hearts, a happy hop and a squeak. It might even say something.
 
 ## [1.9.1] - 2026-10-03 · Welcome Mat

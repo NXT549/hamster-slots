@@ -253,6 +253,28 @@ export interface SkinDef extends Named {
   rarity: string; // "starter" or a capsule rarity id
   effects?: Effect[]; // M10: what wearing it does (level 1 while worn; none for starters)
   casino?: boolean; // M11: only at the casino's Prize Counter (never in a capsule)
+  festival?: string; // Pumpkin Night: only at this festival's stall (never in a capsule)
+}
+
+// ── Pumpkin Night: seasonal festivals (festival.ts) ──
+// Dates are month-days ("10-20"), so a festival comes back every year.
+export interface FestivalDef extends Named {
+  start: string;
+  end: string;
+  items: { skin: string; cost: number }[]; // the stall: skins, priced in candy
+}
+export interface FestivalsDef {
+  enabled: boolean;
+  winsPerTreat: number; // a candy every this many winning spins
+  treatsPerDelivery: number;
+  awayMinutesPerTreat: number; // a candy for every this many minutes away (up to offline.maxSeconds)
+  treatsPerToken: number; // when a festival ends, its leftover candy → Hamster Tokens
+  list: FestivalDef[];
+}
+export interface FestivalState {
+  id: string | null; // the festival on now (from the last date the view gave)
+  treats: number; // candy (kept only while the festival is on)
+  wins: number; // winning spins toward the next candy
 }
 
 // ── M11: the Hamster Casino ──
@@ -386,6 +408,7 @@ export interface GameData {
   skins: SkinDef[];
   diary: Sticker[];
   casino?: CasinoDef; // M11
+  festivals?: FestivalsDef; // Pumpkin Night
   ownCasino?: OwnCasinoDef; // M12
   colony?: ColonyDef; // 1.4.0: The Great Migration
 }
@@ -584,6 +607,9 @@ export interface Stats {
   pets: number; // times you tapped (petted) the hamster
   worstDrySpell: number; // the most paid spins in a row without a winning line
   lastCoinSpins: number; // paid spins that left too few coins for another ×1 spin
+  // Pumpkin Night (save v17): festivals
+  treatsEarned: number; // festival candy ever collected
+  festivalItems: number; // outfits bought at festival stalls
 }
 
 export interface GameState {
@@ -621,6 +647,7 @@ export interface GameState {
   skins: { owned: Record<string, boolean>; equipped: Record<string, string> };
   capsules: { sincePity: number };
   casino: CasinoState; // M11
+  festival: FestivalState; // Pumpkin Night
   ownCasino: OwnCasinoState; // M12
   stats: Stats;
 }
@@ -652,7 +679,7 @@ export interface Card {
 // Every event game.ts emits, and what it carries.
 // game.on('spinResolved', (e) => …) knows that e.payout is a Money, and so on.
 
-export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug' | 'casino' | 'takings';
+export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug' | 'casino' | 'takings' | 'festival';
 export type ChipSource = 'buy' | 'spins' | 'retire' | 'bet' | 'win' | 'prize' | 'refund' | 'debug' | 'takings';
 // One roulette bet (M11): a kind, which one (dozen / column / number), and the chips on it.
 export interface RouletteBet { kind: RouletteKind; pick: number; amount: Money | number }
@@ -703,6 +730,10 @@ export interface GameEvents {
   deliveryFinished: { reward: Money };
   tokensChanged: { tokens: Money; amount: Money; source: TokenSource };
   stickerEarned: { id: string; tokens: Money };
+  festivalStarted: { id: string }; // Pumpkin Night
+  festivalEnded: { id: string; treats: number; tokens: number }; // the leftover candy became tokens
+  treatsChanged: { treats: number; amount: number; source: 'win' | 'delivery' | 'away' | 'debug' | 'stall' };
+  festivalItemBought: { skin: string; cost: number };
   hamsterPetted: { pets: number }; // Dear Diary: the hamster was tapped (petted)
   capsuleOpened: { skinId: string; rarity: string; duplicate: boolean; refund: Money; pity: boolean };
   skinEquipped: { id: string; category: string };

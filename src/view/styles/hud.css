@@ -31,6 +31,7 @@
 .purse-rate:empty { display: none; }
 .purse-seed .purse-num { color: color-mix(in srgb, var(--heirloom-dark) 60%, var(--brass-ink)); }
 .purse-whisker .purse-num { color: var(--whisker-dark); }
+.purse-candy .purse-num { color: var(--candy-dark); }
 .purse.gain { animation: pop 0.25s ease-out; }
 @keyframes pop { 50% { transform: scale(1.06); } }
 /* The coin on the counter turns over now and then (steps: like pixel-art frames) */

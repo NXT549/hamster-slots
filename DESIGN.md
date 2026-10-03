@@ -298,6 +298,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 - **Save version 11** (M11) added the family's casino (chips, boosts, a blackjack hand) and nine casino stats (§27). **Save version 12** (1.3.1) added the Hamster Helper's switch (`helper`) and the stats `doubleWins` and `helperBuys` (§28); an older save starts with the switch on and the stats at 0.
 - **Save version 7** (milestone 7) added **symbols you unlock** and the stats `symbolsUnlocked`, `bestLuck` and `suitWins`. Machines now start with some symbols locked, so a v6 save gives every machine every unlock it sells (maxed): an older hamster had every symbol, and nobody loses one. Luck isn't stored (it comes from upgrade levels), and neither is the gamble's card history.
 - **Save version 16** (Dear Diary, D166) added the stats `pets`, `worstDrySpell` and `lastCoinSpins` for the secret stickers. A v15 save starts them at 0 and gets the new stickers it already reached. Data schema 16.
+- **Save version 17** (Pumpkin Night, D167) added the `festival` (the festival on, its candy, wins toward the next) and the stats `treatsEarned` and `festivalItems` (§33).
 - The save also keeps `savedAt` (real-world time), which pays **offline earnings** on the next visit (§15).
 - Settings (sound on/off and volume, Motion, Quick reels, Numbers, the ×1/×10/Max choice, and since 1.9.0 UI sounds and the Guide) are stored separately from the save, so **Reset progress** keeps them.
 - **Menu → Reset progress** wipes the save, *including the family*. You have to tap it twice within 3 s, so it can't happen by accident. (Retiring is the "soft" reset that keeps the family.)
@@ -395,6 +396,7 @@ Web-first (PORTING_NOTES D106): one web codebase ships to GitHub Pages, then itc
 | — | 1.7.1 "Settling In" | Balancing pass: each new colony's Family Tree costs ×3 more, Colony Pride +30% a level | done (§29) |
 | — | 1.9.0 "Welcome Mat" | UI redesign part 8: the first-time guide (a pointing paw), UI sounds, and an unlock moment for everything new | done (§31 part 8) |
 | — | Dear Diary (candidate) | Diary Volume 2: 15 harder stickers, 5 secret ones, petting the hamster, save v16 | built, not released (§14) |
+| — | Pumpkin Night (candidate) | Seasonal festivals: candy, a stall of five outfits, decor, from 20 October each year, save v17 | built, not released (§33) |
 | → | Releases | GitHub Pages from the start; then itch.io, Steam, maybe mobile, all from the same web codebase (PORTING_NOTES → The plan) | ongoing |
 
 **Particles and animations are a thread, not a milestone:** every milestone ships the effects for what it adds, and 1.0 went through the whole game (§20, §23). Every new animation needs its `.less-motion` rule (AGENTS.md → Code style).
@@ -2210,3 +2212,52 @@ Grand Opening (open it, 3 tokens) · Full Floor (all 8 cabinets, 10) · Casino M
 - Should it give something more to the coin game (it gives nothing on purpose, to keep the late lives from getting shorter)?
 - Is a sub-tab the right place, or should it be its own page?
 - Is "Grand Opening" the right name?
+
+---
+
+## 33. Pumpkin Night: seasonal festivals (candidate)
+
+> **Status: built, not released** (2026-10-03; PORTING_NOTES D167, plan `docs/updates/content-seasonal-festivals.md`). The user asked for brainstorms of real content and then said "you decide"; the project's coordinator picked Pumpkin Night, aimed to be live for its first day, **20 October**. The picks below are Claude's.
+
+For two weeks a year the cage dresses up for **Pumpkin Night** (20 October to 3 November): jack-o'-lanterns on the bedding, bats under the roof, and a **festival stall** (a Capsules sub-tab that appears only then) selling five outfits for **candy**, a currency that only exists during a festival.
+
+### Candy (data.json `festivals`)
+
+| Source | Candy |
+|---|---:|
+| Every **12 winning spins** (any machine, paid or free) | 1 |
+| Every **delivery** ("trick or treat!") | 2 |
+| **Time away**, during the festival | 1 per 10 minutes, up to the offline limit (2 h: 12) |
+
+Candy is **counted, never rolled**: the RNG is untouched, so the reels, every payout and every machine's odds are exactly the same with a festival on (a test spins one seed both ways). Candy never becomes coins or seeds, and isn't "earned" for retiring. **When the festival ends**, the candy left becomes Hamster Tokens, one per 5 (rounded down), so nothing is wasted.
+
+### The stall: five outfits (310 candy for all of them)
+
+| Outfit | Slot | Candy | Worn |
+|---|---|---:|---|
+| Pumpkin Spice | fur (orange) | 50 | +10% payouts |
+| Witch Hat | hat (purple, gold buckle) | 60 | +6 Luck |
+| Jack-o'-Lantern Wheel | wheel | 60 | spins 10% faster |
+| Haunted Paint | machine (purple, slime-green sign) | 60 | spins 10% cheaper |
+| Pumpkin Patch | room (night-purple wall, orange wire and floor) | 80 | +10% offline earnings |
+
+Every outfit is an ordinary **Rare** skin (`"festival": "pumpkinNight"`) with exactly the buff of the other Rares in its slot (§25; a test checks), so it's a look first and never stronger than capsules. Kept for good; never in a capsule (like the casino's prizes, and "Full Wardrobe" counts only capsule skins). An outfit you missed is back next year.
+
+At an active player's pace (late game, ~1,400 wins an hour) the stall takes about 2–3 hours of play; a player who drops in twice a day collects ~24 candy a day from time away alone, so the whole stall over the two weeks. Two diary stickers: **Trick or Treat** (50 candy, 3 tokens) and **Dressed to Spook** (all five outfits, 5 tokens).
+
+### How it's built
+
+- `src/logic/festival.ts` (plugged in like casino.ts). Rule 1: the logic never reads the date; `main.ts` gives it the month and day (`game.setDate`) at start, before offline earnings, and every 5 s after (midnight, a tab coming back). The festival in the save is the one on at the last date; a festival no longer in data.json ends at the next date (and pays its candy).
+- Dates are month-days, so it repeats every year; a festival may cross New Year. Only one festival is on at a time (a test checks they never overlap).
+- The view: the candy counter in the purse (only during a festival), the stall sub-tab, the decor in the wall (`festival-decor`, behind the rig, bats bob with a `.less-motion` rule), a hello and a goodbye from the hamster. Sprites: `candy` (12 px), `pumpkin`, `bat`, the `hatWitch` hat.
+- Debug: **Start Pumpkin Night** pretends it's 20 October until the page reloads; **+50 candy** (docs/DEBUG.md).
+
+### Save v17
+
+`festival`: the festival on (`id`), its candy (`treats`) and the wins toward the next candy (`wins`); two stats, `treatsEarned` and `festivalItems`. An older save has no festival until the view gives the date. Data schema 17.
+
+### Questions the playtest must answer
+
+- Is the stall too slow or too quick for a casual player? (`winsPerTreat`, `awayMinutesPerTreat` and the prices are data.)
+- Do the decor and the purple room read well on a phone, in Firefox and Safari?
+- Should the next festival (winter, "Snow Day") come with new outfits only, or a festival symbol too?

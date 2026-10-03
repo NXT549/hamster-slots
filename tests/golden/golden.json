@@ -1,6 +1,6 @@
 {
  "recordedWith": {
-  "schemaVersion": 16
+  "schemaVersion": 17
  },
  "sessions": {
   "firstLife": [
@@ -55,6 +55,11 @@
       "firstWin": true,
       "rockBottom": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -95,7 +100,7 @@
       "coinsEarned": "330",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -129,6 +134,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -160,6 +166,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "7",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 0,
       "whiskersEarned": "0",
@@ -227,6 +234,11 @@
       "firstWin": true,
       "rockBottom": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -267,7 +279,7 @@
       "coinsEarned": "707",
       "playTime": 599.999999999783
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -301,6 +313,7 @@
       "deliveryCoins": "140",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -332,6 +345,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "8",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 0,
       "whiskersEarned": "0",
@@ -400,6 +414,11 @@
       "rockBottom": true,
       "spins100": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -440,7 +459,7 @@
       "coinsEarned": "1084",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -474,6 +493,7 @@
       "deliveryCoins": "220",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -505,6 +525,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "11",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 0,
       "whiskersEarned": "0",
@@ -576,6 +597,11 @@
       "rockBottom": true,
       "spins100": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -616,7 +642,7 @@
       "coinsEarned": "1603",
       "playTime": 1199.9999999992374
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -650,6 +676,7 @@
       "deliveryCoins": "280",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -681,6 +708,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "16",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 1,
       "whiskersEarned": "0",
@@ -754,6 +782,11 @@
       "rockBottom": true,
       "spins100": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -796,7 +829,7 @@
       "coinsEarned": "2493.25",
       "playTime": 1499.9999999989645
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -830,6 +863,7 @@
       "deliveryCoins": "340",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -861,6 +895,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "17",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 3,
       "whiskersEarned": "0",
@@ -935,6 +970,11 @@
       "rockBottom": true,
       "spins100": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -978,7 +1018,7 @@
       "coinsEarned": "3410.75",
       "playTime": 1799.9999999986917
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1012,6 +1052,7 @@
       "deliveryCoins": "380",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1043,6 +1084,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "19",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 6,
       "whiskersEarned": "0",
@@ -1118,6 +1160,11 @@
       "rockBottom": true,
       "spins100": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -1161,7 +1208,7 @@
       "coinsEarned": "3848.75",
       "playTime": 2099.9999999991282
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1195,6 +1242,7 @@
       "deliveryCoins": "440",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1226,6 +1274,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "22",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 6,
       "whiskersEarned": "0",
@@ -1301,6 +1350,11 @@
       "rockBottom": true,
       "spins100": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -1345,7 +1399,7 @@
       "coinsEarned": "5032.75",
       "playTime": 2400.000000002948
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1379,6 +1433,7 @@
       "deliveryCoins": "460",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1410,6 +1465,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "22",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 10,
       "whiskersEarned": "0",
@@ -1485,6 +1541,11 @@
       "rockBottom": true,
       "spins100": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -1529,7 +1590,7 @@
       "coinsEarned": "7310.5",
       "playTime": 2700.000000006768
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1563,6 +1624,7 @@
       "deliveryCoins": "460",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1594,6 +1656,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "22",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 15,
       "whiskersEarned": "0",
@@ -1672,6 +1735,11 @@
       "spins100": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -1716,7 +1784,7 @@
       "coinsEarned": "10245.5",
       "playTime": 3000.000000010588
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1750,6 +1818,7 @@
       "deliveryCoins": "500",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1781,6 +1850,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "28",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 19,
       "whiskersEarned": "0",
@@ -1864,6 +1934,11 @@
       "spins100": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -1897,7 +1972,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "2",
      "seedsEarned": "2",
      "skins": {
@@ -1931,6 +2006,7 @@
       "deliveryCoins": "500",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -1962,6 +2038,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "34",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 19,
       "whiskersEarned": "0",
@@ -2043,6 +2120,11 @@
       "spins100": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -2076,7 +2158,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -2110,6 +2192,7 @@
       "deliveryCoins": "500",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -2141,6 +2224,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "34",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 19,
       "whiskersEarned": "0",
@@ -2227,6 +2311,11 @@
       "spins100": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -2269,7 +2358,7 @@
       "coinsEarned": "1671.64",
       "playTime": 599.999999999783
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -2303,6 +2392,7 @@
       "deliveryCoins": "560",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -2334,6 +2424,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "34",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 21,
       "whiskersEarned": "0",
@@ -2408,6 +2499,11 @@
       "thirdReel": true,
       "wheelMax": true,
       "wheelTraining": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -2522,7 +2618,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2556,6 +2652,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -2587,6 +2684,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "23",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -2674,6 +2772,11 @@
       "thirdReel": true,
       "wheelMax": true,
       "wheelTraining": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -2798,7 +2901,7 @@
       "coinsEarned": "418950.02",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2832,6 +2935,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 2,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -2863,6 +2967,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "36",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -2955,6 +3060,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -3100,7 +3210,7 @@
       "coinsEarned": "14285684.52",
       "playTime": 360.00000000000125
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3134,6 +3244,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 6,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -3165,6 +3276,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "50",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -3262,6 +3374,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -3433,7 +3550,7 @@
       "coinsEarned": "94183950.29",
       "playTime": 539.9999999998375
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3467,6 +3584,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 13,
+      "festivalItems": 0,
       "freeSpinCoins": "11077000",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
@@ -3498,6 +3616,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "58",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -3602,6 +3721,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -3799,7 +3923,7 @@
       "coinsEarned": "1114478903.43",
       "playTime": 732.8666666663288
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3833,6 +3957,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 16,
+      "festivalItems": 0,
       "freeSpinCoins": "11077000",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
@@ -3864,6 +3989,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "75",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -3968,6 +4094,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -4165,7 +4296,7 @@
       "coinsEarned": "1115120153.43",
       "playTime": 744.333333332985
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4199,6 +4330,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 16,
+      "festivalItems": 0,
       "freeSpinCoins": "11077000",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
@@ -4230,6 +4362,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "75",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -4334,6 +4467,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -4531,7 +4669,7 @@
       "coinsEarned": "1115186653.43",
       "playTime": 744.7333333329847
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4565,6 +4703,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 16,
+      "festivalItems": 0,
       "freeSpinCoins": "11077000",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
@@ -4596,6 +4735,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "75",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -4703,6 +4843,11 @@
       "wheelTraining": true,
       "wildThing": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -4899,7 +5044,7 @@
       "coinsEarned": "1122592134.26",
       "playTime": 744.7333333329847
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4933,6 +5078,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 16,
+      "festivalItems": 0,
       "freeSpinCoins": "11077000",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
@@ -4964,6 +5110,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "77",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -5071,6 +5218,11 @@
       "wheelTraining": true,
       "wildThing": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -5267,7 +5419,7 @@
       "coinsEarned": "1122592134.26",
       "playTime": 744.7333333329847
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5301,6 +5453,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 16,
+      "festivalItems": 0,
       "freeSpinCoins": "11077000",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
@@ -5332,6 +5485,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "77",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -5439,6 +5593,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -5636,7 +5795,7 @@
       "coinsEarned": "1123359081.17",
       "playTime": 864.7333333328755
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5670,6 +5829,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 17,
+      "festivalItems": 0,
       "freeSpinCoins": "11077000",
       "freeSpinTriggers": 1,
       "freeSpins": 5,
@@ -5701,6 +5861,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "81",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 209,
       "whiskersEarned": "0",
@@ -5765,6 +5926,11 @@
       "timer": 0
      },
      "diary": {},
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -5798,7 +5964,7 @@
       "coinsEarned": "20000",
       "playTime": 0
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5832,6 +5998,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -5863,6 +6030,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "0",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 0,
       "whiskersEarned": "0",
@@ -5925,6 +6093,11 @@
       "firstRetirement": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -5958,7 +6131,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5992,6 +6165,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -6023,6 +6197,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "8",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 0,
       "whiskersEarned": "0",
@@ -6096,6 +6271,11 @@
       "hatTrick": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -6129,7 +6309,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -6192,6 +6372,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -6223,6 +6404,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "17",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 0,
       "whiskersEarned": "0",
@@ -6301,6 +6483,11 @@
       "hatTrick": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -6343,7 +6530,7 @@
       "coinsEarned": "810.06",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -6406,6 +6593,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -6437,6 +6625,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "21",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 3,
       "whiskersEarned": "0",
@@ -6519,6 +6708,11 @@
       "tree5": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 3,
      "helper": true,
      "machines": [
@@ -6554,7 +6748,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6617,6 +6811,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -6648,6 +6843,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "33",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 3,
       "whiskersEarned": "0",
@@ -6743,6 +6939,11 @@
       "tree5": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 3,
      "helper": true,
      "machines": [
@@ -6787,7 +6988,7 @@
       "coinsEarned": "6136.48",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6850,6 +7051,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -6881,6 +7083,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "39",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 18,
       "whiskersEarned": "0",
@@ -6966,6 +7169,11 @@
       "secondMachine": true,
       "wheelMax": true,
       "wheelTraining": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -7068,7 +7276,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7102,6 +7310,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -7133,6 +7342,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "21",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 303,
       "whiskersEarned": "0",
@@ -7221,6 +7431,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -7349,7 +7564,7 @@
       "coinsEarned": "68222700000",
       "playTime": 240.00000000008313
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7383,6 +7598,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 2,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -7414,6 +7630,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "42",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 303,
       "whiskersEarned": "0",
@@ -7509,6 +7726,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -7663,7 +7885,7 @@
       "coinsEarned": "1274404575000",
       "playTime": 479.9999999998921
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7697,6 +7919,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 7,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -7728,6 +7951,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "68",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 303,
       "whiskersEarned": "0",
@@ -7824,6 +8048,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -8004,7 +8233,7 @@
       "coinsEarned": "3028004780250",
       "playTime": 719.9999999996738
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -8038,6 +8267,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 11,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -8069,6 +8299,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "70",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 303,
       "whiskersEarned": "0",
@@ -8166,6 +8397,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -8407,7 +8643,7 @@
       "coinsEarned": "3339639158250",
       "playTime": 724.9999999996693
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -8441,6 +8677,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 11,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -8472,6 +8709,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "70",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 303,
       "whiskersEarned": "0",
@@ -8571,6 +8809,11 @@
       "wheelMax": true,
       "wheelTraining": true,
       "wildThing": true
+     },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
      },
      "generation": 1,
      "helper": true,
@@ -8751,7 +8994,7 @@
       "coinsEarned": "3356837633250",
       "playTime": 784.9999999996147
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -8785,6 +9028,7 @@
       "deliveryCoins": "0",
       "derbyLongshots": 0,
       "doubleWins": 11,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -8816,6 +9060,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "70",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 303,
       "whiskersEarned": "0",
@@ -8903,6 +9148,11 @@
       "rockBottom": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -8945,7 +9195,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8979,6 +9229,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -9010,6 +9261,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "18",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 4,
       "whiskersEarned": "0",
@@ -9099,6 +9351,11 @@
       "rockBottom": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -9141,7 +9398,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9175,6 +9432,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 1,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -9206,6 +9464,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "21",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 4,
       "whiskersEarned": "0",
@@ -9302,6 +9561,11 @@
       "rockBottom": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -9344,7 +9608,7 @@
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9382,6 +9646,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 1,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -9413,6 +9678,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "24",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 4,
       "whiskersEarned": "0",
@@ -9512,6 +9778,11 @@
       "spins100": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -9556,7 +9827,7 @@
       "coinsEarned": "2448.88",
       "playTime": 399.99999999996487
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9594,6 +9865,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 1,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -9625,6 +9897,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "31",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 24,
       "whiskersEarned": "0",
@@ -9727,6 +10000,11 @@
       "spins100": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -9771,7 +10049,7 @@
       "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9809,6 +10087,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 1,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -9840,6 +10119,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "33",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 24,
       "whiskersEarned": "0",
@@ -9967,6 +10247,11 @@
       "spins100": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -10011,7 +10296,7 @@
       "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -10049,6 +10334,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 1,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -10080,6 +10366,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "33",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 24,
       "whiskersEarned": "0",
@@ -10182,6 +10469,11 @@
       "spins100": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -10226,7 +10518,7 @@
       "coinsEarned": "14655.28",
       "playTime": 489.999999999883
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -10264,6 +10556,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 1,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -10295,6 +10588,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "33",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 24,
       "whiskersEarned": "0",
@@ -10387,6 +10681,11 @@
       "treeAll": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 2,
      "helper": true,
      "machines": [
@@ -10451,7 +10750,7 @@
       "coinsEarned": "711.55",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "6",
      "skins": {
@@ -10485,6 +10784,7 @@
       "deliveryCoins": "20",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -10516,6 +10816,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "34",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 2,
       "whiskersEarned": "0",
@@ -10629,6 +10930,11 @@
       "trillionaire": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -10662,7 +10968,7 @@
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -10696,6 +11002,7 @@
       "deliveryCoins": "20",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -10727,6 +11034,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "60",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 2,
       "whiskersEarned": "15",
@@ -10815,6 +11123,11 @@
       "trillionaire": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 1,
      "helper": true,
      "machines": [
@@ -10881,7 +11194,7 @@
       "coinsEarned": "544.9",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -10915,6 +11228,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -10946,6 +11260,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "63",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 6,
       "whiskersEarned": "15",
@@ -11039,6 +11354,11 @@
       "trillionaire": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 5,
      "helper": true,
      "machines": [
@@ -11105,7 +11425,7 @@
       "coinsEarned": "1627.55",
       "playTime": 119.99999999999447
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -11139,6 +11459,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -11170,6 +11491,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "82",
+      "treatsEarned": 0,
       "trialsCompleted": 0,
       "upgradesBought": 11,
       "whiskersEarned": "15",
@@ -11274,6 +11596,11 @@
       "trillionaire": true,
       "wheelTraining": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 5,
      "helper": true,
      "machines": [
@@ -11340,7 +11667,7 @@
       "coinsEarned": "58501912.37",
       "playTime": 150.0000000000115
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -11374,6 +11701,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 0,
       "doubleWins": 0,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -11405,6 +11733,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "85",
+      "treatsEarned": 0,
       "trialsCompleted": 1,
       "upgradesBought": 11,
       "whiskersEarned": "17",
@@ -11529,6 +11858,11 @@
       "wheelTraining": true,
       "wildThing": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 5,
      "helper": true,
      "machines": [
@@ -11643,7 +11977,7 @@
       "coinsEarned": "47007152674228.47",
       "playTime": 389.99999999997397
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -11677,6 +12011,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 0,
       "doubleWins": 10,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -11708,6 +12043,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "128",
+      "treatsEarned": 0,
       "trialsCompleted": 1,
       "upgradesBought": 336,
       "whiskersEarned": "17",
@@ -11850,6 +12186,11 @@
       "wildThing": true,
       "wiseOld": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 6,
      "helper": true,
      "machines": [
@@ -11944,7 +12285,7 @@
       "coinsEarned": "6278.13",
       "playTime": 19.60000000000017
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "244",
      "seedsEarned": "4522",
      "skins": {
@@ -11978,6 +12319,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 0,
       "doubleWins": 10,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -12009,6 +12351,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "135",
+      "treatsEarned": 0,
       "trialsCompleted": 1,
       "upgradesBought": 343,
       "whiskersEarned": "17",
@@ -12158,6 +12501,11 @@
       "wildThing": true,
       "wiseOld": true
      },
+     "festival": {
+      "id": null,
+      "treats": 0,
+      "wins": 0
+     },
      "generation": 6,
      "helper": true,
      "machines": [
@@ -12252,7 +12600,7 @@
       "coinsEarned": "242121.08",
       "playTime": 79.59999999999677
      },
-     "saveVersion": 16,
+     "saveVersion": 17,
      "seeds": "244",
      "seedsEarned": "4522",
      "skins": {
@@ -12286,6 +12634,7 @@
       "deliveryCoins": "60",
       "derbyLongshots": 0,
       "doubleWins": 10,
+      "festivalItems": 0,
       "freeSpinCoins": "0",
       "freeSpinTriggers": 0,
       "freeSpins": 0,
@@ -12317,6 +12666,7 @@
       "takingsEarned": "0",
       "tillsEmptied": 0,
       "tokensEarned": "136",
+      "treatsEarned": 0,
       "trialsCompleted": 1,
       "upgradesBought": 376,
       "whiskersEarned": "17",

@@ -141,7 +141,7 @@ export function createUI(
   const el = {
     trialBadge: $('trial-badge'), boostBadges: $('boost-badges'), srLive: $('sr-live'),
     menuBtn: $('menu-btn'), menu: $<HTMLDialogElement>('menu'), debugBtn: $('debug-btn'), debugKey: $('debug-key'), resetBtn: $('reset-btn'),
-    stage: $('stage'), wall: $('wall'), rig: document.querySelector<HTMLElement>('.rig')!, machineTags: $('machine-tags'),
+    stage: $('stage'), wall: $('wall'), festivalDecor: $('festival-decor'), rig: document.querySelector<HTMLElement>('.rig')!, machineTags: $('machine-tags'),
     bubble: $('bubble'), bubbleText: $('bubble-text'), bubbleSkip: $('bubble-skip'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
     machine: $('machine'), machineName: $('machine-name'), reels: $('reels'), winLayer: $('win-layer'),
     wheel: $('wheel'), prizeFace: $('prize-face'), pots: $('pots'), streakBadge: $('streak-badge'), streakText: $('streak-text'),
@@ -814,6 +814,21 @@ export function createUI(
     sound.play('sticker');
     say(`Diary sticker: ${sticker.name}! +${formatWhole(e.tokens)} Hamster Token${e.tokens.eq(1) ? '' : 's'}.`, 3500);
   });
+  // Pumpkin Night: the festival starts and ends (the view gave the date: main.ts).
+  game.on('festivalStarted', (e) => {
+    const f = game.data.festivals!.list.find((x) => x.id === e.id)!;
+    say(`${f.name} is here! I'll collect candy every few wins. Spend it at the festival stall (Capsules).`, 6000);
+    if (!lessMotion()) fx.confetti(60, el.stage);
+  });
+  game.on('festivalEnded', (e) => {
+    const f = game.data.festivals!.list.find((x) => x.id === e.id);
+    const name = f ? f.name : 'The festival';
+    say(e.tokens > 0 ? `${name} is over. My leftover candy became ${e.tokens} Hamster Token${e.tokens === 1 ? '' : 's'}!` : `${name} is over. See you next year!`, 5000);
+  });
+  game.on('treatsChanged', (e) => {
+    if (e.amount > 0) hud.pop('candy');
+  });
+
   game.on('tokensChanged', (e) => {
     if (!capsulesShown) return;
     if (e.source === 'jackpot') say(`Golden jackpot! +${formatWhole(e.amount)} Hamster Token${e.amount.eq(1) ? '' : 's'}.`, 3000);
@@ -1381,6 +1396,9 @@ export function createUI(
 
     // The wallet (hud.ts): the rolling coin counter, the other currencies, the tab's title.
     hud.render(now, realDt);
+    // Pumpkin Night: the decor is up while the festival is on.
+    const festive = !!game.getFestival();
+    if (el.festivalDecor.classList.contains('hidden') === festive) el.festivalDecor.classList.toggle('hidden', !festive);
 
     // Machine + reels
     if (el.machine.dataset.machine !== game.getMachineData().id) showMachine();

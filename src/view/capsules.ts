@@ -6,7 +6,8 @@
 
 import { CAPSULE_SPRITES } from './art.ts';
 import { formatCoins, formatWhole, setText, setHTML, replayClass, iconHTML } from './dom.ts';
-import { createSubTabs } from './kit.ts';
+import { createSubTabs, buyButton, amount } from './kit.ts';
+import type { BuyButton } from './kit.ts';
 import { skinPreview } from './skins.ts';
 import type { Sound } from './sound.ts';
 import type { Fx } from './fx.ts';
@@ -33,6 +34,10 @@ export function createCapsulesView(
   let reveal: { e: GameEvents['capsuleOpened']; at: number; announced?: boolean } | null = null; // the capsule being opened
   let skinTiles = new Map<string, HTMLButtonElement>(); // skin id → its tile button
   let diaryRows = new Map<string, { row: HTMLElement; fill: HTMLElement; count: HTMLElement }>(); // sticker id → its row
+  // Pumpkin Night: the stall's tiles (built when a festival starts), and which festival they're for.
+  let stall = new Map<string, { tile: HTMLElement; buy: BuyButton; state: HTMLElement }>();
+  let stallFor: string | null = null;
+  const candy = amount('candy', 24);
 
   const rarityName = (id: string) => (id === 'starter' ? 'Starter' : (game.data.capsules.rarities.find((r) => r.id === id) || { name: id }).name);
   const categoryName = (id: string) => (game.data.skinCategories.find((c) => c.id === id) || { name: id }).name;
@@ -283,8 +288,73 @@ export function createCapsulesView(
     }
   }
 
+  // ─────────────────────── the festival stall (Pumpkin Night) ───────────────────────
+  // Five outfits for candy. Each is an ordinary skin (same buff as its rarity), kept for good.
+  function buildStall(): void {
+    const f = game.getFestival();
+    stallFor = f ? f.id : null;
+    const box = $('festival-stall');
+    box.replaceChildren();
+    stall = new Map();
+    if (!f) return;
+    const head = document.createElement('div');
+    head.className = 'festival-candy';
+    head.append(candy.el, Object.assign(document.createElement('span'), { className: 'note', textContent: 'candy' }));
+    box.appendChild(head);
+    const grid = document.createElement('div');
+    grid.className = 'wardrobe-grid';
+    for (const item of game.getFestivalStall()) {
+      const def = game.getSkinDef(item.skin)!;
+      const tile = document.createElement('div');
+      tile.className = 'skin-tile festival-tile';
+      tile.innerHTML = `<span class="skin-preview"></span><span class="skin-name"></span>
+        <span class="rarity-chip rarity-${def.rarity}">${categoryName(def.category)}</span><span class="skin-buff"></span><span class="skin-state"></span>`;
+      tile.querySelector('.skin-preview')!.appendChild(skinPreview(def, def.category === 'fur' || def.category === 'hat' ? 64 : 48));
+      tile.querySelector('.skin-name')!.textContent = def.name;
+      tile.querySelector('.skin-buff')!.textContent = wearText(def);
+      const buy = buyButton({
+        size: 'sm',
+        ariaLabel: `Buy ${def.name}`,
+        onClick: () => {
+          if (!game.buyFestivalItem(item.skin)) { sound.playUi('cantAfford'); return; }
+          sound.play('buy');
+          game.equipSkin(item.skin);
+          say(`${def.name}! I'm wearing it now. Spooky!`, 3000);
+        },
+      });
+      tile.appendChild(buy.el);
+      grid.appendChild(tile);
+      stall.set(item.skin, { tile, buy, state: tile.querySelector<HTMLElement>('.skin-state')! });
+    }
+    box.appendChild(grid);
+  }
+
+  function renderStall(): void {
+    const f = game.getFestival();
+    subtabs.setHidden('festival', !f);
+    if ((f ? f.id : null) !== stallFor) {
+      buildStall();
+      if (f) subtabs.setLabel('festival', f.name);
+      else if (subtabs.current === 'festival') subtabs.open('machine');
+    }
+    if (!f || subtabs.current !== 'festival') return;
+    const treats = game.state.festival.treats;
+    candy.update(treats);
+    setText($('festival-note'), `${f.name} is on! Your hamster collects candy every ${game.data.festivals!.winsPerTreat} wins, from every delivery and while you're away. `
+      + `Spend it here on outfits you can only get during ${f.name}. Candy left at the end turns into Hamster Tokens (one per ${game.data.festivals!.treatsPerToken}).`);
+    for (const item of game.getFestivalStall()) {
+      const t = stall.get(item.skin);
+      if (!t) continue;
+      t.tile.classList.toggle('wearing', game.getEquippedSkin(game.getSkinDef(item.skin)!.category) === item.skin);
+      if (item.owned) t.buy.update({ state: 'maxed', label: 'Yours!' });
+      else t.buy.update({ state: treats >= item.cost ? 'ready' : 'saving', cost: item.cost, currency: 'candy', progress: treats / item.cost });
+      setText(t.state, item.owned ? 'Kept for good' : '');
+    }
+  }
+
   function render(now: number): void {
     const s = game.state;
+    renderStall();
     setText(el.tokens, formatWhole(s.tokens));
     const cost = game.getPullCost();
     const opening = reveal && now - reveal.at < REVEAL_MS;
@@ -303,7 +373,8 @@ export function createCapsulesView(
       tile.classList.toggle('wearing', wearing);
       tile.disabled = !owned;
       const casinoOnly = !!game.getSkinDef(id)!.casino; // M11: sold at the casino's Prize Counter, never in capsules
-      setText(tile.querySelector('.skin-state')!, wearing ? 'Wearing' : owned ? 'Tap to wear' : casinoOnly ? 'Casino prize' : 'Not found yet');
+      const festival = game.festivalOfSkin(id); // Pumpkin Night: sold only at its festival's stall
+      setText(tile.querySelector('.skin-state')!, wearing ? 'Wearing' : owned ? 'Tap to wear' : casinoOnly ? 'Casino prize' : festival ? `${festival.name} only` : 'Not found yet');
     }
     renderWardrobeTotal();
 
