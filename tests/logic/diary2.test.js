@@ -2,7 +2,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { data, newGame, num, land, money } from './helpers.js';
-import { migrateSave } from '../../src/logic/game.ts';
+import { migrateSave, SAVE_VERSION } from '../../src/logic/game.ts';
 
 const sticker = (id) => data.diary.find((d) => d.id === id);
 
@@ -23,7 +23,7 @@ describe('Diary Volume 2 data', () => {
   // "Every skin" and "every hat" must mean what's really in the capsules (not the
   // starters, not the casino's prizes), or the sticker could never be earned.
   it('"Full Wardrobe" and "Hat Rack" ask for exactly the capsule pool', () => {
-    const pool = data.skins.filter((s) => s.rarity !== 'starter' && !s.casino);
+    const pool = data.skins.filter((s) => s.rarity !== 'starter' && !s.casino && !s.festival);
     expect(sticker('fullWardrobe').goal.target).toBe(pool.length);
     expect(sticker('hatRack').goal.target).toBe(pool.filter((s) => s.category === 'hat').length);
   });
@@ -102,7 +102,7 @@ describe('save v16', () => {
     delete save.stats.worstDrySpell;
     delete save.stats.lastCoinSpins;
     const migrated = migrateSave(save, data);
-    expect(migrated.saveVersion).toBe(16);
+    expect(migrated.saveVersion).toBe(SAVE_VERSION);
     const h = newGame(7);
     expect(h.loadSaveData(save)).toBe(true);
     expect(h.state.stats.pets).toBe(0);

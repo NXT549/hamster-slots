@@ -17,9 +17,10 @@ import { titleLetters, rampFromTokens } from './pixelfont.ts';
 import type { Currency, Sheet } from './kit.ts';
 import type { Game } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
+import { money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
 
-const ORDER: Currency[] = ['coin', 'seed', 'token', 'chip', 'whisker', 'takings'];
+const ORDER: Currency[] = ['coin', 'seed', 'token', 'chip', 'whisker', 'takings', 'candy'];
 
 interface Purse {
   currency: Currency;
@@ -88,6 +89,7 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
 
   const amountOf = (c: Currency): Money => {
     const s = game.state;
+    if (c === 'candy') return money(s.festival.treats); // Pumpkin Night: a plain count
     return c === 'coin' ? s.coins : c === 'seed' ? s.seeds : c === 'token' ? s.tokens : c === 'chip' ? s.casino.chips : c === 'takings' ? s.ownCasino.takings : s.whiskers;
   };
   const rateText = () => {
@@ -120,7 +122,18 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
       text: 'The house\'s share of what hamster guests bet in the Family Casino. They collect in its till: empty it, then spend them on cabinets, decor and staff, or on chips and tokens. Takings never turn into coins.',
       go: ['Your casino', 'casino', 'own'],
     }),
+    candy: () => {
+      const f = game.getFestival();
+      const left = f ? `${f.name} runs until ${endText(f.end)}` : 'The festival is over';
+      return {
+        text: `${left}. Your hamster collects candy every few wins, from every delivery and while you're away. Spend it at the festival stall on outfits you can only get now. Candy left at the end turns into Hamster Tokens.`,
+        go: f ? ['the stall', 'capsules', 'festival'] : null,
+      };
+    },
   };
+  // "11-03" → "3 November".
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const endText = (md: string) => { const [m, d] = md.split('-').map(Number); return `${d} ${MONTHS[m - 1]}`; };
 
   function note(c: Currency): void {
     const info = CURRENCIES[c];
@@ -169,6 +182,7 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
       case 'chip': return shown.casino();
       case 'whisker': return s.colony > 0 || s.whiskers.gt(0);
       case 'takings': return game.isOwnCasinoOpen();
+      case 'candy': return !!game.getFestival(); // Pumpkin Night: only while a festival is on
     }
   }
 

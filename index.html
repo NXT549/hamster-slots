@@ -108,6 +108,13 @@
           <div class="gamble-timer"><div class="gamble-timer-fill" id="gamble-timer"></div></div>
         </div>
         <img class="prop prop-bowl" data-sprite="bowl" data-size="48" alt="">
+        <!-- Pumpkin Night: jack-o'-lanterns and bats while the festival is on (ui.ts shows them) -->
+        <div class="festival-decor hidden" id="festival-decor" aria-hidden="true">
+          <img class="fd-pumpkin fd-pumpkin-big" data-sprite="pumpkin" data-size="48" alt="">
+          <img class="fd-pumpkin fd-pumpkin-small" data-sprite="pumpkin" data-size="32" alt="">
+          <img class="fd-bat fd-bat-1" data-sprite="bat" data-size="32" alt="">
+          <img class="fd-bat fd-bat-2" data-sprite="bat" data-size="32" alt="">
+        </div>
         <!-- Pins in the cage's top-right corner: a Colony Trial under way (1.4.0: its
              twist and how close the goal is), then the casino's boosts and charms (M11).
              1.6.0: tap one to read about it (the sheet in the tray). -->
@@ -204,6 +211,7 @@
             <button class="subtab" data-sub="machine">Capsule Machine</button>
             <button class="subtab" data-sub="wardrobe">Wardrobe</button>
             <button class="subtab" data-sub="diary">Diary</button>
+            <button class="subtab hidden" data-sub="festival" id="festival-subtab">Festival</button>
           </nav>
         </div>
         <div class="subpanel" data-sub="machine">
@@ -226,6 +234,11 @@
         <div class="subpanel" data-sub="diary">
           <p class="note subpanel-note" id="diary-note"></p>
           <div class="diary" id="diary"></div>
+        </div>
+        <!-- Pumpkin Night: the festival stall (only while a festival is on). Outfits for candy. -->
+        <div class="subpanel" data-sub="festival">
+          <p class="note subpanel-note" id="festival-note"></p>
+          <div class="festival-stall" id="festival-stall"></div>
         </div>
       </div>
 

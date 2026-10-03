@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 16,
+  "schemaVersion": 17,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -1561,7 +1561,12 @@
     { "id": "roomMint", "name": "Mint Garden", "category": "room", "rarity": "common", "effects": [{ "type": "offlineBonus", "perLevel": 0.05 }] },
     { "id": "roomStarry", "name": "Starry Night", "category": "room", "rarity": "rare", "effects": [{ "type": "offlineBonus", "perLevel": 0.1 }] },
     { "id": "roomCasino", "name": "Casino Night", "category": "room", "rarity": "rare", "casino": true, "effects": [{ "type": "offlineBonus", "perLevel": 0.1 }] },
-    { "id": "roomSunflower", "name": "Sunflower Field", "category": "room", "rarity": "epic", "effects": [{ "type": "offlineBonus", "perLevel": 0.2 }, { "type": "deliveryTokens", "every": 3 }] }
+    { "id": "roomSunflower", "name": "Sunflower Field", "category": "room", "rarity": "epic", "effects": [{ "type": "offlineBonus", "perLevel": 0.2 }, { "type": "deliveryTokens", "every": 3 }] },
+    { "id": "furPumpkin", "name": "Pumpkin Spice", "category": "fur", "rarity": "rare", "festival": "pumpkinNight", "effects": [{ "type": "payoutMultiplier", "perLevel": 0.1 }] },
+    { "id": "hatWitch", "name": "Witch Hat", "category": "hat", "rarity": "rare", "festival": "pumpkinNight", "effects": [{ "type": "luck", "perLevel": 6 }] },
+    { "id": "wheelLantern", "name": "Jack-o'-Lantern Wheel", "category": "wheel", "rarity": "rare", "festival": "pumpkinNight", "effects": [{ "type": "spinSpeed", "multiplier": 0.9 }] },
+    { "id": "machineHaunted", "name": "Haunted Paint", "category": "machine", "rarity": "rare", "festival": "pumpkinNight", "effects": [{ "type": "spinCostMultiplier", "perLevel": 0.9 }] },
+    { "id": "roomPumpkin", "name": "Pumpkin Patch", "category": "room", "rarity": "rare", "festival": "pumpkinNight", "effects": [{ "type": "offlineBonus", "perLevel": 0.1 }] }
   ],
   "diary": [
     { "id": "firstSpin", "name": "First Spin", "description": "Spin the reels for the first time.", "goal": { "type": "stat", "stat": "spins", "target": 1 }, "tokens": 2 },
@@ -1643,7 +1648,9 @@
     { "id": "drySpell", "name": "Dry Spell", "description": "Spin 20 paid spins in a row without a win.", "goal": { "type": "stat", "stat": "worstDrySpell", "target": 20 }, "tokens": 2, "secret": true, "hint": "Even the luckiest hamster has a bad day." },
     { "id": "rockBottom", "name": "Rock Bottom", "description": "Spend your last coins on a spin.", "goal": { "type": "stat", "stat": "lastCoinSpins", "target": 1 }, "tokens": 2, "secret": true, "hint": "Spend it all." },
     { "id": "luckySeven", "name": "Lucky Seven", "description": "Win on 7 paylines in a single spin.", "goal": { "type": "stat", "stat": "mostLinesWon", "target": 7 }, "tokens": 3, "secret": true, "hint": "Some numbers are luckier than others." },
-    { "id": "easyCome", "name": "Easy Come, Easy Go", "description": "Lose the card gamble 25 times.", "goal": { "type": "stat", "stat": "gambleLosses", "target": 25 }, "tokens": 2, "secret": true, "hint": "Fortune favours the bold, sometimes." }
+    { "id": "easyCome", "name": "Easy Come, Easy Go", "description": "Lose the card gamble 25 times.", "goal": { "type": "stat", "stat": "gambleLosses", "target": 25 }, "tokens": 2, "secret": true, "hint": "Fortune favours the bold, sometimes." },
+    { "id": "trickOrTreat", "name": "Trick or Treat", "description": "Collect 50 candy at Pumpkin Night (late October).", "goal": { "type": "stat", "stat": "treatsEarned", "target": 50 }, "tokens": 3 },
+    { "id": "dressedToSpook", "name": "Dressed to Spook", "description": "Buy all five outfits at the Pumpkin Night stall.", "goal": { "type": "stat", "stat": "festivalItems", "target": 5 }, "tokens": 5 }
   ],
   "casino": {
     "enabled": true,
@@ -1706,6 +1713,25 @@
     "rewards": [
       { "id": "chipCrate", "name": "Chip Crate", "description": "500 Casino Chips for the Prize Counter.", "kind": "chips", "chips": 500, "baseCost": 200, "growthRate": 1.3, "maxLevel": null },
       { "id": "tokenBox", "name": "Token Box", "description": "A Hamster Token for the Capsule Machine.", "kind": "tokens", "tokens": 1, "baseCost": 400, "growthRate": 1.25, "maxLevel": null }
+    ]
+  },
+  "festivals": {
+    "enabled": true,
+    "winsPerTreat": 12,
+    "treatsPerDelivery": 2,
+    "awayMinutesPerTreat": 10,
+    "treatsPerToken": 5,
+    "list": [
+      {
+        "id": "pumpkinNight", "name": "Pumpkin Night", "start": "10-20", "end": "11-03",
+        "items": [
+          { "skin": "furPumpkin", "cost": 50 },
+          { "skin": "hatWitch", "cost": 60 },
+          { "skin": "wheelLantern", "cost": 60 },
+          { "skin": "machineHaunted", "cost": 60 },
+          { "skin": "roomPumpkin", "cost": 80 }
+        ]
+      }
     ]
   }
 }

@@ -104,6 +104,7 @@
   --wheel-wood: #a8764a;    --wheel-wood-dark: #7a5230; --chip-red: #ef6f6c;
   /* 1.4.0, The Great Migration: Golden Whiskers, and Moving Day's cardboard boxes */
   --whisker: #ffd35c;       --whisker-dark: #a36e1c;   --whisker-soft: #fff3b8;
+  --candy: #f79a3e;         --candy-dark: #9c4a1d;     /* Pumpkin Night's candy and its stall */
   --box: #e3b27a;           --box-dark: #b9844c;       --box-light: #f5d6a8;      --box-tape: #cfc6b8;      --box-label: #93cfe8;
   /* paylines: one colour per line (line 1 … line 10; line 11 on reuses them) */
   --line-1: #ffbe2e; --line-2: #ff7fa3; --line-3: #4fb8e6; --line-4: #6fcb74; --line-5: #b08af0;

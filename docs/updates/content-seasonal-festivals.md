@@ -1,6 +1,8 @@
 # Content idea: Seasonal Festivals
 
-> **Idea, not approved.** A new system: plan it with the user first (AGENTS.md → Ask first, rule 8). Read only when told to work on this update. Working name: **"Festival Season"**; first festival **"Pumpkin Night"** (late October), then **"Snow Day"** (December).
+> **Picked and built as "Pumpkin Night" (D167, DESIGN §33)**, not released yet; the questions below were decided there. Snow Day is still an idea.
+>
+> *(Was: idea, not approved.)* A new system: plan it with the user first (AGENTS.md → Ask first, rule 8). Read only when told to work on this update. Working name: **"Festival Season"**; first festival **"Pumpkin Night"** (late October), then **"Snow Day"** (December).
 
 ## Pitch
 For a couple of weeks at a time, the room dresses up: pumpkins and bats, or snow on the window. A festival symbol shows up on the reels and drops **festival treats** (a temporary currency) spent at a festival stall on limited outfits, a room, a hat. When it ends, the treats turn into Hamster Tokens and the outfits stay forever.

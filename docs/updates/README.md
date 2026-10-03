@@ -36,7 +36,7 @@ Proposals, not plans the user has picked. **Ask the user before building any of 
 |---|---|
 | [content-lucky-visitors.md](content-lucky-visitors.md) | Lucky Visitors: tap a visitor at the cage for a small surprise |
 | [content-daily-treats.md](content-daily-treats.md) | Daily Treats and Errands: a daily gift and three errands for tokens |
-| [content-seasonal-festivals.md](content-seasonal-festivals.md) | Seasonal Festivals: dated events with treats and a stall |
+| [content-seasonal-festivals.md](content-seasonal-festivals.md) | Seasonal Festivals: dated events with treats and a stall (**picked: Pumpkin Night built, D167, DESIGN §33**) |
 | [content-machine-pack-2.md](content-machine-pack-2.md) | Three colony machines: expanding wilds, colossal symbols, multiplier wilds |
 | [content-hamster-care.md](content-hamster-care.md) | Hamster Care: food, water and toy for a happy-hamster bonus |
 | [content-family-album.md](content-family-album.md) | The Family Album: a page per retired hamster, family records |

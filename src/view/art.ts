@@ -2519,6 +2519,58 @@ const close = [
   '................',
 ];
 
+// ── Pumpkin Night: the festival's candy (a 12 px currency), a jack-o'-lantern and a bat ──
+const candy = [
+  '............',
+  '............',
+  '.J..JJJJ..J.',
+  'JjJJjjooJJoJ',
+  'JjoJjwooJooJ',
+  'JooJjoooJoOJ',
+  'JoOJooOOJOOJ',
+  'JOJJoOOOJJOJ',
+  '.J..JJJJ..J.',
+  '............',
+  '............',
+  '............',
+];
+const pumpkin = [
+  '................',
+  '.......HH.......',
+  '........Hg......',
+  '.....JJJgJJJ....',
+  '...JJjojJjooJJ..',
+  '..JjjoojJjoooOJ.',
+  '.JjjooojJooooOOJ',
+  '.JjoyyojJoyyoOOJ',
+  '.JjoyyoOJoyyoO)J',
+  '.JooooOOJoooOO)J',
+  '.JoyyyyyyyyyO))J',
+  '..JOOyy)JyyO))J.',
+  '...JJ)))J)))JJ..',
+  '.....JJJJJJJ....',
+  '................',
+  '................',
+];
+const bat = [
+  '................',
+  '................',
+  '................',
+  '.D............D.',
+  '.DD..........DD.',
+  '.DdD..D..D..DdD.',
+  '.DddD.DDDD.DddD.',
+  '.DdddDdyydDdddD.',
+  '..DdddddddddddD.',
+  '...DDdddsddsDD..',
+  '.....DDsssDD....',
+  '.......DDD......',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
 export const SPRITES: Record<string, string[]> = {
   seed, golden, carrot, blueberry, strawberry, wild, ball, pouch24, corn, apple,
   hamster, hamsterRun1, hamsterRun2, hamsterRun3, hamsterRun4, hamsterBlink, hamsterSleep, hamsterCheer, coin, chip, token, heirloom, capsule, capsuleRare, capsuleEpic, gacha,
@@ -2533,6 +2585,7 @@ export const SPRITES: Record<string, string[]> = {
   lock, close, capsule16, die16, menu16, soundOn, soundOff, // 1.6.0
   lockOpen, guidePaw, // 1.9.0
   takings, // M12
+  candy, pumpkin, bat, // Pumpkin Night
   frameCard, framePaper, frameTab, frameButton, frameRail, bubbleTail,
 };
 
@@ -2596,6 +2649,17 @@ export const HATS: Record<string, { rows: string[]; x: number; y: number }> = {
     'HGGGGGGGgH..',
     '.HHgggggGiH.',
     '......HHHHH.',
+  ] },
+  hatWitch: { x: 15, y: 0, rows: [ // Pumpkin Night: a purple witch hat with a gold buckle, its tip bent over
+    '.........00..',
+    '.......0090..',
+    '......0+90...',
+    '.....0+890...',
+    '.....0+8890..',
+    '....0+88890..',
+    '....0yhyyV0..',
+    '0+88888888890',
+    '.00000000000.',
   ] },
   hatCrown: { x: 18, y: 2, rows: [ // a gold crown with a ruby and a sapphire
     'h...h...h',

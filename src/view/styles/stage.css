@@ -281,3 +281,15 @@
 }
 .less-motion .hamster.hop, .less-motion .stage.shake-stage, .less-motion .stage-gacha.ready, .less-motion .cage-sky-clouds { animation: none; }
 .less-motion .hamster.idle, .less-motion .deck-spin.attract, .less-motion .deck-spin.shake { animation: none !important; }
+
+/* Pumpkin Night: jack-o'-lanterns on the bedding and two bats hanging about near the top.
+   Behind the rig (the wheel and the machine), never in the way of a tap. */
+.festival-decor { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.fd-pumpkin { position: absolute; bottom: -8px; }
+.fd-pumpkin-big { right: 22px; }
+.fd-pumpkin-small { right: 76px; bottom: -4px; }
+.fd-bat { position: absolute; top: 34px; animation: bat-bob 2.4s ease-in-out infinite; }
+.fd-bat-1 { left: 18%; }
+.fd-bat-2 { right: 22%; top: 58px; animation-delay: -1.2s; }
+@keyframes bat-bob { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-8px) scaleY(0.8); } }
+.less-motion .fd-bat { animation: none; }

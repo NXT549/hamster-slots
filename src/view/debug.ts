@@ -13,7 +13,7 @@ const WINDOW = 10; // seconds of game time used for "measured coins/s"
 
 export function createDebugPanel(
   game: Game,
-  { clock, reloadData, saveNow }: { clock: { timeScale: number }; reloadData: (() => Promise<void>) | null; saveNow: () => boolean },
+  { clock, reloadData, saveNow }: { clock: { timeScale: number; festivalDate?: [number, number] | null }; reloadData: (() => Promise<void>) | null; saveNow: () => boolean },
 ) {
   const panel = document.getElementById('debug-panel')!;
   panel.innerHTML = `
@@ -42,6 +42,9 @@ export function createDebugPanel(
       <button data-pot="mini">Wheel: Mini</button><button data-pot="minor">Minor</button><button data-pot="major">Major</button><button data-pot="grand">Grand</button>
       <button id="dbg-gamble">Offer a gamble (100)</button>
       <button id="dbg-hold">Hold & spin (6 acorns)</button>
+    </div>
+    <div class="row"><span class="row-label">Pumpkin Night (pretend it's a festival day, until the page reloads)</span>
+      <button id="dbg-fest-on">Start Pumpkin Night</button><button id="dbg-fest-off">End it (back to today)</button><button id="dbg-candy">+50 candy</button>
     </div>
     <div class="row"><span class="row-label">Offline earnings (pretend you were away)</span>
       <button data-away="600">10 min</button><button data-away="3600">1 h</button><button data-away="36000">10 h</button>
@@ -121,6 +124,20 @@ export function createDebugPanel(
   });
   panel.querySelector('#dbg-skins')!.addEventListener('click', () => game.ownAllSkins());
   // 1.3.1: every rebirth and sticker upgrade on sale now (until the page reloads).
+  // Pumpkin Night: main.ts gives the game this date instead of today's (every few seconds).
+  panel.querySelector('#dbg-fest-on')!.addEventListener('click', () => {
+    const f = game.data.festivals && game.data.festivals.list[0];
+    if (!f) return;
+    const [m, d] = f.start.split('-').map(Number);
+    clock.festivalDate = [m, d];
+    game.setDate(m, d);
+  });
+  panel.querySelector('#dbg-fest-off')!.addEventListener('click', () => {
+    clock.festivalDate = null;
+    const now = new Date();
+    game.setDate(now.getMonth() + 1, now.getDate());
+  });
+  panel.querySelector('#dbg-candy')!.addEventListener('click', () => game.addTreats(50));
   panel.querySelector('#dbg-unlock')!.addEventListener('click', () => {
     game.unlockAllUpgrades();
     setStatus('Every rebirth and sticker upgrade is on sale (until the page reloads).');

@@ -53,6 +53,7 @@ export const SKIN_ART: Record<string, SkinArt> = {
   furMint: { colors: { t: '#a9dfca', T: '#78c1a6', c: '#f1fbf6', p: '#8a5a3c' } }, // chocolate-chip ears and toes
   furGolden: { colors: { t: '#ffd35c', T: '#e3a72f', c: '#fff6c2' } },
   furTuxedo: { colors: { t: '#6b6673', T: '#4f4a57', c: '#fdfcfa' } }, // M11 (the casino): a slate coat, a white shirt front
+  furPumpkin: { colors: { t: '#f0913a', T: '#c96a22', c: '#ffe2b8' } }, // Pumpkin Night: pumpkin orange
 
   hatNone: {},
   hatParty: { hat: 'hatParty' },
@@ -62,6 +63,7 @@ export const SKIN_ART: Record<string, SkinArt> = {
   hatCowboy: { hat: 'hatCowboy' },
   hatCrown: { hat: 'hatCrown' },
   hatVisor: { hat: 'hatVisor' }, // M11 (the casino)
+  hatWitch: { hat: 'hatWitch' }, // Pumpkin Night
 
   wheelClassic: {},
   wheelMint: { tokens: { '--wheel-bg': '#effaf5', '--wheel-ring': '#c3ead9', '--wheel-spoke': '#8fcfb5', '--wheel-hub': '#7fcbb8' } },
@@ -79,6 +81,14 @@ export const SKIN_ART: Record<string, SkinArt> = {
     },
   },
 
+  // Pumpkin Night: a carved pumpkin of a wheel, orange with a dark rim and a glowing hub.
+  wheelLantern: {
+    tokens: {
+      '--wheel-rim': '#5a2a12', '--wheel-bg': '#ffe2b8', '--wheel-ring': '#f79a3e',
+      '--wheel-spoke': '#d9722a', '--wheel-hub': '#ffd35c', '--wheel-stand': '#6b4a9c',
+    },
+  },
+
   machineClassic: {},
   machinePeach: { tokens: paint('#ffb899', '#e8906c') },
   machineSky: { tokens: paint('#93cfe8', '#5ea6c8') },
@@ -89,6 +99,7 @@ export const SKIN_ART: Record<string, SkinArt> = {
   machineMossy: { tokens: paint('#8fbf6a', '#648f45', '#f5e6a8') },
   machineCopper: { tokens: paint('#c8794a', '#9a5530', '#ffd35c', { '--chrome': '#e3a06e', '--chrome-light': '#ffd2a8', '--chrome-dark': '#a8623a' }) },
   machineSeaside: { tokens: paint('#6cc9c4', '#3f9c98', '#fbe3b0') },
+  machineHaunted: { tokens: paint('#6b4a9c', '#4b2c78', '#9be36a') }, // Pumpkin Night: purple, with a slime-green sign
   machineArcade: { tokens: paint('#3d3850', '#262233', '#6ef0ff', { '--chrome': '#ff6ad5', '--chrome-light': '#ffc2ee', '--chrome-dark': '#b03a92' }) },
 
   roomClassic: {},
@@ -102,6 +113,14 @@ export const SKIN_ART: Record<string, SkinArt> = {
     },
   },
   roomSunflower: { tokens: { '--wall-top': '#fffbe3', '--wall-bottom': '#ffe79a', '--floor': '#a3d17f', '--floor-dark': '#78ad56' } },
+  // Pumpkin Night: a night-purple wall, orange wire, a pumpkin-patch floor.
+  roomPumpkin: {
+    tokens: {
+      '--wall-top': '#4a3366', '--wall-bottom': '#2f2045', '--wall-stripe': 'rgba(247, 154, 62, 0.07)',
+      '--wire': '#f79a3e', '--wire-dark': '#5a2a12',
+      '--floor': '#c96a22', '--floor-dark': '#8f4514', '--floor-ink': '#fbeedd',
+    },
+  },
   // M11 (the casino): red velvet walls with gold stripes, gold wire, green card-table felt.
   roomCasino: {
     tokens: {

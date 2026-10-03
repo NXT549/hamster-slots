@@ -118,3 +118,7 @@
 }
 .less-motion .cap-machine.shake { animation: none; }
 .less-motion .reveal-rays { animation: none !important; }
+
+/* Pumpkin Night: the festival stall (an outfit tile with its own buy button, candy on top). */
+.festival-candy { display: flex; align-items: center; gap: 6px; margin: 0 4px 8px; font-family: var(--font-num); font-weight: 900; font-size: 18px; color: var(--candy-dark); }
+.festival-tile .k-buy { margin-top: 4px; width: 100%; }

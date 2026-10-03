@@ -70,7 +70,8 @@ function boot(platform: Platform) {
   const { savedAt } = loadGame(game, platform);
 
   // Shared by the loop and the debug panel's speed buttons.
-  const clock = { timeScale: 1 };
+  // festivalDate (Pumpkin Night): the debug panel can pretend it's a festival day ([month, day]).
+  const clock: { timeScale: number; festivalDate: [number, number] | null } = { timeScale: 1, festivalDate: null };
 
   // Saving by itself (it starts after the first frame, below).
   const autosave = createAutosave(game, platform);
@@ -122,6 +123,18 @@ function boot(platform: Platform) {
     },
   });
 
+  // Pumpkin Night: tell the game today's date (it never reads the clock), so a
+  // festival starts or ends. Before offline earnings, so time away during a festival
+  // brings candy. Again every few seconds in the frame loop (midnight, a tab coming back).
+  let lastDateCheck = 0;
+  function giveDate(): void {
+    lastDateCheck = performance.now();
+    const d = new Date(platform.now());
+    const [month, day] = clock.festivalDate || [d.getMonth() + 1, d.getDate()];
+    game.setDate(month, day);
+  }
+  giveDate();
+
   // Offline earnings: pay for the time since the last save. game.ts does the
   // maths; we only tell it how many seconds passed (it never reads the clock).
   if (savedAt) game.applyOfflineEarnings((platform.now() - savedAt) / 1000);
@@ -134,6 +147,7 @@ function boot(platform: Platform) {
     const realDt = Math.min((nowMs - last) / 1000, MAX_FRAME_SECONDS);
     last = nowMs;
     try {
+      if (nowMs - lastDateCheck > 5000) giveDate();
       game.update(realDt * clock.timeScale);
       ui.render();
       debug?.render();

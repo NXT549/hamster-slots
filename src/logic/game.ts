@@ -27,6 +27,7 @@ import type { Rng } from './rng.ts';
 import { money, roundMoney, divide, power, moneyFrom, isMoney } from './money.ts';
 import { createCasino, newCasinoState } from './casino.ts';
 import { createOwnCasino, newOwnCasinoState } from './owncasino.ts';
+import { createFestival, newFestivalState } from './festival.ts';
 import { handValue } from './blackjack.ts';
 import type { BjCard } from './blackjack.ts';
 import type { Money, MoneyLike } from './money.ts';
@@ -61,7 +62,7 @@ import type {
 // v15 (M12, the Family Casino) added the family's own casino (its cabinets, floor
 // upgrades, back-office buys, the till and the Takings) and three stats.
 // See migrateSave() below.
-export const SAVE_VERSION = 16;
+export const SAVE_VERSION = 17;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -1160,6 +1161,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     }
     if (payout.gt(0)) {
       state.stats.wins++;
+      festival.onWin(); // Pumpkin Night: a candy every few wins (counted, never rolled)
       state.stats.coinsWon = roundMoney(state.stats.coinsWon.add(payout));
       state.stats.biggestWin = state.stats.biggestWin.max(payout);
       state.stats.mostLinesWon = Math.max(state.stats.mostLinesWon, new Set(paid.filter((w) => !w.ways).map((w) => w.line)).size); // a line that pays both ways is still one line (ways wins aren't lines)
@@ -1610,6 +1612,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     state.stats.deliveryCoins = roundMoney(state.stats.deliveryCoins.add(reward));
     earn(reward);
     events.emit('deliveryFinished', { reward });
+    festival.onDelivery(); // Pumpkin Night: trick or treat!
 
     // Every Nth delivery brings back a tip: a Hamster Token. (A counter, not luck.)
     const every = getDeliveryTokenEvery();
@@ -2345,7 +2348,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   function capsuleSkinsOwned(): string[] {
-    return Object.keys(state.skins.owned).filter((id) => { const d = getSkinDef(id); return !!d && !d.casino; });
+    return Object.keys(state.skins.owned).filter((id) => { const d = getSkinDef(id); return !!d && !d.casino && !d.festival; });
   }
 
   // Dear Diary: tapping the hamster pets it. It only counts toward a secret sticker
@@ -2443,7 +2446,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
     const forced = state.capsules.sincePity >= c.pityPulls - 1;
     const rarity = forced ? c.pityRarity : rng.pickWeighted(c.rarities).id;
-    const pool = data.skins.filter((s) => s.rarity === rarity && !s.casino); // casino skins are only at the Prize Counter
+    const pool = data.skins.filter((s) => s.rarity === rarity && !s.casino && !s.festival); // casino and festival skins are only sold
     const skin = pool[Math.floor(rng.next() * pool.length)];
     state.capsules.sincePity = rarity === c.pityRarity ? 0 : state.capsules.sincePity + 1;
     state.stats.capsulesOpened++;
@@ -2510,6 +2513,16 @@ export function createGame(initialData: GameData, rng: Rng) {
     checkDiary,
   });
 
+  // ─────────────────────── Festivals (Pumpkin Night) ───────────────────────
+  // festival.ts: the dates, the candy and the stall. It never touches coins or the RNG.
+  const festival = createFestival({
+    state: () => state,
+    data: () => data,
+    emit: (name, payload) => events.emit(name, payload),
+    earnTokens,
+    checkDiary,
+  });
+
   // ─────────────────────── The Family Casino (M12) ───────────────────────
   // The family's own casino lives in owncasino.ts; it never touches coins.
   const ownCasino = createOwnCasino({
@@ -2543,6 +2556,8 @@ export function createGame(initialData: GameData, rng: Rng) {
     // M12: the Family Casino's till fills while you're away too (its own limit: the
     // till's size). It's Takings, not coins, so it's apart from what follows.
     if (data.offline && seconds >= data.offline.minSeconds) ownCasino.applyOffline(seconds);
+    // Pumpkin Night: candy for the time away during a festival (with or without Wheel Training).
+    if (data.offline && seconds >= data.offline.minSeconds) festival.applyOffline(seconds, data.offline.maxSeconds);
     const { seconds: counted, coins } = getOfflineEarnings(seconds);
     if (coins.lte(0)) return false;
     state.stats.offlineCoins = roundMoney(state.stats.offlineCoins.add(coins));
@@ -2797,6 +2812,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     // the Family Casino (M12): actions, then queries (owncasino.ts)
     emptyTill: ownCasino.emptyTill, buyCabinet: ownCasino.buyCabinet, buyFloorUpgrade: ownCasino.buyFloorUpgrade,
     buyOwnReward: ownCasino.buyOwnReward, addTakings: ownCasino.addTakings,
+    // Pumpkin Night (festival.ts): the view gives the date; the stall sells outfits for candy
+    setDate: festival.setDate, getFestival: festival.getActive, getFestivalStall: festival.getStall,
+    canBuyFestivalItem: festival.canBuy, buyFestivalItem: festival.buyItem, festivalOfSkin: festival.festivalOfSkin, addTreats: festival.addTreats,
     isOwnCasinoUnlocked: ownCasino.isUnlocked, isOwnCasinoOpen: ownCasino.isOpen,
     getCabinet: ownCasino.getCabinet, getGuestRtp: ownCasino.getGuestRtp, getGuestMultiplier: ownCasino.getGuestMultiplier,
     getGuestBetMultiplier: ownCasino.getBetMultiplier, getGuestBet: ownCasino.getGuestBet, getCabinetRate: ownCasino.getCabinetRate,
@@ -2906,6 +2924,8 @@ function newStats(): Stats {
     takingsEarned: money(0), tillsEmptied: 0, cabinetsBought: 0, // Takings banked, tills emptied, cabinets on the floor
     // v16 (Dear Diary): the secret stickers
     pets: 0, worstDrySpell: 0, lastCoinSpins: 0, // hamster pets, the longest run of losing paid spins, spins down to the last coins
+    // v17 (Pumpkin Night): festivals
+    treatsEarned: 0, festivalItems: 0, // festival candy collected, stall outfits bought
   };
 }
 
@@ -2946,6 +2966,7 @@ export function newState(data: GameData): GameState {
     skins: { owned: {}, equipped: {} }, // owned: { furCinnamon: true }; equipped: { fur: "furCinnamon" }
     capsules: { sincePity: 0 }, // pulls since the last pity-rarity (Epic) capsule
     casino: newCasinoState(), // M11: chips, boosts under way, a blackjack hand
+    festival: newFestivalState(), // Pumpkin Night: the festival on now and its candy
     ownCasino: newOwnCasinoState(), // M12: the family's own casino (kept for good, even through a migration)
 
     stats: newStats(),
@@ -3104,6 +3125,12 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
   // new stickers an older family has already reached are awarded on load.
   if (save.saveVersion === 15) {
     save.saveVersion = 16;
+  }
+
+  // v16 → v17 (Pumpkin Night): festivals. No festival is on until the view gives the
+  // date (sanitizeState starts it empty), and the new stats start at 0.
+  if (save.saveVersion === 16) {
+    save.saveVersion = 17;
   }
 
   if (save.saveVersion !== SAVE_VERSION) return null;
@@ -3317,6 +3344,13 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   s.casino.hand = cd ? cleanHand(rc.hand) : null;
 
   // The Family Casino (M12): cabinets and upgrades that still exist (levels capped), the till and the Takings.
+  // Pumpkin Night: a festival that's no longer in the data ends at the next setDate
+  // (its candy becomes tokens then), so its id is kept as it is.
+  const rf = raw.festival && typeof raw.festival === 'object' ? raw.festival : {};
+  s.festival.id = typeof rf.id === 'string' ? rf.id : null;
+  s.festival.treats = s.festival.id ? Math.max(0, Math.floor(num(rf.treats, 0))) : 0;
+  s.festival.wins = s.festival.id ? Math.max(0, Math.floor(num(rf.wins, 0))) : 0;
+
   const ro = raw.ownCasino && typeof raw.ownCasino === 'object' ? raw.ownCasino : {};
   const od = data.ownCasino;
   s.ownCasino.opened = ro.opened === true;

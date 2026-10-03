@@ -22,13 +22,14 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 
 > Keep this block true. Update it in the same commit as the change it describes.
 
-- **Live: 1.9.1 "Welcome Mat"** (2026-10-03; 1.9.1 fixes five bugs from a bug hunt: the Family tab after a migration, Deep Pockets, K/M/B rounding, the blackjack hint, a cabinet bet) at https://nxt549.github.io/hamster-slots/ (repo https://github.com/NXT549/hamster-slots, public, remote `origin`). Every push to `main` tests, builds and deploys (`.github/workflows/deploy.yml`, D118). `SAVE_VERSION` 16 (game.ts); data.json `schemaVersion` 16 (since Dear Diary).
+- **Live: 1.9.1 "Welcome Mat"** (2026-10-03; 1.9.1 fixes five bugs from a bug hunt: the Family tab after a migration, Deep Pockets, K/M/B rounding, the blackjack hint, a cabinet bet) at https://nxt549.github.io/hamster-slots/ (repo https://github.com/NXT549/hamster-slots, public, remote `origin`). Every push to `main` tests, builds and deploys (`.github/workflows/deploy.yml`, D118). `SAVE_VERSION` 17 (game.ts); data.json `schemaVersion` 17 (since Pumpkin Night).
 - **1.6.1 "Fresh Coat"** = machine skins paint every machine (`painted()` in cabinet.ts, `--paint*` tokens) + 5 new machine skins (29 in the capsule pool; Arcade Neon's twist: +5% double-win), D161.
 - **1.6.0** = UI redesign parts 1–3 (DESIGN §31, D156–D160): the hamster's-room look (wood, paper, brass, enamel: `frames.ts`), the kit (`kit.ts`), purse (`hud.ts`), control deck (`deck.ts`), phone tab bar, detail sheet, rebuilt Upgrades tab (`shop.ts`), nothing under 12 px, only the open tab drawn. View only: no rules, balance or save changes.
 - **1.7.1 "Settling In"** = the balancing pass's first fix (D163, `docs/updates/balancing.md`): each colony's Family Tree costs ×3 more (`familyTree.costPerColony`), Colony Pride +30% a level (was +50%). No save change.
 - **1.7.0 "Family Room"** = UI redesign part 4 (§31, D162): the Family tab (`family.ts`: retire letter, trait chips), Colony (`colony.ts`: perk tiles, toggles) and the Big Cage's panels on the kit. View only.
 - **1.9.0 "Welcome Mat"** = UI redesign part 8 (§31, D165): the first-time guide (`guide.ts`: `guideStep()` from game state, the pointing paw), UI sounds (`playUi` in sound.ts), settings `uiSounds` and `guide` (no save change), and unlock moments (`unlock.ts`: a padlock springs open over anything new; "NEW SYMBOL!"/"NEW MACHINE!" celebrations). The user asked for "new animations for unlocking things as well as a tutorial" and left the design to Claude. Released at the user's "publish it", before a playtest; nobody has heard the UI sounds yet.
 - **Dear Diary (candidate, not released)** = Diary Volume 2 (DESIGN §14, D166): 20 new stickers (80 in all), 5 of them secret (`secret` + `hint` in data.json, "???" in the Diary until earned), tap the hamster to pet it (`petHamster()`), three stats (`pets`, `worstDrySpell`, `lastCoinSpins`), save v16. The user said "you decide" and the coordinator picked it. Its version number is picked at release (other updates are in flight).
+- **Pumpkin Night (candidate, not released)** = seasonal festivals (DESIGN §33, D167): `festival.ts`, 20 Oct to 3 Nov every year, candy (counted from wins, deliveries, time away), a stall of five Rare outfits (`"festival"` skins, never in capsules), decor, save v17. main.ts gives the date (`game.setDate`). Meant to be live by 20 October 2026; built on top of Dear Diary.
 - **Planned, don't build until asked:** UI redesign parts 5–7 and 9 (Capsules + Info, Casino, Menu + dialogs, polish; §31). When asked: on a branch, part by part, each leaving the game playable. The user picked restyle + restructure, the room look, a first-time guide and UI sounds.
 - **1.8.0 "Grand Opening"** = M12, the Family Casino (§32, D164): a migrated family's own casino (cabinets, guests below 100%, a till of Takings, decor and staff, chips and tokens), kept for good, never coins. Save v15. The user left every design call to Claude ("you decide everything"), then said "publish it"; the playtest questions are in §32.
 - **Next on the roadmap:** M13 Delivery depth is only an idea (if playtests say deliveries are fun); M12 is done.
@@ -36,7 +37,7 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 - **Open balance issues:** late lives short around generations 11–15 (§10); 1.4.0's seed softcap made them 2–3× longer, and 1.7.1's balancing pass (D163: each colony's tree ×3, Colony Pride +30%) made colony 2 last 3–5 h with 5–8 min late lives, but colony 3's middle lives are still 2–5 min (§29 → Balance); the wardrobe makes mid-game lives ~10–30% shorter (§25); casino boosts can cut late lives by up to a third (§27, `node tools/sim.mjs --casino`).
 - **Not yet verified:** how the M7/1.0/M9 sounds sound; a natural jackpot-wheel label, hold & spin Grand and ×10 cheese wedge in the browser (only tests/console); Epic twists in a real session; Firefox and Safari look (rays' `mask`, line trace, reel blur).
 - **Tags:** `v0.1.0 v0.2.0 v1.0.0 v1.3.0 v1.3.1` are on GitHub. Missing (the session git proxy refuses tag pushes, HTTP 403), so the user adds them as GitHub Releases: v1.1.0 `7f2fe32`, v1.2.0 `4fa56c3`, v1.3.2 `1084cb6`, v1.4.0 on its docs-only deploy commit (same game as "Release 1.4.0" `76aec6d`, D149), v1.5.0 `bb98c2d`, v1.6.0 `6558459`, v1.6.1 on the "Release 1.6.1" commit, v1.7.0 on the "Release 1.7.0" commit, v1.7.1 on the "Release 1.7.1" commit, v1.8.0 on the "Release 1.8.0" commit, v1.8.1 on the "Release 1.8.1" commit, v1.9.0 on the "Release 1.9.0" commit, v1.9.1 on the "Release 1.9.1" commit.
-- **Tests:** `npm test`, 3,061 tests, ~1.5 min.
+- **Tests:** `npm test`, 3,139 tests, ~1.5 min.
 
 ## Commands
 
@@ -142,6 +143,7 @@ src/logic/       no DOM, no clock (rule 1)
                  wheelAverage, Moving Day boxes
   roulette.ts blackjack.ts derby.ts seeddrop.ts   casino games (exact returns); casino.ts chips, Prize Counter, boosts
   owncasino.ts   M12, the Family Casino: cabinets, guests' takings (exact averages), the till, floor upgrades
+  festival.ts    Pumpkin Night: festival dates (month-days from the view), candy, the stall, leftovers → tokens
   game.ts        createGame: all state and actions, the 60 Hz tick, save format + migrations, every system
 src/platform/    platform.ts (interface) web.ts (only localStorage + page events) memory.ts (test double)
                  save.ts savecode.ts autosave.ts
