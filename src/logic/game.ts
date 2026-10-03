@@ -1978,8 +1978,14 @@ export function createGame(initialData: GameData, rng: Rng) {
     return true;
   }
 
+  // Rule 3's price, × `costPerColony` for each Great Migration made. A migrated family
+  // earns seeds so fast that it replanted the whole tree in a few lives, growing ~10×
+  // stronger each life, so its lives shrank to minutes. A dearer tree slows that climb.
+  // (A seed-curve change can't: retiring at "+X% seeds" is relative, so it cancels out.)
   function getTreeCost(id: string): Money {
-    return costAtLevel(getTreeNodeDef(id)!, getTreeLevel(id));
+    const cost = costAtLevel(getTreeNodeDef(id)!, getTreeLevel(id));
+    const k = Math.pow(data.familyTree.costPerColony ?? 1, state.colony);
+    return k === 1 ? cost : cost.mul(k).floor();
   }
 
   function isTreeMaxed(id: string): boolean {

@@ -10,6 +10,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Changed
+
+- **Later colonies last longer.** After a Great Migration, each new colony's Family Tree costs three times as much as the last colony's, and **Colony Pride** gives **+30% payouts a level** (was +50%). A migrated family used to rebuild everything in a few lives and race through hamsters lasting two or three minutes; now the second colony's hamsters live several minutes each. Your first colony doesn't change, and traits you've already planted stay planted.
+
 ## [1.6.0] - 2026-10-03 · New Digs
 
 **The first part of a full redesign of everything around the cage, in the hamster's room: wood, paper and brass. The new look reaches every screen, with your purse along the top, a control deck on the cage, the tabs at the bottom of a phone and a new Upgrades tab; the other screens get their new layouts in later updates.**

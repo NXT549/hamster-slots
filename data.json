@@ -1127,6 +1127,7 @@
   },
   "stars": { "max": 5, "payoutPerStar": 0.1, "luckPerStar": 2 },
   "familyTree": {
+    "costPerColony": 3,
     "branches": [
       { "id": "roots", "name": "Roots" },
       { "id": "luck", "name": "Luck" },
@@ -1441,11 +1442,11 @@
       {
         "id": "colonyPride",
         "name": "Colony Pride",
-        "description": "The whole colony cheers: every payout +50% each level, in every life and every colony.",
+        "description": "The whole colony cheers: every payout +30% each level, in every life and every colony.",
         "baseCost": 1,
         "growthRate": 1.6,
         "maxLevel": null,
-        "effect": { "type": "payoutMultiplier", "perLevel": 0.5 }
+        "effect": { "type": "payoutMultiplier", "perLevel": 0.3 }
       },
       {
         "id": "seedSense",
