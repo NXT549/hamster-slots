@@ -61,7 +61,7 @@ import type {
 // v15 (M12, the Family Casino) added the family's own casino (its cabinets, floor
 // upgrades, back-office buys, the till and the Takings) and three stats.
 // See migrateSave() below.
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -144,6 +144,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   // Neither is saved: they're worked out again on load.
   let helperTimer = 0;
   let elderTimer = 0; // 1.4.0: the Wise Elders look once a second (not saved)
+  // Dear Diary: paid spins in a row without a winning line, on any machine, for the
+  // "Dry Spell" sticker. Only the best (stats.worstDrySpell) is saved.
+  let drySpell = 0;
   // 1.4.0: true while a preview ("now → next" on a tile) is worked out: a Colony Trial's
   // twist doesn't count there (Wheel Training still says what it gives, during Tired Paws).
   let previewing = false;
@@ -1068,6 +1071,8 @@ export function createGame(initialData: GameData, rng: Rng) {
       state.stats.coinsSpent = roundMoney(state.stats.coinsSpent.add(cost));
       state.stats.biggestBet = Math.max(state.stats.biggestBet, bet);
       growPots(machine);
+      // Dear Diary ("Rock Bottom", a secret sticker): this spin took the last coins, too few for another ×1 spin.
+      if (state.coins.lt(getBetCost(1, machine))) state.stats.lastCoinSpins++;
     }
 
     // Roll with the luck-adjusted weights (Lucky Whiskers, Carrot Patch, Hamster Wild).
@@ -1149,6 +1154,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     if (!free) {
       machine.streak = paid.length > 0 ? (machine.streak || 0) + 1 : 0;
       state.stats.bestStreak = Math.max(state.stats.bestStreak, machine.streak);
+      // Dear Diary: the opposite of a streak, for the secret "Dry Spell" sticker.
+      drySpell = paid.length > 0 ? 0 : drySpell + 1;
+      state.stats.worstDrySpell = Math.max(state.stats.worstDrySpell, drySpell);
     }
     if (payout.gt(0)) {
       state.stats.wins++;
@@ -2340,6 +2348,14 @@ export function createGame(initialData: GameData, rng: Rng) {
     return Object.keys(state.skins.owned).filter((id) => { const d = getSkinDef(id); return !!d && !d.casino; });
   }
 
+  // Dear Diary: tapping the hamster pets it. It only counts toward a secret sticker
+  // ("Hamster Hugs"); the hearts are the view's job.
+  function petHamster(): void {
+    state.stats.pets++;
+    events.emit('hamsterPetted', { pets: state.stats.pets });
+    checkDiary();
+  }
+
   function getDiaryProgress(id: string) {
     const sticker = (data.diary || []).find((d) => d.id === id);
     if (!sticker) return null;
@@ -2766,7 +2782,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     },
 
     // queries: tokens, diary, capsules, skins
-    getDiaryProgress, getSkinDef, isSkinOwned, getEquippedSkin, getPullCost, canPull, getPityRemaining, getCapsuleOdds,
+    petHamster, getDiaryProgress, getSkinDef, isSkinOwned, getEquippedSkin, getPullCost, canPull, getPityRemaining, getCapsuleOdds,
     getWardrobe, getOfflineMultiplier, getJackpotTokens, getDeliveryTokenEvery, getCardHistoryLength,
 
     // the Hamster Casino (M11): actions, then queries (casino.ts)
@@ -2888,6 +2904,8 @@ function newStats(): Stats {
     mysteryBoxes: 0, bestBoxes: 0, // Moving Day's boxes opened, and the most in one spin
     // v15 (M12): the Family Casino
     takingsEarned: money(0), tillsEmptied: 0, cabinetsBought: 0, // Takings banked, tills emptied, cabinets on the floor
+    // v16 (Dear Diary): the secret stickers
+    pets: 0, worstDrySpell: 0, lastCoinSpins: 0, // hamster pets, the longest run of losing paid spins, spins down to the last coins
   };
 }
 
@@ -3079,6 +3097,13 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
   // start at 0 (sanitizeState fills both in), so only the version changes here.
   if (save.saveVersion === 14) {
     save.saveVersion = 15;
+  }
+
+  // v15 → v16 (Dear Diary): three new stats for the secret stickers. They
+  // start at 0 (sanitizeState fills them in), so only the version changes here. The
+  // new stickers an older family has already reached are awarded on load.
+  if (save.saveVersion === 15) {
+    save.saveVersion = 16;
   }
 
   if (save.saveVersion !== SAVE_VERSION) return null;

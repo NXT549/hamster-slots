@@ -173,6 +173,7 @@ export function createSound({ volume = 0.6, muted = false, uiSounds = true }: { 
     arm: () => [0, 0.06, 0.12].forEach((at) => note(2400, at, 0.015, { type: 'square', gain: 0.015 })), // a fuse fizzing
     cantAfford: () => note(180, 0, 0.09, { type: 'triangle', gain: 0.06, to: 130 }), // a soft bonk
     guide: () => [NOTE.C6, NOTE.G6].forEach((f, i) => note(f, i * 0.05, 0.08, { gain: 0.04 })), // a pop
+    pet: () => [1800, 2600].forEach((f, i) => note(f, i * 0.05, 0.05, { type: 'triangle', gain: 0.04, to: f * 1.2 })), // 1.10: a happy squeak
   };
   // Rate limits: the same sound at most every 60 ms, any UI sound every 25 ms, so a burst of taps never buzzes.
   const lastUi = new Map<string, number>();

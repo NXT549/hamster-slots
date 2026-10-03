@@ -339,6 +339,9 @@ export interface Sticker {
   description: string;
   goal: Goal;
   tokens: number;
+  // Dear Diary: a secret sticker shows only "???" and its hint in the Diary until it's earned.
+  secret?: boolean;
+  hint?: string;
 }
 
 export interface RetirementDef {
@@ -577,6 +580,10 @@ export interface Stats {
   takingsEarned: Money; // Takings ever banked from the till
   tillsEmptied: number;
   cabinetsBought: number; // cabinets put on the floor (the free first one included)
+  // Dear Diary (save v16): the secret stickers
+  pets: number; // times you tapped (petted) the hamster
+  worstDrySpell: number; // the most paid spins in a row without a winning line
+  lastCoinSpins: number; // paid spins that left too few coins for another ×1 spin
 }
 
 export interface GameState {
@@ -696,6 +703,7 @@ export interface GameEvents {
   deliveryFinished: { reward: Money };
   tokensChanged: { tokens: Money; amount: Money; source: TokenSource };
   stickerEarned: { id: string; tokens: Money };
+  hamsterPetted: { pets: number }; // Dear Diary: the hamster was tapped (petted)
   capsuleOpened: { skinId: string; rarity: string; duplicate: boolean; refund: Money; pity: boolean };
   skinEquipped: { id: string; category: string };
   offlineEarned: { awaySeconds: number; seconds: number; coins: Money };

@@ -125,6 +125,12 @@ export function createCapsulesView(
         <span class="diary-reward">${iconHTML('token', 24)}+${sticker.tokens}</span>`;
       row.querySelector('.diary-name')!.textContent = sticker.name;
       row.querySelector('.note')!.textContent = sticker.description;
+      // Dear Diary: a secret sticker is a mystery ("???" and a hint) until it's earned; render() reveals it.
+      if (sticker.secret) {
+        row.classList.add('secret');
+        row.querySelector('.diary-name')!.textContent = 'Secret sticker';
+        row.querySelector('.note')!.textContent = sticker.hint || 'Keep playing and see!';
+      }
       // 1.3.1: a sticker can unlock an upgrade (a sticker upgrade) as well as pay tokens.
       const opens = game.data.upgrades.filter((u) => u.unlock && u.unlock.sticker === sticker.id);
       if (opens.length) {
@@ -307,7 +313,15 @@ export function createCapsulesView(
       r.row.classList.toggle('done', p.done);
       r.fill.style.width = `${((value / p.target) * 100).toFixed(1)}%`;
       const fmt = (n: number) => (p.target >= 1000 ? formatCoins(n) : String(Math.floor(n)));
-      setText(r.count, p.done ? 'Done!' : `${fmt(value)} / ${fmt(p.target)}`);
+      const sticker = game.data.diary.find((d) => d.id === id)!;
+      if (sticker.secret && p.done && r.row.classList.contains('secret')) {
+        // Earned: now it shows what it was for.
+        r.row.classList.remove('secret');
+        setText(r.row.querySelector('.diary-name')!, sticker.name);
+        setText(r.row.querySelector('.note')!, sticker.description);
+      }
+      // A secret's progress would give it away, so it shows "???" until it's done.
+      setText(r.count, p.done ? 'Done!' : sticker.secret ? '???' : `${fmt(value)} / ${fmt(p.target)}`);
     }
 
     // Dots: a pull you can afford, or stickers you haven't looked at yet.

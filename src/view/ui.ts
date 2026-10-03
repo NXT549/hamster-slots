@@ -906,6 +906,17 @@ export function createUI(
   }
   new ResizeObserver(() => fitTabs()).observe(el.tabs);
 
+  // Dear Diary: tap the hamster to pet it. Hearts and a happy hop; now and then it says something.
+  // The game only counts the pets (a secret diary sticker waits at 25).
+  const PET_LINES = ['Hee hee, that tickles!', 'Squeak!', 'More cheek rubs, please.', 'I love you too!', 'Best. Owner. Ever.'];
+  el.hamster.addEventListener('click', () => {
+    game.petHamster();
+    hearts(3);
+    if (!lessMotion()) replayClass(el.hamster, 'hop');
+    sound.playUi('pet');
+    if (game.state.stats.pets % 5 === 1) say(PET_LINES[Math.floor(Math.random() * PET_LINES.length)], 1800);
+  });
+
   // 1.6.0: the pins in the cage's corner say what they are when tapped (the sheet in the tray).
   el.trialBadge.addEventListener('click', () => {
     el.trialBadge.blur();
