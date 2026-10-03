@@ -1,6 +1,6 @@
 # New Digs part 6: Casino
 
-**Status:** planned, build when asked. **Version:** next minor (view only). **Read:** DESIGN §31 "Screen by screen" row Casino (`grep -n "^### Screen by screen" DESIGN.md`), §27 for the games, chips and Prize Counter; D136 (the cage steps aside on a phone).
+**Status:** planned, build when asked. **Version:** next minor (view only). **Read:** DESIGN §31 "Screen by screen" row Casino (`grep -n "^### Screen by screen" DESIGN.md`), §27 for the games, chips and Prize Counter; D136 (the cage steps aside on a phone); D162 for the newest kit patterns (part 4).
 
 ## Goal
 

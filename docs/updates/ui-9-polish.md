@@ -11,10 +11,11 @@ Finish the redesign: access, motion, speed, skins, and the last of the old CSS.
 1. **Access:** contrast of text on wood, paper and brass (WCAG AA for body text); every target ≥ 44 px (script it: list buttons under 44 px at 390×844, as §31's "Before" table did); visible focus rings on every kit piece; tab roles checked on every tab set; pixel icons replace any emoji left (⏸ ▶ 🔒).
 2. **Motion "Less":** every animation in `src/view/styles/` has its `.less-motion` rule beside it (add a test that scans the CSS for `animation`/`@keyframes` without one).
 3. **Speed:** D153's frame test at 1× and throttled 4×/6× must stay at or above 1.6.0 (54 / 32 fps). Only the open tab renders; no animated CSS filters.
-4. **Skins:** every skin recolours the new frames (tokens only; `FRAME_TOKENS` test); screenshot each skin category once.
-5. **Cleanup:** remove dead rules, tokens and markup left from the old layouts; `kit.test.js` passes (no class styled by two files, no `border-image: none` shorthand).
-6. **Check everything** in Chromium at 1280×800, 1920×1080, 390×844, 360×640, 844×390 and 320 px wide, dev and built: every tab, sheet and dialog, all 8 machines, a retirement, the casino, the guide, skins, Motion "Less", no console errors.
-7. Mark §31 done, write the release (AGENTS → Git and releases).
+4. **Skins:** every skin recolours the new frames (tokens only; `FRAME_TOKENS` test); screenshot each skin category once, and all 8 cabinets in each machine skin (1.6.1 made machine skins paint every machine, `--paint*` tokens).
+5. **Left over from part 4 (D162):** icons for the Big Cage's trial picker (five 16×16 sprites, one per Colony Trial; the `segmented` already takes icons).
+6. **Cleanup:** remove dead rules, tokens and markup left from the old layouts; `kit.test.js` passes (no class styled by two files, no `border-image: none` shorthand).
+7. **Check everything** in Chromium at 1280×800, 1920×1080, 390×844, 360×640, 844×390 and 320 px wide, dev and built: every tab, sheet and dialog, all 8 machines, a retirement, the casino, the guide, skins, Motion "Less", no console errors.
+8. Mark §31 done, write the release (AGENTS → Git and releases).
 
 ## Not checkable in a session
 

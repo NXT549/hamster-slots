@@ -33,6 +33,9 @@ Rejected: cascades/tumbles and cluster pays (exact EV not tractable), nudges wit
 6. **Sim:** `node tools/sim.mjs --lives 20` with colonies: when each machine arrives, colony lengths before/after (Balance log).
 7. **Docs:** DESIGN §16/§24-style section per machine, roadmap row, CHANGELOG, Decision, stickers.
 
+## Interactions
+- **Pacing (balancing-2.md):** colony 3's middle lives are already short (2–5 min). A machine unlocked in colony 2 or 3 adds income there, so measure colonies 2–3 with `node tools/sim.mjs --migrate --colonies 3` before and after, and do this after (or with) balancing round 2.
+
 ## Questions for the user
 - All three, or pick one or two?
 - Colony machines (late game), or one earlier for newer players?

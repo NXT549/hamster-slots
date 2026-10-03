@@ -1,6 +1,6 @@
 # New Digs part 7: Menu and dialogs
 
-**Status:** planned, build when asked. **Version:** next minor (view only). **Read:** DESIGN §31 "Screen by screen" rows Menu and Dialogs (`grep -n "^### Screen by screen" DESIGN.md`), §17 (settings), §7 (save backup), §15 (offline earnings).
+**Status:** planned, build when asked. **Version:** next minor (view only). **Read:** DESIGN §31 "Screen by screen" rows Menu and Dialogs (`grep -n "^### Screen by screen" DESIGN.md`), §17 (settings), §7 (save backup), §15 (offline earnings); D162 for the newest kit patterns (part 4).
 
 ## Goal
 

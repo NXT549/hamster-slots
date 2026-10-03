@@ -1,6 +1,6 @@
 # Balancing pass (plan)
 
-> **Status: B1 shipped in 1.7.1 "Settling In" (2026-10-03, D163): each colony's tree ×3, Colony Pride +30%. Open: colony 3's middle lives, B2–B6.** Earlier status: planned, don't build until asked. Balance direction is an ask-first change (AGENTS.md): show the user the decisions in "Ask first" before touching data.json. Ships as its own update after 1.6.x; the user picks version and name (D138).
+> **Status: round 1 done, released in 1.7.1 "Settling In"** (2026-10-03, D163): B1 fixed for colony 2 (each colony's tree ×3, Colony Pride +30%). Kept as the record of every variant tried. **What's still open (colony 3's middle lives, B2, B3, the sim's `--away`) moved to [balancing-2.md](balancing-2.md).** The "Ask first" questions below were answered: the user picked the dearer tree.
 
 Goal: fix the open balance issues in AGENTS.md → Current status without touching the first life the user signed off ("real slog", D93) or any balance rule (DESIGN §9).
 
@@ -89,6 +89,6 @@ Next variants once the user picks a direction: tree ×3 + Pride 0.3/level; tree 
 
 ## Interactions
 
-- **M12 "Your own casino"** (docs/updates/, PR #5): this pass changes no machine RTP or pay table, so M12's separate guest payout rate is unaffected. M12 unlocks "far into the game": re-measure its unlock time with the sim after this lands.
-- **UI redesign parts 4–9**: view only, no conflict. If the Colony tab is restyled first, any new number (per-colony softcap) still shows through existing previews.
+- **M12 "Your own casino"** (`m12-own-casino.md`): this pass changes no machine RTP or pay table, so M12's separate guest payout rate is unaffected. M12 unlocks "far into the game": re-measure its unlock time with the sim after this lands.
+- **UI redesign parts 4–9**: view only, no conflict (part 4, the Colony, shipped in 1.7.0 and shows `getTreeCost`, so the dearer tree showed up with no view change).
 - **Casino boosts and the wardrobe** multiply income, so re-check B3/B4 numbers after B1.
