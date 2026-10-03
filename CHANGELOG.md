@@ -10,6 +10,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Added
+
+- **The casino's Loyalty Card.** Every chip you bet at the tables, win or lose, now fills a stamp card on the Prizes tab. Climb from New Member to Bronze, Silver, Gold and Platinum Paw for Hamster Tokens, bigger bets (2,000, 5,000 and 10,000 chips) and the VIP lounge's brass-railed tables. The odds at every table stay the same.
+
 ## [1.9.1] - 2026-10-03 · Welcome Mat
 
 ### Fixed
