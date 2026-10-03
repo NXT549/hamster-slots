@@ -1,78 +1,120 @@
-/* layout.css — where the big parts go: the HUD, the cage and the tray (M15: the whole game fits
-   the window), the tray's tabs and panels, and the page opening. The wide/phone breakpoint is
-   written once in layout.ts; tests/kit.test.js checks every copy here matches it. */
+/* layout.css — where the big parts go: the HUD, the cage, the tray and its tabs (M15: the whole
+   game fits the window; 1.6.0: the main tabs are a grid area of their own, a bar at the bottom
+   on a phone), the tray's panels, and the page opening. The wide/phone breakpoint is written
+   once in layout.ts; tests/kit.test.js checks every copy here matches it. */
 
-/* ── The layout (M15): the whole game fits the window ──
-   No page scrolling while you play: the HUD on top, then the cage and the tray,
-   side by side on wide screens and stacked on phones. Only the tray's panels
-   scroll, inside themselves. (A really small window can still scroll the page:
-   min-height, so nothing gets squashed to nothing.) */
+/* ── The layout: the whole game fits the window ──
+   No page scrolling while you play: the HUD on top, then the cage and the tray, side by side on
+   wide screens and stacked on phones. Only the tray's panels scroll, inside themselves. (A really
+   small window can still scroll the page: min-height, so nothing gets squashed to nothing.)
+   1.6.0: viewport-fit=cover lets the page reach a phone's edges; env(safe-area-inset-*) keeps the
+   game clear of its notch and home bar. */
 .app {
   height: 100vh; height: 100dvh; min-height: 540px;
-  max-width: 1680px; margin: 0 auto; padding: 10px 12px 12px;
-  display: grid; gap: 10px;
+  max-width: 1680px; margin: 0 auto;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+  display: grid; column-gap: 12px; row-gap: 8px;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr);
-  grid-template-areas: "hud" "stage" "tray";
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "hud" "stage" "tray" "tabs";
 }
 .hud { grid-area: hud; }
 .stage { grid-area: stage; }
 .tray { grid-area: tray; }
-/* Wide screens (and phones on their side): the tray is a panel beside the cage. */
+.tabs { grid-area: tabs; }
+/* Wide screens (and phones on their side): the tray is a panel beside the cage, its tabs on top. */
 @media (min-width: 960px), (min-width: 700px) and (orientation: landscape) {
   .app {
+    padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
     grid-template-columns: minmax(0, 1fr) clamp(340px, 34vw, 500px);
-    grid-template-rows: auto minmax(0, 1fr);
-    grid-template-areas: "hud hud" "stage tray";
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas: "hud hud" "stage tabs" "stage tray";
   }
+}
+/* A short screen (a phone on its side): everything fits, no page scrolling (1.6.0; it used to scroll
+   by 150 px): the min-height goes, and the HUD and gaps get tighter (hud.css, stage.css). */
+@media (max-height: 540px) {
+  .app { min-height: 0; row-gap: 6px; padding-top: max(6px, env(safe-area-inset-top)); padding-bottom: max(6px, env(safe-area-inset-bottom)); }
 }
 /* M11: stacked (a phone), the casino's tables get the whole screen under the HUD: the
    cage steps aside while the Casino tab is open, and comes back with any other tab. */
 @media not ((min-width: 960px) or ((min-width: 700px) and (orientation: landscape))) {
-  .app.at-casino { grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "hud" "tray"; }
+  .app.at-casino { grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "hud" "tray" "tabs"; }
   .app.at-casino .stage { display: none; }
 }
 
-/* ── Tray: a cardboard box of tabs ──────────────────── */
-/* M15: a panel of its own height (beside the cage, or under it on a phone). The tabs
-   stay put and the open tab scrolls inside the box, never the page. It's a size
-   container: its contents lay themselves out by the TRAY's width (@container tray),
-   because a wide screen can still have a narrow tray. */
+/* ── The tray: a wooden cabinet of paper (1.6.0) ──
+   A panel of its own height (beside the cage, or under it on a phone): the open tab scrolls
+   inside it, never the page. A size container, so its contents lay themselves out by the TRAY's
+   width (@container tray): a wide screen can still have a narrow tray. The detail sheet rises
+   from its bottom (kit.css .k-sheet). The frame has no middle (border-image without fill), so the
+   oak panel's grain shows inside it. */
 .tray {
-  --frame: var(--frame-card); --fw: 12px; padding: 2px 4px 4px; box-shadow: var(--lift); position: relative;
-  display: flex; flex-direction: column; min-height: 0;
+  --frame: var(--fr-wood-panel); --fw: 12px; border-image-slice: 4;
+  background: var(--tx-panel) 0 0 / 64px 64px repeat, var(--panel); background-clip: padding-box;
+  padding: 2px 2px 4px; position: relative; display: flex; flex-direction: column; min-height: 0;
+  box-shadow: var(--lift);
   container: tray / inline-size; isolation: isolate;
 }
-/* 1.5.0: cardboard fibres over the inside of the tray (theme.ts paints the tile), behind everything in it */
-.tray::before {
-  content: ""; position: absolute; inset: -2px; z-index: -1; pointer-events: none;
-  background: var(--tile-kraft) 0 0 / 64px 64px repeat; image-rendering: pixelated;
-}
-/* Each tab has its icon (ui.ts adds it); a narrow tray keeps just the words */
-.tab .tab-icon { display: inline-block; vertical-align: -2px; margin-right: 4px; }
-@container tray (max-width: 560px) {
-  /* four or more tabs: just the words */
-  .tabs:has(> .tab:not(.hidden) ~ .tab:not(.hidden) ~ .tab:not(.hidden) ~ .tab:not(.hidden)) .tab-icon { display: none; }
-}
-@container tray (max-width: 340px) { .tab .tab-icon { display: none; } }
-.tabs { flex: none; display: flex; gap: 4px; margin-bottom: 8px; padding: 0 2px; border-bottom: 3px solid var(--kraft-dark); }
 .tab-panel {
   flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
-  padding: 0 4px 6px; scrollbar-width: thin; scrollbar-color: var(--kraft-edge) transparent;
+  padding: 0 6px 8px; scrollbar-width: thin; scrollbar-color: var(--wood-dark) transparent;
 }
 .tab-panel::-webkit-scrollbar { width: 8px; }
-.tab-panel::-webkit-scrollbar-thumb { background: var(--kraft-dark); border: 2px solid var(--tray); }
+.tab-panel::-webkit-scrollbar-thumb { background: var(--wood-dark); border: 2px solid var(--panel); }
+
+/* ── The main tabs ──
+   Wide: brass plates along the tray's top, the open one lit. When their names don't fit, only the
+   open one keeps its name and the others show their icons (ui.ts fitTabs: .compact).
+   Phone: a bar at the bottom of the screen, in thumb reach, above the home bar. */
+.tabs { position: relative; z-index: 3; display: flex; align-items: flex-end; gap: 4px; padding: 0 10px; margin-bottom: -10px; min-width: 0; }
 .tab {
-  --frame: var(--frame-tab-card); border-width: 8px 8px 0; border-image-width: 8px 8px 0;
-  font-family: var(--font-display); font-weight: 500; font-size: 17px; color: var(--kraft-edge);
-  padding: 0 8px 4px; cursor: pointer; position: relative; margin-bottom: -3px; white-space: nowrap;
+  --frame: var(--fr-brass-dim); --fw: 8px; position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none;
+  min-height: 40px; min-width: var(--tap); padding: 0 8px 2px; white-space: nowrap; cursor: pointer;
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-md); color: var(--brass-ink);
+  -webkit-tap-highlight-color: transparent;
 }
-.tab.active { --frame: var(--frame-tab); color: var(--ink); }
+.tab.active { --frame: var(--fr-brass-lit); min-height: 44px; }
+.tab .tab-icon { width: 16px; height: 16px; flex: none; }
+.tabs.compact .tab:not(.active) .tab-label { display: none; }
+/* (wide and compact: a little tighter, so five plates fit the narrowest tray, a phone on its side) */
+@media (min-width: 960px), (min-width: 700px) and (orientation: landscape) {
+  .tabs.compact { padding: 0 4px; }
+  .tabs.compact .tab { padding-left: 6px; padding-right: 6px; }
+}
+.tab:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
 .tab.alert::after { /* "something new here" dot */
-  content: ""; position: absolute; top: -4px; right: -4px; width: 10px; height: 10px;
+  content: ""; position: absolute; top: -5px; right: -5px; width: 10px; height: 10px;
   background: var(--primary); box-shadow: 0 0 0 2px var(--paper); clip-path: var(--notch);
 }
+@media not ((min-width: 960px) or ((min-width: 700px) and (orientation: landscape))) {
+  .tabs {
+    align-items: stretch; gap: 2px; margin: 0 calc(-1 * max(8px, env(safe-area-inset-right))) 0 calc(-1 * max(8px, env(safe-area-inset-left)));
+    padding: 3px max(6px, env(safe-area-inset-right)) max(3px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+    background: var(--tx-panel) 0 0 / 64px 64px repeat, var(--panel-light);
+    border-top: 4px solid var(--wood-ink); box-shadow: inset 0 2px 0 var(--wood);
+  }
+  .app { row-gap: 6px; }
+  .tab {
+    --fw: 4px; flex: 1 1 0; min-width: 0; flex-direction: column; gap: 0; min-height: 52px; padding: 0 2px 1px;
+    font-size: var(--text-xs); line-height: 1; color: var(--ink); border-color: transparent; border-image-source: none;
+  }
+  .tab .tab-icon { width: 32px; height: 32px; }
+  /* The open tab: a brass plate at 1× (its frame's 4 px), so the bar stays 60 px tall */
+  .tab.active { min-height: 52px; border-image: var(--fr-brass-lit) 4 fill / 4px stretch; color: var(--brass-ink); }
+  .tabs.compact .tab.active { flex-grow: 1.7; }
+  .tab.alert::after { top: 4px; right: calc(50% - 20px); }
+}
 
+/* Sub-tabs sit at the top of the open tab while the rest scrolls under them (kit.ts createSubTabs):
+   paper index tabs standing on a ruled line (kit.css .subtab). */
+.subtab-row {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 4; margin: 0 -6px 8px; padding: 6px 8px 0;
+  background: var(--tx-panel) 0 0 / 64px 64px repeat, var(--panel);
+  border-bottom: 3px solid var(--paper-edge); box-shadow: 0 5px 6px -5px color-mix(in srgb, var(--ink) 45%, transparent);
+}
 .subpanel-note { margin: 0 2px 10px; }
 
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 18px 2px 10px; }
@@ -80,12 +122,12 @@
 .section-head h3 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 18px; }
 .tab-panel > .section-head:first-child, .section-first { margin-top: 2px; }
 
-/* The page opening: the HUD drops in, the wheel rolls in, the machine lands, the tray slides up */
+/* The page opening: the HUD drops in, the wheel rolls in, the machine lands, the deck and the tray slide up */
 .intro .hud { animation: drop-in 0.5s ease-out backwards; }
 .intro .wheel-unit { animation: roll-in 0.7s cubic-bezier(0.3, 1.3, 0.5, 1) 0.15s backwards; }
 .intro .machine { animation: land-in 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) 0.25s backwards; }
-.intro .controls { animation: rise-in 0.5s ease-out 0.4s backwards; }
-.intro .tray { animation: rise-in 0.6s ease-out 0.5s backwards; }
+.intro .deck { animation: rise-in 0.5s ease-out 0.4s backwards; }
+.intro .tray, .intro .tabs { animation: rise-in 0.6s ease-out 0.5s backwards; }
 @keyframes drop-in { from { transform: translateY(-30px); opacity: 0; } }
 @keyframes roll-in { from { transform: translateX(-160px) rotate(-40deg); opacity: 0; } }
 @keyframes land-in { from { transform: translateY(-120px) scale(0.9); opacity: 0; } }
@@ -94,19 +136,7 @@
 .tab-panel, .subpanel { animation: panel-in 0.22s ease-out; }
 @keyframes panel-in { from { opacity: 0; transform: translateY(6px); } }
 
-@media (max-width: 640px) {
-  .app { padding: 8px 8px 10px; gap: 8px; }
-}
-/* A narrow tray (a phone, or the panel beside the cage): smaller tabs so four of them fit. */
-@container tray (max-width: 560px) {
-  .tab { font-size: 15px; padding: 0 5px 3px; }
-  .tabs { gap: 2px; }
-}
 @container tray (max-width: 390px) {
   .subpanel-note { font-size: 12px; margin-bottom: 6px; }
-}
-@container tray (max-width: 380px) {
-  .tab { font-size: 13px; padding: 0 3px 3px; }
-  .tabs:has(#casino-tab:not(.hidden)) .tab { padding: 0 2px 3px; } /* five tabs (M11) */
 }
 .less-motion .tab-panel, .less-motion .subpanel, .less-motion .intro * { animation: none !important; }

@@ -20,7 +20,8 @@
     linear-gradient(rgba(255, 255, 255, 0.55) 0 2px, transparent 2px calc(100% - 4px), rgba(74, 52, 40, 0.16) calc(100% - 4px)),
     var(--marquee);
   box-shadow: inset 0 0 0 2px rgba(74, 52, 40, 0.28);
-  padding: 4px 12px 5px; font-family: var(--font-display); font-weight: 500; font-size: 19px; text-transform: uppercase; letter-spacing: 1px;
+  /* (1.6.0: the name grows back against the rig's zoom, so it's never under 12 px on a phone) */
+  padding: 4px 12px 5px; font-family: var(--font-display); font-weight: 500; font-size: max(19px, calc(12px / var(--rig-zoom, 1))); text-transform: uppercase; letter-spacing: 1px;
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.55);
 }
 /* 1.0: a win flashes the sign; a teasing reel makes the reel window throb. (Each reel
@@ -104,15 +105,19 @@
 .line-3 { --lc: var(--line-4); } .line-4 { --lc: var(--line-5); } .line-5 { --lc: var(--line-6); }
 .line-6 { --lc: var(--line-7); } .line-7 { --lc: var(--line-8); } .line-8 { --lc: var(--line-9); }
 .line-9 { --lc: var(--line-10); }
-/* Numbered tags at the ends of each payline, in the window's frame */
+/* Numbered tags at the ends of each payline, in the window's frame. 1.6.0: like every small label
+   on the machine, they grow back against the rig's zoom (--rig-zoom, ui.ts fitRig), so a phone's
+   zoomed-out machine still has readable numbers. */
 .line-tag {
-  position: absolute; z-index: 4; width: 18px; height: 18px; margin-top: -9px;
+  --tag: clamp(18px, calc(13px / var(--rig-zoom, 1)), 26px);
+  position: absolute; z-index: 4; width: var(--tag); height: var(--tag); margin-top: calc(var(--tag) / -2);
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-num); font-weight: 900; font-size: 11px; color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
-  background: var(--lc); clip-path: var(--notch); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+  font-family: var(--font-num); font-weight: 900; font-size: calc(var(--tag) * 0.62); color: var(--paper);
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--outline-ink) 45%, transparent);
+  background: var(--lc); clip-path: var(--notch); box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--outline-ink) 22%, transparent);
 }
-.line-tag.left { left: -25px; }
-.line-tag.right { right: -25px; }
+.line-tag.left { left: calc(-1 * var(--tag) - 7px); }
+.line-tag.right { right: calc(-1 * var(--tag) - 7px); }
 .line-tag.locked { background: var(--ink-faint); color: var(--paper); opacity: 0.5; }
 .line-tag.won { animation: tag-pop 0.5s ease-in-out infinite alternate; }
 /* Many-line machines: the number sits on the start of each winning line instead */
@@ -185,7 +190,8 @@
 @keyframes acorn-land { 0% { transform: scale(1.35); filter: brightness(1.6); } }
 .hold-value {
   position: absolute; bottom: 3px; left: 0; right: 0; text-align: center;
-  font-family: var(--font-num); font-weight: 900; font-size: 12px; color: #fff; text-shadow: 0 1px 0 var(--outline-ink), 1px 0 var(--outline-ink), -1px 0 var(--outline-ink);
+  font-family: var(--font-num); font-weight: 900; font-size: max(12px, calc(12px / var(--rig-zoom, 1))); color: var(--paper);
+  text-shadow: 0 1px 0 var(--outline-ink), 1px 0 var(--outline-ink), -1px 0 var(--outline-ink);
 }
 .hold-board.full .hold-cell { animation: glow-cell 0.3s steps(2) infinite; }
 @keyframes glow-cell { 50% { box-shadow: inset 0 0 0 3px #fff; } }
@@ -198,28 +204,31 @@
 }
 .wheel.prize.cheese { box-shadow: inset 0 0 0 9px var(--cheese-rind), inset 0 0 0 12px var(--cheese-dark), 0 0 0 4px var(--cheese-rind); }
 
-/* Jackpot pots: four little plaques above the reels */
+/* Jackpot pots: four brass plaques above the reels (1.6.0), each with its name on an enamel strip */
 .pots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: -4px auto 10px; }
 .pot {
-  display: flex; flex-direction: column; align-items: center; padding: 2px 4px 3px;
-  background: var(--paper); border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch);
-  box-shadow: inset 0 -3px 0 rgba(74, 52, 40, 0.15);
+  display: flex; flex-direction: column; align-items: center; padding: 0 4px 3px; overflow: hidden;
+  background: linear-gradient(var(--brass-light) 0 2px, var(--brass) 2px calc(100% - 3px), var(--brass-dark) calc(100% - 3px));
+  border: var(--outline-thin) solid var(--brass-ink); clip-path: var(--notch); color: var(--brass-ink);
 }
-.pot-name { font-family: var(--font-display); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
-.pot-value { font-family: var(--font-num); font-weight: 900; font-size: 15px; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.pot-0 { background: color-mix(in srgb, var(--soft) 45%, var(--paper)); }
-.pot-1 { background: color-mix(in srgb, var(--buy) 45%, var(--paper)); }
-.pot-2 { background: color-mix(in srgb, var(--token) 45%, var(--paper)); }
-.pot-3 { background: color-mix(in srgb, var(--gold) 55%, var(--paper)); }
+.pot-name {
+  align-self: stretch; margin: 0 -4px 1px; padding: 0 2px 1px; text-align: center; background: var(--pot-c, var(--paper));
+  font-family: var(--font-display); font-weight: 500; font-size: max(12px, calc(12px / var(--rig-zoom, 1))); text-transform: uppercase; letter-spacing: 1px; color: var(--ink);
+}
+.pot-value { font-family: var(--font-num); font-weight: 900; font-size: max(15px, calc(13px / var(--rig-zoom, 1))); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.pot-0 { --pot-c: var(--soft); } .pot-1 { --pot-c: var(--buy); } .pot-2 { --pot-c: var(--token); } .pot-3 { --pot-c: var(--gold); }
 .pot.lit { animation: glow 0.3s steps(2) 8; }
 
-/* Hot Streak badge on the machine's top corner */
-.streak-badge {
-  position: absolute; right: -14px; top: -16px; z-index: 6; display: flex; align-items: center; gap: 3px;
-  padding: 3px 8px 3px 5px; background: var(--paper); border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch);
-  font-family: var(--font-num); font-weight: 900; font-size: 15px; color: var(--primary-dark);
+/* Hot Streak: an enamel pin on the machine's top corner (1.6.0) */
+.streak-badge, .luck-badge {
+  --pin: var(--primary); --pin-dark: var(--primary-dark);
+  position: absolute; top: -16px; z-index: 6; display: flex; align-items: center; gap: 3px; padding: 2px 8px 3px 5px;
+  background: linear-gradient(color-mix(in srgb, var(--pin) 50%, white) 0 2px, var(--pin) 2px calc(100% - 3px), var(--pin-dark) calc(100% - 3px));
+  border: var(--outline-thin) solid color-mix(in srgb, var(--pin-dark) 55%, var(--outline-ink)); clip-path: var(--notch);
+  font-family: var(--font-num); font-weight: 900; font-size: max(15px, calc(13px / var(--rig-zoom, 1))); color: var(--ink);
 }
-.streak-badge.hot { background: var(--gold); color: var(--ink); animation: pop 0.6s ease-in-out infinite; }
+.streak-badge { right: -14px; }
+.streak-badge.hot { --pin: var(--gold); --pin-dark: var(--gold-dark); animation: pop 0.6s ease-in-out infinite; }
 
 /* Wilds and scatters glow softly BEHIND themselves (never tint a symbol) */
 .cell.sym-wild { background: radial-gradient(circle, color-mix(in srgb, var(--gold) 40%, transparent) 0 45%, transparent 70%); }
@@ -236,27 +245,41 @@
 /* Free-spins mode: a golden glow around the machine */
 /* (1.5.0: the glow round the machine is painted by cabinet.ts on its lights canvas, pulsing) */
 
-/* The card gamble: a paper panel over the reels. A face-down card, the last few
-   cards, Red / Black (×2), the four suits (×4) and Take win. */
+/* The card gamble: a little card table over the reels (1.6.0: on the casino's felt, in its wooden
+   rail; and out of the zoomed rig, in the cage itself, so it's real size on a phone: ui.ts
+   placeGamble() centres it on the reels, kept inside the wall). A face-down card, the last few
+   cards, Red / Black (×2), the four suits (×4) and Take win, laid out on a grid. */
 .gamble {
-  --frame: var(--frame-paper-gold);
-  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 7;
-  width: 300px; max-width: 92vw; padding: 2px 6px 6px; display: flex; flex-direction: column; gap: 5px;
-  animation: pop-in 0.25s ease-out;
+  --frame: var(--frame-rail); --fw: 12px; color: var(--paper);
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 7; isolation: isolate;
+  width: 320px; max-width: calc(100% - 16px); padding: 2px 6px 6px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6px 10px;
+  grid-template-areas: "card info" "picks picks" "keep keep" "timer timer";
+  animation: gamble-in 0.25s ease-out;
 }
-.gamble-top { display: flex; align-items: center; gap: 10px; }
-.gamble-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+/* (scale, not transform: the table's centring is its own translate, so the two never fight) */
+@keyframes gamble-in { from { scale: 0.85; opacity: 0; } }
+.gamble::before { /* the felt's nap */
+  content: ""; position: absolute; inset: -2px; z-index: -1; pointer-events: none;
+  background: var(--tile-felt) 0 0 / 64px 64px repeat; image-rendering: pixelated;
+}
+.gamble .note { color: color-mix(in srgb, var(--paper) 80%, var(--felt)); font-size: var(--text-xs); }
+.gamble .note.warn { color: var(--gold); }
+.gamble .btn { min-height: var(--tap); }
+.gamble-info { grid-area: info; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .gamble-title { font-family: var(--font-display); font-weight: 500; font-size: 16px; line-height: 1.1; }
-.gamble-title .num, .gamble-buttons .num, .gamble .btn .num { font-family: var(--font-num); font-weight: 900; }
-.gamble-buttons { display: flex; gap: 5px; }
-.gamble-buttons .btn { flex: 1; min-width: 0; font-size: 14px; padding: 0 4px 2px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; }
-.gamble-suits .btn { --fw: 8px; padding: 0 1px 2px; font-size: 13px; }
-.gamble-timer { height: 5px; background: var(--paper-2); clip-path: var(--notch); overflow: hidden; }
+.gamble-title .num, .gamble-picks .num, .gamble .btn .num { font-family: var(--font-num); font-weight: 900; }
+.gamble-picks { grid-area: picks; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.gamble-picks .btn { min-width: 0; font-size: 14px; padding: 0 4px 2px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; }
+.gamble-picks .gamble-colour { grid-column: span 2; }
+.gamble-picks .btn-card { --fw: 8px; padding: 0 1px 2px; font-size: 13px; }
+.gamble-keep { grid-area: keep; }
+.gamble-timer { grid-area: timer; height: 5px; background: var(--felt-dark); clip-path: var(--notch); overflow: hidden; }
 .gamble-timer-fill { height: 100%; background: var(--primary); }
 .gamble.started .gamble-timer { display: none; }
 /* The card: face down (the card back sprite), or turned over after a pick */
 .gamble-card {
-  flex: none; width: 50px; height: 66px; display: flex; align-items: center; justify-content: center;
+  grid-area: card; width: 50px; height: 66px; display: flex; align-items: center; justify-content: center;
   background: var(--reel-bg); border: var(--outline-thin) solid var(--outline-ink); border-radius: 6px;
   box-shadow: 0 3px 0 rgba(74, 52, 40, 0.25);
 }
@@ -267,40 +290,41 @@
 .gamble-card.lose { filter: saturate(0.4); }
 @keyframes card-flip { 0% { transform: scaleX(1); } 45% { transform: scaleX(0.05); } 100% { transform: scaleX(1); } }
 /* The last few cards: little paper chips, newest first */
-.gamble-history { display: flex; gap: 3px; min-height: 22px; }
+.gamble-history { display: flex; gap: 3px; }
+.gamble-history:empty { display: none; } /* (no gap before the first card) */
 .gamble-history .mini-card {
   width: 18px; height: 22px; display: flex; align-items: center; justify-content: center;
   background: var(--reel-bg); border: 1px solid var(--outline-ink); border-radius: 3px;
 }
 .gamble-history .mini-card:first-child { box-shadow: 0 0 0 2px var(--gold); }
 
-/* The WIN meter: a little dark screen under the reels, the pokie "win" display */
+/* The WIN meter: a little dark screen under the reels, the pokie "win" display, in a chrome bezel
+   (1.6.0: frames.ts). Its words and number grow back against the rig's zoom, so they stay readable. */
 .win-meter {
+  --frame: var(--fr-chrome); --fw: 8px;
   display: flex; align-items: baseline; justify-content: center; gap: 8px;
-  width: fit-content; min-width: 150px; margin: 8px auto 0; padding: 1px 12px 2px;
+  width: fit-content; min-width: 150px; margin: 8px auto 0; padding: 0 10px 1px;
   /* (1.5.0: faint scanlines, like a little LCD) */
-  background: repeating-linear-gradient(rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 3px), var(--lcd);
-  border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch);
-  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.35);
+  background: repeating-linear-gradient(rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 3px), var(--lcd); background-clip: padding-box;
+  border-style: solid; border-color: transparent; border-width: var(--fw); border-image: var(--frame) 4 / var(--fw) stretch; image-rendering: pixelated;
 }
-.win-meter-label { font-family: var(--font-display); font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: color-mix(in srgb, var(--lcd-glow) 55%, var(--lcd)); }
-.win-meter-value { font-family: var(--font-num); font-weight: 900; font-size: 18px; color: var(--lcd-glow); font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; }
+.win-meter-label { font-family: var(--font-display); font-weight: 500; font-size: max(13px, calc(12px / var(--rig-zoom, 1))); text-transform: uppercase; letter-spacing: 2px; color: color-mix(in srgb, var(--lcd-glow) 55%, var(--lcd)); }
+.win-meter-value { font-family: var(--font-num); font-weight: 900; font-size: max(18px, calc(14px / var(--rig-zoom, 1))); color: var(--lcd-glow); font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; }
 .win-meter.counting .win-meter-value { text-shadow: 0 0 6px color-mix(in srgb, var(--lcd-glow) 70%, transparent); }
-/* The line the win show is naming, on a strip at the bottom of the reel window */
+/* The line the win show is naming, on a strip at the bottom of the reel window: the line's colour
+   in a chrome bezel (1.6.0) */
 .line-label {
+  --frame: var(--fr-chrome); --fw: 8px;
   position: absolute; left: 50%; bottom: -2px; transform: translate(-50%, 50%); z-index: 6; white-space: nowrap;
-  padding: 1px 10px 2px; background: var(--lc, var(--gold)); color: var(--ink); border: var(--outline-thin) solid var(--outline-ink);
-  clip-path: var(--notch); font-family: var(--font-display); font-weight: 500; font-size: 14px;
+  padding: 0 8px 1px; background: var(--lc, var(--gold)); background-clip: padding-box; color: var(--ink);
+  border-style: solid; border-color: transparent; border-width: var(--fw); border-image: var(--frame) 4 / var(--fw) stretch; image-rendering: pixelated;
+  font-family: var(--font-display); font-weight: 500; font-size: max(14px, calc(13px / var(--rig-zoom, 1)));
 }
 .line-label .num { font-family: var(--font-num); font-weight: 900; }
 .reels.show-skip { cursor: pointer; }
 
-/* Luck: a clover badge on the machine's other top corner */
-.luck-badge {
-  position: absolute; left: -14px; top: -16px; z-index: 6; display: flex; align-items: center; gap: 3px;
-  padding: 3px 8px 3px 5px; background: var(--paper); border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch);
-  font-family: var(--font-num); font-weight: 900; font-size: 15px; color: var(--luck-dark);
-}
+/* Luck: a clover on an enamel pin, on the machine's other top corner */
+.luck-badge { --pin: var(--luck); --pin-dark: var(--luck-dark); left: -14px; }
 .luck-badge.up { animation: pop 0.5s ease-in-out 2; }
 
 /* The jackpot wheel: the hamster wheel's face becomes a 4-colour prize wheel */
@@ -326,8 +350,24 @@
 .machine[data-machine="moving"] .marquee { --marquee: var(--box-label); }
 .machine[data-machine="moving"] .payline-arrow { display: none; }
 
-@media (max-width: 640px) {
-  .gamble-buttons .btn { font-size: 13px; }
+/* A narrow cage (a phone): the card table in three rows, so it fits the shorter cage. The card
+   at 3×; Take win beside the title; the six picks share a row (the colours say red and black);
+   the odds line goes (the buttons say ×2 and ×4), unless it's saying why you can't pick. */
+@container stage (max-width: 560px) {
+  .gamble { gap: 4px 8px; padding: 2px 4px 4px; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "card info keep" "picks picks picks" "timer timer timer"; }
+  .gamble-card { width: 36px; height: 48px; }
+  .gamble-card.back img { width: 48px; height: 48px; }
+  .gamble-card:not(.back) img { width: 24px; height: 24px; }
+  .gamble-long, .gamble-history, .gamble .note:not(.warn) { display: none; }
+  .gamble-picks { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+  .gamble-picks .gamble-colour { grid-column: auto; }
+  /* Each pick: its word or suit over what it pays, in a frame at 1× (4 px), so six fit a 320 px phone */
+  .gamble-picks .btn, .gamble-picks .btn-card { --fw: 4px; flex-direction: column; gap: 0; line-height: 1.05; font-size: 13px; padding: 0 1px 2px; }
+  .gamble-keep { padding: 0 8px 2px; font-size: 14px; }
+}
+/* The narrowest (a 320–360 px phone): the colours say red and black without words */
+@container stage (max-width: 350px) {
+  .gamble-word { display: none; }
 }
 .less-motion .machine.switch-in, .less-motion .line-tag.won, .less-motion .cell.win, .less-motion .cell.feature,
 .less-motion .reel.tease, .less-motion .machine.free-spins, .less-motion .streak-badge.hot, .less-motion .pot.lit,

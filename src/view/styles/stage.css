@@ -35,10 +35,13 @@
 .floor { flex: none; position: relative; z-index: 1; padding: 14px 20px 12px; color: var(--floor-ink); }
 
 /* width: fit-content + side padding (room for the lever) lets ui.ts measure the rig
-   and shrink it with CSS zoom until it fits the stage (phones, 4 reels). */
+   and shrink it with CSS zoom until it fits the stage (phones, 4 reels). Its top margin keeps
+   room for the speech bubble, and (1.6.0) keeps the machine below the signs hanging over the
+   wall: ui.ts sets --tags-room, how far down they reach in screen pixels, and dividing by the
+   zoom keeps that the same on screen at any zoom. */
 .rig {
   position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: center;
-  width: fit-content; padding: 0 40px; margin: 52px auto -12px; /* sinks a little into the bedding */
+  width: fit-content; padding: 0 40px; margin: max(52px, calc(var(--tags-room, 0px) / var(--rig-zoom, 1))) auto -12px; /* sinks a little into the bedding */
 }
 
 /* Hamster wheel */
@@ -80,21 +83,26 @@
 .prop-bowl { left: 22px; bottom: -14px; z-index: 3; }
 @container stage (max-width: 899px) { .prop { display: none; } }
 
-/* Paper tags on the bars: switch machines */
-.machine-tags { position: absolute; left: 18px; top: 16px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; max-width: 60%; }
+/* Wooden signs hanging from brass hooks on the bars: switch machines (once you own two).
+   1.6.0: finger-sized; the one you're on is lit brass. */
+.machine-tags { position: absolute; left: 18px; top: 18px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; max-width: calc(100% - 36px); }
+@container stage (min-width: 900px) { .machine-tags { max-width: calc(100% - 180px); } } /* (clear of the water bottle) */
 .machine-tag {
-  --fw: 8px; position: relative; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 2px; cursor: pointer;
-  font-family: var(--font-display); font-weight: 500; font-size: 13px; color: var(--ink);
-  transition: transform 0.12s;
+  --frame: var(--fr-enamel-wood); --fw: 8px; position: relative; display: flex; align-items: center; gap: 6px;
+  min-height: var(--tap); padding: 0 8px 2px 4px; cursor: pointer;
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); color: var(--ink);
+  transition: transform var(--dur-1); -webkit-tap-highlight-color: transparent;
 }
-.machine-tag::before { /* the string it hangs from */
-  content: ""; position: absolute; left: 50%; top: -24px; width: 2px; height: 16px; background: var(--wire-dark);
+.machine-tag::before { /* the brass hook it hangs from */
+  content: ""; position: absolute; left: calc(50% - 3px); top: -16px; width: 6px; height: 10px;
+  background: var(--brass); box-shadow: inset -2px -2px 0 var(--brass-dark), 0 0 0 2px var(--brass-ink);
 }
 .machine-tag:hover { transform: rotate(-2deg); }
-.machine-tag.active { --frame: var(--frame-paper-gold); }
-.machine-tag:not(.active) { opacity: 0.85; }
+.machine-tag.active { --frame: var(--fr-brass-lit); color: var(--brass-ink); }
 .machine-tag:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
 .machine-tags.many .machine-tag span { display: none; } /* 5+ machines (M9): icons only, one row */
+.machine-tags.many { gap: 4px; }
+.machine-tags.many .machine-tag { padding: 0 4px 2px; }
 
 /* A dozing hamster lets out a "z" now and then */
 .zzz {
@@ -120,33 +128,36 @@
   60% { transform: translate(-3px, 1px); } 80% { transform: translate(2px, -1px); }
 }
 
-.controls { display: flex; justify-content: center; align-items: stretch; gap: 12px; }
-.btn-title { display: block; }
-.btn-meta { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 13px; font-family: var(--font-body); }
-.btn-spin { --fw: 12px; min-width: 210px; font-size: 28px; padding: 0 20px 2px; }
-.btn-spin.free { --frame: var(--frame-btn-gold); }
-.btn-spin.free:disabled { filter: none; opacity: 1; }
-.btn-deliver { min-width: 130px; }
-/* Pause/resume auto-spin: a small square toggle, only shown once Wheel Training is
-   owned. Neutral (running) or a warning frame (paused), like a real pause light. */
-.btn-auto { --fw: 8px; width: 44px; font-size: 22px; line-height: 1; flex: none; }
-.btn-auto.paused { --frame: var(--frame-btn-danger); }
-
-/* The bet box: − BET ×5 + */
-.bet-box { display: flex; align-items: stretch; gap: 4px; }
-.bet-btn { --fw: 8px; width: 40px; padding: 0 0 3px; font-family: var(--font-num); font-weight: 900; font-size: 22px; line-height: 1; }
-.bet-btn.locked { filter: saturate(0.3); opacity: 0.7; }
-.bet-value {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 64px; padding: 2px 6px;
-  background: var(--paper); border: var(--outline-thin) solid var(--outline-ink); clip-path: var(--notch); color: var(--ink);
+/* ── The control deck (1.6.0, deck.ts): a wooden console on the front of the tray ──
+   Deliver, the big Spin, the auto-spin lever and the bet, in one row. */
+.deck {
+  --frame: var(--fr-wood); --fw: 8px; border-image-slice: 4;
+  background: var(--tx-wood) 0 0 / 64px 64px repeat, var(--wood); background-clip: padding-box;
+  display: flex; align-items: stretch; justify-content: center; gap: var(--space-2);
+  width: fit-content; max-width: 100%; margin: 0 auto; padding: 2px var(--space-2) 4px;
 }
-.bet-label { font-family: var(--font-display); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-soft); line-height: 1; }
-.bet-amount { font-family: var(--font-num); font-weight: 900; font-size: 22px; line-height: 1.05; }
-.bet-hint { font-size: 10px; color: var(--ink-soft); line-height: 1; white-space: nowrap; }
-.bet-box.stepped .bet-hint { color: var(--danger-dark); }
-/* Spin glows when the hamster's waiting for you (no auto-spin yet) */
-.btn-spin.attract { animation: attract 1.6s ease-in-out infinite; }
-@keyframes attract { 50% { transform: scale(1.04); filter: brightness(1.08) drop-shadow(0 0 8px color-mix(in srgb, var(--primary) 70%, transparent)); } }
+.deck-deliver { flex: 0 1 auto; min-width: 128px; overflow: hidden; }
+.deck-deliver .k-btn-meta { font-size: var(--text-xs); }
+.deck-fill { /* the trip, filling the button while the hamster is out */
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--soft-dark) 55%, transparent) 0 6px, color-mix(in srgb, var(--soft-dark) 30%, transparent) 6px 12px) 0 0 / 17px 17px;
+}
+.deck-spin { flex: 1 1 auto; min-width: 200px; }
+.deck-spin .k-btn-label { letter-spacing: 1px; }
+.deck-spin .k-btn-meta { display: flex; justify-content: center; font-size: var(--text-sm); }
+.deck-spin .k-amount { font-size: var(--text-md); }
+.deck-free { white-space: nowrap; }
+.deck-spin.poor { --frame: var(--fr-enamel-off); --frame-down: var(--fr-enamel-off-down); color: var(--ink-soft); }
+.deck-spin.free:disabled { --frame: var(--fr-enamel-gold); color: var(--ink); }
+.deck-spin.shake { animation: shake 0.3s; } /* (the keyframes are kit.css's) */
+/* Spin glows when the hamster's waiting for you (no auto-spin running): a soft pulse and a glow
+   (transform and a shadow only: no animated filters, D153) */
+.deck-spin.attract { animation: attract 1.6s ease-in-out infinite; }
+@keyframes attract {
+  50% { transform: scale(1.04); box-shadow: 0 0 14px 4px color-mix(in srgb, var(--primary) 55%, transparent); }
+}
+.deck-lever { align-self: center; }
+.deck-bet { flex: none; }
 
 /* The delivery route: a clear tube along the front of the cage base */
 .road {
@@ -159,7 +170,6 @@
 .road-fill { height: 100%; width: 0; background: var(--soft-dark); clip-path: var(--notch); }
 .road-hamster { position: absolute; top: 3px; left: 10px; opacity: 0; transition: opacity 0.3s; }
 .road.active .road-hamster { opacity: 1; }
-.road-label { position: absolute; right: 14px; top: 9px; font-size: 12px; color: var(--floor-ink); opacity: 0.85; }
 
 /* ── Capsules tab: Capsule Machine, Wardrobe, Hamster Diary ── */
 
@@ -174,46 +184,94 @@
 @keyframes gacha-bob { 50% { transform: translateY(-4px); } }
 @container stage (max-width: 899px) { .stage-gacha { display: none !important; } }
 
-/* The boosts running now, on the cage's top-right corner */
+/* Pins in the cage's top-right corner (1.6.0: enamel pins you can tap; the sheet says what they are):
+   a Colony Trial under way, then the casino's boosts and charms running now */
 .stage-badges { position: absolute; right: 12px; top: 12px; z-index: 6; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; pointer-events: none; max-width: 48%; }
-.boost-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.stage-badges > * { pointer-events: auto; }
+.boost-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; cursor: pointer; }
 .boost-badges:empty { display: none; }
-.boost-badge { --frame: var(--frame-paper-gold); --fw: 8px; display: flex; align-items: center; gap: 3px; padding: 0 4px 0 2px; font-size: 13px; }
+.boost-badge { --frame: var(--fr-enamel-gold); --fw: 8px; display: flex; align-items: center; gap: 3px; min-height: 32px; padding: 0 4px 1px 2px; font-size: var(--text-sm); }
 .boost-badge .num { font-family: var(--font-num); font-weight: 900; }
-/* A Colony Trial under way, in the cage's corner */
-.trial-badge { --frame: var(--frame-paper-gold); --fw: 8px; display: flex; flex-direction: column; align-items: flex-end; padding: 0 5px 1px; font-size: 12px; line-height: 1.25; pointer-events: auto; }
-.trial-badge b { font-family: var(--font-display); font-weight: 500; font-size: 13px; }
+.trial-badge {
+  --frame: var(--fr-brass-lit); --fw: 8px; display: flex; flex-direction: column; align-items: flex-end; min-height: var(--tap);
+  padding: 0 5px 1px; font: inherit; font-size: var(--text-xs); line-height: 1.25; color: var(--brass-ink); cursor: pointer;
+}
+.trial-badge b { font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); }
 .trial-badge .num { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-num); font-weight: 900; }
 
 /* ── Small screens ── The rig is zoomed out to fit (ui.ts sets --rig-zoom). Divide by it so the
    bubble text stays readable at its real on-screen size. */
 @media (max-width: 640px) {
-  .bubble { font-size: calc(11.5px / var(--rig-zoom, 1)); line-height: 1.25; }
+  /* The bubble's words stay 12 px on screen; when the rig is zoomed right out it widens to the
+     right (over the machine's top for a moment), so it stays a few lines tall */
+  .bubble {
+    --bw: calc(214px * max(1, 0.6 / var(--rig-zoom, 1)));
+    width: var(--bw); font-size: calc(12px / var(--rig-zoom, 1)); line-height: 1.25;
+  }
   .wall { padding: 22px 8px 0; }
-  .machine-tags { left: 10px; top: 12px; max-width: 90%; }
+  .machine-tags { left: 8px; top: 12px; max-width: calc(100% - 16px); gap: 4px; }
+  .machine-tag { padding: 0 4px 2px; }
   .machine-tag span { display: none; } /* just the machine icons */
-  .machine-tags.many { gap: 4px; max-width: calc(100% - 20px); } /* seven icons still fit in one row */
-  .machine-tags.many .machine-tag { padding: 0 2px; }
+  /* Five or more: slimmer signs (a frame at 1×), so all eight fit one row on a 320 px phone */
+  .machine-tags.many { gap: 2px; }
+  .machine-tags.many .machine-tag { --fw: 4px; padding: 0 1px 1px; }
 }
-/* A narrow cage (a phone, or a small window): Deliver, Spin and the bet share one row. */
+/* A short screen (a phone on its side): the rig is zoomed right out to fit, so the speech bubble's
+   words grow back against the zoom (like on a phone, above) and the bubble widens to its left, into
+   the room beside the rig, so the words still fit. Its tail still points at the hamster. */
+@media (max-height: 540px) {
+  .machine-tag span { display: none; } /* just the icons: over the wheel, not the machine */
+  .bubble {
+    --bw: calc(214px * max(1, 0.7 / var(--rig-zoom, 1)));
+    width: var(--bw); left: calc(208px - var(--bw)); font-size: calc(12px / var(--rig-zoom, 1)); line-height: 1.25;
+  }
+  .bubble::after { left: calc(70px + var(--bw) - 214px); }
+}
+
+/* A narrow cage (a phone, or a small window): the deck stays one row, tighter and lower
+   (every key 48 px tall: the deck is 64 px, so the tray keeps its room on a short phone). */
 @container stage (max-width: 560px) {
-  .controls { gap: 6px; }
-  .btn-deliver { min-width: 0; flex: 1 1 0; font-size: 15px; padding: 0 4px 2px; }
-  .btn-deliver .btn-meta { font-size: 11px; }
-  .btn-spin { --fw: 8px; min-width: 0; flex: 1.4 1 0; font-size: 22px; padding: 0 6px 2px; }
-  .btn-auto { width: 32px; font-size: 17px; }
-  .bet-box { flex: none; gap: 3px; }
-  .bet-btn { width: 30px; font-size: 18px; }
-  .bet-value { min-width: 48px; padding: 1px 3px; }
-  .bet-amount { font-size: 18px; }
-  .bet-hint { font-size: 9px; }
-  .floor { padding: 10px 8px 8px; }
+  .deck { --fw: 4px; width: 100%; gap: 4px; padding: 2px 4px 3px; }
+  .k-btn.deck-deliver { min-width: 0; flex: 0 0 auto; min-height: 48px; padding: 0 6px 2px; font-size: var(--text-sm); }
+  .deck-deliver .k-btn-label { display: none; } /* just the scooter, then the pay over the time */
+  .deck-deliver .k-btn-face { flex-wrap: nowrap; gap: 4px; }
+  .deck-deliver .k-btn-meta { flex-basis: auto; display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; white-space: nowrap; }
+  .deck-deliver .deck-sep { display: none; }
+  .k-btn.deck-spin { --fw: 8px; min-width: 0; min-height: 48px; flex: 1 1 0; font-size: var(--text-lg); line-height: 1; padding: 0 6px 2px; }
+  .deck-spin .k-btn-face { gap: 2px 6px; }
+  .deck-spin .k-btn-label { letter-spacing: 0; }
+  .deck-spin .k-btn-meta { flex-basis: auto; line-height: 1; }
+  .deck-spin .k-amount { font-size: var(--text-sm); }
+  .deck-spin .k-amount .sprite { width: 12px; height: 12px; } /* (the coin at 1×: a whole scale) */
+  .k-toggle.deck-lever { width: 36px; }
+  .deck-bet .k-step-btn { min-width: 36px; min-height: 48px; padding: 0 2px 2px; }
+  /* The speech bubble needs less room kept above the rig here: it sits beside the tall machine. */
+  .rig { margin-top: max(30px, calc(var(--tags-room, 0px) / var(--rig-zoom, 1))); }
+  .deck-bet .k-step-value { min-width: 48px; padding: 0 2px; }
+  .deck-bet .k-step-num { font-size: var(--text-md); }
+  .deck-bet:not(.is-warn) .k-step-hint { display: none; } /* (it says when a spin steps down) */
+  .floor { padding: 4px 8px 5px; }
+  .wall { padding-top: 10px; }
   /* The delivery tube only shows while the hamster is out (Deliver says the trip's pay and time). */
-  .road { display: none; height: 38px; margin-top: 8px; }
+  .road { display: none; height: 38px; margin-top: 6px; }
   .road.active { display: block; }
   .road-hamster { top: 1px; }
-  .road-label { top: 5px; right: 10px; font-size: 11px; }
-  .bedding { height: 18px; background-size: 36px 36px; }
+  .bedding { height: 12px; background-size: 36px 36px; }
+}
+/* A very narrow cage (a 320–360 px phone): smaller still, so it stays one row. */
+@container stage (max-width: 360px) {
+  .deck { gap: 2px; padding: 2px 2px 3px; }
+  .k-btn.deck-spin { font-size: var(--text-lg); padding: 0 4px 2px; }
+  .deck-bet .k-step-btn { min-width: 32px; }
+  .deck-bet .k-step-value { min-width: 40px; }
+  .deck-bet .k-step-label { display: none; }
+}
+/* The narrowest (a 320 px phone): Deliver is just the scooter over the trip's time, so Spin keeps its room */
+@container stage (max-width: 330px) {
+  .k-btn.deck-deliver { padding: 0 4px 2px; }
+  .deck-deliver .k-btn-face { flex-direction: column; gap: 2px; }
+  .deck-deliver .deck-pay { display: none; }
+  .deck-bet .k-step-value { min-width: 36px; }
 }
 .less-motion .hamster.hop, .less-motion .stage.shake-stage, .less-motion .stage-gacha.ready, .less-motion .cage-sky-clouds { animation: none; }
-.less-motion .hamster.idle, .less-motion .btn-spin.attract { animation: none !important; }
+.less-motion .hamster.idle, .less-motion .deck-spin.attract, .less-motion .deck-spin.shake { animation: none !important; }

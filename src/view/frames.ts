@@ -30,6 +30,7 @@ export const FRAME_TOKENS = [
   '--primary', '--primary-dark', '--soft', '--soft-dark', '--buy', '--buy-dark', '--gold', '--gold-dark',
   '--danger', '--danger-dark', '--token', '--token-dark', '--heirloom', '--heirloom-dark', '--off', '--off-dark',
   '--card-black', '--card-black-dark', '--luck', '--luck-dark',
+  '--chrome', '--chrome-light', '--chrome-dark', '--lcd',
 ] as const;
 export type FrameColors = Record<(typeof FRAME_TOKENS)[number], string>;
 
@@ -182,6 +183,15 @@ export function paintFrames(c: FrameColors): Record<string, Pixmap> {
     bottom: [bink, P('--brass-dark'), P('--brass'), P('--glass')],
     right: [bink, P('--brass-dark'), P('--brass'), P('--glass')],
     fill: P('--glass'), cut: 1,
+  });
+
+  // CHROME: a bevelled bezel, like the cabinets' trim (the WIN meter, the win show's line label,
+  // the hold & spin board); the middle is the little LCD screen.
+  const chromeInk = P('--outline-ink');
+  frames.chrome = paintFrame({
+    top: [chromeInk, P('--chrome-light'), P('--chrome'), chromeInk], left: [chromeInk, P('--chrome-light'), P('--chrome'), chromeInk],
+    bottom: [chromeInk, P('--chrome-dark'), P('--chrome'), chromeInk], right: [chromeInk, P('--chrome-dark'), P('--chrome'), chromeInk],
+    fill: P('--lcd'), cut: 1,
   });
 
   // PAPER: cream index cards in tones. The edge is the tone's dark colour, a shade runs along

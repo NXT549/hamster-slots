@@ -12,6 +12,18 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 **A full redesign of everything around the cage, in the hamster's room: wood, paper and brass. Being built: the screens arrive one by one.**
 
+### Changed
+
+- **Everything is made of the hamster's room now**: wooden frames, paper cards, brass plates and glossy enamel buttons, painted as pixel art, on every screen (the screens get their new layouts one by one).
+- **Your purse across the top**: brass counters for your coins (with what auto-spin earns a second), Heirloom Seeds, Hamster Tokens, Casino Chips and Golden Whiskers, each once you have it. Tap one to read what it's for and jump to where you spend it. On a phone it's your coins and a "+3" that lists the rest. The sound button sits beside the Menu on a big screen.
+- **A wooden control deck** on the front of the cage: Deliver (with the trip's pay and time; it fills up while the hamster's out), a big Spin button (gold in free spins), a brass **lever for auto-spin** (up with a green lamp = on, down with a red one = paused; it replaces the ⏸ button), and the bet's − and +. Space, D, - and = still work.
+- **On a phone the main tabs are a bar at the bottom**, in reach of your thumb, with big icons, and the tray gets more of the screen: on a short phone the cage shrinks a little so the tray always keeps a third of it. On a big screen the tabs are brass plates on top of the tray, and when their names don't fit only the open one keeps its name.
+- **Details open in a sheet** that slides up inside the tray (never over the cage); Escape or ✕ closes it.
+- **The tray is a wooden cabinet** with an oak panel, and its sub-tabs are paper index tabs.
+- **On the machine**: the jackpot pots are brass plaques, Luck and Hot Streak are enamel pins, the WIN meter and the line label sit in chrome, and the machines' tags are wooden signs hanging from brass hooks. The small labels stay readable on a phone. The casino's boosts and a Colony Trial are pins in the cage's corner: tap one to read about it.
+- **The card gamble** is a little card table on felt, over the reels and at full size on a phone (where its six picks share one row).
+- The hamster's lines are read out by screen readers too.
+
 ### Fixed
 
 - A machine with every upgrade maxed now really shows its gold "Rebuild for a star" card frame.

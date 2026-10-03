@@ -20,10 +20,14 @@ export function wideMedia(): MediaQueryList {
 }
 
 // How tall the rig may be. Beside the tray the cage's wall has its own height (the window's,
-// minus the HUD), so the rig fits in that; stacked, the cage may take up to `share` of the
-// screen's height (44%), and the tray gets the rest.
-export function rigRoom({ wide, wallH, padTop, innerH, share = 0.44 }: { wide: boolean; wallH: number; padTop: number; innerH: number; share?: number }): number {
-  return wide ? Math.max(0, wallH - padTop) : innerH * share;
+// minus the HUD), so the rig fits in that. Stacked (a phone), the cage may take up to `share` of
+// the screen's height (44%), but never so much that the tray is left with less than `trayShare`
+// of it (32%): on a short phone the rig gives way, so the tray stays usable (1.6.0). It works from
+// the rig's room now (the wall's height inside its padding) plus what the tray has beyond its
+// share, which comes out the same at any zoom: the page's other parts don't change with it.
+export function rigRoom({ wide, wallH, padTop, innerH, trayH = Infinity, share = 0.44, trayShare = 0.32 }: { wide: boolean; wallH: number; padTop: number; innerH: number; trayH?: number; share?: number; trayShare?: number }): number {
+  if (wide) return Math.max(0, wallH - padTop);
+  return Math.max(0, Math.min(innerH * share, wallH - padTop + trayH - innerH * trayShare));
 }
 
 // The zoom that fits a rig of rigW × rigH (measured at zoom 1) into availW × availH: never

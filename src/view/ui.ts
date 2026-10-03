@@ -1,4 +1,7 @@
 // ui.ts — VIEW layer. Draws the game and turns clicks and keys into game actions.
+// (1.6.0: the HUD's wallet is hud.ts, the buttons on the cage are deck.ts, and the tray's detail
+// sheet comes from kit.ts; ui.ts keeps the stage, the events, the tabs and the frame loop, and
+// renders only the tray tab that's open.)
 //
 // The UI never changes game state directly. It:
 //   1) calls actions:      game.spin(), game.startDelivery(), game.switchMachine(id), game.retire() …
@@ -12,7 +15,7 @@ import { applySprite, spriteImg, treeIcon, hamsterSprite, runFrame, MACHINE_SPRI
 import type { HamsterFrame } from './art.ts';
 import { createReels } from './reels.ts';
 import { createWinShow } from './winshow.ts';
-import { formatCoins, formatWhole, formatSeconds, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle, popText } from './dom.ts';
+import { formatCoins, formatWhole, formatDuration, setText, setHTML, replayClass, iconHTML, setNumberStyle, popText } from './dom.ts';
 import { furColors, applyStageSkins, hatOf } from './skins.ts';
 import { createCapsulesView } from './capsules.ts';
 import { createCasinoView } from './casino.ts';
@@ -26,8 +29,10 @@ import { createCelebration, createIris, IRIS_MS } from './celebrate.ts';
 import { createCageScene } from './cage.ts';
 import { createCabinet } from './cabinet.ts';
 import { createWheel } from './wheel.ts';
-import { titleLetters, rampFromTokens } from './pixelfont.ts';
 import { wideMedia, rigRoom, rigZoom } from './layout.ts';
+import { createSheet, uiSound } from './kit.ts';
+import { createHud } from './hud.ts';
+import { createDeck } from './deck.ts';
 import { effectAs } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
@@ -129,23 +134,18 @@ export function createUI(
   // The element with this id (every id used here is in index.html).
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
-    coinPill: $('coin-pill'), coins: $('coin-count'), coinRate: $('coin-rate'),
-    seedPill: $('seed-pill'), seedCount: $('seed-count'),
-    whiskerPill: $('whisker-pill'), whiskerCount: $('whisker-count'), trialBadge: $('trial-badge'), familyPanel: $('tab-family'),
+    trialBadge: $('trial-badge'), boostBadges: $('boost-badges'), familyPanel: $('tab-family'), srLive: $('sr-live'),
     menuBtn: $('menu-btn'), menu: $<HTMLDialogElement>('menu'), debugBtn: $('debug-btn'), debugKey: $('debug-key'), resetBtn: $('reset-btn'),
     stage: $('stage'), wall: $('wall'), rig: document.querySelector<HTMLElement>('.rig')!, machineTags: $('machine-tags'),
     bubble: $('bubble'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
     machine: $('machine'), machineName: $('machine-name'), reels: $('reels'), winLayer: $('win-layer'),
-    spinBtn: $<HTMLButtonElement>('spin-btn'), spinTitle: $('spin-title'), spinMeta: $('spin-meta'),
-    deliverBtn: $<HTMLButtonElement>('deliver-btn'), deliverMeta: $('deliver-meta'), autoBtn: $<HTMLButtonElement>('auto-btn'),
-    betBox: $('bet-box'), betDown: $<HTMLButtonElement>('bet-down'), betUp: $<HTMLButtonElement>('bet-up'), betAmount: $('bet-amount'), betHint: $('bet-hint'),
     wheel: $('wheel'), prizeFace: $('prize-face'), pots: $('pots'), streakBadge: $('streak-badge'), streakText: $('streak-text'),
     luckBadge: $('luck-badge'), luckText: $('luck-text'),
     winMeter: $('win-meter'), winMeterValue: $('win-meter-value'), lineLabel: $('line-label'), holdBoard: $('hold-board'),
     gamble: $('gamble'), gambleTitle: $('gamble-title'), gambleNote: $('gamble-note'), gambleTimer: $('gamble-timer'),
     gambleCard: $('gamble-card'), gambleHistory: $('gamble-history'), gambleKeep: $('gamble-keep'),
     gamblePicks: [...document.querySelectorAll<HTMLButtonElement>('#gamble [data-pick]')],
-    road: $('road'), roadFill: $('road-fill'), roadHamster: $<HTMLImageElement>('road-hamster'), roadLabel: $('road-label'),
+    road: $('road'), roadFill: $('road-fill'), roadHamster: $<HTMLImageElement>('road-hamster'), tabs: document.querySelector<HTMLElement>('.tabs')!,
     familyTab: $('family-tab'), pupName: $('pup-name'), pupGen: $('pup-gen'),
     retireGain: $('retire-gain'), seedBarFill: $('seed-bar-fill'), seedNext: $('seed-next'),
     heirloomPerSeed: $('heirloom-per-seed'), retireBtn: $<HTMLButtonElement>('retire-btn'), retireBonus: $('retire-bonus'),
@@ -166,6 +166,14 @@ export function createUI(
   const cabinet = createCabinet(el.machine, { starred: () => game.getStars() > 0 });
   // …and the hamster wheel, painted at its angle every frame, so it really turns (wheel.ts).
   const wheel = createWheel(wheelUnit, el.stage);
+  // 1.6.0: the detail sheet in the tray (kit.ts), the wallet on the HUD (hud.ts) and the control
+  // deck on the front of the cage (deck.ts).
+  const sheet = createSheet(el.tray);
+  const hud = createHud(game, {
+    sheet, sound, onSettingsChange, openTab: (tab, sub) => openTab(tab, sub),
+    shown: { capsules: () => capsulesShown, casino: () => casinoShown },
+  });
+  const deck = createDeck(game, { host: $('deck'), sound, say: (text, ms) => say(text, ms) });
 
   let lastSpinSource: SpinSource = 'manual'; // spins you pulled yourself clunk louder
   let lastManualSpinAt = performance.now(); // for the sleepy "Zzz" hint
@@ -208,14 +216,16 @@ export function createUI(
   let tagEls = new Map<string, HTMLButtonElement>(); // machine id → its tag on the stage
   let wheelAngle = 0;
   let lastPlayTime = game.state.stats.playTime;
-  let shownCoins = game.state.coins; // the counter "rolls" towards the real value
   let lastFrame = performance.now();
-  let lastTitle = 0; // when the browser tab title was last updated
   let speech: { text: string; until: number } | null = null; // a temporary line from the hamster: { text, until }
   let resetArmed = 0; // reset needs two taps; this is when the first tap expires
+  let currentTab = 'upgrades'; // the tray tab that's open (1.6.0: only it renders)
+  let shownTabsKey = ''; // which tabs show, to fit their names when one appears
+  let lastHiddenTabs = 0; // when the hidden tabs' dots were last worked out (4 times a second)
   let retireArmed = 0; // same for retiring
   let lastRetired: GameEvents['retired'] | null = null; // what the Big Cage page says about the hamster that just retired
   let rigFitKey = ''; // stage width + machine + reel count the rig was last fitted for
+  let rigShared = 0; // stacked: the height the rig and the tray share (fitRig refits when it changes)
   let lastZ = 0; // when the dozing hamster last let out a "z"
   let cheerUntil = 0; // 1.5.0: the hamster cheers (a happy hop) until then, after a big win
   let nextBlink = 0; // …and blinks now and then while it rests
@@ -288,6 +298,7 @@ export function createUI(
   }
   function say(text: string, ms = 2600): void {
     speech = { text, until: performance.now() + ms };
+    setText(el.srLive, text); // (1.6.0) screen readers hear what the hamster says
   }
   // Hearts floating up from the hamster (it's happy).
   function hearts(count: number): void {
@@ -304,7 +315,7 @@ export function createUI(
     if (lessMotion() || count <= 0) return;
     flying += count;
     const start = from.getBoundingClientRect();
-    const target = el.coinPill.querySelector('img')!.getBoundingClientRect();
+    const target = hud.coinTarget().getBoundingClientRect();
     const ex = target.left + target.width / 2;
     const ey = target.top + target.height / 2;
     for (let i = 0; i < count; i++) {
@@ -324,7 +335,7 @@ export function createUI(
         coin.remove();
         flying--;
         sound.play('coin');
-        replayClass(el.coinPill, 'gain');
+        hud.pop('coin');
       };
     }
   }
@@ -600,7 +611,7 @@ export function createUI(
   game.on('spinBlocked', (e) => {
     if (e.source !== 'manual') return;
     sound.play('error');
-    replayClass(el.spinBtn, 'shake');
+    deck.shake();
     if (e.reason === 'delivery') {
       say("I'm out delivering, so the machine has no power!");
       return;
@@ -625,10 +636,10 @@ export function createUI(
   });
 
   game.on('coinsChanged', (e) => {
-    if (e.amount.gt(0)) replayClass(el.coinPill, 'gain');
+    if (e.amount.gt(0)) hud.pop('coin');
   });
   game.on('seedsChanged', (e) => {
-    if (e.amount.gt(0)) replayClass(el.seedPill, 'gain');
+    if (e.amount.gt(0)) hud.pop('seed');
   });
 
   // 1.4.0: the Great Migration. The Big Cage plays the move (bigcage.ts); here the
@@ -638,9 +649,9 @@ export function createUI(
     lastMigrated = e;
     lastRetired = null;
     showMachine();
-    shownCoins = game.state.coins;
+    hud.resetCoins();
     celebrate.close();
-    replayClass(el.whiskerPill, 'gain');
+    hud.pop('whisker');
     sound.play('migrate');
   });
   game.on('trialStarted', () => sound.play('unlock'));
@@ -702,7 +713,7 @@ export function createUI(
 
   game.on('retired', (e) => {
     showMachine();
-    shownCoins = game.state.coins; // jump, don't roll down from millions
+    hud.resetCoins(); // jump, don't roll down from millions
     retireArmed = 0;
     lastRetired = e;
     celebrate.close();
@@ -710,7 +721,7 @@ export function createUI(
     // 1.4.0: the Wise Elders retired this hamster by themselves: no Big Cage, no iris,
     // the next life just starts (bigCageLeft follows at once), with a word and some seeds.
     if (e.auto) {
-      fx.burstAt(el.seedPill, { count: 16, palette: fx.colors.heirloom, speed: 160 });
+      fx.burstAt(hud.purse('seed'), { count: 16, palette: fx.colors.heirloom, speed: 160 });
       return;
     }
     // The old life closes like the end of a cartoon: a circle shrinks onto the
@@ -820,7 +831,7 @@ export function createUI(
   });
   el.welcome.addEventListener('close', () => {
     sound.play('back');
-    coinBurst(12, el.coinPill);
+    coinBurst(12, hud.purse('coin'));
   });
 
   game.on('dataReloaded', () => {
@@ -838,39 +849,6 @@ export function createUI(
 
   // ─────────────────────── input ───────────────────────
 
-  el.spinBtn.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    game.spin('manual');
-  });
-  el.deliverBtn.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    game.startDelivery();
-  });
-  // Pause/resume auto-spin (Wheel Training). A QoL toggle: manual spins and
-  // deliveries work the same either way.
-  el.autoBtn.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    const paused = !game.getAutoPaused();
-    game.setAutoPaused(paused);
-    sound.play('bet', !paused);
-    say(paused ? "I'll wait for you to tap Spin." : "Back to running the wheel myself!", 1800);
-  });
-
-  // The bet: one step up or down. Past the biggest unlocked bet, the hamster
-  // points you to High Roller instead.
-  function changeBet(step: number): void {
-    const next = game.getBetIndex() + step;
-    if (step > 0 && next > game.getMaxBetIndex()) {
-      sound.play('error');
-      const steps = game.getBetSteps();
-      say(next < steps.length ? `Buy High Roller (a hamster upgrade) to bet ×${steps[next]}!` : `×${steps[steps.length - 1]} is the biggest bet there is!`);
-      return;
-    }
-    if (game.setBet(next)) sound.play('bet', step > 0);
-  }
-  el.betDown.addEventListener('click', (e) => { (e.currentTarget as HTMLElement).blur(); changeBet(-1); });
-  el.betUp.addEventListener('click', (e) => { (e.currentTarget as HTMLElement).blur(); changeBet(1); });
-
   // The card gamble: pick a colour or a suit (the buttons say which with data-pick),
   // or take what you have.
   for (const button of el.gamblePicks) {
@@ -881,22 +859,70 @@ export function createUI(
     if (game.collectGamble()) sound.play('coin');
   });
 
-  // Tabs: show one panel, hide the rest.
-  function openTab(name: string): void {
+  // Tabs: show one panel, hide the rest (and, since 1.6.0, only the open one renders).
+  // `sub` opens one of its sub-tabs too (the wallet's notes send you to Family → Colony).
+  function openTab(name: string, sub?: string): void {
+    if (name !== currentTab) {
+      uiSound('tab');
+      sheet.hide(); // the sheet belonged to the last tab
+    }
+    currentTab = name;
     for (const tab of document.querySelectorAll<HTMLElement>('.tab')) {
       const active = tab.dataset.tab === name;
       tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
       $(`tab-${tab.dataset.tab}`).classList.toggle('hidden', !active);
     }
     if (name === 'family') familyNew = false;
     if (name === 'capsules') capsulesNew = false;
     if (name === 'casino') casinoNew = false;
-    // M11: on a phone the casino's tables need the room, so the cage steps aside while it's open (style.css).
+    // M11: on a phone the casino's tables need the room, so the cage steps aside while it's open (layout.css).
     document.querySelector('.app')!.classList.toggle('at-casino', name === 'casino');
+    if (sub) {
+      const views: Record<string, { openSub: (s: string) => void }> = { upgrades: shop, family: colony, capsules, casino: casinoView, info: payouts };
+      if (views[name]) views[name].openSub(sub);
+    }
+    fitTabs();
   }
   for (const tab of document.querySelectorAll<HTMLElement>('.tab')) {
-    tab.addEventListener('click', () => openTab(tab.dataset.tab!));
+    tab.addEventListener('click', () => { tab.blur(); openTab(tab.dataset.tab!); });
   }
+  // The tabs keep their names while they fit; when they don't, only the open one keeps its
+  // name and the others show their icons (styles/layout.css .compact).
+  function fitTabs(): void {
+    el.tabs.classList.remove('compact');
+    if (el.tabs.scrollWidth > el.tabs.clientWidth + 1) el.tabs.classList.add('compact');
+  }
+  new ResizeObserver(() => fitTabs()).observe(el.tabs);
+
+  // 1.6.0: the pins in the cage's corner say what they are when tapped (the sheet in the tray).
+  el.trialBadge.addEventListener('click', () => {
+    el.trialBadge.blur();
+    const t = game.getTrialDef(game.state.trial);
+    if (!t) return;
+    if (sheet.key === 'pin:trial') { sheet.hide(); return; }
+    if (!sheet.show('pin:trial', { icon: 'whiskerIcon', title: `Colony Trial: ${t.name}`, tag: 'This life is a trial' })) return;
+    const p = document.createElement('p');
+    p.className = 'k-note';
+    p.textContent = `${t.description} Reach ${formatWhole(game.getTrialGoal())} pending Heirloom Seeds this life for ${formatWhole(game.getTrialWhiskers(t.id))} Golden Whiskers, and the twist is over.`;
+    sheet.body.append(p);
+  });
+  const openBoosts = () => {
+    const boosts = game.getBoosts();
+    if (!boosts.length) return;
+    if (sheet.key === 'pin:boosts') { sheet.hide(); return; }
+    if (!sheet.show('pin:boosts', { icon: 'chip', iconSize: 24, title: 'Casino boosts', tag: `${boosts.length} running` })) return;
+    for (const b of boosts) {
+      const p = document.createElement('p');
+      p.className = 'k-note';
+      const prize = game.getPrize(b.id);
+      p.textContent = `${b.name}: ${b.kind === 'charm' ? `${b.left} paid spins left` : `${formatDuration(Math.ceil(b.left))} left`}.${prize && prize.description ? ` ${prize.description}` : ''}`;
+      sheet.body.append(p);
+    }
+  };
+  el.boostBadges.addEventListener('click', openBoosts);
+  el.boostBadges.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBoosts(); } });
 
   // The little capsule machine standing in the cage opens the Capsules tab.
   el.stageGacha.addEventListener('click', (e) => {
@@ -980,9 +1006,9 @@ export function createUI(
     } else if (e.code === 'KeyD') {
       game.startDelivery();
     } else if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
-      changeBet(-1);
+      deck.changeBet(-1);
     } else if (e.code === 'Equal' || e.code === 'NumpadAdd') {
-      changeBet(1);
+      deck.changeBet(1);
     } else if (game.getGambleInfo() && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
       e.preventDefault();
       game.gamble(e.code === 'ArrowLeft' ? 'red' : 'black');
@@ -1061,13 +1087,39 @@ export function createUI(
     const pad = getComputedStyle(el.wall);
     const availW = el.wall.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight);
     // Beside the tray the wall's height is set by the window; stacked (a phone) the cage
-    // may take up to 44% of the screen's height, and the tray gets the rest (layout.ts rigRoom).
-    const availH = rigRoom({ wide: WIDE.matches, wallH: el.wall.clientHeight, padTop: parseFloat(pad.paddingTop), innerH: window.innerHeight });
-    el.rig.style.zoom = '1'; // measure its full size first
-    const rig = el.rig.getBoundingClientRect();
-    const style = getComputedStyle(el.rig);
-    const height = rig.height + parseFloat(style.marginTop) + parseFloat(style.marginBottom); // + the room for the bubble
-    const zoom = rigZoom({ availW, availH, rigW: rig.width, rigH: height });
+    // may take up to 44% of the screen's height, as long as the tray keeps a third of it
+    // (layout.ts rigRoom).
+    const availH = rigRoom({ wide: WIDE.matches, wallH: el.wall.clientHeight, padTop: parseFloat(pad.paddingTop), innerH: window.innerHeight, trayH: el.tray.offsetHeight });
+    // (1.6.0) The signs for switching machines hang over the top of the wall. Where they reach
+    // over the machine, the rig keeps below them (its top margin: styles/stage.css divides
+    // --tags-room by the zoom); over the wheel and the tube alone they're fine where they are.
+    const tags = el.machineTags;
+    const tagsShown = !tags.classList.contains('hidden');
+    const tagsRoom = tagsShown ? Math.max(0, tags.offsetTop + tags.offsetHeight + 6 - parseFloat(pad.paddingTop)) : 0;
+    const tagsRight = tagsShown ? tags.getBoundingClientRect().right : 0;
+    const wallLeft = el.wall.getBoundingClientRect().left + parseFloat(pad.paddingLeft);
+    // The machine's small labels grow back against the zoom so they stay readable
+    // (--rig-zoom, styles/machine.css), and the margin above does too, which makes the rig a
+    // little bigger at small zooms: so measure it at the zoom it will get, three times over.
+    const fit = (room: number): number => {
+      el.rig.style.setProperty('--tags-room', `${room}px`);
+      let z = parseFloat(el.rig.style.getPropertyValue('--rig-zoom')) || 1;
+      for (let pass = 0; pass < 3; pass++) {
+        el.rig.style.setProperty('--rig-zoom', String(z));
+        el.rig.style.zoom = '1'; // measure its full size first
+        const rig = el.rig.getBoundingClientRect();
+        const style = getComputedStyle(el.rig);
+        const height = rig.height + parseFloat(style.marginTop) + parseFloat(style.marginBottom); // + the room for the bubble
+        z = rigZoom({ availW, availH, rigW: rig.width, rigH: height });
+      }
+      return z;
+    };
+    let zoom = fit(0);
+    // At that zoom, would the machine start under the signs? (The rig is centred in the wall;
+    // offsetLeft is the machine's place in it, whatever animation is moving it.) Then fit it
+    // again below them.
+    const machineLeft = wallLeft + (availW - el.rig.offsetWidth * zoom) / 2 + el.machine.offsetLeft * zoom;
+    if (tagsShown && tagsRight > machineLeft) zoom = fit(tagsRoom);
     el.rig.style.zoom = String(zoom);
     el.rig.style.setProperty('--rig-zoom', String(zoom));
     // The shadows under the wheel and the machine follow them (again once a switch-in has settled).
@@ -1075,7 +1127,7 @@ export function createUI(
     setTimeout(() => cage.invalidate(), 450);
   }
 
-  function renderFamily(now: number): void {
+  function renderFamily(now: number, visible: boolean, tick: boolean): void {
     const s = game.state;
 
     // Unlock the tab the first time a seed is on offer.
@@ -1085,17 +1137,16 @@ export function createUI(
       say(`I've earned an Heirloom Seed! I could retire and pass it on to a new pup. Peek at the Family tab.`, 6000);
     }
     el.familyTab.classList.toggle('hidden', !familyShown);
-    el.seedPill.classList.toggle('hidden', !(s.seeds.gt(0) || s.seedsEarned.gt(0) || s.colony > 0));
-    setText(el.seedCount, formatWhole(s.seeds));
-    // 1.4.0: Golden Whiskers, once the family has migrated (or has some)
-    el.whiskerPill.classList.toggle('hidden', !(s.colony > 0 || s.whiskers.gt(0)));
-    setText(el.whiskerCount, formatWhole(s.whiskers));
-    const anyBuyable = game.data.familyTree && game.data.familyTree.nodes.some((n) => game.canBuyTreeNode(n.id));
-    const colonyNews = game.canMigrate() || (game.data.colony ? game.data.colony.perks.some((p) => game.canBuyPerk(p.id)) : false);
-    el.familyTab.classList.toggle('alert', familyNew || anyBuyable || colonyNews);
-    colony.render(now, familyShown && !el.familyPanel.classList.contains('hidden'));
+    // The tab's dot: something to plant, a perk to buy, or a migration ready (1.6.0: worked out
+    // 4 times a second, not every frame).
+    if (visible || tick) {
+      const anyBuyable = game.data.familyTree && game.data.familyTree.nodes.some((n) => game.canBuyTreeNode(n.id));
+      const colonyNews = game.canMigrate() || (game.data.colony ? game.data.colony.perks.some((p) => game.canBuyPerk(p.id)) : false);
+      el.familyTab.classList.toggle('alert', familyNew || anyBuyable || colonyNews);
+    }
+    colony.render(now, familyShown && visible);
     renderTrialBadge();
-    if (!familyShown) return;
+    if (!familyShown || !visible) return;
 
     // Retire card
     const name = game.getPupName();
@@ -1167,18 +1218,6 @@ export function createUI(
     }
   }
 
-  // The bet box next to Spin: the chosen bet, and a hint when a spin will step down.
-  function renderBet() {
-    const bet = game.getBet();
-    const spinBet = game.getSpinBet();
-    const max = game.getMaxBetIndex();
-    setText(el.betAmount, `×${bet}`);
-    el.betDown.disabled = game.getBetIndex() === 0;
-    el.betUp.classList.toggle('locked', game.getBetIndex() >= max);
-    el.betBox.classList.toggle('stepped', spinBet !== null && spinBet < bet);
-    setText(el.betHint, spinBet !== null && spinBet < bet ? `spins ×${spinBet}` : max === 0 ? 'High Roller' : `up to ×${game.getBetSteps()[max]}`);
-  }
-
   // Jackpot pots on the machine's front: live values at your bet.
   function renderPots() {
     const pots = game.getJackpotPots();
@@ -1233,10 +1272,12 @@ export function createUI(
     if (!show && !lingering) return;
     const num = (n: Money) => `<b class="num">${formatCoins(n)}</b>`; // numbers always in the clean font
     if (show) {
-      setHTML(el.gambleTitle, `${g.rounds > 0 ? 'Gamble again?' : 'Gamble your win?'} ${num(g.stake)}`);
+      // (On a phone "your win" and the odds line fold away: styles/machine.css.)
+      setHTML(el.gambleTitle, `${g.rounds > 0 ? 'Gamble again?' : 'Gamble<span class="gamble-long"> your win</span>?'} ${num(g.stake)}`);
       setHTML(el.gambleNote, g.canPick
         ? `Colour → ${num(g.colorWin)} · suit → ${num(g.suitWin)} · ${g.rounds}/${g.maxRounds} wins`
         : 'Not enough coins in your pile to cover this gamble.');
+      el.gambleNote.classList.toggle('warn', !g.canPick);
       for (const b of el.gamblePicks) b.disabled = !g.canPick;
       setHTML(el.gambleKeep, g.rounds > 0 ? `Take ${num(g.stake)}` : 'Take win'); // the win is already in your pile
       el.gamble.classList.toggle('started', g.started);
@@ -1267,6 +1308,25 @@ export function createUI(
         return chip;
       }));
     }
+    placeGamble();
+  }
+
+  // Where the card table sits (1.6.0): centred on the reels, but always inside the cage's wall
+  // (on a phone the table is wider than the zoomed-out reels). Worked out again only when the
+  // cage, the machine or the table's own size changes.
+  let gamblePlaced = '';
+  function placeGamble(): void {
+    const w = el.gamble.offsetWidth;
+    const h = el.gamble.offsetHeight;
+    const key = `${rigFitKey}|${w}x${h}`;
+    if (key === gamblePlaced) return;
+    gamblePlaced = key;
+    const wall = el.wall.getBoundingClientRect();
+    const reels = (el.machine.querySelector('.reel-window') ?? el.machine).getBoundingClientRect();
+    // Keep a margin of 8 px; a table bigger than the wall sits in its middle.
+    const keepIn = (v: number, size: number, room: number) => (size + 16 > room ? room / 2 : Math.min(room - size / 2 - 8, Math.max(size / 2 + 8, v)));
+    el.gamble.style.left = `${Math.round(keepIn(reels.left + reels.width / 2 - wall.left, w, wall.width))}px`;
+    el.gamble.style.top = `${Math.round(keepIn(reels.top + reels.height / 2 - wall.top, h, wall.height))}px`;
   }
 
   // Hold & spin (M9): a board over the reels. Locked acorns show their coins;
@@ -1373,26 +1433,20 @@ export function createUI(
     const gameDt = s.stats.playTime - lastPlayTime; // game time since last frame (follows speed-up)
     lastPlayTime = s.stats.playTime;
 
-    // Coin counter rolls toward the real value instead of jumping. It lands on it
-    // once it's within a cent, or (for huge amounts) within a billionth of it.
-    const diff = s.coins.sub(shownCoins);
-    shownCoins = diff.abs().lt(s.coins.abs().mul(1e-9).max(0.01)) ? s.coins : shownCoins.add(diff.mul(Math.min(1, realDt * 14)));
-    setText(el.coins, formatCoins(shownCoins));
-    const econ = game.getEconomy();
-    setText(el.coinRate, econ.autoInterval && !game.getAutoPaused() ? `+${formatCoins(econ.expectedAutoProfitPerSecond)}/s` : '');
-    // Coins in the browser tab's title, so you can peek from another tab (twice a second).
-    if (now - lastTitle > 500) {
-      lastTitle = now;
-      const title = `${formatCoins(s.coins)} coins · Hamster Slots`;
-      if (document.title !== title) document.title = title;
-    }
+    // The wallet (hud.ts): the rolling coin counter, the other currencies, the tab's title.
+    hud.render(now, realDt);
 
     // Machine + reels
     if (el.machine.dataset.machine !== game.getMachineData().id) showMachine();
     reels.render();
+    renderMachineTags(); // (before the fit: the rig keeps below the signs)
     // Refit when the cage's size, the machine or its reels change. (Stacked, the wall's
-    // height follows the rig, so the window's height is what counts there.)
-    const fitKey = `${el.stage.clientWidth}|${WIDE.matches ? el.wall.clientHeight : window.innerHeight}|${el.machine.dataset.machine}|${game.getReelCount()}|${el.pots.classList.contains('hidden')}`;
+    // height follows the rig, so what counts there is the room the rig and the tray share: it
+    // changes when anything else on the page does, like the HUD once its font has loaded, but
+    // not with the zoom, which only moves height between the two.)
+    const shared = el.wall.clientHeight + el.tray.offsetHeight;
+    if (Math.abs(shared - rigShared) > 2) rigShared = shared; // (rounding can move it a pixel either way)
+    const fitKey = `${el.stage.clientWidth}|${WIDE.matches ? el.wall.clientHeight : `${window.innerHeight}|${rigShared}`}|${el.machine.dataset.machine}|${game.getReelCount()}|${el.pots.classList.contains('hidden')}|${game.state.machines.length}`;
     if (fitKey !== rigFitKey) {
       rigFitKey = fitKey;
       fitRig();
@@ -1401,9 +1455,8 @@ export function createUI(
     el.machine.classList.toggle('teasing', reels.teasing);
     el.machine.classList.toggle('pulled', machine.spinning && game.getSpinProgress() < 0.3);
     cabinet.render(now, { spinning: machine.spinning, winning: el.machine.classList.contains('winning'), teasing: reels.teasing, still: lessMotion(), glow: !!game.getFreeSpins() });
-    renderMachineTags();
 
-    // Spin + deliver buttons. During free spins, Spin just counts them down.
+    // The control deck (deck.ts): Deliver, Spin, the auto-spin lever and the bet.
     const free = game.getFreeSpins();
     const spinBet = game.getSpinBet();
     const gambling = !!s.gamble && s.gamble.started;
@@ -1414,37 +1467,11 @@ export function createUI(
     // for shop previews and stats even while paused.
     const hasAuto = game.getAutoInterval() !== null;
     const autoRunning = hasAuto && !game.getAutoPaused();
-    if (free) {
-      setText(el.spinTitle, 'Free');
-      setHTML(el.spinMeta, `${free.left} left · ×${free.bet}`);
-    } else {
-      setText(el.spinTitle, machine.bonus ? 'Jackpot!' : machine.hold ? 'Hold!' : 'Spin');
-      setHTML(el.spinMeta, `${iconHTML('coin', 24)} ${formatCoins(game.getBetCost(spinBet || game.getBet()))}`);
-    }
-    // Not disabled while a normal spin runs: a click then queues the next spin.
-    el.spinBtn.disabled = busy && !machine.spinning;
-    el.spinBtn.classList.toggle('busy', machine.spinning);
-    el.spinBtn.classList.toggle('free', !!free);
-    el.spinBtn.classList.toggle('poor', !free && (delivering || spinBet === null));
     // No auto-spin running (never bought, or paused) and the hamster's been idle a
     // while (or never spun): Spin glows to say "tap me".
     const idle = !machine.spinning && !busy && !delivering && spinBet !== null && !autoRunning
       && (s.stats.spins === 0 || now - lastManualSpinAt > 8000);
-    el.spinBtn.classList.toggle('attract', idle);
-    renderBet();
-    const reward = formatCoins(game.getDeliveryReward());
-    const trip = formatSeconds(game.getDeliveryDuration());
-    el.deliverBtn.disabled = delivering;
-    setText(el.deliverMeta, delivering ? `back in ${Math.ceil(s.delivery.timer)}s` : `+${reward} · ${trip}`);
-    // The pause/resume button: only once Wheel Training exists (nothing to pause before that).
-    el.autoBtn.classList.toggle('hidden', !hasAuto);
-    if (hasAuto) {
-      const paused = game.getAutoPaused();
-      el.autoBtn.classList.toggle('paused', paused);
-      setText(el.autoBtn, paused ? '▶' : '⏸');
-      el.autoBtn.setAttribute('aria-pressed', String(!paused));
-      el.autoBtn.setAttribute('aria-label', paused ? 'Resume auto-spin' : 'Pause auto-spin');
-    }
+    deck.render({ idle });
 
     // The machine's own extras: free-spin mode on the marquee, pots, streak, gamble.
     el.machine.classList.toggle('free-spins', !!free);
@@ -1520,9 +1547,7 @@ export function createUI(
     el.roadFill.style.width = `${(p * 100).toFixed(1)}%`;
     el.roadHamster.style.left = `calc(10px + (100% - 52px) * ${p.toFixed(4)})`; // the tube's margins + the 32px sprite
     applySprite(el.roadHamster, runFrame(now, 80), 32, fur);
-    setText(el.roadLabel, delivering
-      ? `Delivering… back in ${Math.ceil(s.delivery.timer)}s`
-      : `Delivery tube · ${trip} trip → +${reward} coins`);
+    // (1.6.0: the trip's pay and time are on the Deliver button now, deck.ts)
 
     // Speech bubble: a fresh line if there is one, otherwise the most useful hint.
     let hint = '';
@@ -1534,7 +1559,7 @@ export function createUI(
     else if (s.gamble && s.gamble.machineId === activeId()) hint = 'Feeling lucky? Guess the card: a colour doubles it, a suit makes it ×4!';
     else if (!machine.spinning && spinBet === null) hint = 'Out of coins! Send me on a delivery (D).';
     else if (s.stats.spins === 0) hint = `Hi, I'm ${game.getPupName()}! Tap SPIN (or Space). Match symbols from the left to win!`;
-    else if (game.getAutoPaused() && !machine.spinning) hint = "Paused! I'll wait for you to tap Spin (or ▶ up there).";
+    else if (game.getAutoPaused() && !machine.spinning) hint = "Paused! I'll wait for you to tap Spin (or flip the lever up).";
     else if (!autoRunning && !machine.spinning && now - lastManualSpinAt > 25000) hint = 'Zzz… (tap Spin to wake me up)';
     setText(el.bubble, hint);
     el.bubble.classList.toggle('hidden', hint === '');
@@ -1542,15 +1567,25 @@ export function createUI(
     // Reset button text (two-tap confirm)
     setText(el.resetBtn, now < resetArmed ? 'Tap again to wipe everything' : 'Reset progress');
 
-    shop.render();
-    payouts.render(now);
-    renderFamily(now);
-    renderCapsules(now);
-    renderCasino(now);
-    bigCage.render(now);
+    // The tray: only the open tab renders (1.6.0). The closed ones only keep their dots up to
+    // date, 4 times a second (and announce themselves when they unlock).
+    const tick = now - lastHiddenTabs > 250;
+    if (tick) lastHiddenTabs = now;
+    // A tab appeared (or went): do the names still fit?
+    const tabsKey = `${familyShown}${capsulesShown}${casinoShown}`;
+    if (tabsKey !== shownTabsKey) {
+      shownTabsKey = tabsKey;
+      requestAnimationFrame(fitTabs);
+    }
+    if (currentTab === 'upgrades') shop.render();
+    if (currentTab === 'info') payouts.render(now);
+    renderFamily(now, currentTab === 'family', tick);
+    renderCapsules(now, currentTab === 'capsules', tick);
+    renderCasino(now, currentTab === 'casino');
+    bigCage.render(now); // (the page between lives: it opens by itself when a hamster retires)
   }
 
-  function renderCasino(now: number): void {
+  function renderCasino(now: number, visible: boolean): void {
     if (!casinoShown && game.isCasinoOpen()) {
       casinoShown = true;
       casinoNew = true;
@@ -1560,10 +1595,10 @@ export function createUI(
     }
     el.casinoTab.classList.toggle('hidden', !casinoShown);
     el.casinoTab.classList.toggle('alert', casinoNew);
-    casinoView.render(now, casinoShown && !el.casinoPanel.classList.contains('hidden'));
+    casinoView.render(now, casinoShown && visible); // (the boosts' pins on the cage update even while it's closed)
   }
 
-  function renderCapsules(now: number): void {
+  function renderCapsules(now: number, visible: boolean, tick: boolean): void {
     if (!capsulesShown && capsulesUnlocked()) {
       capsulesShown = true;
       capsulesNew = true;
@@ -1571,9 +1606,11 @@ export function createUI(
     }
     el.capsulesTab.classList.toggle('hidden', !capsulesShown);
     el.stageGacha.classList.toggle('hidden', !capsulesShown);
-    el.capsulesTab.classList.toggle('alert', capsulesNew || game.canPull());
-    el.stageGacha.classList.toggle('ready', game.canPull());
-    if (capsulesShown) capsules.render(now);
+    if (visible || tick) {
+      el.capsulesTab.classList.toggle('alert', capsulesNew || game.canPull());
+      el.stageGacha.classList.toggle('ready', game.canPull());
+    }
+    if (capsulesShown && visible) capsules.render(now);
   }
 
   const capsules = createCapsulesView(game, { say, sound, fx, settings, onSettingsChange });
@@ -1588,20 +1625,13 @@ export function createUI(
     treeLine: (type) => (TREE_LINES[type] ? TREE_LINES[type](1) : null),
   });
   setText($('app-version'), version);
-  // 1.5.0: an icon on every tab.
-  const TAB_ICONS: Record<string, string> = { upgrades: 'gear', family: 'heart', capsules: 'capsule', casino: 'chip', info: 'paylinesIcon' };
+  // An icon on every tab (1.6.0: 16×16 sprites drawn at 2×; the CSS shows them at 1× on the
+  // tray's brass plates and at 2× on a phone's bottom bar, both whole scales).
+  const TAB_ICONS: Record<string, string> = { upgrades: 'gear', family: 'heart', capsules: 'capsule16', casino: 'die16', info: 'paylinesIcon' };
   for (const tab of document.querySelectorAll<HTMLElement>('.tab')) {
-    const icon = spriteImg(TAB_ICONS[tab.dataset.tab!], 16);
+    const icon = spriteImg(TAB_ICONS[tab.dataset.tab!], 32);
     icon.classList.add('tab-icon');
     tab.prepend(icon);
-  }
-  // 1.5.0: the game's name as a pixel-art logo in gold (pixelfont.ts); the words stay for screen readers.
-  const brandText = document.querySelector<HTMLElement>('.brand span');
-  if (brandText) {
-    const words = brandText.textContent || 'Hamster Slots';
-    brandText.setAttribute('aria-label', words);
-    brandText.classList.add('brand-logo');
-    brandText.replaceChildren(...titleLetters(words, rampFromTokens('--gold', '--gold-dark')));
   }
   buildMachineTags();
   buildSettings();

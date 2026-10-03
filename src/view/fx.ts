@@ -127,15 +127,19 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
     }
   }
 
+  // (1.6.0) An element that isn't on screen (in a tab that's closed) has no box: no particles
+  // then, instead of a burst in the page's top-left corner.
+  const offScreen = (el: Element) => { const r = el.getBoundingClientRect(); return r.width === 0 && r.height === 0; };
+
   function burstAt(el: Element | null | undefined, opts?: BurstOptions) {
-    if (!el) return;
+    if (!el || offScreen(el)) return;
     const c = centerOf(el);
     burst(c.x, c.y, opts);
   }
 
   // Sparkles scattered over an element's area (e.g. a winning cell, a new tile).
   function sparkleOver(el: Element | null | undefined, { count = 8, palette = colors.gold }: { count?: number; palette?: string[] } = {}) {
-    if (!el) return;
+    if (!el || offScreen(el)) return;
     const r = el.getBoundingClientRect();
     for (let i = 0; i < count; i++) {
       // (1.5.0) Every third one is a star glint: it swells into a four-pointed star and fades.
@@ -314,7 +318,7 @@ export function createFx(canvas: HTMLCanvasElement, { lessMotion }: { lessMotion
     }
   }
   function ringAt(el: Element | null | undefined, opts?: BurstOptions) {
-    if (!el) return;
+    if (!el || offScreen(el)) return;
     const c = centerOf(el);
     ring(c.x, c.y, opts);
   }

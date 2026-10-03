@@ -12,6 +12,7 @@
 
 import { spriteURL } from './art.ts';
 import { Pixmap, pixel, mixPixel } from './paint.ts';
+import { applyFrames } from './frames.ts';
 import type { Colors } from './art.ts';
 import { mix } from './dom.ts';
 
@@ -118,4 +119,15 @@ export function applyTheme(root: HTMLElement = document.documentElement): void {
     const dark = token(lip);
     set(`--frame-btn-${id}`, url('frameButton', { 4: base, 5: dark, 6: mix(base, '#ffffff', 0.45), 7: mix(dark, INK, 0.45) }));
   }
+
+  // 1.6.0 ("New Digs"): the kit's materials (frames.ts), and the older screens' frames made of
+  // them too: every button becomes enamel (the plain ones wooden keys), paper becomes the new
+  // paper, and the sub-tabs index tabs. So the screens not yet rebuilt on the kit (DESIGN §31's
+  // later parts) already look like the rest.
+  applyFrames(root);
+  for (const id of Object.keys(BUTTONS)) set(`--frame-btn-${id}`, `var(--fr-enamel-${id === 'card' ? 'wood' : id})`);
+  for (const tone of ['', '-ready', '-gold', '-heirloom', '-selected']) set(`--frame-paper${tone}`, `var(--fr-paper${tone})`);
+  set('--frame-tab', 'var(--fr-index-tab)');
+  set('--frame-tab-card', 'var(--fr-index-tab-dim)');
+  set('--frame-card', 'var(--fr-wood-panel)');
 }

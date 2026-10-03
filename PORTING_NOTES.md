@@ -761,6 +761,21 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Fixed on the way (§31 → Before):** the Rebuild card's gold frame never drew (it wasn't in the framed list: now it is, and a test checks every rule that tints a frame is for a framed element); `.line-label` was both the win show's strip and the Info tab's payline captions, so each picked up the other's style (the captions are `.payline-caption` now, and a test checks no class is styled on its own by two files); frames at in-between scales (`--fw` 6, 10, 18 px: 1.5×, 2.5×, 4.5×) are whole scales now (a test checks); dead rules, markup and tokens went (the old marquee bulbs, the wheel's spokes and stand, the coin tray, `--surface`, `--radius`, `--outline`).
 - **Tests:** 2,906 (103 new in `tests/kit.test.js`, and the art checks for two new 16×16 icons, the padlock and the close cross). The golden run, the save fixtures and the simulator are untouched (view only).
 
+**D158 — 1.6.0 part 2: the shell** (DESIGN §31 → The layout and navigation; built as D156 planned, with these choices on the way).
+- **The main tabs are a grid area of their own** (wide: `"hud hud" "stage tabs" "stage tray"`; a phone: `"hud" "stage" "tray" "tabs"`), so the same five buttons are brass plates on the tray's top or a bar at the bottom of the screen, with tab roles. *Rejected:* a second set of tab buttons for the phone (two copies to keep in step).
+- **The materials switch over in one place:** theme.ts keeps the old frame variables (`--frame-btn-*`, `--frame-paper*`, `--frame-card`, `--frame-tab*`) but points them at frames.ts's paintings, so the screens not rebuilt yet (Family, Capsules, Info, Casino, the dialogs) wear wood, paper, brass and enamel now and get their new layouts in their own parts. *Rejected:* restyling each screen only in its part (the game would look half old and half new for six parts).
+- **The HUD and the control deck are modules** (`hud.ts`, `deck.ts`) built from kit pieces; ui.ts makes them and calls their render() each frame; they only read the state and call actions. The keys didn't change (ui.ts still listens and calls `deck.changeBet`). **The auto-spin pause is a brass lever** (a toggle with `aria-pressed`, and a label that says what a tap does), replacing ⏸/▶.
+- **The sheet lives inside the tray** (`createSheet(tray)`): the wallet's notes and the pins' notes use it now, the Upgrades tab in part 3. On a short tray it may take up to 260 px (60% of a phone's tray is three lines), and a long note fades out at its bottom edge (a mask) instead of being cut mid-line. Switching tab or sub-tab closes it.
+- **A short phone keeps a third for the tray:** `rigRoom()` lets the cage have up to 44% of the screen's height but never leaves the tray less than 32% (360×640: the tray 118 → 207 px; 320×568: 74 → 183). It works from the height the rig and the tray share, which the zoom doesn't change, so one fit settles; ui.ts fits again when that shared height moves by more than 2 px (the fonts arriving, the rate line appearing). Also for the room: a 64 px deck (48 px keys, its frame at 1×), a 60 px tab bar (the open tab's plate at 1×), and the coins' rate beside the number in a phone's HUD.
+- **The card gamble left the zoomed rig** (a phone drew it at about half size) for the cage's wall. `placeGamble()` centres it on the reels and keeps it inside the wall (measured again only when the cage, the machine or the table's size changes); it's a grid, three rows on a phone (the card, the stake and Take win; six picks in a row; the timer). *Rejected:* letting it cover the deck on a phone (a tap on Spin while a gamble is only offered takes the win and spins; covering Spin would also put the picks where your thumb taps Spin).
+- **The machine's signs never cover the machine:** where the signs reach over the machine, the rig keeps below them (`--tags-room`, the signs' bottom in screen pixels, divided by the zoom in the rig's top margin); fitRig first fits without that room, and only fits again with it if the machine would start under the signs, so signs over the wheel alone cost nothing. Phones: slimmer signs (icons only; five or more get a frame at 1×, so eight fit a 320 px phone). Short screens: icons only. The wide sign row may use the wall's width (one row for eight machines on a phone on its side).
+- **Labels that stay readable:** the payline tags, the pot plaques, the WIN meter, the line label and (found in the measuring) the machine's own sign grow back against the zoom (`max(…, 12px / --rig-zoom)`); fitRig measures three times, since their size changes the rig's. The speech bubble's words stay 12 px on screen, and on a phone the bubble widens to the right when the rig is zoomed right out, so it stays three lines tall.
+- **Only the open tab renders;** the closed tabs' dots are worked out four times a second (the Big Cage always renders).
+- **Pins:** the Colony Trial and the casino's boosts are pins you can tap for a note (their tooltips never worked: `pointer-events: none`).
+- **Found on the way:** particles from an element that wasn't on screen (a closed tab's button) burst at the page's top-left corner (fx.ts skips them now); **the built game's minifier turns `border-image: none` into an empty value**, so the phone's tab bar kept its frames in the built game only (fixed with `border-image-source: none`; a test bans the shorthand, and the dev and built games' computed styles were compared element by element at three sizes: identical).
+- **Screen readers:** the hamster's lines also go to a polite live region.
+- **Tests:** 2,929 (8 new in `tests/kit.test.js`: the tray's share, every sprite the page and the shell name, no `border-image: none`; and the art checks for the shell's new 16×16 icons). The golden run, the save fixtures and the simulator are untouched (view only).
+
 
 
 
@@ -877,6 +892,23 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-10-03 · 1.6.0-rc.1 "New Digs", part 2: the shell (automated checks, not a real playtest)**
+- **Played in Chromium** (headless, `npm run dev` and the built game with `?debug`) at 1280×800, 1920×1080, 390×844, 360×640, 320×568 and 844×390: the wallet and its notes (tap a purse, "Go to …", Escape), "+3" on a phone, the deck (Space, D, - and =, the deck's − and +, Spin, Deliver, the lever pausing and resuming auto-spin), the card gamble (← picks red; full size on a phone, over the reels on a computer), free spins (the gold Spin, "4 left"), the casino on a phone (the cage steps aside), 2 and 7 machines (the signs, the machine below them), a skin (the crown), a real retirement (the Big Cage opens after the iris), every tab. No console errors. The dev and built games' computed styles match element by element at three sizes (after the minifier fix, D158).
+- **Measured** like §31's "Before" (the same game: 1B coins, every upgrade on sale, one retirement); **before → after part 2** (the Upgrades tab itself is part 3's, so its tiles are as they were):
+
+| | 1280×800 | 390×844 | 844×390 | 360×640 |
+|---|---|---|---|---|
+| The tray's open tab (height) | 653 → 634 px | 296 → 305 px | 395 (the page scrolled) → 249 px | — → 177 px (320×568: 153) |
+| Hamster upgrade tiles fully in view (of 22) | 6 → 6 | 2 → 2 | 2 → 0 | — → 0 |
+| Buttons under 44 px | 32 of 57 → 17 of 37 | 31 of 55 → 12 of 24 | 30 of 55 → 16 of 22 | — → 9 of 18 |
+| Smallest text on screen | 10 → 10.5 px | 9 → 10.5 px | 9 → 10.5 px | — → 10.5 px |
+| Places with text under 12 px | 24 → 8 | 27 → 4 | 27 → 1 | — → 1 |
+| The five tabs | fit, 29 → 44 px tall | just fit, 27 px → a bottom bar, 53 px tall, 12 px text | 28 px too wide → fit | 24 px too wide → fit |
+| The page scrolls | no | no | 150 px → no | no |
+| WIN meter's number, 5-reel machine (rig zoom) | 18 → 17.8 px (0.99) | 8 → 14 px (0.46) | 10 → 14 px (0.54) | — → 14 px (0.42) |
+
+- **What's left:** every remaining text under 12 px is the old upgrade tiles' "Lv" line, and most small buttons are the old Upgrades tab's (×1/×10/Max, the buy buttons at 42 px, the sub-tabs at 40 px): part 3. Kept on purpose: the phone HUD's purses and Menu at 40 px tall (a 52 px HUD) and the deck's bet buttons at 32–36 px wide (one row on a 320 px phone).
 
 **2026-10-02 · 1.5.0 "The Glow Up" · the UI before the planned redesign (measured, not a real playtest)**
 - **Measured in Chromium** (`npm run dev`; a game with 1B coins and every upgrade on sale, then one retirement so all five tabs show), for DESIGN §31's "Before". **No code changed.**

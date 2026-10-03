@@ -86,7 +86,7 @@ describe('the materials (frames.ts)', () => {
 
   const frames = paintFrames(frameColors);
   test('the frames are all there', () => {
-    for (const name of ['wood', 'woodPanel', 'woodBrass', 'brass', 'brassLit', 'brassDim', 'brassSlot', 'glass', 'paper', 'paperReady',
+    for (const name of ['wood', 'woodPanel', 'woodBrass', 'brass', 'brassLit', 'brassDim', 'brassSlot', 'glass', 'chrome', 'paper', 'paperReady',
       'paperGold', 'paperHeirloom', 'paperSelected', 'paperLocked', 'indexTab', 'indexTabDim']) expect(frames[name], name).toBeTruthy();
     for (const tone of Object.keys(ENAMEL_TONES)) {
       expect(frames[`enamel-${tone}`]).toBeTruthy();
@@ -136,6 +136,12 @@ describe('the stylesheet', () => {
       for (const m of css.matchAll(/--fw:\s*([^;]+);/g)) expect([4, 8, 12, 16], `${file}: --fw ${m[1]}`).toContain(parseFloat(m[1]));
     }
   });
+  test('no "border-image: none" shorthand (the build writes it as an empty value, which is dropped)', () => {
+    // Found in 1.6.0's part 2: the phone's tab bar kept its frames in the built game only.
+    // border-image-source: none does the same and survives the build.
+    const bad = Object.entries(allCss).filter(([, css]) => /border-image\s*:\s*none\b/.test(css)).map(([file]) => file);
+    expect(bad).toEqual([]);
+  });
   test('the wide/phone breakpoint is the same in every CSS file as in layout.ts', () => {
     const norm = (s) => s.replace(/\s+/g, ' ').trim();
     let copies = 0;
@@ -171,8 +177,8 @@ describe('the stylesheet', () => {
     const framed = new Set(framedRule.selectors.flatMap((s) => [...s.matchAll(/\.([\w-]+)/g)].map((m) => m[1])));
     // Classes that only ever sit on a framed element (a modifier next to .btn, .tile, .tag …).
     // The screens still to be rebuilt on the kit (parts 4–7) use these; new code uses .fr and k- pieces.
-    const MODIFIERS = new Set(['btn-primary', 'btn-soft', 'btn-danger', 'btn-gold', 'btn-black', 'btn-token', 'btn-spin', 'btn-auto',
-      'helper-btn', 'seed-tag', 'whisker-tag', 'prize-tile', 'prize-btn', 'off', 'k-btn', 'k-buy', 'k-confirm', 'k-tile', 'k-sheet', 'k-card',
+    const MODIFIERS = new Set(['btn-primary', 'btn-soft', 'btn-danger', 'btn-gold', 'btn-black', 'btn-token',
+      'helper-btn', 'prize-tile', 'prize-btn', 'off', 'k-btn', 'k-buy', 'k-confirm', 'k-tile', 'k-sheet', 'k-card', 'deck-spin',
       'k-seg-opt', 'k-step-value', 'k-stat-tile', 'k-gauge', 'k-toggle-track', 'k-toggle-knob', 'k-lever', 'k-lever-knob']);
     const bad = [];
     for (const r of allRules) {
@@ -194,6 +200,16 @@ describe('layout.ts', () => {
     expect(rigRoom({ wide: false, wallH: 300, padTop: 22, innerH: 844 })).toBeCloseTo(371.36);
     expect(rigRoom({ wide: false, wallH: 300, padTop: 22, innerH: 844, share: 0.4 })).toBeCloseTo(337.6);
     expect(rigRoom({ wide: true, wallH: 10, padTop: 26, innerH: 900 })).toBe(0);
+  });
+  test('stacked, the tray keeps at least 32% of a short screen (the rig gives way)', () => {
+    // A tall phone: the tray has plenty, so the rig may have its 44%.
+    expect(rigRoom({ wide: false, wallH: 281, padTop: 10, innerH: 844, trayH: 500 })).toBeCloseTo(371.36);
+    // 360 x 640: the rig now (250) + the tray beyond its 32% (118 - 204.8) = 163.2.
+    expect(rigRoom({ wide: false, wallH: 260, padTop: 10, innerH: 640, trayH: 118 })).toBeCloseTo(163.2);
+    // The same page at the zoom that gives: the rig 163.2 tall, the tray 204.8, so the answer holds.
+    expect(rigRoom({ wide: false, wallH: 173.2, padTop: 10, innerH: 640, trayH: 204.8 })).toBeCloseTo(163.2);
+    // Never below nothing.
+    expect(rigRoom({ wide: false, wallH: 20, padTop: 10, innerH: 640, trayH: 0 })).toBe(0);
   });
   test('the zoom fits both ways, never over 1, never under 0.3', () => {
     expect(rigZoom({ availW: 800, availH: 600, rigW: 400, rigH: 300 })).toBe(1);
@@ -250,5 +266,28 @@ describe('kit.ts helpers', () => {
     expect(container.children.map((e) => e.id)).toEqual(['c', 'a', 'd']);
     expect(made).toEqual(['a', 'b', 'c', 'd']); // a and c were reused, only d is new
     expect([...cache.keys()]).toEqual(['c', 'a', 'd']);
+  });
+});
+
+describe('the shell names real sprites', () => {
+  // A misspelt sprite name only shows as a "?" tile in the browser, so check every name the page
+  // and the shell write out literally: index.html's data-sprite pictures, the tab icons, the
+  // wallet's currencies, and every spriteImg / iconHTML / icon: '…' in the shell's files.
+  test('every sprite named in index.html, the shell and the kit exists in art.ts', async () => {
+    const { SPRITES } = await import('../src/view/art.ts');
+    const names = new Map(); // name → where
+    const add = (name, where) => { if (!names.has(name)) names.set(name, where); };
+    for (const m of read('../index.html').matchAll(/data-sprite="([\w.]+)"/g)) add(m[1], 'index.html');
+    for (const file of ['ui.ts', 'hud.ts', 'deck.ts', 'kit.ts']) {
+      const src = read(`../src/view/${file}`);
+      for (const re of [/spriteImg\(\s*'([\w.]+)'/g, /iconHTML\(\s*'([\w.]+)'/g, /\bicon:\s*'([\w.]+)'/g, /\bsprite:\s*'([\w.]+)'/g]) {
+        for (const m of src.matchAll(re)) add(m[1], file);
+      }
+      const tabs = src.match(/TAB_ICONS[^=]*=\s*\{([^}]+)\}/);
+      if (tabs) for (const m of tabs[1].matchAll(/'([\w.]+)'/g)) add(m[1], `${file} TAB_ICONS`);
+    }
+    expect(names.size).toBeGreaterThan(20);
+    const missing = [...names].filter(([name]) => !SPRITES[name]).map(([name, where]) => `${name} (${where})`);
+    expect(missing).toEqual([]);
   });
 });

@@ -2352,6 +2352,98 @@ const lock = [
   '...VVVVVVVVVV...',
   '................',
 ];
+// The tabs' and the HUD's icons (16×16): a capsule (the Capsules tab), a die (the Casino tab),
+// the Menu's bars and the sound switch (on: waves; off: a red cross).
+const capsule16 = [
+  '................',
+  '.....WWWWWW.....',
+  '....WvvbbbbW....',
+  '...WvbbbbbbBW...',
+  '..WvbbbbbbbbBW..',
+  '..WbbbbbbbbbBW..',
+  '..WBBBBBBBBBBW..',
+  '..KKKKKKKKKKKK..',
+  '..KwwwwwwwwwqK..',
+  '..KwwwwwwwwwqK..',
+  '..KwwwwwwwwqqK..',
+  '...KqqqqqqqqK...',
+  '....KQQQQQQK....',
+  '.....KKKKKK.....',
+  '................',
+  '................',
+];
+const die16 = [
+  '................',
+  '..KKKKKKKKKKKK..',
+  '.KwwwwwwwwwwwqK.',
+  '.KwrrwwwwwwrrqK.',
+  '.KwrrwwwwwwrrqK.',
+  '.KwwwwwwwwwwwqK.',
+  '.KwwwwwrrwwwwqK.',
+  '.KwwwwwrrwwwwqK.',
+  '.KwwwwwwwwwwwqK.',
+  '.KwrrwwwwwwrrqK.',
+  '.KwrrwwwwwwrrqK.',
+  '.KwwwwwwwwwwwqK.',
+  '.KqqqqqqqqqqqQK.',
+  '..KKKKKKKKKKKK..',
+  '................',
+  '................',
+];
+const menu16 = [
+  '................',
+  '................',
+  '................',
+  '..kkkkkkkkkkkk..',
+  '..kkkkkkkkkkkk..',
+  '................',
+  '................',
+  '..kkkkkkkkkkkk..',
+  '..kkkkkkkkkkkk..',
+  '................',
+  '................',
+  '..kkkkkkkkkkkk..',
+  '..kkkkkkkkkkkk..',
+  '................',
+  '................',
+  '................',
+];
+const soundOn = [
+  '................',
+  '................',
+  '.......k........',
+  '......kk...k....',
+  '.....kkk....k...',
+  '.kkkkkkk.k...k..',
+  '.kkkkkkk..k..k..',
+  '.kkkkkkk..k..k..',
+  '.kkkkkkk..k..k..',
+  '.kkkkkkk.k...k..',
+  '.....kkk....k...',
+  '......kk...k....',
+  '.......k........',
+  '................',
+  '................',
+  '................',
+];
+const soundOff = [
+  '................',
+  '................',
+  '.......k........',
+  '......kk........',
+  '.....kkk........',
+  '.kkkkkkk.r...r..',
+  '.kkkkkkk..r.r...',
+  '.kkkkkkk...r....',
+  '.kkkkkkk..r.r...',
+  '.kkkkkkk.r...r..',
+  '.....kkk........',
+  '......kk........',
+  '.......k........',
+  '................',
+  '................',
+  '................',
+];
 // A close cross (the sheet's close button).
 const close = [
   '................',
@@ -2383,7 +2475,7 @@ export const SPRITES: Record<string, string[]> = {
   pennies, jar, moon, nest, shoe, coupon, album, paw, roots, // 1.3.1
   box, machineMoving, boxIcon, whisker, whiskerIcon, glasses, // 1.4.0
   butterfly, butterfly2, bird, bird2, // 1.5.0
-  lock, close, // 1.6.0
+  lock, close, capsule16, die16, menu16, soundOn, soundOff, // 1.6.0
   frameCard, framePaper, frameTab, frameButton, frameRail, bubbleTail,
 };
 

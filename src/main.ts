@@ -30,7 +30,6 @@ import { createAutosave } from './platform/autosave.ts';
 import { makeSaveCode, readSaveCode, loadSaveCode } from './platform/savecode.ts';
 import { createSound } from './view/sound.ts';
 import { applyTheme } from './view/theme.ts';
-import { applyFrames } from './view/frames.ts';
 import { createUI } from './view/ui.ts';
 import { createDebugPanel } from './view/debug.ts';
 import type { Game } from './logic/game.ts';
@@ -79,8 +78,7 @@ function boot(platform: Platform) {
   // object and calls onSettingsChange, which writes it back to storage.
   const settings = loadSettings(platform);
   const sound = createSound(settings);
-  applyTheme(); // the pixel frames for the cardboard/paper look (reads the CSS colour tokens)
-  applyFrames(); // 1.6.0: the wood, paper, brass and enamel frames the kit is made of (frames.ts)
+  applyTheme(); // the pixel frames: since 1.6.0 the wood, paper, brass and enamel of frames.ts (they read the CSS colour tokens)
 
   // The debug panel: always there while developing (npm run dev). In a built game
   // (the public site) only with ?debug in the address, e.g. …/hamster_slots/?debug,

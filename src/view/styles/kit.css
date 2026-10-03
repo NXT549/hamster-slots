@@ -14,9 +14,9 @@
    properties are inherited: without this, a paper tile inside the cardboard tray
    would pick up the tray's cardboard frame. Later rules pick other frames. */
 .tray, .tile, .machine-card, .dialog, .capsule-card, .retire-card, .tree-detail, .bt-icon, .skin-tile,
-.diary-row, .reveal-card, .tag, .bubble, .bc-bubble, .machine-tag, .line-card, .dialog-card, .gamble, .rebuild-card,
-.btn, .buy-btn, .seg-btn, .icon-btn, .tab, .subtab, .felt, .boost-badge, .helper-row, .trial-badge, .bc-banner, .migrate-card,
-.fr {
+.diary-row, .reveal-card, .bubble, .bc-bubble, .machine-tag, .line-card, .dialog-card, .gamble, .rebuild-card,
+.btn, .buy-btn, .seg-btn, .tab, .subtab, .felt, .boost-badge, .helper-row, .trial-badge, .bc-banner, .migrate-card,
+.purse, .fr {
   --frame: var(--frame-paper);
   --fw: 8px;
   border-style: solid;
@@ -60,21 +60,20 @@
 .seg-btn.active { --frame: var(--frame-btn-buy); }
 .seg-btn:active { transform: translateY(1px); }
 
-/* Sub-tabs: a row of small paper labels inside a tab (dom.ts createSubTabs).
-   It stays at the top of the tab while the rest scrolls under it. */
-.subtab-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap;
-  position: sticky; top: 0; z-index: 4; margin: 0 -4px 8px; padding: 2px 6px 6px; background: var(--tray);
-  box-shadow: 0 4px 6px -5px rgba(74, 52, 40, 0.5);
-}
-.subtabs { display: flex; gap: 4px; flex-wrap: wrap; }
+/* Sub-tabs (kit.ts createSubTabs): paper index tabs standing on the ruled line under them (the
+   sub-tab row, layout.css). The open one is cream and covers the line; the others are a shade darker,
+   behind it. A dot means "something here is ready". */
+.subtabs { display: flex; gap: 2px; flex-wrap: wrap; align-items: flex-end; }
 .subtab {
-  --frame: var(--frame-btn-card); --fw: 8px; position: relative;
-  font-family: var(--font-display); font-weight: 500; font-size: 14px; color: var(--kraft-edge); padding: 0 6px 2px; cursor: pointer;
+  --frame: var(--fr-index-tab-dim); --fw: 8px; position: relative; display: inline-flex; align-items: center; gap: 6px;
+  min-height: 40px; padding: 0 6px 0; margin-bottom: -3px; cursor: pointer;
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); color: var(--ink-soft);
+  -webkit-tap-highlight-color: transparent;
 }
-.subtab.active { --frame: var(--frame-paper-selected); color: var(--ink); }
+.subtab.active { --frame: var(--fr-index-tab); min-height: 44px; color: var(--ink); z-index: 1; }
+.subtab .sprite { flex: none; }
 .subtab.alert::after { /* "something ready here" dot, like the tabs */
-  content: ""; position: absolute; top: -8px; right: -8px; width: 9px; height: 9px;
+  content: ""; position: absolute; top: -6px; right: -6px; width: 10px; height: 10px;
   background: var(--primary); box-shadow: 0 0 0 2px var(--paper); clip-path: var(--notch);
 }
 .subtab:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
@@ -117,9 +116,6 @@
   .btn:hover:not(:disabled):not(.poor), .buy-btn:hover:not(.poor):not(.maxed):not(:disabled) { filter: brightness(1.06); }
 }
 
-@container tray (max-width: 560px) {
-  .subtab { font-size: 13px; padding: 0 4px 2px; }
-}
 .less-motion .btn.shake, .less-motion .buy-fill { animation: none; }
 .less-motion .buy-btn::after { animation: none !important; }
 
@@ -262,7 +258,8 @@
 .k-sheet {
   --frame: var(--fr-paper-selected); --fw: 8px;
   position: absolute; left: var(--space-1); right: var(--space-1); bottom: var(--space-1); z-index: 8;
-  display: flex; flex-direction: column; gap: var(--space-2); max-height: 60%; padding: 2px var(--space-1) var(--space-1);
+  /* At most 60% of the tray, or up to 260 px of a short one (a phone), never all of it */
+  display: flex; flex-direction: column; gap: var(--space-2); max-height: max(60%, min(100% - 8px, 260px)); padding: 2px var(--space-1) var(--space-1);
   box-shadow: 0 -10px 18px -10px color-mix(in srgb, var(--ink) 60%, transparent);
   animation: sheet-up var(--dur-2) ease-out;
 }
@@ -271,8 +268,14 @@
 .k-sheet-icon:empty { display: none; }
 .k-sheet-titles { flex: 1; min-width: 0; }
 .k-sheet-title { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); line-height: 1.1; }
-.k-sheet-tag { font-weight: 800; font-size: var(--text-xs); color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; }
-.k-sheet-body { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: var(--space-2); font-weight: 600; font-size: var(--text-sm); line-height: 1.4; }
+.k-sheet-tag { font-weight: 800; font-size: var(--text-xs); color: var(--ink-soft); }
+/* When there's more than fits (a short phone), the words fade out at the body's bottom edge, so it
+   reads as "scroll for more", not cut off (the padding keeps the last line clear of the fade). */
+.k-sheet-body {
+  min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: var(--space-2); padding-bottom: var(--space-3);
+  font-weight: 600; font-size: var(--text-sm); line-height: 1.4;
+  -webkit-mask-image: linear-gradient(#000 calc(100% - var(--space-3)), transparent); mask-image: linear-gradient(#000 calc(100% - var(--space-3)), transparent);
+}
 .k-sheet-body .next { color: var(--buy-dark); }
 .k-sheet-foot { flex: none; display: flex; align-items: center; gap: var(--space-2); }
 .k-sheet-foot:empty { display: none; }
