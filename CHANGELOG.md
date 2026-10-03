@@ -14,6 +14,14 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 - After a Great Migration, the Family tab (and its Colony perks) no longer disappears when you reload before the new colony's first Heirloom Seed.
 - Deep Pockets now grows the jackpot pots already in play straight away, instead of only at the next life or reload.
 - The Family Casino shows Old Clunky's guest bet as "5", like the other cabinets (it said "5.00").
+- Amounts like 2,300 coins are written "2.3K" again (some showed a hundredth less, like "2.29K").
+- Blackjack's hint no longer says "Hit" on a hand you should stand on when you don't have the chips to double.
+
+## [1.8.1] - 2026-10-03 · Grand Opening
+
+### Fixed
+
+- **Takings in the purse** showed a long decimal (like 15.21415999999927). They're now shown as whole numbers with K/M/B, the same as everywhere else in the Family Casino.
 
 ## [1.8.0] - 2026-10-03 · Grand Opening
 

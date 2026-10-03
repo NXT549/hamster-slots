@@ -22,7 +22,7 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 
 > Keep this block true. Update it in the same commit as the change it describes.
 
-- **Live: 1.8.0 "Grand Opening"** (2026-10-03) at https://nxt549.github.io/hamster-slots/ (repo https://github.com/NXT549/hamster-slots, public, remote `origin`). Every push to `main` tests, builds and deploys (`.github/workflows/deploy.yml`, D118). `SAVE_VERSION` 15 (game.ts); data.json `schemaVersion` 15.
+- **Live: 1.8.1 "Grand Opening"** (2026-10-03; 1.8.1 fixes Takings showing a long decimal in the purse) at https://nxt549.github.io/hamster-slots/ (repo https://github.com/NXT549/hamster-slots, public, remote `origin`). Every push to `main` tests, builds and deploys (`.github/workflows/deploy.yml`, D118). `SAVE_VERSION` 15 (game.ts); data.json `schemaVersion` 15.
 - **1.6.1 "Fresh Coat"** = machine skins paint every machine (`painted()` in cabinet.ts, `--paint*` tokens) + 5 new machine skins (29 in the capsule pool; Arcade Neon's twist: +5% double-win), D161.
 - **1.6.0** = UI redesign parts 1–3 (DESIGN §31, D156–D160): the hamster's-room look (wood, paper, brass, enamel: `frames.ts`), the kit (`kit.ts`), purse (`hud.ts`), control deck (`deck.ts`), phone tab bar, detail sheet, rebuilt Upgrades tab (`shop.ts`), nothing under 12 px, only the open tab drawn. View only: no rules, balance or save changes.
 - **1.7.1 "Settling In"** = the balancing pass's first fix (D163, `docs/updates/balancing.md`): each colony's Family Tree costs ×3 more (`familyTree.costPerColony`), Colony Pride +30% a level (was +50%). No save change.
@@ -33,8 +33,8 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 - **Now:** waiting for playtest feedback on 1.1.0–1.6.0 (1.3.0–1.6.0 shipped without a playtest; 1.6.0–1.8.0 not yet seen on a real phone, Firefox or Safari; 1.8.0 shipped without a playtest). Questions in DESIGN §21–§32; feedback goes in PORTING_NOTES → Playtest notes; fixes ship as 1.8.x.
 - **Open balance issues:** late lives short around generations 11–15 (§10); 1.4.0's seed softcap made them 2–3× longer, and 1.7.1's balancing pass (D163: each colony's tree ×3, Colony Pride +30%) made colony 2 last 3–5 h with 5–8 min late lives, but colony 3's middle lives are still 2–5 min (§29 → Balance); the wardrobe makes mid-game lives ~10–30% shorter (§25); casino boosts can cut late lives by up to a third (§27, `node tools/sim.mjs --casino`).
 - **Not yet verified:** how the M7/1.0/M9 sounds sound; a natural jackpot-wheel label, hold & spin Grand and ×10 cheese wedge in the browser (only tests/console); Epic twists in a real session; Firefox and Safari look (rays' `mask`, line trace, reel blur).
-- **Tags:** `v0.1.0 v0.2.0 v1.0.0 v1.3.0 v1.3.1` are on GitHub. Missing (the session git proxy refuses tag pushes, HTTP 403), so the user adds them as GitHub Releases: v1.1.0 `7f2fe32`, v1.2.0 `4fa56c3`, v1.3.2 `1084cb6`, v1.4.0 on its docs-only deploy commit (same game as "Release 1.4.0" `76aec6d`, D149), v1.5.0 `bb98c2d`, v1.6.0 `6558459`, v1.6.1 on the "Release 1.6.1" commit, v1.7.0 on the "Release 1.7.0" commit, v1.7.1 on the "Release 1.7.1" commit, v1.8.0 on the "Release 1.8.0" commit.
-- **Tests:** `npm test`, 3,016 tests, ~1.5 min.
+- **Tags:** `v0.1.0 v0.2.0 v1.0.0 v1.3.0 v1.3.1` are on GitHub. Missing (the session git proxy refuses tag pushes, HTTP 403), so the user adds them as GitHub Releases: v1.1.0 `7f2fe32`, v1.2.0 `4fa56c3`, v1.3.2 `1084cb6`, v1.4.0 on its docs-only deploy commit (same game as "Release 1.4.0" `76aec6d`, D149), v1.5.0 `bb98c2d`, v1.6.0 `6558459`, v1.6.1 on the "Release 1.6.1" commit, v1.7.0 on the "Release 1.7.0" commit, v1.7.1 on the "Release 1.7.1" commit, v1.8.0 on the "Release 1.8.0" commit, v1.8.1 on the "Release 1.8.1" commit.
+- **Tests:** `npm test`, 3,024 tests, ~1.5 min.
 
 ## Commands
 

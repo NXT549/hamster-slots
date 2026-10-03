@@ -40,10 +40,11 @@ export function formatCoins(value: Money | number): string {
 }
 
 // Whole numbers (Heirloom Seeds, Hamster Tokens): written in full, "1234", and
-// from a quadrillion up like money, "1.23e15".
+// from a quadrillion up like money, "1.23e15". Anything with a fraction is floored
+// first, so a currency that builds up in bits (Takings) never shows "15.21415999999927".
 export function formatWhole(value: Money | number): string {
   const n = typeof value === 'number' ? value : value.toNumber();
-  return Math.abs(n) < 1e15 ? String(n) : scientific(money(value));
+  return Math.abs(n) < 1e15 ? String(Math.floor(n)) : scientific(money(value));
 }
 
 // "1.23e15": the mantissa (1 to 9.99) with 2 decimals, never rounded up, like
