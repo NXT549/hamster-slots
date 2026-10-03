@@ -317,6 +317,16 @@ describe('the machines\' new upgrades: Ball Bearings, Deep Pockets, Acorn Stash,
   const pot0 = g.getPotSeedMultiplier();
   g.buyUpgrade('deepPockets', Infinity);
   check('Deep Pockets maxed: pots start at x2 their seed (every machine\'s, a hamster upgrade)', near(g.getPotSeedMultiplier(), pot0 + 1, 1e-12));
+  // 1.8.1 fix: the pots already in play grow to the new seed at once (they only did at the
+  // next reload or life before, so a reload changed them).
+  const palacePots = g.state.machines.find((m) => m.typeId === 'palace').pots;
+  const palaceDef = data.machines.find((m) => m.id === 'palace');
+  check('…and the Pouch Palace\'s pots in play grow to the new seed at once',
+    palaceDef.jackpot.pots.every((p) => num(palacePots[p.id]) >= roundMoney(p.seed * g.getPotSeedMultiplier())));
+  const saved = JSON.stringify(g.toSaveData());
+  const g2 = newGame(71);
+  g2.loadSaveData(JSON.parse(saved));
+  check('…so a save and reload leaves the pots as they were', JSON.stringify(g2.toSaveData().machines.map((m) => m.pots)) === JSON.stringify(JSON.parse(saved).machines.map((m) => m.pots)));
   g.buyMachine('vault');
   const r0 = g.getHoldRespins();
   g.buyUpgrade('acornStash');

@@ -16,6 +16,16 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 - **The Diary shows the stickers you're closest to first.** Finished stickers fold away at the bottom.
 - **Recent wins are kept between visits** (Info → Recent wins), so you can see what you won after a reload. Reset and loading a backup clear them.
 
+## [1.9.1] - 2026-10-03 · Welcome Mat
+
+### Fixed
+
+- After a Great Migration, the Family tab (and its Colony perks) no longer disappears when you reload before the new colony's first Heirloom Seed.
+- Deep Pockets now grows the jackpot pots already in play straight away, instead of only at the next life or reload.
+- The Family Casino shows Old Clunky's guest bet as "5", like the other cabinets (it said "5.00").
+- Amounts like 2,300 coins are written "2.3K" again (some showed a hundredth less, like "2.29K").
+- Blackjack's hint no longer says "Hit" on a hand you should stand on when you don't have the chips to double.
+
 ## [1.9.0] - 2026-10-03 · Welcome Mat
 
 **New players get a friendly guide, and everything you unlock now has its own little moment.**
