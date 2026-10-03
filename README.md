@@ -21,7 +21,7 @@ Spin the reels, win coins, buy upgrades, and teach your hamster to run the wheel
 - **The Hamster Casino**: roulette, blackjack, a hamster derby and Seed Drop, played with pretend Casino Chips you earn by spinning (or buy with coins). Every table shows its odds, and chips only buy prizes: boosts, a Luck charm, tokens and three skins you can't get anywhere else.
 - It saves by itself, keeps earning a little while you're away, and has a save backup code (Menu → Save backup).
 
-What changed in each version: [CHANGELOG.md](CHANGELOG.md). Every update has a name, like 1.3.0 "The Hamster Casino", 1.3.1 "Nuts & Bolts" (the upgrades update), 1.4.0 "The Great Migration" (the mega rebirth) and 1.5.0 "The Glow Up" (a whole new look).
+What changed in each version: [CHANGELOG.md](CHANGELOG.md). Every update has a name, like 1.3.0 "The Hamster Casino", 1.3.1 "Nuts & Bolts" (the upgrades update), 1.4.0 "The Great Migration" (the mega rebirth), 1.5.0 "The Glow Up" (a whole new look) and 1.6.0 "New Digs" (the first part of a new look for everything around the cage: wood, paper and brass).
 
 ## Running it yourself
 

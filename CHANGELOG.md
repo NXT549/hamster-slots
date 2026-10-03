@@ -8,9 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased] · 1.6.0 "New Digs"
+## [Unreleased]
 
-**A full redesign of everything around the cage, in the hamster's room: wood, paper and brass. Being built: the screens arrive one by one.**
+## [1.6.0] - 2026-10-03 · New Digs
+
+**The first part of a full redesign of everything around the cage, in the hamster's room: wood, paper and brass. The new look reaches every screen, with your purse along the top, a control deck on the cage, the tabs at the bottom of a phone and a new Upgrades tab; the other screens get their new layouts in later updates.**
 
 ### Changed
 
@@ -235,7 +237,8 @@ The first numbered version: everything built so far.
 - **Cute extras:** the hamster-cage look, speech-bubble hints from your hamster, sound effects with a volume control, pixel sparkles and confetti, win banners, a Stats screen, and an Info tab with the paytable, the paylines, the real odds of every feature, and your recent wins.
 - **Settings:** less motion, quick reels, short or full numbers.
 
-[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/NXT549/hamster-slots/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/NXT549/hamster-slots/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/NXT549/hamster-slots/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/NXT549/hamster-slots/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/NXT549/hamster-slots/compare/v1.3.1...v1.3.2

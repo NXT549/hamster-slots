@@ -788,6 +788,13 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **The Upgrades tab's dot:** whenever you look, the tab remembers what's affordable at ×1 (upgrades, machines, a rebuild); while you're elsewhere, a dot shows when something new is in reach (worked out 4 times a second). *Rejected:* a dot whenever anything is affordable (it would hardly ever go off).
 - **Tests:** 2,937 (8 new in `tests/shop.test.js`). The golden run, the save fixtures and the simulator are untouched (view only).
 
+**D160 — 1.6.0 "New Digs" released, with parts 1–3** (the user, 2026-10-03, after the screenshots at the stop: "that looks good publish it").
+- **Chosen:** publish what was built, now, as **1.6.0 "New Digs"**: parts 1–3 of DESIGN §31 (the foundations, the shell, the Upgrades tab; D157–D159). The look the user OKed is everywhere (the screens not rebuilt yet wear wood, paper, brass and enamel in their old layouts), and every part was built to leave the game playable. **Parts 4–9** (Family, Capsules and Info, Casino, Menu and dialogs, the guide and UI sounds, polish) stay planned, for later updates with their own versions and names, built when the user asks. *Rejected:* holding the release until all nine parts are done (the user said publish; the plan's stop was for the look, and it passed).
+- View only, like the release candidate: save v14 and data schema 14, as in 1.5.0; the golden run and the save fixtures are untouched, so nobody's progress changes. The two new settings the plan names (`uiSounds`, `guide`) come with part 8, not in 1.6.0.
+- Released after the user saw screenshots, without a playtest first (the user's call), like 1.3.0–1.5.0: checked by the tests and in Chromium (dev and built), not yet by a real player, on a real phone, or in Firefox or Safari. DESIGN §31's questions are the ones to answer.
+- `main` hadn't moved since 1.5.0's docs commit (`0417fcc`), so there was nothing to merge in first. The release commit moved the CHANGELOG's entries under `[1.6.0] - 2026-10-03 · New Digs`, set 1.6.0 in package.json and package-lock (from 1.6.0-rc.1) and marked it released in the docs; `main` was fast-forwarded to it, and the deploy workflow puts it on the Pages link. The tests ran on Node 24 too (CI's Node) before the push (D149).
+- The tag `v1.6.0` is made locally on the release commit; tag pushes are cut off by the sessions' git proxy, so the user publishes the GitHub Release **"v1.6.0 · New Digs"** on the "Release 1.6.0" commit.
+
 
 
 
