@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased] · 1.9.0 "Welcome Mat"
+## [Unreleased]
+
+## [1.9.0] - 2026-10-03 · Welcome Mat
 
 **New players get a friendly guide, and everything you unlock now has its own little moment.**
 
