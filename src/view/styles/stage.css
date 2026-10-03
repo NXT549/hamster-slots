@@ -56,6 +56,7 @@
 .wheel { position: absolute; left: 9px; top: 4px; width: 172px; height: 172px; border-radius: 50%; }
 .hamster {
   position: absolute; left: 61px; top: 104px;
+  cursor: pointer; /* (Dear Diary) tap it to pet it */
   transition: opacity 0.3s, transform 0.3s;
 }
 .hamster.away { opacity: 0; transform: translateX(40px); }
