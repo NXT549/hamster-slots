@@ -108,6 +108,8 @@ export function applyTheme(root: HTMLElement = document.documentElement): void {
   set('--frame-felt', url('frameCard', { U: token('--felt-edge'), x: token('--felt-light'), n: token('--felt'), N: token('--felt-dark') }));
   // 1.5.0: the tables have a wooden rail round the felt.
   set('--frame-rail', url('frameRail', { U: token('--wood-ink'), x: token('--wood-light'), n: token('--wood'), N: token('--wood-dark'), k: token('--felt-edge'), 1: token('--felt') }));
+  // The Loyalty Card's VIP lounge: the same rail in polished brass.
+  set('--frame-rail-vip', url('frameRail', { U: token('--brass-ink'), x: token('--brass-light'), n: token('--brass'), N: token('--brass-dark'), k: token('--felt-edge'), 1: token('--felt') }));
   set('--tile-felt', `url("${kraftTile(token('--felt-light'), token('--felt-edge'))}")`);
   set('--bubble-tail', url('bubbleTail'));
   set('--tile-page', `url("${pageTile(token('--page'), token('--page-dot'), token('--outline-ink'))}")`);

@@ -281,6 +281,23 @@ export interface CasinoDef {
   derby: { racers: RacerDef[]; longshot: string };
   seedDrop: { multipliers: number[] };
   prizes: PrizeDef[];
+  loyalty?: LoyaltyDef; // the Loyalty Card (save v16)
+}
+
+// The Loyalty Card (save v16). Every chip you bet at the tables counts towards the next
+// tier; reaching one gives Hamster Tokens once and can open bigger bets or the VIP
+// lounge. Nothing here changes a table's odds (a bet's return is per chip).
+export interface LoyaltyTierDef extends Named {
+  wagered: number; // chips bet in all (every table, every life) to reach this tier
+  tokens: number; // Hamster Tokens given once, on reaching it
+  betSteps?: number[]; // bigger bets it opens (multiples of the smallest bet step)
+  lounge?: boolean; // it opens the VIP lounge (the casino's look)
+}
+export interface LoyaltyDef {
+  name: string; // the card's name
+  memberName: string; // what a player is before the first tier
+  stampsPerTier: number; // the card shows the way to the next tier as this many stamps
+  tiers: LoyaltyTierDef[]; // in order, each needing more than the last
 }
 
 // ── M12: the Family Casino (your own casino, for a migrated family) ──
@@ -490,6 +507,8 @@ export interface CasinoState {
   spinsToChip: number; // paid spins since the last chip earned
   boosts: Record<string, number>; // prize id → seconds (a boost) or paid spins (a charm) left
   hand: BlackjackHand | null;
+  wagered: Money; // save v16: chips bet at the tables in all (the Loyalty Card counts them)
+  tier: number; // save v16: Loyalty Card tiers reached (their gifts given)
 }
 
 // M12: the Family Casino (kept for good: through retirements and migrations).
@@ -708,6 +727,7 @@ export interface GameEvents {
   seedDropped: { path: number[]; bin: number; multiplier: number; bet: Money; returned: Money };
   prizeBought: { id: string; cost: Money };
   boostEnded: { id: string };
+  loyaltyTier: { tier: number; id: string; name: string; tokens: number; betSteps: number[]; lounge: boolean }; // a Loyalty Card tier reached (save v16)
   // M12: the Family Casino
   ownCasinoOpened: { cabinet: string | null }; // the grand opening (the free first cabinet, if any)
   cabinetBought: { machine: string; cost: Money };

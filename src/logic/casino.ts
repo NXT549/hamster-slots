@@ -18,7 +18,7 @@
 import { money, roundMoney } from './money.ts';
 import type { Money, MoneyLike } from './money.ts';
 import type { Rng } from './rng.ts';
-import type { GameData, GameState, GameEvents, CasinoDef, PrizeDef, Effect, RouletteBet, BlackjackHand, TokenSource, ChipSource } from './types.ts';
+import type { GameData, GameState, GameEvents, CasinoDef, LoyaltyDef, LoyaltyTierDef, PrizeDef, Effect, RouletteBet, BlackjackHand, TokenSource, ChipSource } from './types.ts';
 import { covers, paysFor, spinRoulette, picksFor, ROULETTE_KINDS, rouletteRtp } from './roulette.ts';
 import type { RouletteKind } from './roulette.ts';
 import { drawCard, handValue, isBlackjack, dealerShouldHit, settle, returnFor, bestPlay, blackjackRtp } from './blackjack.ts';
@@ -145,9 +145,13 @@ export function createCasino(host: CasinoHost) {
 
   // ───────────────────── Bets ─────────────────────
 
+  // The table's bets, and the bigger ones the Loyalty Card's tiers have opened.
   function getBetSteps(): number[] {
     const c = def();
-    return c ? c.betSteps : [];
+    if (!c) return [];
+    const extra = reachedTiers().flatMap((t) => t.betSteps || []);
+    if (!extra.length) return c.betSteps;
+    return [...new Set([...c.betSteps, ...extra])].sort((a, b) => a - b);
   }
 
   // A bet is a whole number of the smallest chip (10), up to the table's limit (the
@@ -163,9 +167,13 @@ export function createCasino(host: CasinoHost) {
     return isOpen() && isValidBet(amount) && casino().chips.gte(amount);
   }
 
-  // Take the chips for a game, and later pay back what it returned.
+  // Take the chips for a game, and later pay back what it returned. Every chip
+  // staked counts on the Loyalty Card (a doubled blackjack bet counts twice).
   function stake(amount: Money): void {
     changeChips(amount.neg(), 'bet');
+    const s = casino();
+    s.wagered = s.wagered.add(amount);
+    checkLoyalty();
   }
   function payBack(returned: Money): void {
     stats().casinoGames++;
@@ -174,6 +182,60 @@ export function createCasino(host: CasinoHost) {
       stats().biggestCasinoWin = stats().biggestCasinoWin.max(returned);
     }
     host.checkDiary();
+  }
+
+  // ───────────────────── The Loyalty Card ─────────────────────
+  // The more chips you bet (win or lose), the higher your tier. A tier gives its
+  // Hamster Tokens once and can open bigger bets or the VIP lounge. It never touches
+  // a table's odds: every bet still gives back the same share of each chip, so a
+  // bigger bet only wins or loses more at once (rule 4). The gifts are a few tokens
+  // at tiers that need ever more chips bet, so they can't be farmed.
+
+  function loyalty(): LoyaltyDef | null {
+    const c = def();
+    return (c && c.loyalty) || null;
+  }
+
+  function reachedTiers(): LoyaltyTierDef[] {
+    const l = loyalty();
+    return l ? l.tiers.slice(0, casino().tier) : [];
+  }
+
+  // Gift every tier the chips bet have reached (several at once if the data changed).
+  function checkLoyalty(): void {
+    const l = loyalty();
+    if (!l) return;
+    const s = casino();
+    while (s.tier < l.tiers.length && s.wagered.gte(l.tiers[s.tier].wagered)) {
+      const t = l.tiers[s.tier];
+      s.tier++;
+      if (t.tokens > 0) host.earnTokens(t.tokens, 'casino');
+      host.emit('loyaltyTier', { tier: s.tier, id: t.id, name: t.name, tokens: t.tokens, betSteps: t.betSteps || [], lounge: !!t.lounge });
+    }
+  }
+
+  // The card as the view draws it: the tier you're at, the next one, and the stamps
+  // on the way there (each stamp is an equal share of the chips between the two).
+  function getLoyalty() {
+    const l = loyalty();
+    if (!l) return null;
+    const s = casino();
+    const tier = s.tier > 0 ? l.tiers[s.tier - 1] : null;
+    const next = s.tier < l.tiers.length ? l.tiers[s.tier] : null;
+    const from = tier ? tier.wagered : 0;
+    let stamps = l.stampsPerTier;
+    let toNextStamp = 0;
+    if (next) {
+      const per = (next.wagered - from) / l.stampsPerTier;
+      const done = Math.max(0, s.wagered.toNumber() - from);
+      stamps = Math.min(l.stampsPerTier - 1, Math.floor(done / per));
+      toNextStamp = Math.max(1, Math.ceil(from + per * (stamps + 1) - s.wagered.toNumber()));
+    }
+    return {
+      name: l.name, tierName: tier ? tier.name : l.memberName, tier: s.tier, tiers: l.tiers,
+      next, wagered: s.wagered, stamps, stampsPerTier: l.stampsPerTier, toNextStamp,
+      lounge: reachedTiers().some((t) => t.lounge),
+    };
   }
 
   // ───────────────────── Hamster Roulette ─────────────────────
@@ -442,12 +504,12 @@ export function createCasino(host: CasinoHost) {
     playRoulette, dealBlackjack, hitBlackjack, standBlackjack, doubleBlackjack, canDouble, getBlackjackHint, handInPlay,
     runDerby, dropSeed,
     getPrize, canBuyPrize, getPrizeBlock, buyPrize, getBoosts, boostEffects,
-    getCasinoOdds, addChips, earnChips,
+    getCasinoOdds, addChips, earnChips, getLoyalty,
     onPaidSpin, beforeRetire, onRetire, onMigrate, tick,
   };
 }
 
-// A fresh casino (a new game): no chips, no boosts, no hand on the table.
+// A fresh casino (a new game): no chips, no boosts, no hand on the table, a blank Loyalty Card.
 export function newCasinoState(): GameState['casino'] {
-  return { chips: money(0), bestIncome: money(0), spinsToChip: 0, boosts: {}, hand: null };
+  return { chips: money(0), bestIncome: money(0), spinsToChip: 0, boosts: {}, hand: null, wagered: money(0), tier: 0 };
 }

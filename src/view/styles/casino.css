@@ -143,3 +143,26 @@
 }
 
 .less-motion .bj-card.deal, .less-motion .bin.hit, .less-motion .casino-result.pop { animation: none; }
+
+/* The Loyalty Card (Prizes sub-tab): a gold paper card with a row of paw stamps */
+.loyalty { margin: 0 2px 12px; }
+.loyalty .k-card-head .k-chip { margin-left: auto; }
+.loyalty-stamps { display: flex; flex-wrap: wrap; gap: 4px; }
+.loyalty-stamp {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  border: 2px dashed var(--kraft-dark); background: var(--paper-2);
+}
+.loyalty-stamp img { opacity: 0; }
+.loyalty-stamp.on { border-style: solid; border-color: var(--gold-dark); }
+.loyalty-stamp.on img { opacity: 1; animation: stamp-in 0.3s steps(2) both; }
+@keyframes stamp-in { from { transform: translateY(-8px); opacity: 0; } to { transform: none; opacity: 1; } }
+.less-motion .loyalty-stamp.on img { animation: none; }
+.loyalty-next { font-size: 12px; }
+.loyalty-tiers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.loyalty-tiers li { opacity: 0.75; }
+.loyalty-tiers li.done { opacity: 1; }
+.loyalty-tiers li.done b::before { content: "✓ "; color: var(--buy-dark); }
+.loyalty-tiers b { font-family: var(--font-display); font-weight: 500; }
+.loyalty-tiers .num { font-family: var(--font-num); font-weight: 900; }
+/* The VIP lounge (Silver Paw and up): brass rails round every table */
+#tab-casino.vip .felt { --frame: var(--frame-rail-vip); }

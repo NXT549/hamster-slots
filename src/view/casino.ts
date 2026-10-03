@@ -12,7 +12,7 @@
 // the chips counter waits for them, so a win lands when the ball does.
 
 import { formatCoins, setText, setHTML, iconHTML, replayClass, mix } from './dom.ts';
-import { createSubTabs } from './kit.ts';
+import { createSubTabs, card, chip, h } from './kit.ts';
 import { createOwnCasinoView } from './owncasino.ts';
 import { spriteImg, applySprite, runFrame, SUIT_SPRITES } from './art.ts';
 import { furPalette, skinPreview } from './skins.ts';
@@ -55,7 +55,7 @@ export function createCasinoView(
     bjHint: $('bj-hint'), bjNote: $('bj-note'),
     track: $('derby-track'), dResult: $('derby-result'), dRun: $<HTMLButtonElement>('derby-run'), dNote: $('derby-note'),
     dropBoard: $('drop-board'), dropResult: $('drop-result'), dropBtn: $<HTMLButtonElement>('drop-btn'), dropNote: $('drop-note'),
-    prizes: $('prize-grid'), badges: $('boost-badges'), chipBar: $('chip-bar'),
+    prizes: $('prize-grid'), badges: $('boost-badges'), chipBar: $('chip-bar'), loyalty: $('loyalty-card'),
   };
   const subtabs = createSubTabs($('casino-subtabs'), el.panel, { key: 'casino', settings, onSettingsChange });
   // M12: the Family Casino, on its own sub-tab (shown once a migrated family has it).
@@ -751,6 +751,67 @@ export function createCasinoView(
     setHTML(el.badges, html);
   }
 
+  // ─────────────────────── the Loyalty Card ───────────────────────
+  // A paper card on the Prizes sub-tab: your tier, a row of stamps (a paw print for
+  // every share of the chips bet on the way to the next tier) and what each tier gives.
+
+  let loyaltyCard: { tier: ReturnType<typeof chip>; stamps: HTMLElement[]; next: HTMLElement; rows: HTMLElement[] } | null = null;
+  let loyaltyKey = '';
+  function buildLoyalty(): void {
+    el.loyalty.replaceChildren();
+    loyaltyCard = null;
+    loyaltyKey = '';
+    const l = game.getLoyalty();
+    if (!l) return;
+    const c = card({ tone: 'gold', title: l.name, icon: 'coupon', className: 'loyalty' });
+    const tier = chip(l.tierName, 'gold');
+    c.head.append(tier.el);
+    const row = c.body.appendChild(h('div', 'loyalty-stamps'));
+    const stamps: HTMLElement[] = [];
+    for (let i = 0; i < l.stampsPerTier; i++) {
+      const slot = row.appendChild(h('span', 'loyalty-stamp'));
+      slot.append(spriteImg('paw', 16));
+      stamps.push(slot);
+    }
+    const next = c.body.appendChild(h('div', 'note loyalty-next'));
+    const list = c.body.appendChild(h('ul', 'loyalty-tiers'));
+    const rows = l.tiers.map((t) => {
+      const li = list.appendChild(h('li', ''));
+      const perks = [`${t.tokens} token${t.tokens === 1 ? '' : 's'}`];
+      for (const b of t.betSteps || []) perks.push(`bets up to ${chipsText(b)}`);
+      if (t.lounge) perks.push('the VIP lounge');
+      li.innerHTML = `<b></b> <span class="num"></span> <span class="note"></span>`;
+      li.children[0].textContent = t.name;
+      li.children[1].textContent = `${chipsText(t.wagered)} bet`;
+      li.children[2].textContent = perks.join(', ');
+      return li;
+    });
+    el.loyalty.appendChild(c.el);
+    loyaltyCard = { tier, stamps, next, rows };
+  }
+
+  function renderLoyalty(): void {
+    const l = game.getLoyalty();
+    if (!l || !loyaltyCard) return;
+    const key = `${l.tier}:${l.stamps}:${l.toNextStamp}`;
+    if (key === loyaltyKey) return;
+    loyaltyKey = key;
+    loyaltyCard.tier.update(l.tierName);
+    loyaltyCard.stamps.forEach((s, i) => s.classList.toggle('on', i < l.stamps));
+    loyaltyCard.rows.forEach((r, i) => r.classList.toggle('done', i < l.tier));
+    setText(loyaltyCard.next, l.next
+      ? `${chipsText(l.toNextStamp)} more chips bet for the next stamp. Fill the card for ${l.next.name}. Every chip you bet counts, win or lose.`
+      : 'Every tier reached: the casino\'s best customer!');
+  }
+
+  // A tier reached: the hamster says what it opened (the card fills up on the Prizes sub-tab).
+  game.on('loyaltyTier', (e) => {
+    const opened = [...e.betSteps.map((b) => `bets up to ${chipsText(b)} chips`), ...(e.lounge ? ['the VIP lounge'] : [])];
+    say(`${e.name}! ${e.tokens} Hamster Token${e.tokens === 1 ? '' : 's'}${opened.length ? `, and ${opened.join(' and ')}` : ''}!`, 5000);
+    sound.play('epic');
+    fx.burstAt(el.chipBar, { count: 24, palette: [fx.colors.gold[0], '#ffffff'], speed: 200 });
+  });
+
   // ─────────────────────── shared ───────────────────────
 
   function result(node: HTMLElement, html: string, kind: 'win' | 'lose' | ''): void {
@@ -784,6 +845,7 @@ export function createCasinoView(
     buildTrack();
     buildDropBoard();
     buildPrizes();
+    buildLoyalty();
     buildNotes();
     wheelColors = null;
     wheelKey = '';
@@ -823,7 +885,8 @@ export function createCasinoView(
     if (current === 'blackjack') renderBlackjack(now);
     if (current === 'derby') renderDerby(now);
     if (current === 'drop') renderDrop(now);
-    if (current === 'prizes') renderPrizes();
+    if (current === 'prizes') { renderPrizes(); renderLoyalty(); }
+    el.panel.classList.toggle('vip', !!game.getLoyalty()?.lounge); // the VIP lounge: brass rails round the tables
     // A game still showing on another sub-tab finishes by itself (the chips were paid already).
     if (current !== 'roulette' && spin && now - spin.start >= spin.duration) renderRoulette(now);
     if (current !== 'derby' && race && !race.done && now - race.start >= race.duration) renderDerby(now);

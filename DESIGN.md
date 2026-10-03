@@ -1432,6 +1432,24 @@ Every table's note says its pays and what it gives back. The returns are exact (
 - **The three skins are only sold here** (never in a capsule); the Wardrobe marks them "Casino prize" until you have them, and they don't count for the diary's "from capsules" stickers.
 - **5 new diary stickers** (13 tokens): Lucky Number (win on one number), Blackjack!, Photo Finish (win on Wobbles), Edge of the Board (an edge bin), Prize Winner (buy a prize).
 
+### The Loyalty Card (added after 1.9.1; PORTING_NOTES D166)
+
+Before this, playing at the tables led nowhere: chips went round and round. Now **every chip you bet at any table counts on a Loyalty Card**, win or lose (a doubled blackjack bet counts twice). It's on top of the Prizes sub-tab: a gold paper card with your tier and a row of **10 paw stamps**, each an equal share of the chips between your tier and the next. Kept for good, like the chips (only Reset wipes it).
+
+| Tier | Chips bet in all | Gift (once) | Opens |
+|---|---:|---|---|
+| New Member | 0 | | bets up to 1,000 (the table's own) |
+| **Bronze Paw** | 10,000 | 1 Hamster Token | bets of **2,000** |
+| **Silver Paw** | 50,000 | 2 tokens | **the VIP lounge**: brass rails round every table |
+| **Gold Paw** | 200,000 | 3 tokens | bets of **5,000** |
+| **Platinum Paw** | 1,000,000 | 5 tokens | bets of **10,000** |
+
+- **The odds never change.** A bet gives back the same share of every chip at any size, so a bigger bet only wins or loses more at once; the tables still give back 94–99.5% (rule 4). The bigger bets are whole multiples of 10 chips, so every payout is still whole chips, and a roulette spot holds up to the biggest bet you've opened.
+- **The gifts are tokens, given once:** 11 in all, at tiers that need ever more chips bet, so the card can't be farmed (a gift per chip bet would push a table's return past 100%). They're tokens, not chips, so they never feed the tables back.
+- **Roughly how long:** a chip at a 97% table is bet about 33 times on average before it's gone (about 90 times at blackjack played by the tips), so the 250 chips of the first retirement already go most of the way to Bronze Paw. Silver comes in the first few hours of casino play, Gold over a few colonies, and Platinum is a long goal for a family that buys chips or Chip Crates (§32). The simulator never plays a table, so these are estimates; the playtest checks them.
+- **When a tier is reached** the hamster says what it opened, with a gold burst; the stamps fill as you play.
+- Data: `casino.loyalty` (the tiers, their chips bet, tokens, bet steps and the lounge). **Save v16** keeps the chips bet (`casino.wagered`) and the tiers reached (`casino.tier`); an older family's card starts blank, because the chips it bet before were never counted.
+
 ### The rules still hold (tested, `tests/logic/casino.test.js`)
 
 - **Every casino bet keeps a small house edge** (94–99.5% back), and chips never pay coins, so the tables can't be farmed. The machines' RTP only goes up with a boost.

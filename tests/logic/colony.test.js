@@ -426,7 +426,7 @@ describe('save v14', () => {
   g.state.trialsDone[col.trials[0].id] = true;
   g.setAuto({ retire: true, share: col.autoRetire.shares[2], plant: false });
   const save = g.toSaveData();
-  check('a save is v15, with the colony', save.saveVersion === SAVE_VERSION && SAVE_VERSION === 15 && save.colony === 1 && save.whiskers === '19'
+  check('a save has the colony', save.saveVersion === SAVE_VERSION && save.colony === 1 && save.whiskers === '19'
     && save.perks.colonyPride === 1 && save.trial === col.trials[1].id && save.trialsDone[col.trials[0].id] === true
     && deepEqual(save.auto, { retire: true, share: col.autoRetire.shares[2], plant: false }) && typeof save.colonyCoins === 'string');
   const h = newGame(362);

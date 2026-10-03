@@ -60,8 +60,10 @@ import type {
 // Trials and the Wise Elders' settings, and six stats.
 // v15 (M12, the Family Casino) added the family's own casino (its cabinets, floor
 // upgrades, back-office buys, the till and the Takings) and three stats.
+// v16 (the Loyalty Card) added the chips bet at the tables (casino.wagered) and
+// the Loyalty Card tiers reached (casino.tier).
 // See migrateSave() below.
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -2776,7 +2778,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     isCasinoOpen: casino.isOpen, isCasinoUnlocked: casino.isUnlocked, getChipPrice: casino.getChipPrice, getIncomePerSecond,
     getCasinoBetSteps: casino.getBetSteps, canBetChips: casino.canStake, canDouble: casino.canDouble, getBlackjackHint: casino.getBlackjackHint,
     getPrize: casino.getPrize, canBuyPrize: casino.canBuyPrize, getPrizeBlock: casino.getPrizeBlock, getBoosts: casino.getBoosts,
-    getCasinoOdds: casino.getCasinoOdds,
+    getCasinoOdds: casino.getCasinoOdds, getLoyalty: casino.getLoyalty,
 
     // the Family Casino (M12): actions, then queries (owncasino.ts)
     emptyTill: ownCasino.emptyTill, buyCabinet: ownCasino.buyCabinet, buyFloorUpgrade: ownCasino.buyFloorUpgrade,
@@ -3081,6 +3083,13 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
     save.saveVersion = 15;
   }
 
+  // v15 → v16: the Loyalty Card. The chips an older family bet were never counted,
+  // so its card starts blank (sanitizeState fills in 0 chips bet, no tier), and
+  // only the version changes here.
+  if (save.saveVersion === 15) {
+    save.saveVersion = 16;
+  }
+
   if (save.saveVersion !== SAVE_VERSION) return null;
   return save;
 }
@@ -3290,6 +3299,9 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
     else if (p.kind === 'charm') s.casino.boosts[p.id] = Math.min(Math.ceil(left), p.maxSpins);
   }
   s.casino.hand = cd ? cleanHand(rc.hand) : null;
+  // The Loyalty Card: the chips bet, and the tiers reached (never more than there are).
+  s.casino.wagered = moneyFrom(rc.wagered, 0).floor().max(0);
+  s.casino.tier = clamp(Math.floor(num(rc.tier, 0)), 0, (cd && cd.loyalty) ? cd.loyalty.tiers.length : 0);
 
   // The Family Casino (M12): cabinets and upgrades that still exist (levels capped), the till and the Takings.
   const ro = raw.ownCasino && typeof raw.ownCasino === 'object' ? raw.ownCasino : {};
