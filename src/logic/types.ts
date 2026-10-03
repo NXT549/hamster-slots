@@ -586,7 +586,7 @@ export interface Card {
 }
 
 // ───────────────────────── Events ─────────────────────────
-// Every event game.ts emits, and what it carries (AGENTS.md → Events).
+// Every event game.ts emits, and what it carries.
 // game.on('spinResolved', (e) => …) knows that e.payout is a Money, and so on.
 
 export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug' | 'casino';
