@@ -59,6 +59,18 @@
 #paytable-note { margin: 12px 2px 0; line-height: 1.45; }
 
 /* A tighter paytable in a narrow tray, so most machines' tables fit without scrolling */
+/* Little chips in the paytable's rows (Wild, Scatter, Blank, what unlocks a symbol) */
+.feature-chip {
+  display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px 1px 3px; clip-path: var(--notch);
+  font-family: var(--font-body); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; color: var(--ink);
+  background: var(--paper-2);
+}
+.feature-chip img { width: 16px; height: 16px; }
+.chip-wild { background: color-mix(in srgb, var(--gold) 50%, var(--paper)); }
+.chip-free { background: color-mix(in srgb, var(--soft) 50%, var(--paper)); }
+.chip-seeds { background: color-mix(in srgb, var(--heirloom) 40%, var(--paper)); }
+.chip-blank { background: var(--paper-2); }
+
 @container tray (max-width: 560px) {
   .paytable th { padding: 0 5px; font-size: 11px; letter-spacing: 0; }
   .paytable td { padding: 5px; font-size: 15px; }

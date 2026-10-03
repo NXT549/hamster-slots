@@ -776,6 +776,18 @@ Keeping the format in the logic means the Node test can check save round-trips a
 - **Screen readers:** the hamster's lines also go to a polite live region.
 - **Tests:** 2,929 (8 new in `tests/kit.test.js`: the tray's share, every sprite the page and the shell name, no `border-image: none`; and the art checks for the shell's new 16×16 icons). The golden run, the save fixtures and the simulator are untouched (view only).
 
+**D159 — 1.6.0 part 3: the Upgrades tab** (DESIGN §31 → Screen by screen → Upgrades), then **the stop** for the user's OK on the look.
+- **Rows, not cards:** each upgrade is one row (icon, name and level, its short "now → next", pips, a 44 px buy button), in one column even on a computer (the tray is at most 500 px wide), so a phone shows three and a computer seven or eight, with nothing under 12 px. *Rejected:* M15's two columns of small paper tiles (two in view on a phone, their level at 10.5 px).
+- **The whole tile opens its sheet** (an invisible button under everything but the buy button), and its buy button still buys in one tap (D132).
+- **Kept by id** (`keyedList`): switching machines or an unlock reuses the tiles it can instead of rebuilding the lists (no lost scroll or focus); an upgrade that unlocks moves out of the Locked drawer as a new tile.
+- **Previews 4 times a second:** the old tab worked out every tile's preview (exact EVs and hit rates) every frame, hidden or not; now only the open tab draws, 4 times a second or right after a change (a buy, a switch, the amount). With the CPU slowed 4× and 6× (Chromium's throttling), frames a second: **54 and 32, against 1.5.0's 32 and 19** (both hit 60 unthrottled, D153's test).
+- **The bar** holds the Helper's switch (or, before Helping Paws, a word about the list) beside ×1/×10/Max, so a phone gets a row back. On a narrow tray the word is just "Tap one to read about it", the Helper is its paw and its switch, a tile's buy button is slimmer (its coin at 1×), and the sub-tabs show their icons except the open one (`createSubTabs` now fits them on one row: names, then icons, then wrapping for sub-tabs without icons).
+- **The lock words:** "Opens with your 4th hamster" or "Earn the On Fire sticker" on the tile, the full sentence in the sheet; the padlock is a sprite, not an emoji.
+- **Machines** are catalogue pages (the description and the features by name in the sheet); **the workshop ticket** uses the kit's two-tap button, worded the same as the full-width row under a machine's page.
+- **The speech bubble over the signs:** the rig (wheel, tube, machine) now sits above the machine signs, so the hamster's words are never half hidden behind them; its empty space lets taps through (`pointer-events`: only the wheel, the tube and the machine take them; the bubble takes none), so the signs still switch machines (checked with real clicks at three sizes).
+- **The Upgrades tab's dot:** whenever you look, the tab remembers what's affordable at ×1 (upgrades, machines, a rebuild); while you're elsewhere, a dot shows when something new is in reach (worked out 4 times a second). *Rejected:* a dot whenever anything is affordable (it would hardly ever go off).
+- **Tests:** 2,937 (8 new in `tests/shop.test.js`). The golden run, the save fixtures and the simulator are untouched (view only).
+
 
 
 
@@ -892,6 +904,25 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-10-03 · 1.6.0-rc.1 "New Digs", parts 1–3: the stop for the user's OK on the look (automated checks, not a real playtest)**
+- **Played in Chromium** (headless; `npm run dev` and the built game) at 1280×800, 1920×1080, 390×844, 360×640, 320×568 and 844×390. **The Upgrades tab, 22 scripted checks, all passing:** the tab's dot appears when something becomes affordable while you're on another tab and goes when you look; a tile's buy button buys; a tap on the tile opens its sheet (the tile turns blue), its buy button buys, Escape closes it; ×10 prices ten levels; a sub-tab switch closes the sheet; the machine's sub-tab is named after it and lists its upgrades; Switch on a machine's page switches; the workshop ticket arms on the first tap and rebuilds on the second (a Machine Star); the Helper's switch flips it and its note opens. Also the Locked drawer and a locked upgrade's sheet ("A rebirth upgrade: it opens with your family's 3rd hamster (this is your 2nd: retire 1 more time)."), a machine's sheet, the kit gallery. No console errors.
+- **Measured** like §31's "Before" (the same game: 1B coins, every upgrade on sale, one retirement); **before (1.5.0) → after parts 1–3:**
+
+| | 1280×800 | 390×844 | 844×390 | 360×640 |
+|---|---|---|---|---|
+| The tray's open tab (height) | 653 → 634 px | 296 → 305 px | 395 (the page scrolled) → 249 px | — → 177 px |
+| Hamster upgrade tiles fully in view (of 22) | 6 → 7 (8 showing) | 2 → 2 (3 showing) | 2 → 1 | — → 1 |
+| Buttons under 44 px | 32 of 57 → 6 of 38 | 31 of 55 → 7 of 27 | 30 of 55 → 14 of 25 | — → 7 of 24 |
+| Smallest text on screen | 10 → 12 px | 9 → 12 px | 9 → 12 px | — → 12 px |
+| Places with text under 12 px | 24 → 0 | 27 → 0 | 27 → 0 | — → 0 |
+| The five tabs | fit, 29 → 44 px tall | just fit, 27 px → a bottom bar, 53 px tall | 28 px too wide → fit | 24 px too wide → fit |
+| The page scrolls | no | no | 150 px → no | no |
+| WIN meter's number, 5-reel machine (rig zoom) | 18 → 17.8 px (0.99) | 8 → 14 px (0.46) | 10 → 14 px (0.54) | — → 14 px (0.42) |
+
+- **The buttons still under 44 px:** the closed tab plates and sub-tabs (40 px tall, beside the open one's 44), the phone HUD's purses and Menu (40 px tall, for a 52 px HUD), the deck's bet buttons (32–36 px wide, so the deck is one row on a 320 px phone), and on a phone on its side the purses. On a phone on its side the tray is short (249 px), so only one upgrade row is fully in view, as on a 360×640 phone.
+- **Speed** (D153's test: a 5-reel machine in free spins with auto-spin, 4 s; the 1.5.0 build from `main` against this one, both built): 60 and 60 frames a second; with the CPU slowed 4×: **32 → 54**; 6×: **19 → 32** (only the open tab draws now, and the Upgrades tab 4 times a second).
+- **Not checked:** a real phone (touch, a notch's safe area), Firefox and Safari (new here: `:has()` stays out of the new rules; `mask-image` on the sheet's body, with the `-webkit-` prefix; individual `translate`/`scale` properties on the card gamble: Safari 14.1+), and the look itself: the user's OK decides (§31's questions).
 
 **2026-10-03 · 1.6.0-rc.1 "New Digs", part 2: the shell (automated checks, not a real playtest)**
 - **Played in Chromium** (headless, `npm run dev` and the built game with `?debug`) at 1280×800, 1920×1080, 390×844, 360×640, 320×568 and 844×390: the wallet and its notes (tap a purse, "Go to …", Escape), "+3" on a phone, the deck (Space, D, - and =, the deck's − and +, Spin, Deliver, the lever pausing and resuming auto-spin), the card gamble (← picks red; full size on a phone, over the reels on a computer), free spins (the gold Spin, "4 left"), the casino on a phone (the cage steps aside), 2 and 7 machines (the signs, the machine below them), a skin (the crown), a real retirement (the Big Cage opens after the iris), every tab. No console errors. The dev and built games' computed styles match element by element at three sizes (after the minifier fix, D158).

@@ -23,6 +23,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 - **On the machine**: the jackpot pots are brass plaques, Luck and Hot Streak are enamel pins, the WIN meter and the line label sit in chrome, and the machines' tags are wooden signs hanging from brass hooks. The small labels stay readable on a phone. The casino's boosts and a Colony Trial are pins in the cage's corner: tap one to read about it.
 - **The card gamble** is a little card table on felt, over the reels and at full size on a phone (where its six picks share one row).
 - The hamster's lines are read out by screen readers too.
+- **The Upgrades tab, rebuilt:** every upgrade is a row with its icon, name, level, what the next level does and a big buy button. **Tap the row** (anywhere but the button) to read all about it in a sheet: the whole "now → next" with hit rates and average wins, how long until you can afford it, and a buy button. **×1, ×10 and Max always all show.** The **Hamster Helper's switch** sits at the top of both upgrade lists (it buys from both). An upgrade that needs another one first stays where it is and says what it needs; rebirth and sticker upgrades that are still locked wait in a **Locked drawer**, each saying how it opens ("Opens with your 4th hamster", "Earn the On Fire sticker").
+- **The Machines list is a catalogue:** each machine's picture, its stars, one line of numbers, its features as little icons (named when you tap the machine, with its description) and one button: Buy, Switch or Running. **Rebuild for a star** is a gold workshop ticket on the machine's own tab and the same two-tap button on its page.
+- **The Upgrades tab gets a dot** when something you couldn't afford before is in reach.
+- Nothing on screen is smaller than 12 px any more, and the game runs more smoothly on a slow phone (only the tab you have open is drawn).
 
 ### Fixed
 

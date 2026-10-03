@@ -155,7 +155,7 @@
     <section class="tray">
 
       <!-- Sub-tabs: every tab with several parts gets a row of paper labels
-           (dom.ts createSubTabs). A dot means "something here is ready". -->
+           (kit.ts createSubTabs). A dot means "something here is ready". -->
       <div class="tab-panel" id="tab-upgrades" role="tabpanel" aria-labelledby="upgrades-tab">
         <div class="subtab-row">
           <nav class="subtabs" id="upgrades-subtabs">
@@ -163,35 +163,23 @@
             <button class="subtab" data-sub="machine" id="machine-subtab">Machine</button>
             <button class="subtab" data-sub="machines">Machines</button>
           </nav>
-          <div class="seg buy-amount" id="buy-amount" role="group" aria-label="How many levels to buy"></div>
         </div>
+        <!-- 1.6.0: over both upgrade lists, the Hamster Helper's switch (once Helping Paws is
+             planted; until then a hint about the list) and ×1 / ×10 / Max (shop.ts builds them) -->
+        <div class="shop-bar" id="shop-bar"></div>
         <div class="subpanel" data-sub="hamster">
-          <p class="note subpanel-note">Your hamster's own upgrades: they work on every machine. Tap one to read about it.</p>
-          <!-- 1.3.1: the Hamster Helper's switch (once Helping Paws is planted; shop.ts) -->
-          <div class="helper-row hidden" id="helper-row">
-            <span class="helper-icon"></span><span class="helper-text" id="helper-text"></span>
-            <button class="btn btn-soft helper-btn" id="helper-btn" aria-pressed="true">On</button>
-          </div>
-          <div class="upgrade-grid" id="upgrade-list-hamster"></div>
-          <!-- 1.3.1: rebirth and sticker upgrades that are still locked, folded away -->
-          <details class="locked-group hidden" id="locked-hamster"><summary></summary><div class="upgrade-grid"></div></details>
+          <div class="shop-list" id="upgrade-list-hamster"></div>
+          <!-- (the Locked drawer: rebirth and sticker upgrades, shop.ts) -->
         </div>
         <div class="subpanel" data-sub="machine">
-          <p class="note subpanel-note" id="machine-upgrades-note"></p>
-          <!-- M8: every upgrade maxed? Rebuild the machine for a Machine Star -->
-          <div class="rebuild-card hidden" id="rebuild-card">
-            <div class="rebuild-text" id="rebuild-text"></div>
-            <button class="btn btn-gold" id="rebuild-btn">Rebuild for a star</button>
-          </div>
-          <div class="upgrade-grid" id="upgrade-list-machine"></div>
-          <details class="locked-group hidden" id="locked-machine"><summary></summary><div class="upgrade-grid"></div></details>
+          <!-- M8: every upgrade maxed? The workshop ticket rebuilds the machine for a Machine Star -->
+          <div id="rebuild-slot"></div>
+          <div class="shop-list" id="upgrade-list-machine"></div>
         </div>
         <div class="subpanel" data-sub="machines">
-          <p class="note subpanel-note">Buy a new machine, or switch between the ones you own. Each machine keeps its own upgrades and bet.</p>
-          <div class="machine-list" id="machine-list"></div>
+          <p class="note subpanel-note">Buy one, or switch: each keeps its own upgrades and bet.</p>
+          <div class="shop-list shop-catalogue" id="machine-list"></div>
         </div>
-        <!-- M15: the upgrade you tapped, all about it (shop.ts). It sticks to the bottom of the tab. -->
-        <div class="upgrade-detail hidden" id="upgrade-detail"></div>
       </div>
 
       <!-- Family: retire for Heirloom Seeds, then plant them in the family tree -->

@@ -40,9 +40,13 @@
    wall: ui.ts sets --tags-room, how far down they reach in screen pixels, and dividing by the
    zoom keeps that the same on screen at any zoom. */
 .rig {
-  position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: center;
+  position: relative; z-index: 6; display: flex; align-items: flex-end; justify-content: center;
   width: fit-content; padding: 0 40px; margin: max(52px, calc(var(--tags-room, 0px) / var(--rig-zoom, 1))) auto -12px; /* sinks a little into the bedding */
+  /* (1.6.0) Above the machine signs, so the speech bubble is never hidden behind them; its empty
+     space lets taps through to the signs (only the wheel, the tube and the machine take them). */
+  pointer-events: none;
 }
+.rig > * { pointer-events: auto; }
 
 /* Hamster wheel */
 /* 1.5.0: the wheel is painted (wheel.ts), turning pixel by pixel on its canvas, with its
@@ -71,6 +75,7 @@
 .bubble {
   position: absolute; left: -6px; bottom: calc(100% + 12px); width: 214px; z-index: 6;
   padding: 2px 6px; font-size: 13px; line-height: 1.35;
+  pointer-events: none; /* (words only: a tap goes through to a sign under it) */
 }
 .bubble::after { /* the tail (a pixel sprite), pointing at the hamster */
   content: ""; position: absolute; left: 70px; bottom: -30px; width: 24px; height: 24px;

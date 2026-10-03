@@ -13,9 +13,9 @@
    Every framed element sets its own --frame and --fw here, because custom
    properties are inherited: without this, a paper tile inside the cardboard tray
    would pick up the tray's cardboard frame. Later rules pick other frames. */
-.tray, .tile, .machine-card, .dialog, .capsule-card, .retire-card, .tree-detail, .bt-icon, .skin-tile,
-.diary-row, .reveal-card, .bubble, .bc-bubble, .machine-tag, .line-card, .dialog-card, .gamble, .rebuild-card,
-.btn, .buy-btn, .seg-btn, .tab, .subtab, .felt, .boost-badge, .helper-row, .trial-badge, .bc-banner, .migrate-card,
+.tray, .tile, .dialog, .capsule-card, .retire-card, .tree-detail, .bt-icon, .skin-tile,
+.diary-row, .reveal-card, .bubble, .bc-bubble, .machine-tag, .line-card, .dialog-card, .gamble,
+.btn, .buy-btn, .seg-btn, .tab, .subtab, .felt, .boost-badge, .trial-badge, .bc-banner, .migrate-card,
 .purse, .fr {
   --frame: var(--frame-paper);
   --fw: 8px;
@@ -63,7 +63,13 @@
 /* Sub-tabs (kit.ts createSubTabs): paper index tabs standing on the ruled line under them (the
    sub-tab row, layout.css). The open one is cream and covers the line; the others are a shade darker,
    behind it. A dot means "something here is ready". */
-.subtabs { display: flex; gap: 2px; flex-wrap: wrap; align-items: flex-end; }
+/* One row (1.6.0, kit.ts fit()): when the names don't fit, only the open one keeps its name
+   (.compact, for sub-tabs with icons); still too wide, they wrap (.wrap). */
+.subtabs { display: flex; gap: 2px; flex-wrap: nowrap; align-items: flex-end; min-width: 0; max-width: 100%; }
+.subtabs.wrap { flex-wrap: wrap; }
+.subtabs.compact .subtab:not(.active) .k-subtab-label { display: none; }
+.subtabs.compact .subtab:not(.active) { min-width: var(--tap); justify-content: center; }
+.subtab .k-subtab-label { white-space: nowrap; }
 .subtab {
   --frame: var(--fr-index-tab-dim); --fw: 8px; position: relative; display: inline-flex; align-items: center; gap: 6px;
   min-height: 40px; padding: 0 6px 0; margin-bottom: -3px; cursor: pointer;
@@ -118,6 +124,39 @@
 
 .less-motion .btn.shake, .less-motion .buy-fill { animation: none; }
 .less-motion .buy-btn::after { animation: none !important; }
+
+/* ── The old paper tiles (M15) ──────────────────────
+   Still used by the Colony's perks, the Big Cage's trait card, the capsule reveal and the casino's
+   prizes until their parts of 1.6.0 rebuild them on the kit (then these go). The top of a tile is a
+   button; its buy button buys. */
+.tile { display: flex; flex-direction: column; gap: 5px; padding: 0 2px 2px; min-width: 0; box-shadow: 0 3px 0 -1px rgba(74, 52, 40, 0.16); transition: transform 0.12s, box-shadow 0.12s; }
+@media (hover: hover) { .tile:hover { transform: translateY(-2px); box-shadow: 0 5px 0 -1px rgba(74, 52, 40, 0.2); } }
+.tile.ready { --frame: var(--frame-paper-ready); }
+.tile.selected { --frame: var(--frame-paper-selected); }
+.tile.bought { animation: bought 0.35s ease-out; }
+.tile-info {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: start;
+  padding: 0; border: none; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+}
+.tile-info:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+.tile-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tile-top { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; }
+.tile-icon {
+  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  background: var(--paper-2); clip-path: var(--notch);
+}
+.tile-info .tile-icon { width: 40px; height: 40px; }
+.tile-name { font-family: var(--font-display); font-weight: 500; font-size: 16px; line-height: 1.1; }
+.tile-info .tile-name { font-size: 14px; }
+.tile-tag { font-size: 12px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; }
+.tile-level { font-size: 12px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.tile-desc { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; line-height: 1.35; }
+.tile-effect { font-size: 13.5px; }
+.tile-info .tile-effect { font-size: 12px; line-height: 1.3; margin-top: 2px; }
+.tile-effect .next { color: var(--buy-dark); }
+.tile .buy-btn { min-height: 34px; font-size: 15px; }
+.less-motion .tile.bought { animation: none; }
+.less-motion .tile { transition: none; }
 
 /* ════════════════════ The kit (1.6.0, "New Digs"): the pieces kit.ts builds ════════════════════
    Wood, paper, brass and enamel, painted by frames.ts. Sizes come from the type scale and the
@@ -232,7 +271,9 @@
 }
 .k-tile-hit { position: absolute; inset: calc(-1 * var(--fw)); z-index: 0; padding: 0; border: 0; background: none; cursor: pointer; }
 .k-tile > :not(.k-tile-hit) { position: relative; z-index: 1; pointer-events: none; }
-.k-tile > .k-buy { pointer-events: auto; z-index: 2; }
+.k-tile > .k-buy, .k-tile > .k-tile-act, .k-tile > .k-tile-wide { pointer-events: auto; z-index: 2; }
+.k-tile-act { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-1); }
+.k-tile > .k-tile-wide { grid-column: 1 / -1; }
 .k-tile-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--paper-2); clip-path: var(--notch); }
 .k-tile-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .k-tile-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); min-width: 0; }
@@ -252,6 +293,7 @@
 .k-tile.is-locked { --frame: var(--fr-paper-locked); }
 .k-tile.is-locked .k-tile-icon img { filter: grayscale(0.85); opacity: 0.75; }
 .k-tile.bought { animation: bought 0.35s ease-out; }
+@keyframes bought { 40% { transform: scale(1.03); } }
 @media (hover: hover) { .k-tile:hover { transform: translateY(-2px); } }
 
 /* ── The sheet: rises from the bottom of the tray (never over the cage) ── */
@@ -277,6 +319,7 @@
   -webkit-mask-image: linear-gradient(#000 calc(100% - var(--space-3)), transparent); mask-image: linear-gradient(#000 calc(100% - var(--space-3)), transparent);
 }
 .k-sheet-body .next { color: var(--buy-dark); }
+.k-sheet-body > p { margin: 0; } /* (the gap between them is the body's) */
 .k-sheet-foot { flex: none; display: flex; align-items: center; gap: var(--space-2); }
 .k-sheet-foot:empty { display: none; }
 .k-sheet-foot > .k-btn { flex: 1; }

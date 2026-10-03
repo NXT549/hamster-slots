@@ -146,7 +146,7 @@ export function createUI(
     gambleCard: $('gamble-card'), gambleHistory: $('gamble-history'), gambleKeep: $('gamble-keep'),
     gamblePicks: [...document.querySelectorAll<HTMLButtonElement>('#gamble [data-pick]')],
     road: $('road'), roadFill: $('road-fill'), roadHamster: $<HTMLImageElement>('road-hamster'), tabs: document.querySelector<HTMLElement>('.tabs')!,
-    familyTab: $('family-tab'), pupName: $('pup-name'), pupGen: $('pup-gen'),
+    upgradesTab: $('upgrades-tab'), familyTab: $('family-tab'), pupName: $('pup-name'), pupGen: $('pup-gen'),
     retireGain: $('retire-gain'), seedBarFill: $('seed-bar-fill'), seedNext: $('seed-next'),
     heirloomPerSeed: $('heirloom-per-seed'), retireBtn: $<HTMLButtonElement>('retire-btn'), retireBonus: $('retire-bonus'),
     familyCount: $('family-count'), familyTraits: $('family-traits'), heirloomJar: $('heirloom-jar'),
@@ -675,7 +675,7 @@ export function createUI(
     if (e.helper) {
       const t = shop.elementFor(e.id);
       fx.sparkleOver(t, { count: 4 });
-      if (!lessMotion() && t) popText(t.querySelector('.buy-btn'), `LV ${e.level}`, 'helper');
+      if (!lessMotion() && t) popText(shop.buyButtonFor(e.id), `LV ${e.level}`, 'helper');
       return;
     }
     sound.play(def.effect.type === 'unlockSymbol' ? 'unlock' : def.effect.type === 'luck' ? 'luck' : 'buy');
@@ -684,7 +684,7 @@ export function createUI(
     const tile = shop.elementFor(e.id);
     fx.sparkleOver(tile, { count: 10 + Math.min(20, e.count * 2) });
     // A ring of sparks from the button, and the new level floating up from it.
-    const button = tile && tile.querySelector('.buy-btn');
+    const button = shop.buyButtonFor(e.id);
     fx.ringAt(button, { count: 20, speed: 260, palette: [fx.colors.gold[0], '#ffffff', getComputedStyle(document.documentElement).getPropertyValue('--buy').trim()] });
     if (!lessMotion()) popText(button, game.isMaxed(e.id) ? 'MAX!' : `LV ${e.level}!`, game.isMaxed(e.id) ? 'gold' : '');
     // A new symbol on the reels: confetti over the machine.
@@ -1577,7 +1577,8 @@ export function createUI(
       shownTabsKey = tabsKey;
       requestAnimationFrame(fitTabs);
     }
-    if (currentTab === 'upgrades') shop.render();
+    // (The Upgrades tab's dot: something you can afford now that you couldn't when you last looked.)
+    el.upgradesTab.classList.toggle('alert', shop.render(now, currentTab === 'upgrades', tick));
     if (currentTab === 'info') payouts.render(now);
     renderFamily(now, currentTab === 'family', tick);
     renderCapsules(now, currentTab === 'capsules', tick);
@@ -1617,7 +1618,7 @@ export function createUI(
   const colony = createColonyView(game, { say, sound, fx, settings, onSettingsChange });
   const casinoView = createCasinoView(game, { say, sound, fx, lessMotion, settings, onSettingsChange });
   const backupView = createBackupView(game, backup);
-  const shop = createShopView(game, { settings, onSettingsChange });
+  const shop = createShopView(game, { settings, onSettingsChange, sheet });
   const payouts = createPayoutsView(game, { settings, onSettingsChange });
   // The Big Cage (M8; a scene of its own since M15): the page between lives, where the tree grows.
   const bigCage = createBigCage(game, {

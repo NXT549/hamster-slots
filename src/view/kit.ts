@@ -407,7 +407,10 @@ export function createSubTabs(
     // The words go in a span of their own, so an icon can sit beside them and a rename keeps it.
     const words = h('span', 'k-subtab-label', b.textContent || '');
     b.replaceChildren(words);
-    if (icons && icons[name]) b.prepend(spriteImg(icons[name], 16, ''));
+    if (icons && icons[name]) {
+      b.prepend(spriteImg(icons[name], 16, ''));
+      b.title = words.textContent || '';
+    }
     labels.set(name, words);
     const panel = panels.find((p) => p.dataset.sub === name);
     if (panel) {
@@ -433,8 +436,22 @@ export function createSubTabs(
       settings.subTabs = { ...(settings.subTabs || {}), [key]: name };
       onSettingsChange();
     }
+    fit();
     if (changed && onChange) onChange(name);
   }
+
+  // They stay on one row: when the names don't fit, only the open one keeps its name and the
+  // others show their icons (.compact); if that's still too wide (no icons), they wrap (.wrap).
+  function fit(): void {
+    nav.classList.remove('compact', 'wrap');
+    if (nav.scrollWidth <= nav.clientWidth + 1) return;
+    if (icons) {
+      nav.classList.add('compact');
+      if (nav.scrollWidth <= nav.clientWidth + 1) return;
+    }
+    nav.classList.add('wrap');
+  }
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => fit()).observe(nav);
   for (const b of buttons) {
     b.addEventListener('click', (e) => {
       (e.currentTarget as HTMLElement).blur();
@@ -449,12 +466,20 @@ export function createSubTabs(
     open,
     get current() { return current; },
     setDot(name: string, on: unknown) { const b = button(name); if (b) b.classList.toggle('alert', !!on && current !== name); },
-    setLabel(name: string, text: string) { const l = labels.get(name); if (l) setText(l, text); },
+    setLabel(name: string, text: string) {
+      const l = labels.get(name);
+      if (!l || l.textContent === text) return;
+      setText(l, text);
+      const b = button(name);
+      if (b) b.title = text; // (shown as its icon alone on a narrow tray)
+      fit();
+    },
     setHidden(name: string, hidden: unknown) {
       const b = button(name);
-      if (!b) return;
+      if (!b || b.classList.contains('hidden') === !!hidden) return;
       b.classList.toggle('hidden', !!hidden);
       if (hidden && current === name) open(names[0], false);
+      fit();
     },
   };
 }

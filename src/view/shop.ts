@@ -1,17 +1,24 @@
-// shop.ts — VIEW layer. The Upgrades tab, in three sub-tabs:
+// shop.ts — VIEW layer. The Upgrades tab (1.6.0, "New Digs": rebuilt on the kit; DESIGN §31),
+// in three sub-tabs:
 //   1) Hamster:   the hamster's own upgrades (they work on every machine)
-//   2) [Machine]: the upgrades of the machine you're running (named after it)
-//   3) Machines:  a card for every machine in data.json. Buy it, or switch to it.
-// The ×1 / ×10 / Max toggle (a saved setting) sits next to the sub-tabs, and tiles
-// show "ready in ~2 min" hints for the ones you're saving up for.
-// Like ui.ts, it only calls game actions (buyUpgrade, buyMachine, switchMachine)
-// and reads state.
+//   2) [Machine]: the upgrades of the machine you're running (named after it), and the workshop
+//                 ticket that rebuilds it for a Machine Star once they're all maxed
+//   3) Machines:  a catalogue page for every machine in data.json: buy it, or switch to it
+// Above both upgrade lists: the Hamster Helper's switch (it buys from both) and ×1 / ×10 / Max
+// (a saved setting). Every upgrade is a row tile: a tap on the tile opens the sheet in the tray
+// (all about it: the whole "now → next", "ready in", the buy button), and its own buy button
+// buys straight away (D132). A tile that needs another upgrade stays in place and says so;
+// rebirth and sticker upgrades still locked wait in a Locked drawer under each list, each saying
+// how it opens. The previews refresh 4 times a second, not every frame.
+// Like ui.ts, it only calls game actions (buyUpgrade, buyMachine, switchMachine, rebuild,
+// setHelper) and reads state.
 
 import { spriteImg, upgradeIcon, MACHINE_SPRITES } from './art.ts';
 import { formatCoins, formatSeconds, formatWait, formatDuration, setText, setHTML, replayClass, iconHTML } from './dom.ts';
-import { createSubTabs, ordinal } from './kit.ts';
+import { createSubTabs, ordinal, byId, h, tile, buyButton, confirmButton, segmented, toggle, card, drawer, keyedList } from './kit.ts';
 import { effectAs } from '../logic/game.ts';
 import { divide } from '../logic/money.ts';
+import type { Tile, BuyButton, ConfirmButton, Sheet, TileTone, BuyState } from './kit.ts';
 import type { Game } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
 import type { UpgradeDef, TreeNodeDef, PerkDef } from '../logic/types.ts';
@@ -87,24 +94,34 @@ function effectFormats(game: Game): Record<string, (def: Def) => [string, Format
   };
 }
 
-// 1.3.1: what a rebirth or sticker upgrade is still waiting for, short (a tile) or
-// long (the detail card). null = it's on sale.
-export function lockText(game: Game, id: string, long = false): string | null {
+// 1.3.1: what a rebirth or sticker upgrade is still waiting for (null = it's on sale).
+// 1.6.0: said the way you'd say it, short on its tile ("Opens with your 4th hamster") and in
+// full in the sheet (plain text there; the padlock is a sprite, not an emoji).
+export function lockShort(game: Game, id: string): string | null {
+  const lock = game.getUpgradeLock(id);
+  if (!lock) return null;
+  const parts: string[] = [];
+  if (lock.generation) parts.push(`your ${ordinal(lock.generation)} hamster`);
+  if (lock.sticker) {
+    const sticker = game.data.diary.find((d) => d.id === lock.sticker);
+    parts.push(`the ${sticker ? sticker.name : lock.sticker} sticker`);
+  }
+  return lock.generation ? `Opens with ${parts.join(' + ')}` : `Earn ${parts[0]}`;
+}
+export function lockText(game: Game, id: string): string | null {
   const lock = game.getUpgradeLock(id);
   if (!lock) return null;
   const parts: string[] = [];
   if (lock.generation) {
     const left = lock.generation - game.state.generation;
-    parts.push(long
-      ? `a rebirth upgrade: on sale from generation ${lock.generation} (your family is on ${game.state.generation}: retire ${left} more time${left === 1 ? '' : 's'})`
-      : `Generation ${lock.generation}`);
+    parts.push(`a rebirth upgrade: it opens with your family's ${ordinal(lock.generation)} hamster (this is your ${ordinal(game.state.generation)}: retire ${left} more time${left === 1 ? '' : 's'})`);
   }
   if (lock.sticker) {
     const sticker = game.data.diary.find((d) => d.id === lock.sticker);
     const name = sticker ? sticker.name : lock.sticker;
-    parts.push(long ? `a sticker upgrade: on sale once you earn the diary sticker <b>${name}</b> (${sticker ? sticker.description : ''})` : `Sticker: ${name}`);
+    parts.push(`a sticker upgrade: it opens when you earn the diary sticker <b>${name}</b>${sticker ? ` (${sticker.description})` : ''}`);
   }
-  return long ? `🔒 ${parts.join(', and ').replace(/^./, (c) => c.toUpperCase())}.` : `🔒 ${parts.join(' + ')}`;
+  return `${parts.join(', and ').replace(/^./, (c) => c.toUpperCase())}.`;
 }
 
 // Milestone 7: Luck and symbol unlocks change two things at once, so their line
@@ -176,433 +193,478 @@ function shortEffect(game: Game, def: UpgradeDef, preview: Preview): string {
   }
 }
 
-// Little chips on a machine card for the bonus features it has (and its Luck and
-// how many of its symbols are unlocked).
-export function featureChips(info: MachineInfo): string {
+// A machine's bonus features (and its Luck and symbol unlocks), as icons with names: icon chips
+// on its catalogue page, named in full in its sheet.
+export function machineFeatures(info: MachineInfo): { icon: string; name: string }[] {
   const f = info.features;
-  const chips = [];
-  if (info.luck > 0) chips.push(`<span class="feature-chip chip-luck">${iconHTML('clover', 16)}Luck ${info.luck}</span>`);
-  if (info.symbols.lockable > 0) chips.push(`<span class="feature-chip chip-seeds">${iconHTML('seedPacket', 16)}Symbols ${info.symbols.unlocked}/${info.symbols.lockable}</span>`);
-  if (f.wild) chips.push(`<span class="feature-chip chip-wild">${iconHTML('wildIcon', 16)}Wild${f.wildNow ? '' : ' (upgrade)'}</span>`);
-  if (f.freeSpins) chips.push(`<span class="feature-chip chip-free">${iconHTML('ballIcon', 16)}Free spins</span>`);
-  if (f.jackpot) chips.push(`<span class="feature-chip chip-pots">${iconHTML('pouchPolish', 16)}Jackpot pots</span>`);
-  if (f.bothWays) chips.push(`<span class="feature-chip chip-both">${iconHTML('bothWaysIcon', 16)}Pays both ways</span>`);
+  const list: { icon: string; name: string }[] = [];
+  if (info.luck > 0) list.push({ icon: 'clover', name: `Luck ${info.luck}` });
+  if (info.symbols.lockable > 0) list.push({ icon: 'seedPacket', name: `Symbols ${info.symbols.unlocked} of ${info.symbols.lockable} unlocked` });
+  if (f.wild) list.push({ icon: 'wildIcon', name: f.wildNow ? 'Wild' : 'Wild (an upgrade)' });
+  if (f.freeSpins) list.push({ icon: 'ballIcon', name: 'Free spins' });
+  if (f.jackpot) list.push({ icon: 'pouchPolish', name: 'Jackpot pots' });
+  if (f.bothWays) list.push({ icon: 'bothWaysIcon', name: 'Pays both ways' });
   // M9
-  if (f.ways) chips.push(`<span class="feature-chip chip-ways">${iconHTML('reel', 16)}Ways</span>`);
-  if (f.holdSpin) chips.push(`<span class="feature-chip chip-hold">${iconHTML('acornIcon', 16)}Hold & spin</span>`);
-  if (f.wheel) chips.push(`<span class="feature-chip chip-wheel">${iconHTML('cheeseIcon', 16)}Cheese wheel</span>`);
-  if (f.mystery) chips.push(`<span class="feature-chip chip-box">${iconHTML('boxIcon', 16)}Moving Boxes</span>`); // 1.4.0
-  return chips.join('');
+  if (f.ways) list.push({ icon: 'reel', name: `${f.ways} ways` });
+  if (f.holdSpin) list.push({ icon: 'acornIcon', name: 'Hold & spin' });
+  if (f.wheel) list.push({ icon: 'cheeseIcon', name: 'Cheese wheel' });
+  if (f.mystery) list.push({ icon: 'boxIcon', name: 'Moving Boxes' }); // 1.4.0
+  return list;
 }
 
-const AMOUNTS: [Settings['buyAmount'], string][] = [[1, '×1'], [10, '×10'], ['max', 'Max']];
+// Level pips only make sense for a small max level (past 12 they'd be specks: the level says it).
+export const pipCount = (def: { maxLevel?: number | null }) => (def.maxLevel && def.maxLevel > 1 && def.maxLevel <= 12 ? def.maxLevel : 0);
 
-// An upgrade tile and a machine card: the elements render() updates.
-interface Tile {
-  id: string;
-  def: UpgradeDef;
-  locked: boolean; // 1.3.1: built as a locked tile (in the "still locked" group)
-  tile: HTMLElement;
-  button: HTMLButtonElement;
-  pips: HTMLElement[];
-  level: HTMLElement;
-  effect: HTMLElement;
-  fill: HTMLElement;
-  label: HTMLElement;
-}
-interface Card {
-  id: string;
-  card: HTMLElement;
-  button: HTMLButtonElement;
-  rebuild: HTMLButtonElement;
-  stars: HTMLElement;
-  stats: HTMLElement;
-  features: HTMLElement;
-  fill: HTMLElement;
-  label: HTMLElement;
-  wait: HTMLElement;
+// The Upgrades tab's dot: something is affordable now that wasn't the last time you looked.
+export function newlyAffordable(now: Iterable<string>, seen: ReadonlySet<string>): boolean {
+  for (const id of now) if (!seen.has(id)) return true;
+  return false;
 }
 
-export function createShopView(game: Game, { settings, onSettingsChange }: { settings: Settings; onSettingsChange: () => void }) {
-  // The element with this id (every id used here is in index.html).
-  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+const AMOUNTS: { value: Settings['buyAmount']; label: string }[] = [{ value: 1, label: '×1' }, { value: 10, label: '×10' }, { value: 'max', label: 'Max' }];
+
+// An upgrade's row tile (the buy button is null in the Locked drawer) and a machine's catalogue page.
+interface UpgradeTile { el: HTMLElement; tile: Tile; buy: BuyButton | null; def: UpgradeDef }
+interface MachinePage { el: HTMLElement; id: string; tile: Tile; buy: BuyButton; rebuild: ConfirmButton; chips: HTMLElement; stars: HTMLElement; chipKey: string }
+
+export function createShopView(game: Game, { settings, onSettingsChange, sheet }: { settings: Settings; onSettingsChange: () => void; sheet: Sheet }) {
   const el = {
-    machines: $('machine-list'), hamster: $('upgrade-list-hamster'), machine: $('upgrade-list-machine'),
-    amount: $('buy-amount'), machineNote: $('machine-upgrades-note'), detail: $('upgrade-detail'),
-    // 1.3.1: the upgrades still locked (rebirth and sticker upgrades), folded away under the others
-    lockedHamster: $<HTMLDetailsElement>('locked-hamster'), lockedMachine: $<HTMLDetailsElement>('locked-machine'),
-    helper: $('helper-row'), helperBtn: $<HTMLButtonElement>('helper-btn'), helperText: $('helper-text'),
+    panel: byId('tab-upgrades'), bar: byId('shop-bar'),
+    hamster: byId('upgrade-list-hamster'), machine: byId('upgrade-list-machine'),
+    machines: byId('machine-list'), ticketSlot: byId('rebuild-slot'),
   };
-  el.helper.querySelector('.helper-icon')!.appendChild(spriteImg('paw', 32, '🐾'));
-  // The Hamster Helper's switch (1.3.1, the Helping Paws trait).
-  el.helperBtn.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    game.setHelper(!game.state.helper);
+  // The sub-tabs, with icons (on a narrow tray only the open one keeps its name: kit.ts).
+  const subtabs = createSubTabs(byId('upgrades-subtabs'), el.panel, {
+    key: 'upgrades', settings, onSettingsChange,
+    icons: { hamster: 'paw', machine: 'gear', machines: 'reel' },
+    onChange: () => { sheet.hide(); dirty = true; },
   });
-  // M15: the tiles are small, like the Family Tree's traits. Tap one (not its buy
-  // button) and a detail card at the bottom of the tab tells you all about it.
-  let selected: string | null = null;
-  el.detail.innerHTML = `
-    <div class="tile-top">
-      <div class="tile-icon"></div>
-      <div><div class="tile-name"></div><div class="tile-tag"></div></div>
-      <button class="ud-close" aria-label="Close">×</button>
-    </div>
-    <div class="tile-desc"></div>
-    <div class="tile-effect"></div>
-    <div class="ud-foot">
-      <span class="wait-hint"></span>
-      <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>
-    </div>`;
-  const detail = {
-    icon: el.detail.querySelector<HTMLElement>('.tile-icon')!, name: el.detail.querySelector<HTMLElement>('.tile-name')!,
-    tag: el.detail.querySelector<HTMLElement>('.tile-tag')!, desc: el.detail.querySelector<HTMLElement>('.tile-desc')!,
-    effect: el.detail.querySelector<HTMLElement>('.tile-effect')!, wait: el.detail.querySelector<HTMLElement>('.wait-hint')!,
-    button: el.detail.querySelector<HTMLButtonElement>('.buy-btn')!, fill: el.detail.querySelector<HTMLElement>('.buy-fill')!,
-    label: el.detail.querySelector<HTMLElement>('.buy-label')!, shown: '',
-  };
-  el.detail.querySelector('.ud-close')!.addEventListener('click', () => { selected = null; });
-  detail.button.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    if (selected) game.buyUpgrade(selected, want());
-  });
-  const subtabs = createSubTabs($('upgrades-subtabs'), $('tab-upgrades'), { key: 'upgrades', settings, onSettingsChange });
-  const rebuildEl = { card: $('rebuild-card'), text: $('rebuild-text'), button: $<HTMLButtonElement>('rebuild-btn') };
-  let rebuildArmed: { id: string; until: number } | null = null; // the first tap on a Rebuild button
 
-  // Rebuilding needs two taps within 3 s (it resets the machine's upgrades).
-  function tryRebuild(id: string): void {
-    if (!game.canRebuild(id)) return;
-    if (rebuildArmed && rebuildArmed.id === id && performance.now() < rebuildArmed.until) {
-      rebuildArmed = null;
-      game.rebuild(id);
-      return;
-    }
-    rebuildArmed = { id, until: performance.now() + 3000 };
-  }
-  rebuildEl.button.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    tryRebuild(game.getMachineData().id);
+  // ── The bar over both upgrade lists: the Hamster Helper (1.3.1) and ×1 / ×10 / Max ──
+  const helperBox = el.bar.appendChild(h('div', 'shop-helper hidden'));
+  const helperInfo = helperBox.appendChild(h('button', 'shop-helper-info'));
+  helperInfo.type = 'button';
+  helperInfo.setAttribute('aria-label', 'About the Hamster Helper');
+  helperInfo.append(spriteImg('paw', 32, ''), h('span', 'shop-helper-name', 'Helper'));
+  helperInfo.addEventListener('click', () => { helperInfo.blur(); openHelper(); });
+  const helperSwitch = toggle({ ariaLabel: 'Hamster Helper', onChange: (on) => game.setHelper(on) });
+  helperBox.append(helperSwitch.el);
+  // Until there's a Helper, its place holds a word about the list (where a phone has the room).
+  const hint = el.bar.appendChild(h('p', 'note shop-hint'));
+  const amount = segmented({
+    options: AMOUNTS, ariaLabel: 'How many levels to buy', className: 'shop-amount',
+    onPick: (value) => { settings.buyAmount = value; onSettingsChange(); dirty = true; },
   });
-  const armed = (id: string) => !!rebuildArmed && rebuildArmed.id === id && performance.now() < rebuildArmed.until;
-  const starRow = (n: number, max: number) => `${iconHTML('star', 16).repeat(n)}<span class="note">${n}/${max} Machine Stars</span>`;
-  let tiles: Tile[] = [];
-  let cards: Card[] = [];
-  let tileKey = ''; // which upgrades the tiles were built for (they change with the machine)
+  el.bar.append(amount.el);
+
+  // ── The workshop ticket: rebuild this machine for a Machine Star (M8) ──
+  const ticket = card({ tone: 'gold', title: 'Rebuild for a star', icon: 'star', className: 'shop-ticket' });
+  const ticketText = ticket.body.appendChild(h('div', 'shop-ticket-text'));
+  const ticketStars = ticket.body.appendChild(h('div', 'shop-stars'));
+  let ticketFor = ''; // the machine the ticket is armed for (a switch disarms it)
+  const ticketButton = confirmButton({
+    label: 'Rebuild for a star', armedLabel: 'Tap again: reset its upgrades for a star', tone: 'gold', size: 'lg', className: 'shop-rebuild',
+    onConfirm: () => { game.rebuild(game.getMachineData().id); },
+  });
+  ticket.body.append(ticketButton.el);
+  el.ticketSlot.append(ticket.el);
+
+  // The tile whose sheet is open (an upgrade id, or "machine:<id>").
+  let selected: string | null = null;
+  sheet.onHide((key) => {
+    if (key.startsWith('shop:')) { selected = null; dirty = true; }
+  });
+
+  let hamsterTiles = new Map<string, UpgradeTile>();
+  let machineTiles = new Map<string, UpgradeTile>();
+  let lockedHamsterTiles = new Map<string, UpgradeTile>();
+  let lockedMachineTiles = new Map<string, UpgradeTile>();
+  const lockedHamster = drawer('Locked');
+  const lockedMachine = drawer('Locked');
+  el.hamster.after(lockedHamster.el);
+  el.machine.after(lockedMachine.el);
+  let pages: MachinePage[] = [];
 
   const want = () => (settings.buyAmount === 'max' ? Infinity : settings.buyAmount);
-  const coinLabel = (text: string) => `${iconHTML('coin')}${text}`;
+  const levelText = (def: UpgradeDef, level: number, maxed: boolean) => (maxed ? 'Max' : def.maxLevel ? `Lv ${level}/${def.maxLevel}` : `Lv ${level}`);
 
   // "ready in ~2 min" at the current auto-spin income ('' when there's no auto-spin).
   function waitText(cost: Money, rate: Money): string {
     const missing = cost.sub(game.state.coins);
-    return missing.gt(0) && rate.gt(0) ? `ready in ~${formatWait(divide(missing, rate).toNumber())}` : '';
+    return missing.gt(0) && rate.gt(0) ? `Ready in ~${formatWait(divide(missing, rate).toNumber())} at your auto-spin's pace` : '';
   }
 
   // ─────────────────────── building ───────────────────────
 
-  function buildAmountToggle() {
-    el.amount.replaceChildren(...AMOUNTS.map(([value, label]) => {
-      const b = document.createElement('button');
-      b.className = 'seg-btn';
-      b.textContent = label;
-      b.addEventListener('click', (e) => {
-        (e.currentTarget as HTMLElement).blur();
-        // Tapping the one that's already on moves to the next (×1 → ×10 → Max → ×1):
-        // a narrow tray shows only that one button (style.css).
-        const i = AMOUNTS.findIndex(([v]) => v === value);
-        settings.buyAmount = settings.buyAmount === value ? AMOUNTS[(i + 1) % AMOUNTS.length][0] : value;
-        onSettingsChange();
-      });
-      return b;
-    }));
+  function makeUpgradeTile(def: UpgradeDef, locked: boolean): UpgradeTile {
+    const buy = locked ? null : buyButton({ onClick: () => game.buyUpgrade(def.id, want()), ariaLabel: `Buy ${def.name}` });
+    const t = tile({ icon: upgradeIcon(def), iconSize: 32, name: def.name, onOpen: () => openUpgrade(def.id), buy, pips: locked ? 0 : pipCount(def), className: 'shop-tile' });
+    return { el: t.el, tile: t, buy, def };
   }
 
-  function buildMachines() {
-    el.machines.replaceChildren();
-    cards = game.data.machines.map((md) => {
-      const card = document.createElement('div');
-      card.className = 'machine-card';
-      card.innerHTML = `
-        <div class="mc-icon"></div>
-        <div class="mc-text"><div class="tile-name"></div><div class="tile-tag mc-stats"></div><div class="mc-features"></div><div class="mc-stars"></div><div class="tile-desc"></div></div>
-        <div class="mc-action">
-          <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>
-          <button class="btn btn-gold btn-small rebuild-btn hidden"></button>
-          <span class="wait-hint"></span>
-        </div>`;
-      card.querySelector('.mc-icon')!.appendChild(spriteImg(MACHINE_SPRITES[md.id], 48, md.name[0]));
-      card.querySelector('.tile-name')!.textContent = md.name;
-      card.querySelector('.tile-desc')!.textContent = md.description;
-      const button = card.querySelector<HTMLButtonElement>('.buy-btn')!;
-      button.addEventListener('click', (e) => {
-        (e.currentTarget as HTMLElement).blur();
-        if (game.ownsMachine(md.id)) game.switchMachine(md.id);
-        else game.buyMachine(md.id);
-      });
-      // Rebuild (M8): two taps, like retiring, because it resets the machine's upgrades.
-      const rebuild = card.querySelector<HTMLButtonElement>('.rebuild-btn')!;
-      rebuild.addEventListener('click', (e) => {
-        (e.currentTarget as HTMLElement).blur();
-        tryRebuild(md.id);
-      });
-      el.machines.appendChild(card);
-      return {
-        id: md.id, card, button, rebuild, stars: card.querySelector<HTMLElement>('.mc-stars')!,
-        stats: card.querySelector<HTMLElement>('.mc-stats')!, features: card.querySelector<HTMLElement>('.mc-features')!, fill: card.querySelector<HTMLElement>('.buy-fill')!,
-        label: card.querySelector<HTMLElement>('.buy-label')!, wait: card.querySelector<HTMLElement>('.wait-hint')!,
-      };
+  function makePage(md: (typeof game.data.machines)[number]): MachinePage {
+    const act = h('span', 'k-tile-act');
+    const buy = buyButton({
+      ariaLabel: md.name,
+      onClick: () => { if (game.ownsMachine(md.id)) game.switchMachine(md.id); else game.buyMachine(md.id); },
     });
+    act.append(buy.el);
+    const t = tile({ icon: MACHINE_SPRITES[md.id], iconSize: 48, name: md.name, onOpen: () => openMachine(md.id), buy: { el: act }, className: 'shop-machine' });
+    // Its stars sit beside its name, its features as icon chips under its numbers.
+    const stars = t.el.querySelector('.k-tile-head')!.appendChild(h('span', 'shop-stars'));
+    const chips = t.el.querySelector('.k-tile-text')!.appendChild(h('span', 'shop-chips'));
+    // Rebuild (M8): two taps, worded as on the workshop ticket, across the whole card.
+    const rebuild = confirmButton({
+      label: 'Rebuild for a star', armedLabel: 'Tap again: reset its upgrades for a star', tone: 'gold', className: 'k-tile-wide shop-rebuild',
+      onConfirm: () => { game.rebuild(md.id); },
+    });
+    t.el.append(rebuild.el);
+    return { el: t.el, id: md.id, tile: t, buy, rebuild, chips, stars, chipKey: '' };
   }
 
-  // A compact tile: icon, name, level and the short "now → next" (a button: tap it
-  // for the detail card), level pips, and the buy button (one tap still buys).
-  function makeTile(def: UpgradeDef, locked = false): Tile {
-    const tile = document.createElement('div');
-    tile.className = locked ? 'tile locked' : 'tile';
-    tile.innerHTML = `
-      <button class="tile-info">
-        <span class="tile-icon"></span>
-        <span class="tile-text"><span class="tile-name"></span><span class="tile-level"></span><span class="tile-effect"></span></span>
-      </button>
-      <div class="pips"></div>
-      <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>`;
-    tile.querySelector('.tile-icon')!.appendChild(spriteImg(upgradeIcon(def), 32, def.name[0]));
-    tile.querySelector('.tile-name')!.textContent = def.name;
-    const info = tile.querySelector<HTMLButtonElement>('.tile-info')!;
-    info.setAttribute('aria-label', `About ${def.name}`);
-    info.addEventListener('click', (e) => {
-      (e.currentTarget as HTMLElement).blur();
-      selected = selected === def.id ? null : def.id; // tap it again to close the card
-    });
-
-    // Level pips only make sense for upgrades with a small max level.
-    const pipsEl = tile.querySelector('.pips')!;
-    const pips: HTMLElement[] = [];
-    if (def.maxLevel && def.maxLevel > 1) {
-      for (let i = 0; i < def.maxLevel; i++) {
-        const pip = document.createElement('span');
-        pip.className = 'pip';
-        pipsEl.appendChild(pip);
-        pips.push(pip);
-      }
-    } else {
-      pipsEl.remove();
-    }
-
-    const button = tile.querySelector<HTMLButtonElement>('.buy-btn')!;
-    button.addEventListener('click', (e) => {
-      (e.currentTarget as HTMLElement).blur(); // so Space doesn't "click" it again later
-      game.buyUpgrade(def.id, want());
-    });
-    return {
-      id: def.id, def, tile, button, pips, locked,
-      level: tile.querySelector<HTMLElement>('.tile-level')!,
-      effect: tile.querySelector<HTMLElement>('.tile-effect')!,
-      fill: tile.querySelector<HTMLElement>('.buy-fill')!,
-      label: tile.querySelector<HTMLElement>('.buy-label')!,
-    };
-  }
-
-  // Which tiles to build: every upgrade the shop sells here, and which are locked.
-  // A rebirth upgrade only shows (locked) once the family has retired, or when
-  // it's the very next one: a first life isn't a wall of padlocks.
-  function tileDefs() {
-    const next = Math.min(...game.getAvailableUpgrades().map((d) => (game.getUpgradeLock(d.id) || {}).generation || Infinity));
-    return game.getAvailableUpgrades().filter((d) => {
+  // Which upgrades show: every one the shop sells here. A rebirth upgrade only shows (in the
+  // Locked drawer) once the family has retired, or when it's the very next one: a first life
+  // isn't a wall of padlocks.
+  function upgradeDefs(): UpgradeDef[] {
+    const all = game.getAvailableUpgrades();
+    const next = Math.min(...all.map((d) => (game.getUpgradeLock(d.id) || {}).generation || Infinity));
+    return all.filter((d) => {
       const lock = game.getUpgradeLock(d.id);
       return !lock || !lock.generation || game.state.generation > 1 || lock.generation === next;
     });
   }
-  const keyOf = () => tileDefs().map((d) => `${d.id}${game.isUpgradeUnlocked(d.id) ? '' : '!'}`).join();
 
-  // Hamster upgrades go in one sub-tab, this machine's in the other. Locked ones
-  // (1.3.1) go in a folded group under each list: rebirth upgrades first, then sticker ones.
-  function buildTiles() {
-    const defs = tileDefs();
-    tileKey = keyOf();
-    el.hamster.replaceChildren();
-    el.machine.replaceChildren();
-    const lockedLists = { hamster: el.lockedHamster.querySelector('.upgrade-grid')!, machine: el.lockedMachine.querySelector('.upgrade-grid')! };
-    lockedLists.hamster.replaceChildren();
-    lockedLists.machine.replaceChildren();
-    const order = (d: UpgradeDef) => { const l = game.getUpgradeLock(d.id); return l ? l.generation || 100 : -1; }; // the next rebirth upgrade first
-    const sorted = [...defs].sort((a, b) => order(a) - order(b) || defs.indexOf(a) - defs.indexOf(b));
-    tiles = sorted.map((def) => {
-      const locked = !game.isUpgradeUnlocked(def.id);
-      const t = makeTile(def, locked);
-      const side = def.scope === 'machine' ? 'machine' : 'hamster';
-      (locked ? lockedLists[side] : side === 'machine' ? el.machine : el.hamster).appendChild(t.tile);
-      return t;
+  // Lay the lists out (kept by id: switching machines or an unlock reuses every tile it can).
+  let listKey = '';
+  function layout(): void {
+    const defs = upgradeDefs();
+    const key = defs.map((d) => `${d.id}${game.isUpgradeUnlocked(d.id) ? '' : '!'}`).join();
+    if (key === listKey) return;
+    listKey = key;
+    const open = defs.filter((d) => game.isUpgradeUnlocked(d.id));
+    // Locked: the next rebirth upgrade first, then the later ones, then the sticker upgrades.
+    const order = (d: UpgradeDef) => { const l = game.getUpgradeLock(d.id); return l ? l.generation || 100 : -1; };
+    const locked = defs.filter((d) => !game.isUpgradeUnlocked(d.id)).sort((a, b) => order(a) - order(b) || defs.indexOf(a) - defs.indexOf(b));
+    const side = (d: UpgradeDef) => (d.scope === 'machine' ? 'machine' : 'hamster');
+    hamsterTiles = keyedList(el.hamster, open.filter((d) => side(d) === 'hamster'), (d) => d.id, (d) => makeUpgradeTile(d, false), hamsterTiles);
+    machineTiles = keyedList(el.machine, open.filter((d) => side(d) === 'machine'), (d) => d.id, (d) => makeUpgradeTile(d, false), machineTiles);
+    lockedHamsterTiles = keyedList(lockedHamster.body, locked.filter((d) => side(d) === 'hamster'), (d) => d.id, (d) => makeUpgradeTile(d, true), lockedHamsterTiles);
+    lockedMachineTiles = keyedList(lockedMachine.body, locked.filter((d) => side(d) === 'machine'), (d) => d.id, (d) => makeUpgradeTile(d, true), lockedMachineTiles);
+    lockedHamster.update(lockedHamsterTiles.size, 'retire, or earn diary stickers');
+    lockedMachine.update(lockedMachineTiles.size, 'retire, or earn diary stickers');
+    subtabs.setLabel('machine', game.getMachineData().name);
+    // Another machine's upgrade was open in the sheet: it's gone now.
+    if (selected && !selected.startsWith('machine:') && !allTiles().some((t) => t.def.id === selected)) sheet.hide();
+  }
+  const allTiles = () => [...hamsterTiles.values(), ...machineTiles.values(), ...lockedHamsterTiles.values(), ...lockedMachineTiles.values()];
+
+  function build(): void {
+    el.machines.replaceChildren();
+    pages = game.data.machines.map((md) => {
+      const p = makePage(md);
+      el.machines.append(p.el);
+      return p;
     });
-    for (const side of ['hamster', 'machine'] as const) {
-      const group = side === 'hamster' ? el.lockedHamster : el.lockedMachine;
-      const n = lockedLists[side].children.length;
-      group.classList.toggle('hidden', n === 0);
-      setHTML(group.querySelector('summary')!, `🔒 ${n} upgrade${n === 1 ? '' : 's'} still locked <span class="note">(retire, or earn diary stickers, to open them)</span>`);
+    listKey = ''; // (a new data.json: lay the lists out again)
+    hamsterTiles.clear(); machineTiles.clear(); lockedHamsterTiles.clear(); lockedMachineTiles.clear();
+    el.hamster.replaceChildren(); el.machine.replaceChildren(); lockedHamster.body.replaceChildren(); lockedMachine.body.replaceChildren();
+    layout();
+    dirty = true;
+  }
+
+  // ─────────────────────── the sheet ───────────────────────
+
+  // One upgrade's sheet: what it does, the whole "now → next", why it's locked, "ready in", Buy.
+  let upgradeSheet: { id: string; effect: HTMLElement; lock: HTMLElement; wait: HTMLElement; buy: BuyButton } | null = null;
+  function openUpgrade(id: string): void {
+    const key = `shop:${id}`;
+    if (sheet.key === key) { sheet.hide(); return; }
+    const def = game.getUpgradeDef(id)!;
+    if (sheet.show(key, { icon: upgradeIcon(def), iconSize: 32, title: def.name })) {
+      const desc = h('p', 'k-note', def.description);
+      const effect = h('p', 'shop-effect');
+      const lock = h('p', 'shop-lock hidden');
+      lock.append(spriteImg('lock', 16, ''), h('span'));
+      const wait = h('p', 'shop-wait hidden');
+      sheet.body.append(desc, effect, lock, wait);
+      const buy = buyButton({ size: 'lg', onClick: () => game.buyUpgrade(id, want()), ariaLabel: `Buy ${def.name}` });
+      sheet.foot.append(buy.el);
+      upgradeSheet = { id, effect, lock, wait, buy };
     }
-    const md = game.getMachineData();
-    subtabs.setLabel('machine', md.name);
-    setText(el.machineNote, `${md.name}'s own upgrades: they stay with it when you switch. Tap one to read about it.`);
-    if (selected && !tiles.some((t) => t.id === selected)) selected = null; // another machine's upgrade
+    selected = id;
+    dirty = true;
+    reveal(allTiles().find((t) => t.def.id === id)?.el);
   }
 
-  function build() {
-    buildAmountToggle();
-    buildMachines();
-    buildTiles();
+  // One machine's sheet: its description, numbers, features by name, stars, and its action.
+  let machineSheet: { id: string; stats: HTMLElement; features: HTMLElement; stars: HTMLElement; buy: BuyButton; rebuild: ConfirmButton; featureKey: string } | null = null;
+  function openMachine(id: string): void {
+    const key = `shop:machine:${id}`;
+    if (sheet.key === key) { sheet.hide(); return; }
+    const md = game.data.machines.find((m) => m.id === id)!;
+    if (sheet.show(key, { icon: MACHINE_SPRITES[id], iconSize: 48, title: md.name })) {
+      const desc = h('p', 'k-note', md.description);
+      const stats = h('p', 'shop-effect');
+      const features = h('div', 'shop-feature-list');
+      const stars = h('p', 'shop-sheet-stars');
+      sheet.body.append(desc, stats, features, stars);
+      const buy = buyButton({ size: 'lg', ariaLabel: md.name, onClick: () => { if (game.ownsMachine(id)) game.switchMachine(id); else game.buyMachine(id); } });
+      const rebuild = confirmButton({ label: 'Rebuild for a star', armedLabel: 'Tap again: reset its upgrades for a star', tone: 'gold', size: 'lg', className: 'shop-rebuild', onConfirm: () => { game.rebuild(id); } });
+      sheet.foot.append(buy.el, rebuild.el);
+      machineSheet = { id, stats, features, stars, buy, rebuild, featureKey: '' };
+    }
+    selected = `machine:${id}`;
+    dirty = true;
+    reveal(pages.find((p) => p.id === id)?.el);
   }
 
-  // A buy button: affordable (green), saving up (grey, filling up), maxed (gold).
-  function paintBuy(button: HTMLElement, fill: HTMLElement, { maxed, affordable, progress }: { maxed: boolean; affordable: boolean; progress: number }): void {
-    button.classList.toggle('maxed', maxed);
-    button.classList.toggle('poor', !maxed && !affordable);
-    fill.style.width = maxed || affordable ? '0%' : `${Math.min(100, progress * 100).toFixed(1)}%`;
+  // The Hamster Helper's note.
+  function openHelper(): void {
+    const key = 'shop:helper';
+    if (sheet.key === key) { sheet.hide(); return; }
+    if (sheet.show(key, { icon: 'paw', iconSize: 32, title: 'Hamster Helper', tag: 'The Helping Paws trait' })) {
+      sheet.body.append(h('p', 'k-note shop-helper-note'));
+    }
+    dirty = true;
   }
+
+  // The tile you tapped scrolls into view above the sheet (the panel leaves room for it: kit.css).
+  function reveal(node: HTMLElement | undefined): void {
+    if (!node) return;
+    requestAnimationFrame(() => node.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+  }
+
+  // ─────────────────────── effects ───────────────────────
 
   game.on('upgradeBought', (e) => {
-    const t = tiles.find((x) => x.id === e.id);
-    if (t) replayClass(t.tile, 'bought');
+    const t = allTiles().find((x) => x.def.id === e.id);
+    if (t) replayClass(t.el, 'bought');
+    dirty = true;
   });
   game.on('machineBought', (e) => {
-    const c = cards.find((x) => x.id === e.id);
-    if (c) replayClass(c.card, 'bought');
+    const p = pages.find((x) => x.id === e.id);
+    if (p) replayClass(p.el, 'bought');
+    dirty = true;
   });
+  for (const ev of ['machineSwitched', 'machineRebuilt', 'helperChanged', 'upgradeUnlocked', 'stateLoaded', 'retired', 'migrated', 'bigCageLeft'] as const) game.on(ev, () => { dirty = true; });
 
-  // The tile (or card) element for an upgrade or machine id, for the particle effects.
+  // The tile (or page) for an upgrade or machine id, and its buy button, for ui.ts's sparkles.
   function elementFor(id: string): HTMLElement | null {
-    const t = tiles.find((x) => x.id === id);
-    if (t) return t.tile;
-    const c = cards.find((x) => x.id === id);
-    return c ? c.card : null;
+    const t = allTiles().find((x) => x.def.id === id);
+    if (t) return t.el;
+    const p = pages.find((x) => x.id === id);
+    return p ? p.el : null;
+  }
+  function buyButtonFor(id: string): HTMLElement | null {
+    const t = allTiles().find((x) => x.def.id === id);
+    return t ? (t.buy ? t.buy.el : t.el) : null;
   }
 
   // ─────────────────────── drawing ───────────────────────
 
-  function render() {
+  let dirty = true; // something changed: draw everything on the next frame
+  let seen = new Set<string>(); // what was affordable when you last looked (the tab's dot)
+  let news = false;
+
+  // What you could buy right now at ×1, for the dots (upgrades, machines, a rebuild).
+  function affordable(): Set<string> {
+    const ids = new Set<string>();
+    for (const d of game.getAvailableUpgrades()) if (game.isUpgradeUnlocked(d.id) && game.canBuyUpgrade(d.id)) ids.add(d.id);
+    for (const md of game.data.machines) if (!game.ownsMachine(md.id) && game.canBuyMachine(md.id)) ids.add(`machine:${md.id}`);
+    for (const md of game.data.machines) if (game.ownsMachine(md.id) && game.canRebuild(md.id)) ids.add(`rebuild:${md.id}`);
+    return ids;
+  }
+
+  // Every frame from ui.ts. Hidden, it only keeps the tab's dot up to date (4 times a second);
+  // open, it draws, 4 times a second or as soon as something changed.
+  function render(_now: number, visible: boolean, tick: boolean): boolean {
+    if (!visible) {
+      if (tick) news = newlyAffordable(affordable(), seen);
+      return news;
+    }
+    if (!dirty && !tick) return false;
+    dirty = false;
+    seen = affordable();
+    news = false;
+    draw();
+    return false;
+  }
+
+  function draw(): void {
     const s = game.state;
+    layout();
     const rate = game.getEconomy().expectedAutoProfitPerSecond;
-    if (tileKey !== keyOf()) buildTiles(); // switched machine, or an upgrade just unlocked
-
-    [...el.amount.children].forEach((b, i) => b.classList.toggle('active', AMOUNTS[i][0] === settings.buyAmount));
-    el.amount.classList.toggle('hidden', subtabs.current === 'machines');
-
-    // Machine cards
-    let machineReady = false;
-    for (const c of cards) {
-      const info = game.getMachineInfo(c.id)!;
-      const reels = info.reels < info.maxReels ? `${info.reels} of ${info.maxReels} reels` : `${info.reels} reels`;
-      // A ways machine (M9) has no paylines: say how many ways it pays instead.
-      const lines = info.features.ways ? ` · ${info.features.ways} ways` : info.maxLines > 1 ? ` · ${info.lines} of ${info.maxLines} paylines` : ' · 1 payline';
-      const bet = info.owned && info.bet > 1 ? ` · bet ×${info.bet}` : '';
-      setText(c.stats, `${reels}${lines} · ${formatCoins(info.spinCost)} a spin${bet}`);
-      setHTML(c.features, featureChips(info));
-      // Machine Stars (M8): shown once it has one, or could get one.
-      setHTML(c.stars, info.stars > 0 || info.canRebuild ? starRow(info.stars, info.maxStars) : '');
-      c.rebuild.classList.toggle('hidden', !info.canRebuild);
-      setText(c.rebuild, armed(c.id) ? 'Tap again: reset its upgrades' : 'Rebuild for a star');
-      c.card.classList.toggle('active', info.active);
-      c.card.classList.toggle('owned', info.owned);
-      // 1.4.0: a colony machine (Moving Day) is for a family that has migrated. Before
-      // that it's a locked card, a goal for the late game (from the family's 2nd hamster).
-      const closed = !info.open;
-      c.card.classList.toggle('hidden', closed && s.generation < 2 && s.colony === 0);
-      c.card.classList.toggle('closed', closed);
-      const affordable = !info.owned && game.canBuyMachine(c.id);
-      if (affordable) machineReady = true;
-      if (info.active) {
-        setHTML(c.label, 'Running');
-      } else if (closed) {
-        setHTML(c.label, '🔒 After the Great Migration');
-      } else if (info.owned) {
-        setHTML(c.label, info.freeSpinsLeft > 0 ? `Switch to it · ${info.freeSpinsLeft} free spins waiting` : 'Switch to it');
-      } else {
-        setHTML(c.label, coinLabel(`Buy · ${formatCoins(info.cost)}`));
-      }
-      c.button.classList.toggle('switch', info.owned && !info.active);
-      c.button.disabled = info.active || closed;
-      paintBuy(c.button, c.fill, { maxed: info.active, affordable: info.owned || affordable, progress: closed ? 0 : divide(s.coins, info.cost).toNumber() });
-      setText(c.wait, info.owned || closed ? '' : waitText(info.cost, rate));
-    }
-
-    // Upgrade tiles
-    const ready = { hamster: false, machine: false };
-    for (const t of tiles) {
-      const level = game.getUpgradeLevel(t.id);
-      const maxed = game.isMaxed(t.id);
-      const bulk = game.getUpgradeBulk(t.id, want());
-      // An upgrade that needs another one first (Old Clunky's Both Ways needs the Third Reel),
-      // or is still locked (1.3.1: a rebirth or sticker upgrade).
-      const needs = game.getUpgradeNeeds(t.id);
-      const lock = lockText(game, t.id);
-      const blocked = needs.length > 0 || lock !== null;
-      const preview = blocked ? null : game.previewUpgrade(t.id, bulk.count);
-      setText(t.level, maxed ? 'MAX' : t.def.maxLevel ? `Lv ${level}/${t.def.maxLevel}` : `Lv ${level}`);
-      setHTML(t.effect, preview ? shortEffect(game, t.def, preview) : `<span class="note">${lock || `Needs ${needs.join(' + ')}`}</span>`);
-      t.pips.forEach((pip, i) => pip.classList.toggle('on', i < level));
-      const times = bulk.count > 1 ? `×${bulk.count} · ` : '';
-      const label = maxed ? 'Maxed out' : blocked ? 'Locked' : coinLabel(`${times}${formatCoins(bulk.cost)}`);
-      setHTML(t.label, label);
-      const paint = { maxed, affordable: bulk.affordable, progress: blocked ? 0 : divide(s.coins, bulk.cost).toNumber() };
-      paintBuy(t.button, t.fill, paint);
-      t.tile.classList.toggle('ready', bulk.affordable);
-      t.tile.classList.toggle('selected', t.id === selected);
-      if (bulk.affordable) ready[t.def.scope === 'machine' ? 'machine' : 'hamster'] = true;
-      // The detail card, for the tile you tapped (only while its sub-tab is open).
-      if (t.id === selected) {
-        if (detail.shown !== t.id) {
-          detail.shown = t.id;
-          detail.icon.replaceChildren(spriteImg(upgradeIcon(t.def), 32, t.def.name[0]));
-          setText(detail.name, t.def.name);
-          setText(detail.desc, t.def.description);
-        }
-        const scope = t.def.scope === 'machine' ? game.getMachineData().name : 'Hamster · every machine';
-        setText(detail.tag, `${scope} · ${maxed ? 'MAX' : t.def.maxLevel ? `Lv ${level} of ${t.def.maxLevel}` : `Lv ${level}`}`);
-        const why = lockText(game, t.id, true);
-        setHTML(detail.effect, preview ? describeEffect(game, t.def, preview)
-          : `<span class="note">${why ? `${why}${needs.length ? ` It also needs the ${needs.join(' and the ')}.` : ''}` : `Needs the ${needs.join(' and the ')} first`}</span>`);
-        setHTML(detail.label, label);
-        paintBuy(detail.button, detail.fill, paint);
-        setText(detail.wait, maxed || bulk.affordable || blocked ? '' : waitText(bulk.cost, rate));
-      }
-    }
-    const open = subtabs.current;
-    const pick = tiles.find((t) => t.id === selected);
-    const showDetail = !!pick && (pick.def.scope === 'machine' ? open === 'machine' : open === 'hamster');
-    el.detail.classList.toggle('hidden', !showDetail);
-    // The machine's own sub-tab: a Rebuild card once every upgrade on it is maxed.
-    const here = game.getMachineInfo(game.getMachineData().id)!;
-    const st = game.data.stars;
-    const showRebuild = here.fullyUpgraded && here.stars < here.maxStars;
-    rebuildEl.card.classList.toggle('hidden', !(showRebuild || here.stars > 0));
-    setHTML(rebuildEl.text, showRebuild
-      ? `<b>Every upgrade on ${game.getMachineData().name} is maxed!</b> Rebuild it for Machine Star ${here.stars + 1} of ${here.maxStars}: +${Math.round(game.getStarPayout() * 100)}% payouts and +${st.luckPerStar} Luck on this machine, for good. Its upgrades start again from nothing (your coins stay).<div>${starRow(here.stars, here.maxStars)}</div>`
-      : here.stars >= here.maxStars
-        ? `${starRow(here.stars, here.maxStars)} Every star this machine can have.`
-        : `${starRow(here.stars, here.maxStars)} Max every upgrade here to rebuild it for another star.`);
-    rebuildEl.button.classList.toggle('hidden', !showRebuild);
-    rebuildEl.button.disabled = !here.canRebuild; // (busy: spinning, free spins, the jackpot wheel)
-    setText(rebuildEl.button, armed(here.id) ? 'Tap again: reset its upgrades for a star' : here.canRebuild ? 'Rebuild for a star' : 'Rebuild when the machine is idle');
-    if (showRebuild && here.canRebuild) ready.machine = true;
+    const sub = subtabs.current;
+    el.bar.classList.toggle('hidden', sub === 'machines');
+    amount.update(settings.buyAmount);
 
     // The Hamster Helper's switch, once the family has planted Helping Paws (1.3.1).
     const helper = game.getHelper();
-    el.helper.classList.toggle('hidden', !helper);
-    if (helper) {
-      el.helper.classList.toggle('off', !s.helper);
-      setText(el.helperBtn, s.helper ? 'On' : 'Off');
-      el.helperBtn.setAttribute('aria-pressed', String(s.helper));
-      setHTML(el.helperText, `<b>Hamster Helper</b> <span class="note">${s.helper
-        ? `buys the cheapest upgrade here that costs ${Math.round(helper.share * 100)}% of your coins or less`
-        : 'switched off: tap to let it buy cheap upgrades for you'}${s.stats.helperBuys ? ` · ${s.stats.helperBuys.toLocaleString('en-US')} levels bought so far` : ''}</span>`);
+    helperBox.classList.toggle('hidden', !helper);
+    if (helper) helperSwitch.update(!!s.helper);
+    hint.classList.toggle('hidden', !!helper);
+    // (On a phone's tray only its last words show: styles/upgrades.css.)
+    setHTML(hint, `<span class="shop-hint-long">${sub === 'machine' ? `${game.getMachineData().name}'s own: they stay with it when you switch.` : 'They work on every machine.'} </span>Tap one to read about it.`);
+    if (sheet.key === 'shop:helper') {
+      const note = sheet.body.querySelector('.shop-helper-note');
+      if (!helper) sheet.hide();
+      else if (note) setHTML(note as HTMLElement, `${s.helper ? 'It\'s on: it' : 'Switched off. When it\'s on, it'} buys the cheapest upgrade here, the hamster's or this machine's, that costs ${Math.round(helper.share * 100)}% of your coins or less, about every ${formatSeconds(helper.interval)}.${s.stats.helperBuys ? ` <b>${s.stats.helperBuys.toLocaleString('en-US')}</b> levels bought so far.` : ''}`);
     }
+
+    // The upgrade tiles.
+    const ready = { hamster: false, machine: false };
+    for (const [list, side] of [[hamsterTiles, 'hamster'], [machineTiles, 'machine']] as const) {
+      for (const t of list.values()) {
+        const id = t.def.id;
+        const level = game.getUpgradeLevel(id);
+        const maxed = game.isMaxed(id);
+        const bulk = game.getUpgradeBulk(id, want());
+        const needs = game.getUpgradeNeeds(id); // (Old Clunky's Both Ways needs the Third Reel)
+        const preview = needs.length ? null : game.previewUpgrade(id, bulk.count);
+        const tone: TileTone = selected === id ? 'selected' : maxed ? 'maxed' : bulk.affordable ? 'ready' : 'plain';
+        t.tile.update({
+          level: levelText(t.def, level, maxed),
+          effect: preview ? shortEffect(game, t.def, preview) : `<span class="note">Needs ${needs.join(' + ')}</span>`,
+          pips: level, tone,
+        });
+        const state: BuyState = maxed ? 'maxed' : needs.length ? 'locked' : bulk.affordable ? 'ready' : 'saving';
+        t.buy!.update({ state, cost: bulk.cost, count: bulk.count, progress: divide(s.coins, bulk.cost).toNumber() });
+        t.tile.setOpen(selected === id);
+        if (bulk.affordable) ready[side] = true;
+        if (upgradeSheet && upgradeSheet.id === id && sheet.key === `shop:${id}`) drawUpgradeSheet(t.def, { level, maxed, bulk, needs, preview, state, rate });
+      }
+    }
+    // The locked ones, in their drawers: how each opens.
+    for (const t of [...lockedHamsterTiles.values(), ...lockedMachineTiles.values()]) {
+      const id = t.def.id;
+      t.tile.update({ level: levelText(t.def, game.getUpgradeLevel(id), false), effect: `<span class="note">${lockShort(game, id) || ''}</span>`, tone: selected === id ? 'selected' : 'locked' });
+      t.tile.setOpen(selected === id);
+      if (upgradeSheet && upgradeSheet.id === id && sheet.key === `shop:${id}`) {
+        sheet.setTag(`${t.def.scope === 'machine' ? game.getMachineData().name : 'Hamster · every machine'} · locked`);
+        upgradeSheet.effect.classList.add('hidden');
+        upgradeSheet.lock.classList.remove('hidden');
+        setHTML(upgradeSheet.lock.lastElementChild as HTMLElement, lockText(game, id) || '');
+        upgradeSheet.wait.classList.add('hidden');
+        upgradeSheet.buy.update({ state: 'locked' });
+      }
+    }
+
+    drawTicket();
+    if (ticketShowsRebuild) ready.machine = true;
+    const machineReady = drawPages(rate);
 
     subtabs.setDot('hamster', ready.hamster);
     subtabs.setDot('machine', ready.machine);
     subtabs.setDot('machines', machineReady);
-    return ready.hamster || ready.machine || machineReady;
   }
 
+  // The open upgrade's sheet, from the numbers its tile just worked out.
+  function drawUpgradeSheet(def: UpgradeDef, o: { level: number; maxed: boolean; bulk: { count: number; cost: Money; affordable: boolean }; needs: string[]; preview: { now: any; next: any } | null; state: BuyState; rate: Money }): void {
+    const sh = upgradeSheet!;
+    const scope = def.scope === 'machine' ? game.getMachineData().name : 'Hamster · every machine';
+    sheet.setTag(`${scope} · ${o.maxed ? 'Max' : def.maxLevel ? `Lv ${o.level} of ${def.maxLevel}` : `Lv ${o.level}`}`);
+    sh.effect.classList.toggle('hidden', !o.preview);
+    if (o.preview) setHTML(sh.effect, describeEffect(game, def, o.preview));
+    sh.lock.classList.toggle('hidden', o.needs.length === 0);
+    if (o.needs.length) setHTML(sh.lock.lastElementChild as HTMLElement, `It needs the ${o.needs.join(' and the ')} first.`);
+    const wait = o.maxed || o.bulk.affordable || o.needs.length ? '' : waitText(o.bulk.cost, o.rate);
+    setText(sh.wait, wait);
+    sh.wait.classList.toggle('hidden', wait === '');
+    sh.buy.update({ state: o.state, cost: o.bulk.cost, count: o.bulk.count, progress: divide(game.state.coins, o.bulk.cost).toNumber() });
+  }
+
+  // The machine's own sub-tab: the workshop ticket once every upgrade on it is maxed (or a
+  // plain card with its stars once it has some).
+  let ticketShowsRebuild = false;
+  function drawTicket(): void {
+    const md = game.getMachineData();
+    const here = game.getMachineInfo(md.id)!;
+    if (ticketFor !== md.id) { ticketFor = md.id; ticketButton.disarm(); }
+    const canGrow = here.fullyUpgraded && here.stars < here.maxStars;
+    ticketShowsRebuild = canGrow && here.canRebuild;
+    ticket.el.classList.toggle('hidden', !(canGrow || here.stars > 0));
+    ticket.setTone(canGrow ? 'gold' : 'plain');
+    ticket.setTitle(canGrow ? 'Rebuild for a star' : 'Machine Stars');
+    setHTML(ticketText, canGrow
+      ? `<b>Every upgrade on ${md.name} is maxed!</b> Rebuild it for Machine Star ${here.stars + 1} of ${here.maxStars}: +${Math.round(game.getStarPayout() * 100)}% payouts and +${game.data.stars.luckPerStar} Luck on this machine, for good. Its upgrades start again from nothing (your coins stay).`
+      : here.stars >= here.maxStars ? 'Every star this machine can have.' : 'Max every upgrade here to rebuild it for another star.');
+    setHTML(ticketStars, starRow(here.stars, here.maxStars));
+    ticketButton.el.classList.toggle('hidden', !canGrow);
+    ticketButton.update({ disabled: !here.canRebuild, label: here.canRebuild ? 'Rebuild for a star' : 'Rebuild when the machine is idle' }); // (busy: spinning, free spins, the jackpot wheel)
+  }
+
+  // The catalogue: every machine's page. Returns whether one can be bought now.
+  function drawPages(rate: Money): boolean {
+    const s = game.state;
+    let machineReady = false;
+    for (const p of pages) {
+      const info = game.getMachineInfo(p.id)!;
+      const closed = !info.open;
+      // 1.4.0: a colony machine (Moving Day) is for a family that has migrated. Before that
+      // it's a locked page, a goal for the late game (from the family's 2nd hamster).
+      p.el.classList.toggle('hidden', closed && s.generation < 2 && s.colony === 0);
+      const affordable = !info.owned && !closed && game.canBuyMachine(p.id);
+      if (affordable) machineReady = true;
+      p.tile.update({
+        effect: closed ? '<span class="note">Opens after the Great Migration</span>' : machineNumbers(info),
+        tone: selected === `machine:${p.id}` ? 'selected' : info.active ? 'maxed' : closed ? 'locked' : affordable ? 'ready' : 'plain',
+      });
+      p.tile.setOpen(selected === `machine:${p.id}`);
+      setHTML(p.stars, info.stars > 0 ? iconHTML('star', 16).repeat(info.stars) : '');
+      const features = machineFeatures(info);
+      const chipKey = features.map((f) => f.name).join('|');
+      if (chipKey !== p.chipKey) {
+        p.chipKey = chipKey;
+        p.chips.replaceChildren(...features.map((f) => {
+          const chip = h('span', 'shop-chip');
+          chip.title = f.name;
+          chip.append(spriteImg(f.icon, 16, ''));
+          return chip;
+        }));
+      }
+      const state = machineState(info, closed, affordable);
+      p.buy.update({ state, cost: info.cost, progress: closed ? 0 : divide(s.coins, info.cost).toNumber(), label: state === 'switch' && info.freeSpinsLeft > 0 ? `Switch · ${info.freeSpinsLeft} free` : undefined });
+      p.rebuild.el.classList.toggle('hidden', !info.canRebuild);
+      if (machineSheet && machineSheet.id === p.id && sheet.key === `shop:machine:${p.id}`) drawMachineSheet(info, features, state, rate, closed);
+    }
+    return machineReady;
+  }
+
+  function machineState(info: MachineInfo, closed: boolean, affordable: boolean): BuyState {
+    return info.active ? 'running' : closed ? 'locked' : info.owned ? 'switch' : affordable ? 'ready' : 'saving';
+  }
+
+  // One line of numbers: reels, lines (or ways), what a spin costs, the bet.
+  function machineNumbers(info: MachineInfo): string {
+    const reels = info.reels < info.maxReels ? `${info.reels} of ${info.maxReels} reels` : `${info.reels} reels`;
+    const lines = info.features.ways ? `${info.features.ways} ways` : info.maxLines > 1 ? `${info.lines} of ${info.maxLines} lines` : '1 line';
+    const bet = info.owned && info.bet > 1 ? ` · bet ×${info.bet}` : '';
+    return `${reels} · ${lines} · ${formatCoins(info.spinCost)} a spin${bet}`;
+  }
+
+  function drawMachineSheet(info: MachineInfo, features: { icon: string; name: string }[], state: BuyState, rate: Money, closed: boolean): void {
+    const sh = machineSheet!;
+    sheet.setTag(info.active ? 'Running now' : info.owned ? 'Yours' : closed ? 'After the Great Migration' : `${formatCoins(info.cost)} coins`);
+    setText(sh.stats, machineNumbers(info));
+    const fk = features.map((f) => f.name).join('|');
+    if (fk !== sh.featureKey) {
+      sh.featureKey = fk;
+      sh.features.replaceChildren(...features.map((f) => {
+        const row = h('span', 'shop-feature');
+        row.append(spriteImg(f.icon, 16, ''), h('span', '', f.name));
+        return row;
+      }));
+    }
+    setHTML(sh.stars, info.stars > 0 || info.canRebuild ? starRow(info.stars, info.maxStars) : '');
+    const wait = state === 'saving' ? waitText(info.cost, rate) : '';
+    sh.buy.update({ state, cost: info.cost, progress: divide(game.state.coins, info.cost).toNumber(), label: state === 'switch' ? (info.freeSpinsLeft > 0 ? `Switch · ${info.freeSpinsLeft} free spins waiting` : 'Switch to it') : undefined });
+    sh.buy.el.title = wait;
+    sh.rebuild.el.classList.toggle('hidden', !info.canRebuild);
+  }
+
+  // ★★☆ 2 of 5 Machine Stars
+  const starRow = (n: number, max: number) => `${iconHTML('star', 16).repeat(n)}<span class="note">${n} of ${max} Machine Stars</span>`;
+
   build();
-  return { build, render, elementFor, openSub: subtabs.open };
+  return { build, render, elementFor, buyButtonFor, openSub: subtabs.open };
 }
