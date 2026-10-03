@@ -11,14 +11,16 @@
 .big-cage[open] {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
-  grid-template-areas: "top" "scene" "detail" "foot";
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "top" "scene" "foot";
+  /* (a phone's notch and home bar) */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 @media (min-width: 960px), (min-width: 700px) and (orientation: landscape) {
   .big-cage[open] {
     grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 380px);
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    grid-template-areas: "scene top" "scene detail" "scene foot";
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "scene top" "scene foot";
   }
   .big-cage .bc-scene { box-shadow: 4px 0 0 var(--paper-edge); }
 }
@@ -28,7 +30,7 @@
   background: linear-gradient(var(--sky-top), var(--sky-bottom) 80%, var(--soil) 90%);
 }
 .bc-scene.rumble { animation: stage-shake 0.5s; }
-.bc-world { position: absolute; top: 0; }
+.bc-world { position: absolute; top: 0; transition: transform var(--dur-2) ease-out; } /* (moves up out of the sheet's way) */
 .bc-canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
 .bc-nodes { position: absolute; inset: 0; z-index: 3; }
 .bc-hamster { position: absolute; z-index: 2; transform-origin: 50% 100%; }
@@ -47,7 +49,7 @@
   content: ""; position: absolute; left: 22px; bottom: -30px; width: 24px; height: 24px;
   background: var(--bubble-tail) 0 0 / 24px 24px no-repeat; image-rendering: pixelated;
 }
-.bc-skip { position: absolute; right: 10px; bottom: 10px; z-index: 7; font-size: 13px; padding: 0 6px 2px; }
+.bc-skip { position: absolute; right: 10px; bottom: 10px; z-index: 7; font-size: var(--text-sm); padding: 0 6px 2px; }
 
 /* The traits on the tree: a paper box with the icon, the cost under it, the name on big screens */
 .bt-node {
@@ -80,88 +82,61 @@
 .bc-scene.compact .bt-icon { --fw: 4px; width: 100%; height: 42px; }
 .bc-scene.compact .bt-icon img { width: 28px; height: 28px; }
 .bc-scene.compact .bt-name { display: none; }
-.bc-scene.compact .bt-node .node-cost { font-size: 10.5px; padding: 0 3px 1px; }
+.bc-scene.compact .bt-node .node-cost { padding: 0 3px 1px; }
 
-/* The numbers: seeds held, the heirloom bonus, Machine Stars and the seed jar */
-.bc-top { grid-area: top; padding: 10px 12px 6px; background: var(--paper); z-index: 1; }
-.bc-head h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 22px; }
-.bc-head .note { margin: 2px 0 0; line-height: 1.4; }
-.bc-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0 0; }
-.bc-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 4px; background: var(--paper-2); clip-path: var(--notch); text-align: center; }
-.bc-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-soft); }
-.bc-value, .bc-stat .seed-amount { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; font-size: 16px; }
-.bc-value { color: var(--luck-dark); }
-/* The seed jar (M9): a full-width row under the three numbers, with a fill bar */
-.bc-jar { grid-column: 1 / -1; }
-.bc-jar-bar { width: min(320px, 90%); height: 8px; background: var(--paper); overflow: hidden; clip-path: var(--notch); }
-.bc-jar-fill { display: block; height: 100%; width: 0; background: var(--heirloom-dark); transition: width 0.4s; }
-.bc-jar.full .bc-jar-fill { background: var(--gold); }
-.bc-jar-text { font-size: 12px; color: var(--ink-soft); }
-.bc-stat img { width: 16px; height: 16px; }
-/* The trait you tapped */
-.big-cage .tree-detail {
-  grid-area: detail; --frame: var(--frame-paper-selected); margin: 4px 10px 0; padding: 0 4px 4px;
-  display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow: auto;
-}
-.tree-detail:empty { display: none; }
-.tree-detail .buy-btn { min-height: 40px; margin-top: 4px; }
-@media (min-width: 960px), (min-width: 700px) and (orientation: landscape) {
-  .big-cage .tree-detail { align-self: start; max-height: 100%; } /* only as tall as it needs */
-}
-.bc-foot { grid-area: foot; display: flex; flex-direction: column; gap: 8px; padding: 8px 12px 12px; background: var(--paper); }
-.bc-explain { margin: 0; line-height: 1.45; }
-.bc-foot .btn { width: 100%; font-size: 18px; }
-/* A phone: the card has a fixed height (so the tree doesn't jump when you tap
-   another trait), and the long explanation stays out of the way. */
+/* The numbers, on a wooden garden sign: three stat tiles and the seed jar's gauge */
+.bc-top { grid-area: top; display: flex; flex-direction: column; gap: var(--space-2); padding: 10px 12px 6px; background: var(--paper); z-index: 1; }
+.bc-head h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: var(--text-xl); }
+.bc-head .note { margin: 2px 0 0; font-size: var(--text-sm); line-height: 1.4; }
+.bc-sign.fr { --frame: var(--fr-wood); --fw: 8px; display: flex; flex-direction: column; gap: var(--space-1); padding: 0 2px 2px; }
+.bc-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-1); }
+.bc-tiles .k-stat-value { display: inline-flex; align-items: center; gap: 3px; }
+.bc-jar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; padding: 0 var(--space-1); }
+.bc-jar-label { font-family: var(--font-display); font-weight: 500; font-size: var(--text-xs); color: var(--paper); }
+.bc-jar .k-gauge { flex: 1 1 80px; }
+.bc-jar.full .k-gauge { --g: var(--gold-dark); }
+.bc-jar-text { flex: 1 1 100%; font-weight: 700; font-size: var(--text-xs); color: var(--paper); }
+/* The trait you tapped: the kit's sheet, over the lower meadow (bigcage.ts moves the tree up for it) */
+.bc-scene > .k-sheet { max-height: min(60%, 300px); }
+/* Below: the trial, how it works, the migration and Start */
+.bc-foot { grid-area: foot; display: flex; flex-direction: column; gap: var(--space-2); padding: 8px 12px 12px; background: var(--paper); min-height: 0; overflow-y: auto; }
+/* Sits at the bottom when it fits, and scrolls (from its top) when it doesn't: a phone on its side */
+.bc-foot > * { flex-shrink: 0; }
+.bc-foot::before { content: ""; margin-top: auto; } /* (not :first-child: the trial picker, first, is often hidden) */
+/* Start stays in sight while the rest scrolls under it */
+.bc-foot .k-btn.bc-start { position: sticky; bottom: 0; z-index: 1; }
+.bc-foot .k-btn { width: 100%; }
+.bc-foot .k-more-body p { margin: 0; }
+/* A phone: the subtitle and how it works stay out of the way, so the tree gets the room */
 @media not ((min-width: 960px) or ((min-width: 700px) and (orientation: landscape))) {
-  .big-cage .tree-detail {
-    height: 150px; flex: none; margin-top: 6px;
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: start; gap: 4px 8px;
-  }
-  .big-cage .tree-detail > * { grid-column: 1 / -1; }
-  .big-cage .tree-detail .tile-top { grid-column: 1; grid-template-columns: 36px 1fr; gap: 8px; }
-  .big-cage .tree-detail .tile-icon { width: 36px; height: 36px; }
-  .big-cage .tree-detail .buy-btn { grid-column: 2; grid-row: 1; min-height: 38px; align-self: center; font-size: 14px; padding: 0 8px 2px; }
-  .big-cage .tree-detail .tile-desc { font-size: 12px; }
-  .big-cage .tree-detail .tile-effect { font-size: 13px; }
-  .bc-explain { display: none; }
-  .bc-top { padding: 8px 10px 4px; box-shadow: 0 3px 0 var(--paper-edge); }
-  .bc-head h2 { font-size: 18px; }
-  .bc-head .note { font-size: 12px; }
-  .bc-summary { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr); gap: 4px; margin-top: 6px; }
-  .bc-jar { grid-column: auto; }
-  .bc-jar-text { display: none; }
-  .bc-stat { padding: 3px 2px; }
-  .bc-label { font-size: 9.5px; letter-spacing: 0; }
-  .bc-value, .bc-stat .seed-amount { font-size: 14px; }
+  .bc-top { padding: 8px 10px 6px; box-shadow: 0 3px 0 var(--paper-edge); }
+  .bc-head h2 { font-size: var(--text-lg); }
+  .bc-head .note { font-size: var(--text-xs); }
+  .bc-jar-text { flex-basis: auto; flex-grow: 0; }
   .bc-foot { padding: 6px 10px 10px; }
+  .bc-foot .k-more { display: none; }
 }
-/* A short screen (a phone on its side, a small phone): no long explanation or subtitle,
-   so the tree, the card and Start all fit. */
-@media (max-height: 600px) {
-  .bc-explain, .bc-head .note { display: none; }
-  .bc-top { padding-top: 6px; }
-  .bc-jar-text { display: none; }
-}
-@media (max-height: 700px) and (max-width: 699px) {
+/* A short screen (a phone on its side, a small phone): no subtitle, so the tree and Start fit */
+@media (max-height: 700px) {
   .bc-head .note { display: none; }
-  .big-cage .tree-detail { height: 128px; }
+  .bc-foot .k-btn.bc-start { min-height: 52px; font-size: var(--text-xl); }
 }
-/* The rebirth animation: the numbers, the card and Start slide in once the tree has grown */
-.big-cage .tree-detail, .big-cage .bc-foot { transition: opacity 0.45s ease-out, transform 0.45s ease-out; }
-.big-cage.playing:not(.ui-in) .bc-summary, .big-cage.playing:not(.ui-in) .tree-detail, .big-cage.playing:not(.ui-in) .bc-foot {
+@media (max-height: 600px) {
+  .bc-foot .k-more, .bc-jar-text { display: none; }
+  .bc-top { padding-top: 6px; }
+}
+/* The rebirth animation: the sign and Start slide in once the tree has grown */
+.big-cage .bc-sign, .big-cage .bc-foot { transition: opacity 0.45s ease-out, transform 0.45s ease-out; }
+.big-cage.playing:not(.ui-in) .bc-sign, .big-cage.playing:not(.ui-in) .bc-foot {
   opacity: 0; transform: translateY(14px); pointer-events: none;
 }
-.big-cage .bc-summary { transition: opacity 0.45s ease-out, transform 0.45s ease-out; }
 
-/* The Big Cage: the trial for the next life, the migration button and its banner */
-.bc-trials { display: flex; flex-direction: column; gap: 4px; }
-.bc-trial-picks { gap: 4px; }
-.bc-foot .bc-trial-picks .seg-btn { width: auto; font-family: var(--font-body); font-weight: 800; font-size: 12px; min-width: 0; padding: 0 6px 1px; }
-.bc-trial-picks .seg-btn:disabled { opacity: 0.5; cursor: default; }
-#bc-trial-note { margin: 0; font-size: 12px; line-height: 1.35; }
-.bc-foot .bc-migrate { font-size: 15px; }
-.bc-migrate img { width: 16px; height: 16px; vertical-align: -2px; }
+/* The Big Cage: the trial for the next life (a row of picks that wraps), and the migration's banner */
+.bc-trials { display: flex; flex-direction: column; gap: var(--space-1); }
+.bc-trials-label { font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); }
+.k-seg.bc-trial-picks { flex-wrap: wrap; }
+.bc-trial-picks .k-seg-opt { flex: 1 1 auto; min-width: var(--tap); }
+.bc-trial-note { font-weight: 600; font-size: var(--text-xs); line-height: 1.35; }
 .bc-banner {
   position: absolute; left: 50%; top: 16%; z-index: 5; transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 14px 6px; text-align: center; pointer-events: none; white-space: nowrap;
@@ -173,4 +148,4 @@
 
 .less-motion .bc-banner.slam { animation: none; }
 .less-motion .bt-node.sprout, .less-motion .big-cage[open] *, .less-motion .bc-scene.rumble { animation: none !important; }
-.less-motion .big-cage .bc-summary, .less-motion .big-cage .tree-detail, .less-motion .big-cage .bc-foot { transition: none; }
+.less-motion .big-cage .bc-sign, .less-motion .big-cage .bc-foot, .less-motion .bc-world { transition: none; }

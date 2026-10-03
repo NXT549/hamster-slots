@@ -10,6 +10,13 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Changed
+
+- **The Family tab is a letter from your hamster**: their portrait and name, how many Heirloom Seeds retiring brings now, the bonus before and after, and how far to the next seed. Retiring takes two taps on one big button; what resets and what's kept is under "How it works".
+- **Planted traits are chips you can tap** to read what each one does (it used to need a mouse hover, which a phone can't do).
+- **The Colony tab**: the Great Migration on one card, the perks as tiles you tap for details and buy like upgrades, the Wise Elders with proper switches, and the trials as a tidy list.
+- **The Big Cage**: your seeds, bonus and Machine Stars on a wooden sign, a trait's details in a sheet that rises over the meadow (the tree slides up so you still see it), and a big Start button that stays in sight on a short screen. Its small labels are readable on a phone now.
+
 ## [1.6.0] - 2026-10-03 · New Digs
 
 **The first part of a full redesign of everything around the cage, in the hamster's room: wood, paper and brass. The new look reaches every screen, with your purse along the top, a control deck on the cage, the tabs at the bottom of a phone and a new Upgrades tab; the other screens get their new layouts in later updates.**

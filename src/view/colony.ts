@@ -1,18 +1,23 @@
-// colony.ts — VIEW layer. 1.4.0, The Great Migration: the Family tab's Colony
-// sub-tab. It shows how close the family is to the mega rebirth (the whole tree
-// planted), what migrating would bring (Golden Whiskers) and the button (two taps);
-// the colony perks to buy with whiskers; the Wise Elders' settings (automation);
-// and which Colony Trials the family has beaten in this colony (a trial is picked in
-// the Big Cage, before a life starts: bigcage.ts).
+// colony.ts — VIEW layer. 1.4.0, The Great Migration: the Family tab's Colony sub-tab
+// (rebuilt on the kit in "New Digs" part 4; DESIGN §31). It shows how close the family is to
+// the mega rebirth (the whole tree planted), what migrating would bring (Golden Whiskers) and
+// the two-tap button, with the long explanation folded away; the colony perks as tiles (a tap
+// opens the tray's sheet, the buy button buys, like the upgrades); the Wise Elders' switches
+// (automation); and which Colony Trials the family has beaten in this colony (a trial is picked
+// in the Big Cage, before a life starts: bigcage.ts).
 //
-// Like the rest of the view it only reads game.state and calls actions (migrate,
-// buyPerk, setAuto). ui.ts creates it and calls render() every frame.
+// It also owns the Family tab's two sub-tabs (Family, Colony). Like the rest of the view it only
+// reads game.state and calls actions (migrate, buyPerk, setAuto). family.ts creates it and calls
+// render() every frame.
 
-import { spriteImg, perkIcon } from './art.ts';
+import { perkIcon, spriteImg } from './art.ts';
 import { describeEffect } from './shop.ts';
-import { formatWhole, setText, setHTML, replayClass, popText, iconHTML } from './dom.ts';
-import { createSubTabs, ordinal } from './kit.ts';
+import { formatWhole, setText, setHTML, replayClass, popText } from './dom.ts';
+import {
+  createSubTabs, ordinal, byId, h, card, gauge, tile, buyButton, confirmButton, toggle, segmented, listRow, more, amount, amountHTML,
+} from './kit.ts';
 import { divide } from '../logic/money.ts';
+import type { Sheet, Tile, BuyButton, BuyState, TileTone } from './kit.ts';
 import type { Game } from '../logic/game.ts';
 import type { PerkDef } from '../logic/types.ts';
 import type { Settings } from '../platform/save.ts';
@@ -20,6 +25,7 @@ import type { Fx } from './fx.ts';
 import type { Sound } from './sound.ts';
 
 interface Options {
+  sheet: Sheet;
   say: (text: string, ms?: number) => void;
   sound: Sound;
   fx: Fx;
@@ -29,91 +35,118 @@ interface Options {
 
 interface PerkTile {
   def: PerkDef;
-  tile: HTMLElement;
-  button: HTMLButtonElement;
-  level: HTMLElement;
-  effect: HTMLElement;
-  fill: HTMLElement;
-  label: HTMLElement;
+  tile: Tile;
+  buy: BuyButton;
 }
 
-// "+12 Golden Whiskers" with the whisker icon (in an inline box: a sprite is a block).
-export const whiskerLabel = (text: string) => `<span class="whisker-amount">${iconHTML('whisker')}${text}</span>`;
+// What a perk's buy button shows.
+export function perkState(game: Game, id: string): BuyState {
+  return game.isPerkMaxed(id) ? 'maxed' : game.canBuyPerk(id) ? 'ready' : 'saving';
+}
 
-export function createColonyView(game: Game, { say, sound, fx, settings, onSettingsChange }: Options) {
-  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-  const el = {
-    row: $('family-subtab-row'), name: $('colony-name'), sub: $('colony-sub'), fill: $('colony-bar-fill'), progress: $('colony-progress'),
-    gain: $('colony-gain'), gainLabel: $('colony-gain-label'), explain: $('colony-explain'), migrate: $<HTMLButtonElement>('migrate-btn'),
-    perkNote: $('perk-note'), perks: $('perk-grid'),
-    elders: $('elders-card'), eldersNote: $('elders-note'), eldersRetire: $<HTMLButtonElement>('elders-retire'),
-    eldersShare: $('elders-share'), eldersPlant: $<HTMLButtonElement>('elders-plant'),
-    trials: $('trials-card'), trialsNote: $('trials-note'), trialList: $('trial-list'),
-  };
-  const subtabs = createSubTabs($('family-subtabs'), $('tab-family'), { key: 'family', settings, onSettingsChange });
-  let armed = 0; // migrating needs two taps; this is when the first tap expires
+export function createColonyView(game: Game, { sheet, say, sound, fx, settings, onSettingsChange }: Options) {
+  const row = byId('family-subtab-row');
+  const panel = byId('colony-main');
+  const subtabs = createSubTabs(byId('family-subtabs'), byId('tab-family'), {
+    key: 'family', settings, onSettingsChange,
+    icons: { family: 'heart', colony: 'whisker' },
+    // A new sub-tab starts at its top (the other one's scroll would land you mid-page).
+    onChange: () => { sheet.hide(); byId('tab-family').scrollTop = 0; },
+  });
   let shown = false; // the Colony sub-tab is showing (once the family could migrate)
   let announced = false; // the hamster has said the family can migrate
+  const c = game.data.colony;
 
-  // ── the perk tiles (like the shop's) ──
-  const tiles: PerkTile[] = (game.data.colony ? game.data.colony.perks : []).map((def) => {
-    const tile = document.createElement('div');
-    tile.className = 'tile perk-tile';
-    tile.innerHTML = `
-      <div class="tile-info">
-        <span class="tile-icon"></span>
-        <span class="tile-text"><span class="tile-name"></span><span class="tile-level"></span><span class="tile-effect"></span></span>
-      </div>
-      <p class="perk-desc"></p>
-      <button class="buy-btn"><span class="buy-fill"></span><span class="buy-label"></span></button>`;
-    tile.querySelector('.tile-icon')!.appendChild(spriteImg(perkIcon(def), 32, def.name[0]));
-    tile.querySelector('.tile-name')!.textContent = def.name;
-    tile.querySelector('.perk-desc')!.textContent = def.description;
-    const button = tile.querySelector<HTMLButtonElement>('.buy-btn')!;
-    button.addEventListener('click', (e) => {
-      (e.currentTarget as HTMLElement).blur();
-      game.buyPerk(def.id);
-    });
-    el.perks.appendChild(tile);
-    return {
-      def, tile, button,
-      level: tile.querySelector<HTMLElement>('.tile-level')!, effect: tile.querySelector<HTMLElement>('.tile-effect')!,
-      fill: tile.querySelector<HTMLElement>('.buy-fill')!, label: tile.querySelector<HTMLElement>('.buy-label')!,
-    };
+  // ── The migration card ──
+  const mig = card({ tone: 'gold', className: 'colony-migrate' });
+  const head = mig.body.appendChild(h('div', 'family-who'));
+  head.append(spriteImg('whiskerIcon', 48, ''));
+  const headText = head.appendChild(h('div', 'family-who-text'));
+  headText.append(h('div', 'family-name', 'The Great Migration'));
+  const sub = headText.appendChild(h('div', 'family-line'));
+  const treeGauge = gauge({ tone: 'whisker', label: 'Family Tree planted' });
+  mig.body.append(treeGauge.el);
+  const progress = mig.body.appendChild(h('p', 'k-note'));
+  const gainLine = mig.body.appendChild(h('div', 'family-gain'));
+  const gainLabel = gainLine.appendChild(h('span'));
+  gainLine.append(h('span', 'family-plus', '+'));
+  const gain = amount('whisker', 24);
+  gainLine.append(gain.el);
+  gainLine.append(h('span', '', c ? c.currencyName : 'Golden Whiskers'));
+  const migrate = confirmButton({
+    label: 'Migrate to a new colony', armedLabel: 'Tap again: pack up for a new colony!', tone: 'gold', size: 'lg', className: 'family-retire',
+    onConfirm: () => { game.migrate(); },
+  });
+  mig.body.append(migrate.el);
+  const how = more('How it works');
+  const explain = how.body.appendChild(h('p'));
+  mig.body.append(how.el);
+
+  // ── The perks (like the upgrades: a tap on a tile opens its sheet; its button buys) ──
+  const perksHead = h('div', 'section-head');
+  perksHead.append(h('h3', '', 'Colony perks'));
+  const perkNote = perksHead.appendChild(h('span', 'note'));
+  const perkList = h('div', 'shop-list colony-perks');
+  const tiles: PerkTile[] = (c ? c.perks : []).map((def) => {
+    const buy = buyButton({ onClick: () => game.buyPerk(def.id), ariaLabel: `Buy ${def.name}` });
+    const t = tile({ icon: perkIcon(def), iconSize: 32, name: def.name, onOpen: () => openPerk(def.id), buy, pips: def.maxLevel && def.maxLevel <= 10 ? def.maxLevel : 0, className: 'shop-tile' });
+    perkList.append(t.el);
+    return { def, tile: t, buy };
   });
 
-  // ── the Wise Elders' switches and their share buttons ──
-  el.eldersRetire.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    game.setAuto({ retire: !game.state.auto.retire });
+  // ── The Wise Elders' settings (once the perk is bought) ──
+  const elders = card({ title: 'The Wise Elders', icon: 'glasses', className: 'colony-elders hidden' });
+  const eldersNote = elders.head.appendChild(h('span', 'k-note colony-head-note'));
+  const retireSwitch = toggle({ label: 'Retire by themselves', ariaLabel: 'The Wise Elders retire by themselves', onChange: (on) => game.setAuto({ retire: on }) });
+  const shareRow = h('div', 'colony-elders-row');
+  shareRow.append(h('span', '', '…when a life\'s seeds reach'));
+  const share = segmented({
+    options: game.getAutoShares().map((v) => ({ value: v, label: `${Math.round(v * 100)}%`, title: `Retire once a life's seeds reach ${Math.round(v * 100)}% of the seeds the family has earned this colony` })),
+    ariaLabel: 'When to retire', onPick: (v) => game.setAuto({ share: v }),
   });
-  el.eldersPlant.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    game.setAuto({ plant: !game.state.auto.plant });
-  });
-  el.eldersShare.replaceChildren(...game.getAutoShares().map((share) => {
-    const b = document.createElement('button');
-    b.className = 'seg-btn';
-    b.dataset.share = String(share);
-    b.textContent = `${Math.round(share * 100)}%`;
-    b.title = `Retire once a life's seeds reach ${Math.round(share * 100)}% of the seeds the family has earned this colony`;
-    b.addEventListener('click', (e) => {
-      (e.currentTarget as HTMLElement).blur();
-      game.setAuto({ share });
-    });
-    return b;
-  }));
+  shareRow.append(share.el);
+  const plantSwitch = toggle({ label: 'Plant the cheap traits', ariaLabel: 'The Wise Elders plant the cheap traits', onChange: (on) => game.setAuto({ plant: on }) });
+  elders.body.append(retireSwitch.el, shareRow, plantSwitch.el);
 
-  el.migrate.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    const now = performance.now();
-    if (now < armed) {
-      armed = 0;
-      game.migrate();
-    } else {
-      armed = now + 3000;
-      sound.play('tick');
+  // ── The Colony Trials beaten this colony ──
+  const trials = card({ title: 'Colony Trials', icon: 'whisker', className: 'colony-trials hidden' });
+  const trialsNote = trials.body.appendChild(h('p', 'k-note'));
+  const trialList = trials.body.appendChild(h('div', 'colony-trial-list'));
+  const trialRows = (c ? c.trials : []).map((t) => {
+    const r = listRow({ title: t.name });
+    r.update({ sub: t.description });
+    trialList.append(r.el);
+    return { def: t, row: r, key: '' };
+  });
+
+  panel.append(mig.el, perksHead, perkList, elders.el, trials.el);
+
+  // ── A perk's sheet (in the tray) ──
+  let perkSheet: { id: string; effect: HTMLElement; buy: BuyButton } | null = null;
+  function openPerk(id: string): void {
+    const key = `colony:perk:${id}`;
+    if (sheet.key === key) { sheet.hide(); return; }
+    const def = game.getPerkDef(id)!;
+    if (sheet.show(key, { icon: perkIcon(def), iconSize: 32, title: def.name })) {
+      const effect = h('p', 'shop-effect');
+      sheet.body.append(h('p', 'k-note', def.description), effect, h('p', 'k-note', 'Bought with Golden Whiskers, and kept for good: every colony after this one has it too.'));
+      const buy = buyButton({ size: 'lg', onClick: () => game.buyPerk(id), ariaLabel: `Buy ${def.name}` });
+      sheet.foot.append(buy.el);
+      perkSheet = { id, effect, buy };
     }
+    for (const t of tiles) t.tile.setOpen(t.def.id === id);
+    const t = tiles.find((x) => x.def.id === id);
+    if (t) requestAnimationFrame(() => t.tile.el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+  }
+  sheet.onHide((key) => {
+    if (!key.startsWith('colony:')) return;
+    perkSheet = null;
+    for (const t of tiles) t.tile.setOpen(false);
+  });
+
+  // The migration's word from the hamster, as the button arms (the kit's button arms on this click).
+  migrate.el.addEventListener('click', () => {
+    if (migrate.armed) say(`A new colony: the tree, the seeds and the stars start again, for ${formatWhole(game.getPendingWhiskers())} Golden Whiskers. Tap again to go!`, 4000);
   });
 
   // ── game events ──
@@ -121,9 +154,9 @@ export function createColonyView(game: Game, { say, sound, fx, settings, onSetti
     sound.play('buy');
     const t = tiles.find((x) => x.def.id === e.id);
     if (t) {
-      replayClass(t.tile, 'bought');
-      fx.burstAt(t.button, { count: 14, palette: fx.colors.gold, speed: 160 });
-      popText(t.button, e.level > 1 ? `LV ${e.level}!` : 'Yours!', 'seed');
+      replayClass(t.tile.el, 'bought');
+      fx.burstAt(t.buy.el, { count: 14, palette: fx.colors.gold, speed: 160 });
+      popText(t.buy.el, e.level > 1 ? `LV ${e.level}!` : 'Yours!', 'seed');
     }
     if (game.getPerkDef(e.id)!.effect.type === 'autoRetire') say('The Wise Elders are here to help! Switch them on in the Colony tab when you like.', 5000);
   });
@@ -137,12 +170,12 @@ export function createColonyView(game: Game, { say, sound, fx, settings, onSetti
   // ── drawing ──
   function colonyReady(): boolean {
     const s = game.state;
-    return !!game.data.colony && (s.colony > 0 || s.whiskers.gt(0) || game.isTreeComplete());
+    return !!c && (s.colony > 0 || s.whiskers.gt(0) || game.isTreeComplete());
   }
 
-  function render(now: number, visible: boolean): void {
+  function render(_now: number, visible: boolean): void {
     const s = game.state;
-    if (!game.data.colony) return;
+    if (!c) { row.classList.add('hidden'); return; }
     if (!shown && colonyReady()) {
       shown = true;
       if (s.colony === 0 && !announced) {
@@ -150,57 +183,56 @@ export function createColonyView(game: Game, { say, sound, fx, settings, onSetti
         say('The whole Family Tree is planted! The family could make the Great Migration to a new colony. Peek at Family → Colony.', 7000);
       }
     }
-    el.row.classList.toggle('hidden', !shown);
+    row.classList.toggle('hidden', !shown);
     subtabs.setHidden('colony', !shown);
     const canMigrate = game.canMigrate();
-    const anyPerk = tiles.some((t) => game.canBuyPerk(t.def.id));
-    subtabs.setDot('colony', canMigrate || anyPerk);
+    subtabs.setDot('colony', canMigrate || tiles.some((t) => game.canBuyPerk(t.def.id)));
     if (!shown || !visible || subtabs.current !== 'colony') return;
 
     // The migration card
-    const c = game.data.colony;
-    setText(el.sub, `Colony ${s.colony + 1} · generation ${s.generation} · ${formatWhole(s.whiskers)} ${c.currencyName}`);
+    setText(sub, `Colony ${s.colony + 1} · generation ${s.generation} · ${formatWhole(s.whiskers)} ${c.currencyName}`);
     const p = game.getTreeProgress();
-    el.fill.style.width = `${(p.total ? (p.done / p.total) * 100 : 0).toFixed(1)}%`;
-    setText(el.progress, game.isTreeComplete()
+    treeGauge.update(p.total ? p.done / p.total : 0);
+    setText(progress, game.isTreeComplete()
       ? 'The whole Family Tree is planted! The family can migrate (from here, or from the Big Cage).'
       : `The whole tree first: ${p.done} of ${p.total} traits planted to their max (Family Fortune once).`);
-    const pending = game.getPendingWhiskers();
-    setText(el.gainLabel, game.isTreeComplete() ? 'Migrate now:' : 'Migrating would bring:');
-    setHTML(el.gain, whiskerLabel(`+${formatWhole(pending)} ${c.currencyName}`));
-    setText(el.explain, `A new colony: the family starts again at generation 1. Heirloom Seeds, the Family Tree, Machine Stars and this life start over. `
+    setText(gainLabel, game.isTreeComplete() ? 'Migrate now:' : 'Migrating would bring:');
+    gain.update(game.getPendingWhiskers());
+    migrate.update({ disabled: !canMigrate });
+    setText(explain, `A new colony: the family starts again at generation 1. Heirloom Seeds, the Family Tree, Machine Stars and this life start over. `
       + `It keeps its ${c.currencyName} and perks, skins, tokens, stickers, casino chips and stats. The whiskers come from every seed earned this colony `
       + `(${formatWhole(game.getMigrationSeeds())} so far): more seeds, more whiskers. A migrated family finds Moving Day, colony traits and Colony Trials.`);
-    el.migrate.disabled = !canMigrate;
-    setText(el.migrate, now < armed ? 'Tap again: pack up for a new colony!' : 'Migrate to a new colony');
 
     // The perks
-    setHTML(el.perkNote, `${whiskerLabel(formatWhole(s.whiskers))} to spend · kept for good`);
+    setHTML(perkNote, `${amountHTML('whisker', s.whiskers)} to spend · kept for good`);
     for (const t of tiles) {
-      const level = game.getPerkLevel(t.def.id);
-      const maxed = game.isPerkMaxed(t.def.id);
-      const cost = game.getPerkCost(t.def.id);
-      const affordable = game.canBuyPerk(t.def.id);
-      setText(t.level, t.def.maxLevel ? `Lv ${level}/${t.def.maxLevel}` : `Lv ${level}`);
-      setHTML(t.effect, describeEffect(game, t.def, game.previewPerk(t.def.id)));
-      t.button.className = `buy-btn ${maxed ? 'maxed' : affordable ? '' : 'poor'}`;
-      t.tile.classList.toggle('owned', level > 0);
-      t.fill.style.width = maxed || affordable ? '0%' : `${Math.min(100, divide(s.whiskers, cost).toNumber() * 100).toFixed(1)}%`;
-      setHTML(t.label, maxed ? 'Owned' : whiskerLabel(formatWhole(cost)));
+      const id = t.def.id;
+      const level = game.getPerkLevel(id);
+      const maxed = game.isPerkMaxed(id);
+      const cost = game.getPerkCost(id);
+      const state = perkState(game, id);
+      const progressShare = state === 'saving' ? divide(s.whiskers, cost).toNumber() : 0;
+      const tone: TileTone = maxed ? 'maxed' : state === 'ready' ? 'ready' : level > 0 ? 'planted' : 'plain';
+      const preview = game.previewPerk(id);
+      t.tile.update({ level: maxed ? 'Max' : t.def.maxLevel ? `Lv ${level}/${t.def.maxLevel}` : `Lv ${level}`, effect: describeEffect(game, t.def, preview), pips: level, tone });
+      t.buy.update({ state, cost, currency: 'whisker', progress: progressShare, label: 'Owned' });
+      if (perkSheet && perkSheet.id === id && sheet.key === `colony:perk:${id}`) {
+        sheet.setTag(maxed ? 'Max · kept for good' : t.def.maxLevel ? `Lv ${level} of ${t.def.maxLevel} · kept for good` : `Lv ${level} · kept for good`);
+        setHTML(perkSheet.effect, describeEffect(game, t.def, preview));
+        perkSheet.buy.update({ state, cost, currency: 'whisker', progress: progressShare, label: 'Owned' });
+      }
     }
 
     // The Wise Elders
-    const elders = game.hasAutoRetire();
-    el.elders.classList.toggle('hidden', !elders);
-    if (elders) {
+    const hasElders = game.hasAutoRetire();
+    elders.el.classList.toggle('hidden', !hasElders);
+    if (hasElders) {
       const a = s.auto;
-      el.elders.classList.toggle('off', !a.retire);
-      setText(el.eldersRetire, a.retire ? 'On' : 'Off');
-      el.eldersRetire.setAttribute('aria-pressed', String(a.retire));
-      setText(el.eldersPlant, a.plant ? 'On' : 'Off');
-      el.eldersPlant.setAttribute('aria-pressed', String(a.plant));
-      for (const b of el.eldersShare.children) b.classList.toggle('active', Number((b as HTMLElement).dataset.share) === a.share);
-      setText(el.eldersNote, !a.retire ? 'Switched off: you retire yourself.'
+      retireSwitch.update(a.retire);
+      share.update(a.share);
+      elders.el.classList.toggle('is-off', !a.retire); // (the rest only matters while they retire)
+      plantSwitch.update(a.plant);
+      setText(eldersNote, !a.retire ? 'Off: you retire yourself.'
         : s.trial ? 'Resting during the Colony Trial.'
           : `Next: at ${formatWhole(game.getAutoRetireGoal())} seeds (${formatWhole(game.getPendingSeeds())} now)`);
     }
@@ -208,25 +240,28 @@ export function createColonyView(game: Game, { say, sound, fx, settings, onSetti
     // The trials beaten this colony (after the first migration; each colony's first
     // hamsters have too little for a twist to take away, so they open a bit later)
     const shownTrials = s.colony >= c.trialsFrom;
-    el.trials.classList.toggle('hidden', !shownTrials);
+    trials.el.classList.toggle('hidden', !shownTrials);
     if (shownTrials) {
-      const trials = c.trials;
-      const done = trials.filter((t) => s.trialsDone[t.id]).length;
-      setText(el.trialsNote, game.trialsOpen() ? `${done} of ${trials.length} beaten this colony · pick one in the Big Cage`
+      const done = c.trials.filter((t) => s.trialsDone[t.id]).length;
+      setText(trialsNote, game.trialsOpen() ? `${done} of ${c.trials.length} beaten this colony · pick one in the Big Cage`
         : `From each colony's ${ordinal(c.trialGeneration)} hamster: pick one in the Big Cage`);
-      const key = trials.map((t) => `${t.id}${s.trialsDone[t.id] ? 1 : 0}${s.trial === t.id ? 'n' : ''}`).join() + `|${formatWhole(game.getTrialWhiskers(trials[0].id))}`;
-      if (el.trialList.dataset.key !== key) {
-        el.trialList.dataset.key = key;
-        el.trialList.replaceChildren(...trials.map((t) => {
-          const row = document.createElement('div');
-          row.className = `trial-row${s.trialsDone[t.id] ? ' done' : ''}${s.trial === t.id ? ' now' : ''}`;
-          const status = s.trialsDone[t.id] ? '✓ Beaten' : s.trial === t.id ? 'Under way' : whiskerLabel(`+${formatWhole(game.getTrialWhiskers(t.id))}`);
-          row.innerHTML = `<div><b>${t.name}</b><div class="note">${t.description}</div></div><span class="trial-status">${status}</span>`;
-          return row;
-        }));
+      for (const r of trialRows) {
+        const beaten = !!s.trialsDone[r.def.id];
+        const now = s.trial === r.def.id;
+        const whiskers = game.getTrialWhiskers(r.def.id);
+        const key = `${beaten}${now}${formatWhole(whiskers)}`;
+        if (key === r.key) continue;
+        r.key = key;
+        r.row.update({ valueHTML: beaten ? 'Beaten' : now ? 'Under way' : `+${amountHTML('whisker', whiskers)}` });
+        r.row.el.classList.toggle('is-done', beaten);
+        r.row.el.classList.toggle('is-now', now);
       }
     }
   }
 
-  return { render, openSub: subtabs.open };
+  return {
+    render,
+    openSub: subtabs.open,
+    get current() { return subtabs.current; },
+  };
 }

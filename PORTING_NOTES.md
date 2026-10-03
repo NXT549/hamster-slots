@@ -691,6 +691,12 @@ Headless tests can check round-trips, and a new platform only swaps the storage.
 - The tag `v1.6.0` is made locally; tag pushes are cut off by the git proxy, so the user publishes the GitHub Release **"v1.6.0 · New Digs"** on the "Release 1.6.0" commit (`6558459`). The deploy passed and the live files match the local build.
 
 
+**D161 — New Digs part 4: the Family tab, Colony and the Big Cage's panels on the kit** (2026-10-03, the user picked "Family redesign" as the next update, then "continue"; DESIGN §31, plan `docs/updates/ui-4-family.md`).
+- **Chosen:** the Family tab moves out of ui.ts into `family.ts`: a retire letter (a `card` with the pup's portrait, "Retire now: +N Heirloom Seeds", bonus now → after, a gauge to the next seed, a `confirmButton` in place of `retireArmed`'s timer, what resets in a `more()` fold); planted traits as chips that open the tray's sheet (was a hover tooltip). `colony.ts` is rebuilt: the migration card, perks as `tile`s with a sheet (bought like upgrades), the Wise Elders as `toggle`s and a `segmented`, trials as `listRow`s. The Big Cage's numbers are `statTile`s on a wooden sign; the trait card is the kit's sheet rising over the lower meadow while the tree slides up so the trait stays in view; the trial picker is a `segmented`; Start an `xl` button; the migration a `confirmButton`.
+- **Choices inside it:** the Big Cage no longer picks a trait by itself except on a first family's first visit with nothing planted (so the first plant is one tap away); otherwise the meadow stays clear until you tap. *Rejected:* always opening the first buyable trait (the sheet hid half the tree every visit). The trial picker has no icons (the trials have no sprites; drawing five is art work for part 9). The panel under the meadow scrolls when it doesn't fit (a phone on its side) with Start pinned in sight; Start is smaller below 700 px tall. Switching Family ↔ Colony starts the sub-tab at its top. The 9.5 px and 10.5 px labels are gone.
+- View only: save v14, data schema 14; golden run, fixtures and simulator untouched. New test: the perk tiles' saving → ready → maxed and price follow the game (`shop.test.js`).
+- Checked in Chromium at 390×844, 360×640, 844×390 and 1280×800: a retirement, planting, a trait's sheet, the Colony, a migration and a trial, no console errors. Not checked: a real phone, Firefox, Safari.
+
 ---
 
 ## Balance log
