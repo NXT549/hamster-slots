@@ -202,7 +202,7 @@ export function createOwnCasinoView(
       const has = !!o.cabinets[c.machine];
       if (has) owned++;
       v.slot.classList.toggle('owned', has);
-      setText(v.stats, `bets ${rate(game.getGuestBet(c.machine))} · wins back ${(game.getGuestRtp(c.machine) * 100).toFixed(1)}%${has ? ` · +${rate(game.getCabinetRate(c.machine))}/s` : ''}`);
+      setText(v.stats, `bets ${formatCoins(game.getGuestBet(c.machine))} · wins back ${(game.getGuestRtp(c.machine) * 100).toFixed(1)}%${has ? ` · +${rate(game.getCabinetRate(c.machine))}/s` : ''}`);
       if (has) v.buy.el.classList.add('hidden');
       else {
         v.buy.el.classList.remove('hidden');

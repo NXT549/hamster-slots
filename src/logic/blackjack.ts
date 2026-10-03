@@ -117,14 +117,16 @@ function evsFor(up: number) {
 }
 
 // The best play for a hand ('stand', 'hit' or 'double'): the hint the table can show.
-export function bestPlay(player: readonly BjCard[], dealerUp: BjCard): 'stand' | 'hit' | 'double' {
+// canDouble = false when the player can't double (not enough chips): then it's the
+// better of stand and hit (soft 18 against a 3 doubles, but stands if it can't).
+export function bestPlay(player: readonly BjCard[], dealerUp: BjCard, canDouble = true): 'stand' | 'hit' | 'double' {
   const hard = player.reduce((s, c) => s + cardValue(c), 0);
   const ace = player.some((c) => c.rank === 1);
   if (best(hard, ace) >= 21) return 'stand';
   const e = evsFor(cardValue(dealerUp));
   const stand = e.stand(best(hard, ace));
   const hit = e.hit(hard, ace);
-  const double = player.length === 2 ? e.double(hard, ace) : -Infinity;
+  const double = canDouble && player.length === 2 ? e.double(hard, ace) : -Infinity;
   return double > Math.max(stand, hit) ? 'double' : hit > stand ? 'hit' : 'stand';
 }
 
