@@ -880,6 +880,7 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 - **Keys** (M6, M7): `-` / `=` change the bet; in the card gamble `←` red, `→` black, `1`–`4` a suit, `C` takes the win.
 - Stats (Menu → Stats) gained *Most paylines won at once* and *Machines bought*.
 - Settings are saved separately from progress (like sound), so Reset keeps them.
+- **Screen readers hear the spins** (after 1.9.0): the hidden live region that reads the hamster's speech also says how each spin you pull went ("No win.", "Big win! Won 5K coins."). Auto-spin and free spins only say their nice, big and jackpot wins, so it isn't talking every couple of seconds (`announce.ts`). View only.
 
 ### Not done yet
 

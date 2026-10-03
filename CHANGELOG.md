@@ -10,6 +10,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Added
+
+- Screen readers now say how each spin you pull went ("No win.", "Big win! Won 5K coins."). Auto-spin and free spins only speak up for their bigger wins.
+
 ## [1.9.1] - 2026-10-03 · Welcome Mat
 
 ### Fixed
