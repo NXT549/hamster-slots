@@ -12,7 +12,7 @@
 
 import { spriteImg, applySprite } from './art.ts';
 import { formatCoins, setText, replayClass } from './dom.ts';
-import { h, button, listRow, CURRENCIES, formatAmount } from './kit.ts';
+import { h, button, listRow, CURRENCIES, formatAmount, appeared } from './kit.ts';
 import { titleLetters, rampFromTokens } from './pixelfont.ts';
 import type { Currency, Sheet } from './kit.ts';
 import type { Game } from '../logic/game.ts';
@@ -42,6 +42,7 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
 
   // The brass counters, in their order. Each is a button: a tap opens its note in the sheet.
   const purses = new Map<Currency, Purse>();
+  let drawn = false; // the counters have been drawn once (what shows then isn't new)
   for (const currency of ORDER) {
     const el = h('button', `purse fr purse-${currency}${currency === 'coin' ? '' : ' purse-extra hidden'}`);
     el.type = 'button';
@@ -188,6 +189,8 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
       if (show !== p.shown) {
         p.shown = show;
         p.el.classList.toggle('hidden', !show);
+        // 1.9.0: a currency that's new to the family while you play (not one there on loading) unlocks.
+        if (show && drawn) appeared(p.el, `purse:${c}`, more.el); // (on a phone it's in the "+N" fold)
       }
       if (show) {
         extra++;
@@ -195,6 +198,7 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
         setText(p.num, formatAmount(c, amountOf(c)));
       }
     }
+    drawn = true;
     // The fold's count (whether it shows at all is the phone layout's call: styles/hud.css).
     const fold = String(extra);
     if (fold !== lastFold) {

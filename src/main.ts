@@ -29,6 +29,7 @@ import { loadGame, clearSave, loadSettings, saveSettings } from './platform/save
 import { createAutosave } from './platform/autosave.ts';
 import { makeSaveCode, readSaveCode, loadSaveCode } from './platform/savecode.ts';
 import { createSound } from './view/sound.ts';
+import { setUiSound } from './view/kit.ts';
 import { applyTheme } from './view/theme.ts';
 import { createUI } from './view/ui.ts';
 import { createDebugPanel } from './view/debug.ts';
@@ -78,6 +79,7 @@ function boot(platform: Platform) {
   // object and calls onSettingsChange, which writes it back to storage.
   const settings = loadSettings(platform);
   const sound = createSound(settings);
+  setUiSound((name) => sound.playUi(name)); // 1.9.0: the kit's pieces click and tick (Menu → UI sounds)
   applyTheme(); // the pixel frames: since 1.6.0 the wood, paper, brass and enamel of frames.ts (they read the CSS colour tokens)
 
   // The debug panel: always there while developing (npm run dev). In a built game

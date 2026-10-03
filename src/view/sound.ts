@@ -20,7 +20,7 @@ interface NoteOptions {
 // A sound recipe. Each takes its own few arguments (a reel's index, bet up/down …).
 type Recipe = (...args: any[]) => void;
 
-export function createSound({ volume = 0.6, muted = false }: { volume?: number; muted?: boolean } = {}) {
+export function createSound({ volume = 0.6, muted = false, uiSounds = true }: { volume?: number; muted?: boolean; uiSounds?: boolean } = {}) {
   let ctx: AudioContext | null = null; // the AudioContext, created on the first click/key
   let master: GainNode | null = null; // one volume knob for everything
   let lastCoin = 0; // coin blips are rate-limited so a burst isn't a buzz
@@ -152,7 +152,31 @@ export function createSound({ volume = 0.6, muted = false }: { volume?: number; 
       [NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6, NOTE.E6].forEach((f, i) => note(f, i * 0.09, 0.3, { type: 'triangle', gain: 0.14 }));
       chord([NOTE.C6, NOTE.E6, NOTE.G6], 0.5, 1.1, { gain: 0.07 });
     },
+    // 1.9.0: something unlocks (unlock.ts): the padlock clicks open, then a little two-note chime.
+    reveal: () => {
+      note(1800, 0, 0.03, { type: 'square', gain: 0.05, to: 1200 });
+      note(900, 0.04, 0.05, { type: 'triangle', gain: 0.1, to: 600 });
+      [NOTE.G5, NOTE.E6].forEach((f, i) => note(f, 0.1 + i * 0.08, 0.22, { gain: 0.1 }));
+    },
   };
+
+  // ── 1.9.0: UI sounds (DESIGN §31) ──
+  // The kit's pieces ask for these through kit.ts's uiSound(). They're much quieter than
+  // the game's own sounds (a third or less), so a busy screen never drowns out the reels.
+  const UI_SOUNDS: Record<string, Recipe> = {
+    tab: () => { note(1400, 0, 0.04, { type: 'triangle', gain: 0.035, to: 700 }); note(500, 0.03, 0.05, { type: 'triangle', gain: 0.03, to: 300 }); }, // a paper flip
+    subtab: () => note(1600, 0, 0.025, { type: 'triangle', gain: 0.03 }), // a soft tick
+    press: () => note(420, 0, 0.04, { type: 'triangle', gain: 0.05, to: 260 }), // a wooden click
+    switch: () => [2200, 1500].forEach((f, i) => note(f, i * 0.035, 0.025, { type: 'square', gain: 0.02 })), // a brass click
+    tick: () => note(1250, 0, 0.02, { type: 'square', gain: 0.018 }), // a stepper or a fold
+    sheet: () => note(260, 0, 0.12, { type: 'triangle', gain: 0.03, to: 520 }), // a sheet sliding
+    arm: () => [0, 0.06, 0.12].forEach((at) => note(2400, at, 0.015, { type: 'square', gain: 0.015 })), // a fuse fizzing
+    cantAfford: () => note(180, 0, 0.09, { type: 'triangle', gain: 0.06, to: 130 }), // a soft bonk
+    guide: () => [NOTE.C6, NOTE.G6].forEach((f, i) => note(f, i * 0.05, 0.08, { gain: 0.04 })), // a pop
+  };
+  // Rate limits: the same sound at most every 60 ms, any UI sound every 25 ms, so a burst of taps never buzzes.
+  const lastUi = new Map<string, number>();
+  let lastAnyUi = 0;
 
   function play(name: string, ...args: unknown[]): void {
     if (!ctx || muted || volume <= 0 || ctx.state !== 'running') return;
@@ -160,8 +184,22 @@ export function createSound({ volume = 0.6, muted = false }: { volume?: number; 
     if (recipe) recipe(...args);
   }
 
+  // A UI sound, if the UI sounds setting is on (and the sound is).
+  function playUi(name: string): void {
+    if (!uiSounds || !ctx || muted || volume <= 0 || ctx.state !== 'running') return;
+    const recipe = UI_SOUNDS[name];
+    if (!recipe) return;
+    const now = performance.now();
+    if (now - lastAnyUi < 25 || now - (lastUi.get(name) || 0) < 60) return;
+    lastAnyUi = now;
+    lastUi.set(name, now);
+    recipe();
+  }
+
   return {
-    play,
+    play, playUi,
+    get uiSounds() { return uiSounds; },
+    setUiSounds(value: boolean) { uiSounds = value; },
     get ready() { return !!ctx && ctx.state === 'running'; }, // true once a click/key switched audio on
     get muted() { return muted; },
     get volume() { return volume; },

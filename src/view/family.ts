@@ -15,7 +15,7 @@ import { furColors, hatOf } from './skins.ts';
 import { describeEffect } from './shop.ts';
 import { createColonyView } from './colony.ts';
 import { formatCoins, setText, setHTML } from './dom.ts';
-import { byId, h, card, gauge, chip, statRow, confirmButton, more, amount, keyedList } from './kit.ts';
+import { byId, h, card, gauge, chip, statRow, confirmButton, more, amount, keyedList, appeared } from './kit.ts';
 import type { Sheet } from './kit.ts';
 import type { Game } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
@@ -147,6 +147,7 @@ export function createFamilyView(game: Game, { sheet, say, sound, fx, settings, 
       shown = true;
       fresh = true;
       say(`I've earned an Heirloom Seed! I could retire and pass it on to a new pup. Peek at the Family tab.`, 6000);
+      appeared(tab, 'tab:family'); // 1.9.0: the tab unlocks (unlock.ts)
     }
     tab.classList.toggle('hidden', !shown);
     // The tab's dot: something to plant, a perk to buy, or a migration ready.

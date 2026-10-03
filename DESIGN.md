@@ -298,7 +298,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 - **Save version 11** (M11) added the family's casino (chips, boosts, a blackjack hand) and nine casino stats (§27). **Save version 12** (1.3.1) added the Hamster Helper's switch (`helper`) and the stats `doubleWins` and `helperBuys` (§28); an older save starts with the switch on and the stats at 0.
 - **Save version 7** (milestone 7) added **symbols you unlock** and the stats `symbolsUnlocked`, `bestLuck` and `suitWins`. Machines now start with some symbols locked, so a v6 save gives every machine every unlock it sells (maxed): an older hamster had every symbol, and nobody loses one. Luck isn't stored (it comes from upgrade levels), and neither is the gamble's card history.
 - The save also keeps `savedAt` (real-world time), which pays **offline earnings** on the next visit (§15).
-- Settings (sound on/off and volume, Motion, Quick reels, Numbers, the ×1/×10/Max choice) are stored separately from the save, so **Reset progress** keeps them.
+- Settings (sound on/off and volume, Motion, Quick reels, Numbers, the ×1/×10/Max choice, and since 1.9.0 UI sounds and the Guide) are stored separately from the save, so **Reset progress** keeps them.
 - **Menu → Reset progress** wipes the save, *including the family*. You have to tap it twice within 3 s, so it can't happen by accident. (Retiring is the "soft" reset that keeps the family.)
 - The game only runs while the tab is open and visible. Time away (closed or hidden) is paid as offline earnings instead (§15).
 
@@ -392,6 +392,7 @@ Web-first (PORTING_NOTES D106): one web codebase ships to GitHub Pages, then itc
 | — | 1.6.1 "Fresh Coat" | Every machine skin paints all 8 machines, plus 5 new machine skins | done (§14, §25) |
 | — | 1.7.0 "Family Room" | UI redesign part 4 (the Family tab) | done (§31 part 4) |
 | — | 1.7.1 "Settling In" | Balancing pass: each new colony's Family Tree costs ×3 more, Colony Pride +30% a level | done (§29) |
+| — | 1.9.0 "Welcome Mat" | UI redesign part 8: the first-time guide (a pointing paw), UI sounds, and an unlock moment for everything new | done (§31 part 8) |
 | → | Releases | GitHub Pages from the start; then itch.io, Steam, maybe mobile, all from the same web codebase (PORTING_NOTES → The plan) | ongoing |
 
 **Particles and animations are a thread, not a milestone:** every milestone ships the effects for what it adds, and 1.0 went through the whole game (§20, §23). Every new animation needs its `.less-motion` rule (AGENTS.md → Code style).
@@ -663,6 +664,7 @@ How big a win *feels* depends on the **base payout ÷ the machine's base spin co
 - Every sound is **synthesized** in the browser (Web Audio): short bleeps, clunks and chimes, with no audio files.
 - Sounds: lever pull and reel clunks (only for spins you pull yourself, since auto-spin clunking would get tiring), win chimes by tier, coin blips, buying, planting, errors, deliveries, capsule shake/pop/epic, diary stickers, retiring.
 - Audio switches on with the first click or key press (browsers require that). **Menu → Sound** has a volume slider and an On/Off button. The choice is saved separately from game progress.
+- **1.9.0:** an unlock's click-and-chime (`reveal`), and soft **UI sounds** for buttons, tabs, sheets and switches, much quieter than the game's own, with their own On/Off in the Menu (§31 → UI sounds).
 
 ### Little touches
 
@@ -1801,9 +1803,9 @@ All 14 are redrawn at **32×32** with five-step ramps (six new deep-shade colour
 - Does anything feel slow on your phone?
 - Is "The Glow Up" the right name?
 
-## 31. New Digs: a full UI redesign (1.6.0: parts 1–3, 1.7.0 "Family Room": part 4, parts 5–9 planned)
+## 31. New Digs: a full UI redesign (1.6.0: parts 1–3, 1.7.0 "Family Room": part 4, 1.9.0 "Welcome Mat": part 8, parts 5–7 and 9 planned)
 
-> **Status: parts 1–3 done, released in 1.6.0 "New Digs"** (2026-10-03, at the user's "that looks good publish it", after they saw screenshots; planned 2026-09-29, built from their "build it" on 2026-10-02; PORTING_NOTES D156–D160): the foundations, the shell and the Upgrades tab, built on the branch `ccr-dd00c9db-4v56oa`. **Parts 4–9 are still planned** (Family, Capsules and Info, Casino, Menu and dialogs, the guide and UI sounds, polish): built when the user asks, as later updates; until then those screens wear the new materials in their old layouts. **Part 4 (Family) is released in 1.7.0 "Family Room"** (2026-10-03, D162); as built, see the Family, Colony and Big Cage rows below. **View only:** no rules, balance or save changes (the golden run, the save fixtures and the simulator stay untouched).
+> **Status: parts 1–3 done, released in 1.6.0 "New Digs"** (2026-10-03, at the user's "that looks good publish it", after they saw screenshots; planned 2026-09-29, built from their "build it" on 2026-10-02; PORTING_NOTES D156–D160): the foundations, the shell and the Upgrades tab, built on the branch `ccr-dd00c9db-4v56oa`. **Parts 4–9 are still planned** (Family, Capsules and Info, Casino, Menu and dialogs, the guide and UI sounds, polish): built when the user asks, as later updates; until then those screens wear the new materials in their old layouts. **Part 4 (Family) is released in 1.7.0 "Family Room"** (2026-10-03, D162); as built, see the Family, Colony and Big Cage rows below. **Part 8 (the guide and UI sounds), with new unlock moments, is released in 1.9.0 "Welcome Mat"** (2026-10-03, at the user's "publish it"; built from their "I want new animations for unlocking things as well as a tutorial", D165); as built, see those three sections below. **View only:** no rules, balance or save changes (the golden run, the save fixtures and the simulator stay untouched).
 
 *"Make a full plan to redesign the full UI"* (the user, 2026-09-29)
 
@@ -1997,6 +1999,13 @@ Every screen is built from these, and they replace the copies listed in Before:
 - **Control:** "Skip the guide" on the note, and Menu → Settings → Guide (on/off; a setting, so Reset keeps it).
 - **Tested:** `guideStep(game)` is a pure function (`src/view/guide.ts`, no page needed), tested in Node on games made with the test helpers, like `treeLayout()` and `cageLayout()`.
 
+*As built (1.9.0, D165):*
+- **The order:** the first step in the table that applies shows. The Big Cage's Plant step is followed by **Start** (the first visit only), pointing at "Start the new life". The Big Cage's own hamster speaks there, so those two steps are the paw alone.
+- **On the way:** a step whose thing is in a closed tab points at the tab first (Upgrades, Family), then the sub-tab, then the thing; a tile out of sight scrolls into view once.
+- **A nudge, not a nag:** First upgrade, Auto-spin and Retire are choices you may put off, so each rests for the rest of the visit once its paw has pointed at the real button for a while (20, 20 and 10 seconds).
+- **The paw** is a new 16×16 sprite (`guidePaw`: the hamster's arm reaching down), at 3× (2× on a phone under 360 px), above the target (below it, pointing up, near the top of the screen), with a gold ring breathing in pixel steps. It never takes a tap. "Skip guide" is a small link at the end of the hamster's line.
+- **It waits** for a celebration, the card gamble, the page's opening, the iris, the rebirth animation and any dialog but the Big Cage.
+
 ### UI sounds
 
 - **Short synthesized sounds in sound.ts** (no audio files):
@@ -2013,6 +2022,22 @@ Every screen is built from these, and they replace the copies listed in Before:
   - rate-limited, so a burst of taps never buzzes;
   - never doubled up: buying, planting and spinning keep their own sounds.
 - **`playUi(name)`** checks the new **UI sounds** setting (on at first) as well as the volume and mute. The kit's pieces call it, so every screen gets it.
+- *As built (1.9.0):* nine sounds (the eight above and a soft tick for steppers and folds), at a third or less of the game's own volume; the same sound at most every 60 ms and any UI sound every 25 ms. Buy, Plant, Spin, Deliver and the two-tap buttons keep only their own sounds (the kit's `sound: null`). Menu → UI sounds and Menu → Guide are On/Off rows under Numbers (part 7 will move them onto its board).
+
+### Unlock moments (added to part 8, 1.9.0)
+
+*"Also I want new animations for unlocking things as well as a tutorial"* (the user, 2026-10-03; they left the design to Claude). Before this, most unlocks just *appeared*: a tab or a purse counter switched on, a tile slid into a list, a machine sign hung up, and the hamster said a line. Now each one gets a moment, so a new player notices it and an old one enjoys it. **View only:** nothing about when things unlock changes.
+
+| What unlocks | Its moment |
+|---|---|
+| **A new symbol** (New Seeds) | A small celebration over the cage: "NEW SYMBOL!" with the symbol big under it, and its name. |
+| **A new machine** | "NEW MACHINE!" with the machine's picture; then its sign on the bars unlocks. |
+| **A tab** (Family, Capsules, Casino), **a purse counter** (seeds, tokens, chips, whiskers, takings), **a machine sign**, **a new upgrade tile** (the next one in a first life, a rebirth or sticker upgrade), **the Family Casino's sub-tab** | **The padlock:** a brass padlock appears over it, shakes, its shackle springs open and it hops off; the thing itself pops in with a ring of gold sparks, a "NEW!" floats up from it, and a click-and-chime plays. |
+
+- **It waits until you can see it.** A tile in a tab you haven't opened unlocks when you open it; nothing plays while a celebration, the gamble, the iris or a dialog is up, and two unlocks at once play one after the other.
+- **Motion "Less":** no padlock, shake or sparks: the thing gets a still gold outline for a moment, and the chime plays.
+- **One piece of code** (`src/view/unlock.ts`) plays every padlock moment, so a future unlock is one line.
+- **Kept:** the hamster's lines about each unlock, and the tab dots.
 
 ### How it's built
 
@@ -2058,7 +2083,7 @@ On a branch, as **1.6.0-rc.1**. Every part leaves the game playable, passes the 
 | 5. Capsules and Info | The reveal, the Wardrobe, the Diary, the paytable cards, the features, recent wins |
 | 6. Casino | The chip bar and cashier, the tables, the roulette spots, the prizes |
 | 7. Menu and dialogs | The Menu board, Stats, Save backup, Welcome back, the crash screen |
-| 8. Guide and sounds | guide.ts, `playUi`, the two settings |
+| 8. Guide and sounds | guide.ts, `playUi`, the two settings, and the unlock moments (`unlock.ts`) |
 | 9. Polish | Motion "Less", access (contrast, 44 px targets, focus rings, tab roles), speed, skins, docs, the CHANGELOG |
 
 ### Questions the playtest must answer

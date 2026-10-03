@@ -134,13 +134,13 @@ describe('saving and loading', () => {
 describe('settings', () => {
   test('no settings yet: the defaults', () => {
     expect(loadSettings(createMemoryPlatform())).toEqual({
-      muted: false, volume: 0.6, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: {},
+      muted: false, volume: 0.6, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: {}, uiSounds: true, guide: true,
     });
   });
 
   test('settings load back exactly, under their own name', () => {
     const p = createMemoryPlatform();
-    const settings = { muted: true, volume: 0.3, motion: 'less', quickReels: true, numbers: 'full', buyAmount: 'max', subTabs: { upgrades: 'machine' } };
+    const settings = { muted: true, volume: 0.3, motion: 'less', quickReels: true, numbers: 'full', buyAmount: 'max', subTabs: { upgrades: 'machine' }, uiSounds: false, guide: false };
     saveSettings(p, settings);
     expect([...p.stored.keys()]).toEqual([SETTINGS_KEY]);
     expect(loadSettings(p)).toEqual(settings);
@@ -149,11 +149,18 @@ describe('settings', () => {
   test('odd values fall back to safe ones', () => {
     const p = createMemoryPlatform();
     p.stored.set(SETTINGS_KEY, JSON.stringify({
-      muted: 'yes', volume: 7, motion: 'wild', quickReels: 1, numbers: 'long', buyAmount: 3, subTabs: { 'Upgrades!': 'x', info: 'odds', family: 5 },
+      muted: 'yes', volume: 7, motion: 'wild', quickReels: 1, numbers: 'long', buyAmount: 3, subTabs: { 'Upgrades!': 'x', info: 'odds', family: 5 }, uiSounds: 'no', guide: 0,
     }));
     expect(loadSettings(p)).toEqual({
-      muted: false, volume: 1, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: { info: 'odds' },
+      muted: false, volume: 1, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: { info: 'odds' }, uiSounds: true, guide: true,
     });
+  });
+
+  // 1.9.0: settings saved before the UI sounds and the guide existed get both, switched on.
+  test('older settings gain the UI sounds and the guide, on', () => {
+    const p = createMemoryPlatform();
+    p.stored.set(SETTINGS_KEY, JSON.stringify({ muted: true, volume: 0.4, motion: 'full', quickReels: false, numbers: 'short', buyAmount: 10, subTabs: {} }));
+    expect(loadSettings(p)).toMatchObject({ muted: true, volume: 0.4, motion: 'full', buyAmount: 10, uiSounds: true, guide: true });
   });
 
   test('broken settings text: the defaults', () => {

@@ -2369,6 +2369,44 @@ const lock = [
   '...VVVVVVVVVV...',
   '................',
 ];
+// 1.9.0: the padlock springing open (unlock.ts): the shackle lifts, its right leg out of the body.
+const lockOpen = [
+  '.....KKKKKK.....',
+  '....KQqqqqQK....',
+  '...KQK....KQK...',
+  '...KQK....KKK...',
+  '...KQK..........',
+  '...KQK..........',
+  '..VVVVVVVVVVVV..',
+  '..VhhhhhhhhhhV..',
+  '..VhyyyyyyyyYV..',
+  '..VyyyykkyyyYV..',
+  '..VyyyykkyyyYV..',
+  '..VyyyyykyyyYV..',
+  '..VyyyyykyyyYV..',
+  '..VYYYYYYYYYYV..',
+  '...VVVVVVVVVV...',
+  '................',
+];
+// 1.9.0: the guide's pointing paw (guide.ts): the hamster's arm reaching down, toes with pink pads.
+const guidePaw = [
+  '.....AAAAAA.....',
+  '....AaattttA....',
+  '....AattttTA....',
+  '....AattttTA....',
+  '....AattttTA....',
+  '...AaattttTTA...',
+  '..AaatttttTTTA..',
+  '..AattttttttTA..',
+  '..AattttttttTA..',
+  '..AtttttttttTA..',
+  '..AcccccccccCA..',
+  '..AcccccccccCA..',
+  '..AcppAppAppCA..',
+  '...AZZAZZAZZA...',
+  '................',
+  '................',
+];
 // The tabs' and the HUD's icons (16×16): a capsule (the Capsules tab), a die (the Casino tab),
 // the Menu's bars and the sound switch (on: waves; off: a red cross).
 const capsule16 = [
@@ -2493,6 +2531,7 @@ export const SPRITES: Record<string, string[]> = {
   box, machineMoving, boxIcon, whisker, whiskerIcon, glasses, // 1.4.0
   butterfly, butterfly2, bird, bird2, // 1.5.0
   lock, close, capsule16, die16, menu16, soundOn, soundOff, // 1.6.0
+  lockOpen, guidePaw, // 1.9.0
   takings, // M12
   frameCard, framePaper, frameTab, frameButton, frameRail, bubbleTail,
 };

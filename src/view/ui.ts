@@ -11,7 +11,7 @@
 // (Capsules), payouts.ts (Info). Skin colours live in skins.ts, the pixel frames
 // for the cardboard/paper look are made in theme.ts, and the particles in fx.ts.
 
-import { applySprite, spriteImg, treeIcon, hamsterSprite, runFrame, MACHINE_SPRITES, SUIT_SPRITES } from './art.ts';
+import { applySprite, spriteImg, treeIcon, hamsterSprite, runFrame, MACHINE_SPRITES, SUIT_SPRITES, SYMBOL_SPRITES } from './art.ts';
 import type { HamsterFrame } from './art.ts';
 import { createReels } from './reels.ts';
 import { createWinShow } from './winshow.ts';
@@ -30,7 +30,10 @@ import { createCageScene } from './cage.ts';
 import { createCabinet } from './cabinet.ts';
 import { createWheel } from './wheel.ts';
 import { wideMedia, rigRoom, rigZoom } from './layout.ts';
-import { createSheet, uiSound } from './kit.ts';
+import { createSheet, uiSound, setAppearHook } from './kit.ts';
+import { createUnlocks } from './unlock.ts';
+import { createGuide, GUIDE_LINES } from './guide.ts';
+import type { GuideStep, GuideTarget } from './guide.ts';
 import { createHud } from './hud.ts';
 import { createDeck } from './deck.ts';
 import { effectAs } from '../logic/game.ts';
@@ -124,6 +127,8 @@ const SETTING_ROWS: Record<string, [keyof Settings, [unknown, string][]]> = {
   'set-motion': ['motion', [['auto', 'Auto'], ['less', 'Less'], ['full', 'Full']]],
   'set-reels': ['quickReels', [[false, 'Scroll'], [true, 'Quick']]],
   'set-numbers': ['numbers', [['short', '47.2K'], ['full', '47,275']]],
+  'set-uisounds': ['uiSounds', [[true, 'On'], [false, 'Off']]], // 1.9.0
+  'set-guide': ['guide', [[true, 'On'], [false, 'Off']]], // 1.9.0
 };
 
 export function createUI(
@@ -137,7 +142,7 @@ export function createUI(
     trialBadge: $('trial-badge'), boostBadges: $('boost-badges'), srLive: $('sr-live'),
     menuBtn: $('menu-btn'), menu: $<HTMLDialogElement>('menu'), debugBtn: $('debug-btn'), debugKey: $('debug-key'), resetBtn: $('reset-btn'),
     stage: $('stage'), wall: $('wall'), rig: document.querySelector<HTMLElement>('.rig')!, machineTags: $('machine-tags'),
-    bubble: $('bubble'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
+    bubble: $('bubble'), bubbleText: $('bubble-text'), bubbleSkip: $('bubble-skip'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
     machine: $('machine'), machineName: $('machine-name'), reels: $('reels'), winLayer: $('win-layer'),
     wheel: $('wheel'), prizeFace: $('prize-face'), pots: $('pots'), streakBadge: $('streak-badge'), streakText: $('streak-text'),
     luckBadge: $('luck-badge'), luckText: $('luck-text'),
@@ -218,6 +223,7 @@ export function createUI(
   let resetArmed = 0; // reset needs two taps; this is when the first tap expires
   let currentTab = 'upgrades'; // the tray tab that's open (1.6.0: only it renders)
   let shownTabsKey = ''; // which tabs show, to fit their names when one appears
+  let lastGuideLine = ''; // the guide's line last announced to screen readers
   let lastHiddenTabs = 0; // when the hidden tabs' dots were last worked out (4 times a second)
   let lastRetired: GameEvents['retired'] | null = null; // what the Big Cage page says about the hamster that just retired
   let rigFitKey = ''; // stage width + machine + reel count the rig was last fitted for
@@ -232,6 +238,15 @@ export function createUI(
   // The big moments (1.0): BIG WIN, JACKPOT, free spins, Machine Stars, over the cage.
   const celebrate = createCelebration({ host: el.wall, fx, sound, lessMotion });
   const iris = createIris(); // retiring: the old life closes on the hamster, the new one opens from it
+  // 1.9.0: unlock moments (unlock.ts): a padlock springs open over a new tab, counter, sign or tile.
+  // They wait while something big is on screen: a celebration, the card gamble, a dialog (the Big
+  // Cage, the Menu, Welcome back), or the page's opening.
+  const unlocks = createUnlocks({
+    fx, sound, lessMotion,
+    busy: () => celebrate.active || !!game.state.gamble || !!document.querySelector('dialog[open], .app.intro, .iris'),
+  });
+  // Pieces that appear for the first time while you play (sub-tabs, purse counters, upgrade tiles) say so through the kit.
+  setAppearHook((node, key, instead) => unlocks.reveal(key, () => (instead && node.getClientRects().length === 0 ? instead : node)));
   // The win show: all winning cells + the WIN meter counting, then one line at a time.
   const winShow = createWinShow({
     game, reels, meter: el.winMeter, meterValue: el.winMeterValue, label: el.lineLabel, reelsEl: el.reels, fx, sound, lessMotion,
@@ -396,6 +411,7 @@ export function createUI(
         b.className = 'seg-btn';
         b.textContent = label;
         b.addEventListener('click', () => {
+          if (key === 'guide' && value === true && !settings.guide) guide.wake(); // back on: everything put off comes back
           (settings as unknown as Record<string, unknown>)[key] = value;
           applySettings();
           onSettingsChange();
@@ -407,6 +423,7 @@ export function createUI(
 
   function applySettings() {
     setNumberStyle(settings.numbers);
+    sound.setUiSounds(settings.uiSounds);
     document.body.classList.toggle('less-motion', lessMotion());
     for (const [id, [key, options]] of Object.entries(SETTING_ROWS)) {
       [...$(id).children].forEach((b, i) => b.classList.toggle('active', options[i][0] === settings[key]));
@@ -673,8 +690,13 @@ export function createUI(
     const button = shop.buyButtonFor(e.id);
     fx.ringAt(button, { count: 20, speed: 260, palette: [fx.colors.gold[0], '#ffffff', getComputedStyle(document.documentElement).getPropertyValue('--buy').trim()] });
     if (!lessMotion()) popText(button, game.isMaxed(e.id) ? 'MAX!' : `LV ${e.level}!`, game.isMaxed(e.id) ? 'gold' : '');
-    // A new symbol on the reels: confetti over the machine.
-    if (def.effect.type === 'unlockSymbol') fx.confetti(40, el.machine);
+    // A new symbol on the reels: confetti over the machine, and (1.9.0) its unlock moment: the symbol, big.
+    if (def.effect.type === 'unlockSymbol') {
+      fx.confetti(40, el.machine);
+      const symbolId = effectAs(def, 'unlockSymbol').symbols[e.level - 1];
+      const symbol = game.getMachineData().symbols.find((x) => x.id === symbolId);
+      if (symbol && SYMBOL_SPRITES[symbolId]) celebrate.start({ kind: 'unlock', titles: ['NEW SYMBOL!'], icon: SYMBOL_SPRITES[symbolId], iconSize: 64, sub: `The ${symbol.name} is on the reels now` });
+    }
   });
 
   game.on('machineBought', (e) => {
@@ -689,6 +711,9 @@ export function createUI(
         : (md.rows ?? 1) > 1 ? 'Three rows and more paylines: so many ways to win!' : 'Let\'s give it a spin!';
     say(`A brand-new ${md.name}! ${extra}`, 5000);
     fx.confetti(70);
+    // 1.9.0: its unlock moment: the machine, big; then its sign on the bars springs a padlock.
+    celebrate.start({ kind: 'unlock', titles: ['NEW MACHINE!'], icon: MACHINE_SPRITES[md.id], iconSize: 72, sub: md.name });
+    unlocks.reveal(`tag:${md.id}`, () => tagEls.get(md.id) || null);
   });
   game.on('machineSwitched', (e) => {
     showMachine();
@@ -1401,6 +1426,7 @@ export function createUI(
     renderHold(hold);
     winShow.render(now);
     celebrate.render(now);
+    unlocks.render(now);
 
     // Wheel: fast during a spin, steady with auto-spin, still when resting or paused.
     // Rotation uses GAME time, so it speeds up with the debug speed buttons.
@@ -1459,6 +1485,15 @@ export function createUI(
     applySprite(el.roadHamster, runFrame(now, 80), 32, fur);
     // (1.6.0: the trip's pay and time are on the Deliver button now, deck.ts)
 
+    // 1.9.0: the first-time guide (guide.ts): the step to show, its line and the paw.
+    const guideNow = guide.render(now, { tab: currentTab });
+    const lineOf = guideNow && GUIDE_LINES[guideNow.id];
+    const guideLine = lineOf ? lineOf(game) : '';
+    if (guideLine !== lastGuideLine) {
+      lastGuideLine = guideLine;
+      if (guideLine) setText(el.srLive, guideLine); // screen readers hear the guide's tips too
+    }
+
     // Speech bubble: a fresh line if there is one, otherwise the most useful hint.
     let hint = '';
     if (speech && now < speech.until) hint = speech.text;
@@ -1467,11 +1502,13 @@ export function createUI(
     else if (machine.hold) hint = 'Acorns lock in place. Every new one resets the respins. Fill the vault for the Grand!';
     else if (free && free.left > 0) hint = `Free spins! ${free.left} to go, and every win is doubled.`;
     else if (s.gamble && s.gamble.machineId === activeId()) hint = 'Feeling lucky? Guess the card: a colour doubles it, a suit makes it ×4!';
+    else if (guideLine) hint = guideLine;
     else if (!machine.spinning && spinBet === null) hint = 'Out of coins! Send me on a delivery (D).';
     else if (s.stats.spins === 0) hint = `Hi, I'm ${game.getPupName()}! Tap SPIN (or Space). Match symbols from the left to win!`;
     else if (game.getAutoPaused() && !machine.spinning) hint = "Paused! I'll wait for you to tap Spin (or flip the lever up).";
     else if (!autoRunning && !machine.spinning && now - lastManualSpinAt > 25000) hint = 'Zzz… (tap Spin to wake me up)';
-    setText(el.bubble, hint);
+    setText(el.bubbleText, hint);
+    el.bubbleSkip.classList.toggle('hidden', !guideLine || hint !== guideLine);
     el.bubble.classList.toggle('hidden', hint === '');
 
     // Reset button text (two-tap confirm)
@@ -1501,6 +1538,7 @@ export function createUI(
     if (!casinoShown && game.isCasinoOpen()) {
       casinoShown = true;
       casinoNew = true;
+      unlocks.reveal('tab:casino', () => el.casinoTab);
       const chips = game.state.casino.chips;
       say(chips.gt(0) ? `The Hamster Casino is open! The family got ${formatWhole(chips)} chips to play with. Peek at the Casino tab.`
         : `The Hamster Casino is open! I earn a chip every ${game.data.casino!.chipsPerSpins.spins} paid spins. Peek at the Casino tab.`, 6000);
@@ -1514,6 +1552,8 @@ export function createUI(
     if (!capsulesShown && capsulesUnlocked()) {
       capsulesShown = true;
       capsulesNew = true;
+      unlocks.reveal('tab:capsules', () => el.capsulesTab);
+      unlocks.reveal('stage:gacha', () => el.stageGacha);
       say(`My Hamster Diary earned me ${formatWhole(game.state.tokens)} Hamster Tokens! Let's try the Capsule Machine.`, 6000);
     }
     el.capsulesTab.classList.toggle('hidden', !capsulesShown);
@@ -1536,6 +1576,62 @@ export function createUI(
     fx, sound, lessMotion, bonusText,
     treeLine: (type) => (TREE_LINES[type] ? TREE_LINES[type](1) : null),
   });
+  // 1.9.0: the first-time guide (guide.ts). It says where the paw points for each step: the
+  // thing to tap if it's showing, or the tab or sub-tab on the way to it.
+  const shows = (n: Element | null | undefined): n is HTMLElement => !!n && n.getClientRects().length > 0 && (n as HTMLElement).offsetWidth > 0;
+  const firstShowing = (selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].find(shows) || null;
+  const via = (n: HTMLElement | null, final: boolean): GuideTarget => (shows(n) ? { el: n, final } : null);
+  let scrolledTo = ''; // the tile the guide last scrolled into view (once per step)
+  function guideTarget(step: GuideStep): GuideTarget {
+    switch (step.id) {
+      case 'spin': return via(firstShowing('.deck-spin'), true);
+      case 'deliver': return via(firstShowing('.deck-deliver'), true);
+      case 'upgrade': case 'auto': {
+        if (currentTab !== 'upgrades') return via($('upgrades-tab'), false);
+        const tile = shop.elementFor(step.upgrade!);
+        if (!shows(tile)) {
+          // On the other upgrade sub-tab (the hamster's or the machine's own).
+          const def = game.getUpgradeDef(step.upgrade!);
+          return via(document.querySelector<HTMLElement>(`#tab-upgrades [data-sub="${def && def.scope === 'machine' ? 'machine' : 'hamster'}"]`), false);
+        }
+        if (scrolledTo !== step.upgrade) {
+          scrolledTo = step.upgrade!;
+          tile!.scrollIntoView({ block: 'nearest', behavior: lessMotion() ? 'auto' : 'smooth' });
+        }
+        return via(shop.buyButtonFor(step.upgrade!), true);
+      }
+      case 'retire': {
+        if (currentTab !== 'family') return via($('family-tab'), false);
+        return via(firstShowing('.family-retire'), true) || via(document.querySelector<HTMLElement>('#tab-family [data-sub="family"]'), false);
+      }
+      case 'plant': return via(firstShowing('#big-cage .k-buy'), true) || via(firstShowing('#bc-nodes .bt-node:not(.unborn)'), false);
+      case 'start': return via(firstShowing('#big-cage .bc-start'), true);
+      case 'capsules': return via($('pull-btn'), true);
+      case 'casino': return via(firstShowing('#tab-casino .table-buttons .btn-primary:not(:disabled)'), true)
+        || via(firstShowing('#tab-casino .roulette-board'), true) || via(firstShowing('#tab-casino .felt'), true);
+    }
+  }
+  const guide = createGuide(game, {
+    sound, lessMotion,
+    enabled: () => settings.guide,
+    targetFor: guideTarget,
+    // It waits while something big plays: a celebration, the gamble, the page's opening, the iris,
+    // the rebirth animation, or a dialog over the game (the Big Cage itself is fine: it plants there).
+    // (The iris stays shut behind the Big Cage while it's open, so it only counts outside it.)
+    busy: () => celebrate.active || !!game.state.gamble || !!document.querySelector('.app.intro, #big-cage.playing')
+      || (!!document.querySelector('.iris') && !game.state.bigCage)
+      || [...document.querySelectorAll('dialog[open]')].some((d) => d.id !== 'big-cage'),
+  });
+  // "Skip guide" on the speech bubble: the guide switches off (Menu → Guide brings it back).
+  el.bubbleSkip.addEventListener('click', (e) => {
+    (e.currentTarget as HTMLElement).blur();
+    settings.guide = false;
+    applySettings();
+    onSettingsChange();
+    uiSound('press');
+    say('Okay! You can switch the guide back on in the Menu.', 3000);
+  });
+
   setText($('app-version'), version);
   // An icon on every tab (1.6.0: 16×16 sprites drawn at 2×; the CSS shows them at 1× on the
   // tray's brass plates and at 2× on a phone's bottom bar, both whole scales).
