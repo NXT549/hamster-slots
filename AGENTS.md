@@ -27,14 +27,15 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 - **1.6.0** = UI redesign parts 1–3 (DESIGN §31, D156–D160): the hamster's-room look (wood, paper, brass, enamel: `frames.ts`), the kit (`kit.ts`), purse (`hud.ts`), control deck (`deck.ts`), phone tab bar, detail sheet, rebuilt Upgrades tab (`shop.ts`), nothing under 12 px, only the open tab drawn. View only: no rules, balance or save changes.
 - **1.7.1 "Settling In"** = the balancing pass's first fix (D163, `docs/updates/balancing.md`): each colony's Family Tree costs ×3 more (`familyTree.costPerColony`), Colony Pride +30% a level (was +50%). No save change.
 - **1.7.0 "Family Room"** = UI redesign part 4 (§31, D162): the Family tab (`family.ts`: retire letter, trait chips), Colony (`colony.ts`: perk tiles, toggles) and the Big Cage's panels on the kit. View only.
-- **Planned, don't build until asked:** UI redesign parts 5–9 (Capsules + Info, Casino, Menu + dialogs, the guide + UI sounds, polish; §31). When asked: on a branch, part by part, each leaving the game playable. The user picked restyle + restructure, the room look, a first-time guide and UI sounds (two new settings `uiSounds`, `guide`; no save change).
+- **Candidate on branch `claude/project-thread-yz41k9`: 1.9.0-rc.1 "Welcome Mat"** = UI redesign part 8 (§31, D165): the first-time guide (`guide.ts`: `guideStep()` from game state, the pointing paw), UI sounds (`playUi` in sound.ts), settings `uiSounds` and `guide` (no save change), and unlock moments (`unlock.ts`: a padlock springs open over anything new; "NEW SYMBOL!"/"NEW MACHINE!" celebrations). The user asked for "new animations for unlocking things as well as a tutorial" and left the design to Claude. Waiting for their OK; another thread ships 1.8.1, so merge main in before release.
+- **Planned, don't build until asked:** UI redesign parts 5–7 and 9 (Capsules + Info, Casino, Menu + dialogs, polish; §31). When asked: on a branch, part by part, each leaving the game playable. The user picked restyle + restructure, the room look, a first-time guide and UI sounds.
 - **1.8.0 "Grand Opening"** = M12, the Family Casino (§32, D164): a migrated family's own casino (cabinets, guests below 100%, a till of Takings, decor and staff, chips and tokens), kept for good, never coins. Save v15. The user left every design call to Claude ("you decide everything"), then said "publish it"; the playtest questions are in §32.
 - **Next on the roadmap:** M13 Delivery depth is only an idea (if playtests say deliveries are fun); M12 is done.
 - **Now:** waiting for playtest feedback on 1.1.0–1.6.0 (1.3.0–1.6.0 shipped without a playtest; 1.6.0–1.8.0 not yet seen on a real phone, Firefox or Safari; 1.8.0 shipped without a playtest). Questions in DESIGN §21–§32; feedback goes in PORTING_NOTES → Playtest notes; fixes ship as 1.8.x.
 - **Open balance issues:** late lives short around generations 11–15 (§10); 1.4.0's seed softcap made them 2–3× longer, and 1.7.1's balancing pass (D163: each colony's tree ×3, Colony Pride +30%) made colony 2 last 3–5 h with 5–8 min late lives, but colony 3's middle lives are still 2–5 min (§29 → Balance); the wardrobe makes mid-game lives ~10–30% shorter (§25); casino boosts can cut late lives by up to a third (§27, `node tools/sim.mjs --casino`).
 - **Not yet verified:** how the M7/1.0/M9 sounds sound; a natural jackpot-wheel label, hold & spin Grand and ×10 cheese wedge in the browser (only tests/console); Epic twists in a real session; Firefox and Safari look (rays' `mask`, line trace, reel blur).
 - **Tags:** `v0.1.0 v0.2.0 v1.0.0 v1.3.0 v1.3.1` are on GitHub. Missing (the session git proxy refuses tag pushes, HTTP 403), so the user adds them as GitHub Releases: v1.1.0 `7f2fe32`, v1.2.0 `4fa56c3`, v1.3.2 `1084cb6`, v1.4.0 on its docs-only deploy commit (same game as "Release 1.4.0" `76aec6d`, D149), v1.5.0 `bb98c2d`, v1.6.0 `6558459`, v1.6.1 on the "Release 1.6.1" commit, v1.7.0 on the "Release 1.7.0" commit, v1.7.1 on the "Release 1.7.1" commit, v1.8.0 on the "Release 1.8.0" commit.
-- **Tests:** `npm test`, 3,014 tests, ~1.5 min.
+- **Tests:** `npm test`, 3,032 tests, ~1.5 min.
 
 ## Commands
 
@@ -111,7 +112,7 @@ All tests are JavaScript in `tests/` (Vitest; older ones use `check(name, cond)`
 - `tests/logic/*.test.js`: one file per area. `helpers.js`: **`newGame` puts every rebirth and sticker upgrade on sale**; planting needs the Big Cage, so use `plant(g, …ids)`.
 - **`tests/golden.test.js`, the golden run:** scripted sessions (`tests/golden/sessions.js`) on fixed seeds must reproduce `tests/golden/golden.json` exactly. **Never re-record it to make a failing test pass**; only for an intended, approved gameplay change, said in the commit message. It must play the same on every Node: `Math.pow` can differ in the last bit between Node 22 and 24, so sessions round any power-derived amount before feeding it in (`seedCoinsToAdd`); check a new recording on Node 24.
 - `tests/fixtures.test.js`: real saves `tests/fixtures/save-v<N>-<name>.json`, kept for good. The current version's load and save back unchanged; older ones migrate to exactly the current file of the same name.
-- `art.test.js` (sprite sizes and palette, 9-slice, skins, tokens, cage layout at 5 sizes) · `kit.test.js` (frame tokens, `--fw`, one breakpoint, style.css imports each `styles/` file once, no class styled by two files, **never the `border-image: none` shorthand**, use `border-image-source: none`; the minifier empties it) · `shop.test.js` · `money.test.js` · `savecode.test.js` · `platform.test.js` (`memory.ts` fake platform, `web.ts` on a fake browser) · `bigtree.test.js` · `release.test.js` (icons, manifest, version = package-lock, the update has a name).
+- `art.test.js` (sprite sizes and palette, 9-slice, skins, tokens, cage layout at 5 sizes) · `kit.test.js` (frame tokens, `--fw`, one breakpoint, style.css imports each `styles/` file once, no class styled by two files, **never the `border-image: none` shorthand**, use `border-image-source: none`; the minifier empties it) · `shop.test.js` · `money.test.js` · `savecode.test.js` · `platform.test.js` (`memory.ts` fake platform, `web.ts` on a fake browser) · `bigtree.test.js` · `release.test.js` (icons, manifest, version = package-lock, the update has a name) · `guide.test.js` (the guide's steps on real games).
 
 ## Git and releases
 
@@ -152,6 +153,8 @@ src/view/        draws the game, turns input into actions
   art.ts skins.ts paint.ts pixelfont.ts   sprites + palette, skins, pixel painter, title font
   cage.ts wheel.ts cabinet.ts bigtree.ts  painted scenes
   reels.ts winshow.ts celebrate.ts fx.ts sound.ts dom.ts
+  guide.ts       the first-time guide (1.9.0): guideStep() (pure, tested) and the pointing paw
+  unlock.ts      unlock moments (1.9.0): the padlock over anything new, waiting until it can be seen
   shop.ts        Upgrades tab (describeEffect is reused by colony + Big Cage)
   family.ts      Family tab: the retire letter, planted traits; colony.ts is its Colony sub-tab
   payouts.ts capsules.ts casino.ts bigcage.ts backup.ts debug.ts   the other tabs/pages

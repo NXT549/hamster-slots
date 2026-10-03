@@ -8,7 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 All coins in the game are pretend. There's no real money in it, and nothing to buy with real money.
 
-## [Unreleased]
+## [Unreleased] · 1.9.0 "Welcome Mat"
+
+**New players get a friendly guide, and everything you unlock now has its own little moment.**
+
+### Added
+
+- **A first-time guide.** Your hamster tells you what to try next (spin, deliver, buy your first upgrade, Wheel Training, retire, plant, capsules, the casino) and a little paw points at the button. It goes away by itself once you've done each thing, never blocks a tap, and a game you've already played won't see it. Tap **Skip guide** on the hamster's words, or switch it in **Menu → Guide**.
+- **Unlock moments.** When something new appears (a tab, a currency, a machine's sign, an upgrade), a brass padlock pops up over it, shakes and springs open, and the new thing pops in with gold sparks and a "NEW!". It waits until you can see it, so a new upgrade in another tab unlocks when you open that tab.
+- **"NEW SYMBOL!" and "NEW MACHINE!"**: a new symbol on the reels or a brand-new machine gets a little celebration with its picture.
+- **UI sounds**: soft clicks and ticks for buttons, tabs, switches and sheets, much quieter than the game. Switch them off in **Menu → UI sounds**.
 
 ## [1.8.0] - 2026-10-03 · Grand Opening
 

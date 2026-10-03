@@ -58,6 +58,8 @@ export function clearSave(platform: Platform): void {
 //   numbers    "short" (47.2K) or "full" (47,275)
 //   buyAmount  the shop's ×1 / ×10 / Max toggle: 1, 10 or "max"
 //   subTabs    which sub-tab each tray tab last showed, e.g. { upgrades: "machine" }
+//   uiSounds   (1.9.0) soft clicks and ticks for the buttons, tabs and sheets
+//   guide      (1.9.0) the first-time guide: the hamster's tips and the pointing paw
 export interface Settings {
   muted: boolean;
   volume: number;
@@ -66,9 +68,11 @@ export interface Settings {
   numbers: 'short' | 'full';
   buyAmount: 1 | 10 | 'max';
   subTabs: Record<string, string>;
+  uiSounds: boolean;
+  guide: boolean;
 }
 
-const DEFAULT_SETTINGS: Settings = { muted: false, volume: 0.6, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: {} };
+const DEFAULT_SETTINGS: Settings = { muted: false, volume: 0.6, motion: 'auto', quickReels: false, numbers: 'short', buyAmount: 1, subTabs: {}, uiSounds: true, guide: true };
 
 // Only short word-like names survive (the view checks them against its own list).
 function cleanSubTabs(raw: unknown): Record<string, string> {
@@ -94,6 +98,8 @@ export function loadSettings(platform: Platform): Settings {
       numbers: oneOf<Settings['numbers']>(raw.numbers, ['short', 'full'], d.numbers),
       buyAmount: oneOf<Settings['buyAmount']>(raw.buyAmount, [1, 10, 'max'], d.buyAmount),
       subTabs: cleanSubTabs(raw.subTabs),
+      uiSounds: typeof raw.uiSounds === 'boolean' ? raw.uiSounds : d.uiSounds,
+      guide: typeof raw.guide === 'boolean' ? raw.guide : d.guide,
     };
   } catch (err) {
     return { ...DEFAULT_SETTINGS, subTabs: {} };

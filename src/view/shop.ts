@@ -15,7 +15,7 @@
 
 import { spriteImg, upgradeIcon, MACHINE_SPRITES } from './art.ts';
 import { formatCoins, formatSeconds, formatWait, formatDuration, setText, setHTML, replayClass, iconHTML } from './dom.ts';
-import { createSubTabs, ordinal, byId, h, tile, buyButton, confirmButton, segmented, toggle, card, drawer, keyedList } from './kit.ts';
+import { createSubTabs, ordinal, byId, h, tile, buyButton, confirmButton, segmented, toggle, card, drawer, keyedList, appeared } from './kit.ts';
 import { effectAs } from '../logic/game.ts';
 import { divide } from '../logic/money.ts';
 import type { Tile, BuyButton, ConfirmButton, Sheet, TileTone, BuyState } from './kit.ts';
@@ -336,6 +336,9 @@ export function createShopView(game: Game, { settings, onSettingsChange, sheet }
 
   // Lay the lists out (kept by id: switching machines or an unlock reuses every tile it can).
   let listKey = '';
+  const wasLocked = new Set<string>(); // upgrades seen in a Locked drawer (an unlock when they go on sale)
+  const wasNeeding = new Set<string>(); // upgrades seen needing another (an unlock when they don't)
+  const wasClosed = new Set<string>(); // machines seen closed (an unlock when they open)
   function layout(): void {
     const defs = upgradeDefs();
     const key = defs.map((d) => `${d.id}${game.isUpgradeUnlocked(d.id) ? '' : '!'}`).join();
@@ -346,6 +349,9 @@ export function createShopView(game: Game, { settings, onSettingsChange, sheet }
     const order = (d: UpgradeDef) => { const l = game.getUpgradeLock(d.id); return l ? l.generation || 100 : -1; };
     const locked = defs.filter((d) => !game.isUpgradeUnlocked(d.id)).sort((a, b) => order(a) - order(b) || defs.indexOf(a) - defs.indexOf(b));
     const side = (d: UpgradeDef) => (d.scope === 'machine' ? 'machine' : 'hamster');
+    // 1.9.0: a rebirth or sticker upgrade that was in the Locked drawer and is on sale now unlocks.
+    const opened = open.filter((d) => wasLocked.has(d.id));
+    for (const d of locked) wasLocked.add(d.id);
     hamsterTiles = keyedList(el.hamster, open.filter((d) => side(d) === 'hamster'), (d) => d.id, (d) => makeUpgradeTile(d, false), hamsterTiles);
     machineTiles = keyedList(el.machine, open.filter((d) => side(d) === 'machine'), (d) => d.id, (d) => makeUpgradeTile(d, false), machineTiles);
     lockedHamsterTiles = keyedList(lockedHamster.body, locked.filter((d) => side(d) === 'hamster'), (d) => d.id, (d) => makeUpgradeTile(d, true), lockedHamsterTiles);
@@ -353,6 +359,11 @@ export function createShopView(game: Game, { settings, onSettingsChange, sheet }
     lockedHamster.update(lockedHamsterTiles.size, 'retire, or earn diary stickers');
     lockedMachine.update(lockedMachineTiles.size, 'retire, or earn diary stickers');
     subtabs.setLabel('machine', game.getMachineData().name);
+    for (const d of opened) {
+      wasLocked.delete(d.id);
+      const t = hamsterTiles.get(d.id) || machineTiles.get(d.id);
+      if (t) appeared(t.el, `upgrade:${d.id}`);
+    }
     // Another machine's upgrade was open in the sheet: it's gone now.
     if (selected && !selected.startsWith('machine:') && !allTiles().some((t) => t.def.id === selected)) sheet.hide();
   }
@@ -520,6 +531,8 @@ export function createShopView(game: Game, { settings, onSettingsChange, sheet }
         const maxed = game.isMaxed(id);
         const bulk = game.getUpgradeBulk(id, want());
         const needs = game.getUpgradeNeeds(id); // (Old Clunky's Both Ways needs the Third Reel)
+        if (needs.length) wasNeeding.add(id);
+        else if (wasNeeding.delete(id)) appeared(t.el, `upgrade:${id}`); // 1.9.0: what it needed is bought
         const preview = needs.length ? null : game.previewUpgrade(id, bulk.count);
         const tone: TileTone = selected === id ? 'selected' : maxed ? 'maxed' : bulk.affordable ? 'ready' : 'plain';
         t.tile.update({
@@ -600,6 +613,8 @@ export function createShopView(game: Game, { settings, onSettingsChange, sheet }
     for (const p of pages) {
       const info = game.getMachineInfo(p.id)!;
       const closed = !info.open;
+      if (closed) wasClosed.add(p.id);
+      else if (wasClosed.delete(p.id)) appeared(p.el, `machine:${p.id}`); // 1.9.0: a colony machine opened
       // 1.4.0: a colony machine (Moving Day) is for a family that has migrated. Before that
       // it's a locked page, a goal for the late game (from the family's 2nd hamster).
       p.el.classList.toggle('hidden', closed && s.generation < 2 && s.colony === 0);

@@ -1,7 +1,7 @@
 {
   "name": "hamster-slots",
-  "version": "1.8.0",
-  "releaseName": "Grand Opening",
+  "version": "1.9.0-rc.1",
+  "releaseName": "Welcome Mat",
   "private": true,
   "description": "A cute pixel-art idle slot machine powered by a hamster on a wheel.",
   "type": "module",
