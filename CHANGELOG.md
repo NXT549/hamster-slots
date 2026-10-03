@@ -10,7 +10,7 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
-## [Unreleased]
+## [1.9.1] - 2026-10-03 · Welcome Mat
 
 ### Fixed
 
