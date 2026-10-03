@@ -27,7 +27,7 @@ import { furColors, hatOf } from './skins.ts';
 import { treeLayout, treeShape, trunkTop, leafClumps, drawTree, TREE_TOKENS } from './bigtree.ts';
 import { describeEffect } from './shop.ts';
 import { formatWhole, setText, setHTML, replayClass, iconHTML, popText } from './dom.ts';
-import { h, createSheet, statTile, gauge, segmented, confirmButton, button, buyButton, more, amountHTML } from './kit.ts';
+import { h, createSheet, statTile, gauge, segmented, confirmButton, button, buyButton, more, amountHTML, appeared } from './kit.ts';
 import type { BuyButton, BuyState } from './kit.ts';
 import { IRIS_MS } from './celebrate.ts';
 import { divide } from '../logic/money.ts';
@@ -626,6 +626,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
 
   // Colony Trials (1.4.0): after the first migration, a life can be a trial. Picked
   // here, before the life starts; each pays its whiskers once a colony.
+  let trialsDrawn = false; // (the first draw announces nothing: it was there before the page loaded)
   function renderTrials(): void {
     const s = game.state;
     const c = game.data.colony;
@@ -633,10 +634,19 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     trialBox.classList.toggle('hidden', !open);
     if (!open || !c) return;
     trialPick.update(s.trial || '', (id) => id !== '' && !!s.trialsDone[id]);
+    // Double Trouble (1.10) shows up once both its halves are beaten this colony.
+    trialPick.buttons.forEach((b, i) => {
+      const id = i === 0 ? '' : c.trials[i - 1].id;
+      const hide = id !== '' && !game.isTrialUnlocked(id);
+      const was = b.classList.contains('hidden');
+      b.classList.toggle('hidden', hide);
+      if (was && !hide && trialsDrawn) appeared(b, `trial:${id}`); // its unlock moment (1.9.0's unlock.ts)
+    });
+    trialsDrawn = true;
     const t = game.getTrialDef(s.trial);
     setHTML(trialNote, t
       ? `<b>${t.name}:</b> ${t.description} Reach ${amountHTML('seed', game.getTrialGoal(), 12)} Heirloom Seeds this life for ${amountHTML('whisker', game.getTrialWhiskers(t.id), 12)} Golden Whiskers; then the twist is over.`
-      : `A life with a twist, for Golden Whiskers (each once a colony). ${c.trials.filter((x) => s.trialsDone[x.id]).length} of ${c.trials.length} beaten this colony.`);
+      : `A life with a twist, for Golden Whiskers (each once a colony). ${c.trials.filter((x) => s.trialsDone[x.id]).length} of ${c.trials.length} beaten this colony. Beat two twists one at a time and they come back together as Double Trouble.`);
   }
 
   // 1.5.0: life in the meadow. Two butterflies flutter about near the grass, a bird flies

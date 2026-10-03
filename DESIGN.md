@@ -296,6 +296,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 - **Save version 9** (milestone 8) added **Machine Stars** (`stars`, by machine type, kept through retiring), the **Big Cage** flag (`bigCage`: between lives, §22) and the stats `rebuilds`, `bestStars` and `mostSeedsHeld`. A v8 save has no stars and is mid-life. (Save version 8 wrote money as text, see above.)
 - **Save version 10** (milestone 9) added a hold & spin in progress on a machine (`hold`: the acorns, every respin, the bet and its timer; §24) and the stats `bestWays`, `holdBonuses`, `holdGrands` and `bestWheel`. A v9 save has no hold under way and starts them at 0. A saved hold that doesn't fit the machine any more (a data change) is dropped, like a broken spin.
 - **Save version 11** (M11) added the family's casino (chips, boosts, a blackjack hand) and nine casino stats (§27). **Save version 12** (1.3.1) added the Hamster Helper's switch (`helper`) and the stats `doubleWins` and `helperBuys` (§28); an older save starts with the switch on and the stats at 0.
+- **Save version 16** (1.10) added the **Family Album** (`album`, §13) and two of this life's numbers, `run.bestWin` and `run.trialBeaten`, for its pages. A v15 save starts with an empty album (the hamsters before it aren't known) and this life's best win at 0.
 - **Save version 7** (milestone 7) added **symbols you unlock** and the stats `symbolsUnlocked`, `bestLuck` and `suitWins`. Machines now start with some symbols locked, so a v6 save gives every machine every unlock it sells (maxed): an older hamster had every symbol, and nobody loses one. Luck isn't stored (it comes from upgrade levels), and neither is the gamble's card history.
 - The save also keeps `savedAt` (real-world time), which pays **offline earnings** on the next visit (§15).
 - Settings (sound on/off and volume, Motion, Quick reels, Numbers, the ×1/×10/Max choice, and since 1.9.0 UI sounds and the Guide) are stored separately from the save, so **Reset progress** keeps them.
@@ -482,6 +483,14 @@ payout multiplier = (1 + coin upgrade bonuses) × (1 + family bonuses)
 ```
 
 Bonuses **add up inside a group** and the two groups **multiply**. Example: Cheeks Lv 2 (1.5) with Family Pride and 3 seeds held (1 + 0.25 + 0.045 = 1.295) gives ×1.94. On a machine with **Machine Stars** (M8) the payout is also × (1 + 0.1 × stars). A spin win also gets ×1.5 on a full line with Jackpot Dance, then × the bet (§18), then × Hot Streak or the free-spin multiplier (§19).
+
+### The Family Album (1.10)
+
+*The content brainstorm's pick (the user's "you decide", D167).* **Family → Album** has a page for every hamster that retired: its portrait in the fur and hat it wore, its generation, how long it lived (time played), the coins it earned, its best single win, the seeds it left, the Colony Trial it played (beaten or not), and whether the Wise Elders retired it or it led a **Great Migration** (migrating mid-life writes the leader's page too; from the Big Cage nobody's life was played, so no page). Newest first, one card per colony. It's only a record: nothing reads it for the balance. Kept for good, through every migration (and by Reset, like everything, wiped).
+
+- **It keeps the newest 300 pages** (`album.keep` in data.json) **and always the family's very first hamster**, so a family the Wise Elders retire every few minutes doesn't grow its save without end (a page is about 250 bytes).
+- **The stored list is the family history** other features can read later (ideas: retired hamsters in the Derby, the Retirement Home, a stats history), so it lives in the logic (`state.album`, `addAlbumPage` in game.ts; an `albumPage` event), not the view.
+- The sub-tab appears once a hamster has retired (an older save's family sees it with a note: its album starts with the next hamster).
 
 ### The Family Tree
 
@@ -1624,6 +1633,22 @@ From the first migration on, **from each colony's 4th hamster**, a life can be a
 | **Rusty Machines** | Machine Stars don't count (no stars' payouts or Luck) | 2 |
 | **Small Pockets** | Bets ×1 only | 3 |
 | **Plain Hamster** | Nothing worn does anything, and no casino boosts | 2 |
+| **From Scratch** *(1.10)* | No head start: the tree's free levels and starting machines (Old Friends too) arrive only when the trial is beaten | 2 |
+| **Slow Wheel** *(1.10)* | Spin time and the auto-spin interval × 1.5 (`slowdown`; auto-spin still waits for spin + rest) | 2 |
+| **Bad Luck Day** *(1.10)* | No Luck at all: Hamster Luck, Machine Luck and the stars' Luck are 0 (the odds are the machine's base odds, which rule 4 already covers) | 2 |
+| **Thin Cheeks** *(1.10)* | The coin upgrades' payout group counts as ×1 (Chubby Cheeks, the Sticker Album …) | 2 |
+| **Picky Eater** *(1.10)* | Every lockable symbol stays locked (every unlock step is a setup rule 4 already covers) | 2 |
+
+**Double Trouble** *(1.10, the user's "you decide" on the brainstorm, D166)*: four trials that are two twists at once. Each opens once **both its halves are beaten this colony** (`needs`), so it's always something the family has already managed one twist at a time; until then it's hidden in the Big Cage (it gets an unlock moment when it appears) and shows "Beat both first" in Family → Colony. Same goal (a quarter of the colony's seeds), more whiskers:
+
+| Double Trouble | Twists | Whiskers |
+|---|---|---:|
+| **Rainy Day** | Bad Luck Day + Rusty Machines | 5 |
+| **Penny Pinching** | Small Pockets + Thin Cheeks | 5 |
+| **Back to Basics** | From Scratch + Picky Eater | 5 |
+| **Total Stranger** | Fresh Start + Plain Hamster | 5 |
+
+All 14 trials pay 42 whiskers a colony (12 before 1.10), next to a migration's 65–70 by the second one: a family that beats every trial gets less than one more Colony Pride level for it (1 × 1.6ⁿ). The simulator doesn't play trials, so their pacing is a playtest question.
 
 (The first three hamsters of a colony have little a twist could take away, so trials wait for the 4th.) A tile's "now → next" ignores a trial's twist: Wheel Training still says what it gives during Tired Paws.
 
@@ -1715,6 +1740,7 @@ New Horizons (a migration, 10 tokens) · Far, Far Away (three migrations, 8) · 
 - Is "the whole tree planted" the right moment, and "the family, the tree and the stars" the right size of reset?
 - Are generations 11–15 long enough now? Is the climb after generation ~16 a good nudge to migrate, or a wall?
 - Which Colony Trials are fun, and which are chores (Tired Paws for an idle player)? Is a quarter of the colony's seeds the right goal, and the 4th hamster the right start?
+- (1.10) Are the five new twists different enough from each other? Is Double Trouble a fun step up, or just a longer life?
 - Do the Wise Elders make the late game better (less clicking) or empty (nothing to do)?
 - Moving Day: do the boxes feel exciting? Is it in the right place (between the Acorn Vault and the Big Cheese)?
 - Later colonies go much faster, and their late lives are short again: fun, or too fast?

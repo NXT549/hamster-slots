@@ -184,17 +184,21 @@
 
       <!-- Family: retire for Heirloom Seeds, then plant them in the family tree -->
       <div class="tab-panel hidden" id="tab-family" role="tabpanel" aria-labelledby="family-tab">
-        <!-- 1.4.0: the Colony sub-tab appears once the whole tree is planted (or the family has migrated) -->
+        <!-- 1.4.0: the Colony sub-tab appears once the whole tree is planted (or the family has migrated);
+             1.10: the Album once a hamster has retired -->
         <div class="subtab-row hidden" id="family-subtab-row">
           <nav class="subtabs" id="family-subtabs">
             <button class="subtab" data-sub="family">Family</button>
             <button class="subtab" data-sub="colony">Colony</button>
+            <button class="subtab" data-sub="album">Album</button>
           </nav>
         </div>
         <!-- "New Digs" part 4: family.ts builds the retire letter and the planted traits, colony.ts the
              Great Migration, the perks, the Wise Elders and the trials, from the kit -->
         <div class="subpanel family-panel" data-sub="family" id="family-main"></div>
         <div class="subpanel family-panel" data-sub="colony" id="colony-main"></div>
+        <!-- 1.10: album.ts, the Family Album (a page for every hamster that retired) -->
+        <div class="subpanel family-panel" data-sub="album" id="album-main"></div>
       </div>
 
       <!-- Capsules: spend Hamster Tokens on skins, wear them, and see how to earn tokens -->

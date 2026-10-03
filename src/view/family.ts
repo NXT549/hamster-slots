@@ -1,11 +1,12 @@
 // family.ts — VIEW layer. The Family tab (1.7: "New Digs" part 4, rebuilt on the kit; DESIGN §31),
-// split out of ui.ts. Two sub-tabs:
+// split out of ui.ts. Three sub-tabs:
 //   1) Family: the retire letter (who's retiring, "Retire now: +N Heirloom Seeds", the bonus now →
 //      after, a gauge to the next seed, and the two-tap Retire button; what resets and what's kept
 //      is folded under "How it works"), then the traits the family has planted, as chips you can
 //      tap: the tray's sheet says what each does (it used to be a hover tooltip, which a phone
 //      can't show).
 //   2) Colony (1.4.0, colony.ts): the Great Migration, the perks, the Wise Elders, the trials.
+//   3) Album (1.10, album.ts): the Family Album, a page for every hamster that retired.
 // The tab itself appears once the hamster could retire for its first seed, with a word from the
 // hamster and a dot until you open it.
 // Like the rest of the view it only reads game.state and calls actions (retire).
@@ -14,6 +15,7 @@ import { treeIcon, applySprite, hamsterSprite } from './art.ts';
 import { furColors, hatOf } from './skins.ts';
 import { describeEffect } from './shop.ts';
 import { createColonyView } from './colony.ts';
+import { createAlbumView } from './album.ts';
 import { formatCoins, setText, setHTML } from './dom.ts';
 import { byId, h, card, gauge, chip, statRow, confirmButton, more, amount, keyedList, appeared } from './kit.ts';
 import type { Sheet } from './kit.ts';
@@ -42,7 +44,8 @@ interface TraitChip {
 export function createFamilyView(game: Game, { sheet, say, sound, fx, settings, onSettingsChange, bonusText }: Options) {
   const tab = byId('family-tab');
   const panel = byId('family-main');
-  const colony = createColonyView(game, { sheet, say, sound, fx, settings, onSettingsChange });
+  const album = createAlbumView(game);
+  const colony = createColonyView(game, { sheet, say, sound, fx, settings, onSettingsChange, albumShown: album.shown });
 
   // The tab appears once the hamster could retire for its first seed. If it was already
   // unlocked when the page loaded, it isn't announced again.
@@ -158,7 +161,9 @@ export function createFamilyView(game: Game, { sheet, say, sound, fx, settings, 
       const colonyNews = game.canMigrate() || (game.data.colony ? game.data.colony.perks.some((p) => game.canBuyPerk(p.id)) : false);
       tab.classList.toggle('alert', fresh || anyBuyable || colonyNews);
     }
+    colony.subtabs.setHidden('album', !album.shown());
     colony.render(now, shown && visible);
+    album.render(shown && visible && colony.current === 'album');
     if (!shown || !visible || colony.current !== 'family') return;
 
     // The letter

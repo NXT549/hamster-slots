@@ -1,6 +1,6 @@
 {
  "recordedWith": {
-  "schemaVersion": 15
+  "schemaVersion": 16
  },
  "sessions": {
   "firstLife": [
@@ -23,6 +23,7 @@
     "rng": 3463731746,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -91,10 +92,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "27",
       "coinsEarned": "330",
-      "playTime": 300.0000000000558
+      "playTime": 300.0000000000558,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -191,6 +194,7 @@
     "rng": 1368824845,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -259,10 +263,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "27",
       "coinsEarned": "707",
-      "playTime": 599.999999999783
+      "playTime": 599.999999999783,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -359,6 +365,7 @@
     "rng": 977601363,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -428,10 +435,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "27",
       "coinsEarned": "1084",
-      "playTime": 899.9999999995101
+      "playTime": 899.9999999995101,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -529,6 +538,7 @@
     "rng": 3681615034,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -599,10 +609,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "33.75",
       "coinsEarned": "1603",
-      "playTime": 1199.9999999992374
+      "playTime": 1199.9999999992374,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -702,6 +714,7 @@
     "rng": 1267002148,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -774,10 +787,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "40.5",
       "coinsEarned": "2493.25",
-      "playTime": 1499.9999999989645
+      "playTime": 1499.9999999989645,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -877,6 +892,7 @@
     "rng": 4219204307,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -951,10 +967,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "47.25",
       "coinsEarned": "3410.75",
-      "playTime": 1799.9999999986917
+      "playTime": 1799.9999999986917,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1054,6 +1072,7 @@
     "rng": 1300638145,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -1128,10 +1147,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "47.25",
       "coinsEarned": "3848.75",
-      "playTime": 2099.9999999991282
+      "playTime": 2099.9999999991282,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1231,6 +1252,7 @@
     "rng": 333943890,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -1306,10 +1328,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "213.75",
       "coinsEarned": "5032.75",
-      "playTime": 2400.000000002948
+      "playTime": 2400.000000002948,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1409,6 +1433,7 @@
     "rng": 2206722000,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -1484,10 +1509,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "261.25",
       "coinsEarned": "7310.5",
-      "playTime": 2700.000000006768
+      "playTime": 2700.000000006768,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1588,6 +1615,7 @@
     "rng": 1431851336,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -1665,10 +1693,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "308.75",
       "coinsEarned": "10245.5",
-      "playTime": 3000.000000010588
+      "playTime": 3000.000000010588,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1773,6 +1803,22 @@
     "rng": 1431851336,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "308.75",
+       "coinsEarned": "10245.5",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 3000.000000010588,
+       "seeds": "2",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -1840,10 +1886,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "0",
       "coinsEarned": "0",
-      "playTime": 0
+      "playTime": 0,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "2",
      "seedsEarned": "2",
      "skins": {
@@ -1946,6 +1994,22 @@
     "rng": 1431851336,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "308.75",
+       "coinsEarned": "10245.5",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 3000.000000010588,
+       "seeds": "2",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -2013,10 +2077,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "0",
       "coinsEarned": "0",
-      "playTime": 0
+      "playTime": 0,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -2124,6 +2190,22 @@
     "rng": 953957757,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "308.75",
+       "coinsEarned": "10245.5",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 3000.000000010588,
+       "seeds": "2",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -2200,10 +2282,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "42.19",
       "coinsEarned": "1671.64",
-      "playTime": 599.999999999783
+      "playTime": 599.999999999783,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -2304,6 +2388,7 @@
     "rng": 22,
     "save": {
      "activeMachine": 3,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -2449,10 +2534,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "0",
       "coinsEarned": "0",
-      "playTime": 0
+      "playTime": 0,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2560,6 +2647,7 @@
     "rng": 3704343945,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -2721,10 +2809,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "118750",
       "coinsEarned": "418950.02",
-      "playTime": 180.00000000003539
+      "playTime": 180.00000000003539,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2832,6 +2922,7 @@
     "rng": 2300968408,
     "save": {
      "activeMachine": 1,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -3018,10 +3109,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "6006375",
       "coinsEarned": "14285684.52",
-      "playTime": 360.00000000000125
+      "playTime": 360.00000000000125,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3131,6 +3224,7 @@
     "rng": 4113136118,
     "save": {
      "activeMachine": 2,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -3344,10 +3438,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "9567984.38",
       "coinsEarned": "94183950.29",
-      "playTime": 539.9999999998375
+      "playTime": 539.9999999998375,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3460,6 +3556,7 @@
     "rng": 2070348611,
     "save": {
      "activeMachine": 3,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -3702,10 +3799,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "714031875",
       "coinsEarned": "1114478903.43",
-      "playTime": 732.8666666663288
+      "playTime": 732.8666666663288,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3818,6 +3917,7 @@
     "rng": 3710090833,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -4060,10 +4160,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "714031875",
       "coinsEarned": "1115120153.43",
-      "playTime": 744.333333332985
+      "playTime": 744.333333332985,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4176,6 +4278,7 @@
     "rng": 3078255163,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -4418,10 +4521,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "714031875",
       "coinsEarned": "1115186653.43",
-      "playTime": 744.7333333329847
+      "playTime": 744.7333333329847,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4535,6 +4640,7 @@
     "rng": 3078255163,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -4778,10 +4884,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "714031875",
       "coinsEarned": "1122592134.26",
-      "playTime": 744.7333333329847
+      "playTime": 744.7333333329847,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4895,6 +5003,7 @@
     "rng": 3078255163,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -5138,10 +5247,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "714031875",
       "coinsEarned": "1122592134.26",
-      "playTime": 744.7333333329847
+      "playTime": 744.7333333329847,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5255,6 +5366,7 @@
     "rng": 2431266893,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -5499,10 +5611,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "714031875",
       "coinsEarned": "1123359081.17",
-      "playTime": 864.7333333328755
+      "playTime": 864.7333333328755,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5601,6 +5715,7 @@
     "rng": 33,
     "save": {
      "activeMachine": 0,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -5658,10 +5773,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "0",
       "coinsEarned": "20000",
-      "playTime": 0
+      "playTime": 0,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5755,6 +5872,22 @@
     "rng": 33,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "20000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "3",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -5815,10 +5948,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "0",
       "coinsEarned": "0",
-      "playTime": 0
+      "playTime": 0,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5920,6 +6055,22 @@
     "rng": 1823989546,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "20000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "3",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -5983,10 +6134,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "0",
       "coinsEarned": "0",
-      "playTime": 0
+      "playTime": 0,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -6120,6 +6273,22 @@
     "rng": 3704343956,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "20000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "3",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -6194,10 +6363,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "50.63",
       "coinsEarned": "810.06",
-      "playTime": 899.9999999995101
+      "playTime": 899.9999999995101,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -6332,6 +6503,36 @@
     "rng": 3704343956,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "20000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "3",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "50.63",
+       "coinsEarned": "2000810.06",
+       "colony": 0,
+       "fur": "furGolden",
+       "generation": 2,
+       "hat": "hatCowboy",
+       "how": "retired",
+       "name": "Nibbles",
+       "playTime": 899.9999999995101,
+       "seeds": "36",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -6402,10 +6603,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "0",
       "coinsEarned": "0",
-      "playTime": 0
+      "playTime": 0,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6550,6 +6753,36 @@
     "rng": 3809497450,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "20000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "3",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "50.63",
+       "coinsEarned": "2000810.06",
+       "colony": 0,
+       "fur": "furGolden",
+       "generation": 2,
+       "hat": "hatCowboy",
+       "how": "retired",
+       "name": "Nibbles",
+       "playTime": 899.9999999995101,
+       "seeds": "36",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -6632,10 +6865,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "432.63",
       "coinsEarned": "6136.48",
-      "playTime": 300.0000000000558
+      "playTime": 300.0000000000558,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6777,6 +7012,7 @@
     "rng": 44,
     "save": {
      "activeMachine": 3,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -6909,10 +7145,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "0",
       "coinsEarned": "0",
-      "playTime": 0
+      "playTime": 0,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7020,6 +7258,7 @@
     "rng": 142120332,
     "save": {
      "activeMachine": 1,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -7186,10 +7425,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "36903600000",
       "coinsEarned": "68222700000",
-      "playTime": 240.00000000008313
+      "playTime": 240.00000000008313,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7297,6 +7538,7 @@
     "rng": 284240620,
     "save": {
      "activeMachine": 2,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -7492,10 +7734,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "445602937500",
       "coinsEarned": "1274404575000",
-      "playTime": 479.9999999998921
+      "playTime": 479.9999999998921,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7603,6 +7847,7 @@
     "rng": 2257926721,
     "save": {
      "activeMachine": 3,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -7824,10 +8069,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "445602937500",
       "coinsEarned": "3028004780250",
-      "playTime": 719.9999999996738
+      "playTime": 719.9999999996738,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7936,6 +8183,7 @@
     "rng": 3322198170,
     "save": {
      "activeMachine": 2,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -8218,10 +8466,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "445602937500",
       "coinsEarned": "3339639158250",
-      "playTime": 724.9999999996693
+      "playTime": 724.9999999996693,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -8332,6 +8582,7 @@
     "rng": 963950181,
     "save": {
      "activeMachine": 2,
+     "album": [],
      "auto": {
       "plant": true,
       "retire": false,
@@ -8553,10 +8804,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "445602937500",
       "coinsEarned": "3356837633250",
-      "playTime": 784.9999999996147
+      "playTime": 784.9999999996147,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -8670,6 +8923,22 @@
     "rng": 424859534,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -8743,10 +9012,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "59.77",
       "coinsEarned": "1152.88",
-      "playTime": 300.0000000000558
+      "playTime": 300.0000000000558,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8861,6 +9132,22 @@
     "rng": 323036837,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -8935,10 +9222,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "59.77",
       "coinsEarned": "1152.88",
-      "playTime": 300.0000000000558
+      "playTime": 300.0000000000558,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9055,6 +9344,22 @@
     "rng": 323036837,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -9134,10 +9439,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "59.77",
       "coinsEarned": "1152.88",
-      "playTime": 300.0000000000558
+      "playTime": 300.0000000000558,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9259,6 +9566,22 @@
     "rng": 3850709769,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -9342,10 +9665,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "450.66",
       "coinsEarned": "2448.88",
-      "playTime": 399.99999999996487
+      "playTime": 399.99999999996487,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9470,6 +9795,22 @@
     "rng": 3594944981,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -9553,10 +9894,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "450.66",
       "coinsEarned": "14527.2",
-      "playTime": 459.9999999999103
+      "playTime": 459.9999999999103,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9681,6 +10024,22 @@
     "rng": 1067602301,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -9789,10 +10148,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "450.66",
       "coinsEarned": "14527.2",
-      "playTime": 459.9999999999103
+      "playTime": 459.9999999999103,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9917,6 +10278,22 @@
     "rng": 3339180193,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -10000,10 +10377,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "450.66",
       "coinsEarned": "14655.28",
-      "playTime": 489.999999999883
+      "playTime": 489.999999999883,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -10121,6 +10500,22 @@
     "rng": 872447924,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -10221,10 +10616,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "42.69",
       "coinsEarned": "711.55",
-      "playTime": 180.00000000003539
+      "playTime": 180.00000000003539,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "6",
      "skins": {
@@ -10355,6 +10752,36 @@
     "rng": 872447924,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "42.69",
+       "coinsEarned": "1000000000711.55",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "migrated",
+       "name": "Nibbles",
+       "playTime": 180.00000000003539,
+       "seeds": "942",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -10427,10 +10854,12 @@
      },
      "perks": {},
      "run": {
+      "bestWin": "0",
       "coinsEarned": "0",
-      "playTime": 0
+      "playTime": 0,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -10535,6 +10964,36 @@
     "rng": 1496707294,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "42.69",
+       "coinsEarned": "1000000000711.55",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "migrated",
+       "name": "Nibbles",
+       "playTime": 180.00000000003539,
+       "seeds": "942",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -10641,10 +11100,12 @@
       "wiseElders": 1
      },
      "run": {
+      "bestWin": "89.1",
       "coinsEarned": "544.9",
-      "playTime": 180.00000000003539
+      "playTime": 180.00000000003539,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -10752,6 +11213,92 @@
     "rng": 1361248600,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "42.69",
+       "coinsEarned": "1000000000711.55",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "migrated",
+       "name": "Nibbles",
+       "playTime": 180.00000000003539,
+       "seeds": "942",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "89.1",
+       "coinsEarned": "4154.9",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Mochi",
+       "playTime": 180.00000000003539,
+       "seeds": "2",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "32500",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Peanut",
+       "playTime": 0,
+       "seeds": "4",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "177000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 3,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Waffles",
+       "playTime": 0,
+       "seeds": "9",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "924000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 4,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Clover",
+       "playTime": 0,
+       "seeds": "20",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -10860,10 +11407,12 @@
       "wiseElders": 1
      },
      "run": {
+      "bestWin": "142.41",
       "coinsEarned": "1627.55",
-      "playTime": 119.99999999999447
+      "playTime": 119.99999999999447,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -10981,6 +11530,92 @@
     "rng": 3000990822,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "42.69",
+       "coinsEarned": "1000000000711.55",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "migrated",
+       "name": "Nibbles",
+       "playTime": 180.00000000003539,
+       "seeds": "942",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "89.1",
+       "coinsEarned": "4154.9",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Mochi",
+       "playTime": 180.00000000003539,
+       "seeds": "2",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "32500",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Peanut",
+       "playTime": 0,
+       "seeds": "4",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "177000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 3,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Waffles",
+       "playTime": 0,
+       "seeds": "9",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "924000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 4,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Clover",
+       "playTime": 0,
+       "seeds": "20",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -11090,10 +11725,12 @@
       "wiseElders": 1
      },
      "run": {
+      "bestWin": "142.41",
       "coinsEarned": "58501912.37",
-      "playTime": 150.0000000000115
+      "playTime": 150.0000000000115,
+      "trialBeaten": "tiredPaws"
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -11216,6 +11853,92 @@
     "rng": 1017899009,
     "save": {
      "activeMachine": 2,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "42.69",
+       "coinsEarned": "1000000000711.55",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "migrated",
+       "name": "Nibbles",
+       "playTime": 180.00000000003539,
+       "seeds": "942",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "89.1",
+       "coinsEarned": "4154.9",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Mochi",
+       "playTime": 180.00000000003539,
+       "seeds": "2",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "32500",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Peanut",
+       "playTime": 0,
+       "seeds": "4",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "177000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 3,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Waffles",
+       "playTime": 0,
+       "seeds": "9",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "924000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 4,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Clover",
+       "playTime": 0,
+       "seeds": "20",
+       "trial": null,
+       "trialBeaten": false
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": false,
@@ -11383,10 +12106,12 @@
       "wiseElders": 1
      },
      "run": {
+      "bestWin": "18649819004778.11",
       "coinsEarned": "46915808382604.41",
-      "playTime": 389.99999999997397
+      "playTime": 389.99999999997397,
+      "trialBeaten": "tiredPaws"
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -11525,6 +12250,106 @@
     "rng": 1833981970,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "42.69",
+       "coinsEarned": "1000000000711.55",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "migrated",
+       "name": "Nibbles",
+       "playTime": 180.00000000003539,
+       "seeds": "942",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "89.1",
+       "coinsEarned": "4154.9",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Mochi",
+       "playTime": 180.00000000003539,
+       "seeds": "2",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "32500",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Peanut",
+       "playTime": 0,
+       "seeds": "4",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "177000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 3,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Waffles",
+       "playTime": 0,
+       "seeds": "9",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "924000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 4,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Clover",
+       "playTime": 0,
+       "seeds": "20",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "18649819004778.11",
+       "coinsEarned": "985943781971279",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 5,
+       "hat": "hatNone",
+       "how": "elders",
+       "name": "Pudding",
+       "playTime": 390.99999999997306,
+       "seeds": "4485",
+       "trial": "tiredPaws",
+       "trialBeaten": true
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": true,
@@ -11675,10 +12500,12 @@
       "wiseElders": 1
      },
      "run": {
+      "bestWin": "3696",
       "coinsEarned": "6246.9",
-      "playTime": 19.60000000000017
+      "playTime": 19.60000000000017,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "242",
      "seedsEarned": "4520",
      "skins": {
@@ -11824,6 +12651,106 @@
     "rng": 2962194616,
     "save": {
      "activeMachine": 0,
+     "album": [
+      {
+       "bestWin": "0",
+       "coinsEarned": "50000",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Pip",
+       "playTime": 0,
+       "seeds": "6",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "42.69",
+       "coinsEarned": "1000000000711.55",
+       "colony": 0,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "migrated",
+       "name": "Nibbles",
+       "playTime": 180.00000000003539,
+       "seeds": "942",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "89.1",
+       "coinsEarned": "4154.9",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 1,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Mochi",
+       "playTime": 180.00000000003539,
+       "seeds": "2",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "32500",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 2,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Peanut",
+       "playTime": 0,
+       "seeds": "4",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "177000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 3,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Waffles",
+       "playTime": 0,
+       "seeds": "9",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "0",
+       "coinsEarned": "924000",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 4,
+       "hat": "hatNone",
+       "how": "retired",
+       "name": "Clover",
+       "playTime": 0,
+       "seeds": "20",
+       "trial": null,
+       "trialBeaten": false
+      },
+      {
+       "bestWin": "18649819004778.11",
+       "coinsEarned": "985943781971279",
+       "colony": 1,
+       "fur": "furClassic",
+       "generation": 5,
+       "hat": "hatNone",
+       "how": "elders",
+       "name": "Pudding",
+       "playTime": 390.99999999997306,
+       "seeds": "4485",
+       "trial": "tiredPaws",
+       "trialBeaten": true
+      }
+     ],
      "auto": {
       "plant": true,
       "retire": true,
@@ -11974,10 +12901,12 @@
       "wiseElders": 1
      },
      "run": {
+      "bestWin": "213840",
       "coinsEarned": "240916.5",
-      "playTime": 79.59999999999677
+      "playTime": 79.59999999999677,
+      "trialBeaten": null
      },
-     "saveVersion": 15,
+     "saveVersion": 16,
      "seeds": "242",
      "seedsEarned": "4520",
      "skins": {

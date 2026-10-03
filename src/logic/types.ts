@@ -215,12 +215,17 @@ export interface PerkDef extends Priced {
 // A Colony Trial: a life with a twist. Beat its goal (this life's coins would bring
 // `goalShare` × the Heirloom Seeds the family has earned this colony, at least
 // `minSeeds`) for its Golden Whiskers, once a colony.
-export type TrialRule = 'noFamily' | 'noAuto' | 'noStars' | 'betCap' | 'noWardrobe';
+// 1.10: a trial can have two twists ("Double Trouble"); it opens once every trial it
+// `needs` has been beaten this colony.
+export type TrialRule = 'noFamily' | 'noAuto' | 'noStars' | 'betCap' | 'noWardrobe'
+  | 'noHeadStart' | 'slowWheel' | 'noLuck' | 'noUpgradePayouts' | 'noUnlocks';
 export interface TrialDef {
   id: string;
   name: string;
   description: string;
-  rule: TrialRule;
+  rules: TrialRule[];
+  needs?: string[]; // Double Trouble: the trials to beat first (this colony)
+  slowdown?: number; // slowWheel: spin time and the auto-spin interval × this
   goalShare: number;
   minSeeds: number;
   whiskers: number;
@@ -385,6 +390,7 @@ export interface GameData {
   casino?: CasinoDef; // M11
   ownCasino?: OwnCasinoDef; // M12
   colony?: ColonyDef; // 1.4.0: The Great Migration
+  album?: { keep: number }; // 1.10: the Family Album keeps this many pages (the newest, and the family's first hamster)
 }
 
 // ───────────────────────── Spins ─────────────────────────
@@ -579,6 +585,24 @@ export interface Stats {
   cabinetsBought: number; // cabinets put on the floor (the free first one included)
 }
 
+// 1.10: a page of the Family Album, written when a hamster retires (or migrates
+// mid-life): who it was, what it wore and how its life went. Kept for good, through
+// every migration; the newest `album.keep` pages (and the family's first hamster).
+export interface AlbumPage {
+  name: string;
+  generation: number;
+  colony: number; // 0 = the first colony
+  playTime: number; // seconds the life lasted (time played, not time away)
+  coinsEarned: Money; // coins earned that life
+  bestWin: Money; // its biggest single win
+  seeds: Money; // Heirloom Seeds it left the family
+  trial: string | null; // the Colony Trial it played, if any
+  trialBeaten: boolean;
+  how: 'retired' | 'elders' | 'migrated'; // retired by hand, by the Wise Elders, or led the Great Migration
+  fur: string | null; // the skins it wore (ids), for its portrait
+  hat: string | null;
+}
+
 export interface GameState {
   // this hamster's life (reset when it retires)
   coins: Money;
@@ -591,7 +615,7 @@ export interface GameState {
   // itself, so coins pile up for the next upgrade instead of being spent on auto-spins. Manual spins and
   // deliveries (incl. Self-Starter) work as normal. Resets to false on retire, like the bet and the auto-spin timer.
   gamble: GambleState | null;
-  run: { coinsEarned: Money; playTime: number };
+  run: { coinsEarned: Money; playTime: number; bestWin: Money; trialBeaten: string | null }; // (bestWin, trialBeaten: save v16, for the album)
   // the family (kept when retiring)
   generation: number;
   seeds: Money;
@@ -608,6 +632,7 @@ export interface GameState {
   trial: string | null; // the Colony Trial this life is (null = an ordinary life)
   trialsDone: Record<string, boolean>; // trials beaten this colony
   auto: { retire: boolean; share: number; plant: boolean }; // the Wise Elders' settings
+  album: AlbumPage[]; // 1.10 (save v16): the Family Album, every hamster that has retired, oldest first (kept for good)
   // the collection (also kept)
   tokens: Money;
   diary: Record<string, boolean>;
@@ -689,6 +714,7 @@ export interface GameEvents {
   trialStarted: { id: string; goal: Money };
   trialCompleted: { id: string; whiskers: Money };
   trialEnded: { id: string; completed: boolean }; // the life with the twist is over (completed, or retired before the goal)
+  albumPage: { page: AlbumPage }; // 1.10: a hamster retired (or led a migration) and got its page in the Family Album
   autoChanged: { retire: boolean; share: number; plant: boolean };
   bigCageLeft: { generation: number; name: string };
   machineRebuilt: { id: string; stars: number };

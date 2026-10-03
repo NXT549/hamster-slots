@@ -33,7 +33,7 @@ import type { Money, MoneyLike } from './money.ts';
 import type {
   GameData, GameState, GameEvents, MachineDef, MachineState, SymbolDef, UpgradeDef, TreeNodeDef, Priced, Effect, EffectType,
   EffectOf, Levels, Overrides, Stats, SaveData, Goal, Grid, SpinSource, Suit, CardColor, Card, GambleEndReason, TokenSource, PotDef,
-  Cell, HoldState, BlackjackHand, UpgradeUnlock, PerkDef, TrialDef, TrialRule, RetirementDef,
+  Cell, HoldState, BlackjackHand, UpgradeUnlock, PerkDef, TrialDef, TrialRule, AlbumPage, RetirementDef,
 } from './types.ts';
 
 // v2 added retirement: generation, Heirloom Seeds, the family tree, per-run
@@ -61,7 +61,7 @@ import type {
 // v15 (M12, the Family Casino) added the family's own casino (its cabinets, floor
 // upgrades, back-office buys, the till and the Takings) and three stats.
 // See migrateSave() below.
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -380,6 +380,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     const stickers = countStickers();
     for (const x of effectsOfType('stickerPayout', overrides)) add(x, x.effect.perLevel * x.level * stickers);
     for (const x of effectsOfType('generationPayout', overrides)) add(x, x.effect.perLevel * x.level * state.generation);
+    if (trialRule('noUpgradePayouts')) upgrades = 1; // the Colony Trial "Thin Cheeks" (1.10)
     return family.mul(upgrades).mul(wardrobe).mul(boost).mul(colony);
   }
 
@@ -437,7 +438,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   // Quick Paws: a multiplier on spin time AND the auto-spin interval (both get faster together).
   function getSpinDuration(overrides?: Overrides, machine: MachineState = activeMachine()): number {
-    return getMachineData(machine).spinDuration * productOf('spinSpeed', overrides, machine);
+    return getMachineData(machine).spinDuration * productOf('spinSpeed', overrides, machine) * trialSlowdown();
   }
 
   // Wheel Training: null = no auto-spin; otherwise seconds between auto-spin starts:
@@ -456,7 +457,8 @@ export function createGame(initialData: GameData, rng: Rng) {
       rest = Math.max(rest, e.rest || 0);
     }
     if (interval === null) return null;
-    return Math.max(interval * productOf('spinSpeed', overrides, machine), getSpinDuration(overrides, machine) + rest);
+    // (Slow Wheel slows both, so the floor still holds: rule 4.)
+    return Math.max(interval * productOf('spinSpeed', overrides, machine) * trialSlowdown(), getSpinDuration(overrides, machine) + rest);
   }
 
   // The pause toggle (a QoL control, not a balance change): while true, auto-spin
@@ -536,6 +538,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function isSymbolLocked(symbolId: string, overrides?: Overrides, machine: MachineState = activeMachine()): boolean {
     const s = getMachineData(machine).symbols.find((x) => x.id === symbolId);
     if (!s || !s.locked) return false;
+    if (trialRule('noUnlocks')) return true; // the Colony Trial "Picky Eater" (1.10): no new symbols
     return !effectsOfType('unlockSymbol', overrides, machine).some((x) => x.effect.symbols.slice(0, x.level).includes(symbolId));
   }
 
@@ -548,6 +551,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   //   Hamster Luck: the hamster's own upgrades (and family traits): every machine.
   //   Machine Luck: this machine's upgrades only.
   function getLuck(overrides?: Overrides, machine: MachineState = activeMachine()): { hamster: number; machine: number; total: number } {
+    if (trialRule('noLuck')) return { hamster: 0, machine: 0, total: 0 }; // the Colony Trial "Bad Luck Day" (1.10)
     let hamster = 0;
     let own = 0;
     for (const { effect, level, scope } of effectsOfType('luck', overrides, machine)) {
@@ -1154,6 +1158,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       state.stats.wins++;
       state.stats.coinsWon = roundMoney(state.stats.coinsWon.add(payout));
       state.stats.biggestWin = state.stats.biggestWin.max(payout);
+      state.run.bestWin = state.run.bestWin.max(payout); // (for the Family Album, 1.10)
       state.stats.mostLinesWon = Math.max(state.stats.mostLinesWon, new Set(paid.filter((w) => !w.ways).map((w) => w.line)).size); // a line that pays both ways is still one line (ways wins aren't lines)
       if (paid.some((w) => w.usedWild)) state.stats.wildWins++;
       if (doubled) state.stats.doubleWins++;
@@ -1300,6 +1305,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     state.stats.jackpotsWon++;
     if (def === jp.pots[jp.pots.length - 1]) state.stats.grandJackpots++; // the last pot in the list is the top one
     state.stats.biggestWin = state.stats.biggestWin.max(amount);
+    state.run.bestWin = state.run.bestWin.max(amount);
     earn(amount);
     events.emit('jackpotWon', { machineId: machine.typeId, pot, amount });
     checkDiary();
@@ -1382,6 +1388,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     machine.hold = null;
     if (full) state.stats.holdGrands++;
     state.stats.biggestWin = state.stats.biggestWin.max(amount);
+    state.run.bestWin = state.run.bestWin.max(amount);
     earn(amount);
     events.emit('holdEnded', { machineId: machine.typeId, amount, coins, full });
     checkDiary();
@@ -1898,6 +1905,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   // upgrade that is below its free level (never lower one the player bought).
   // A machine upgrade is only raised on the machines that sell it.
   function applyStartingLevels(): void {
+    // The Colony Trial "From Scratch" (1.10): no head start until it's beaten (checkTrial
+    // calls this again then, so the free levels and machines arrive at once).
+    if (trialRule('noHeadStart')) return;
     // Snack Inheritance (M8): every pup starts owning these machines (it stays on
     // the machine it's running; a new one starts at the bet you use).
     for (const { effect, level } of effectsOfType('startingMachine')) {
@@ -1920,6 +1930,23 @@ export function createGame(initialData: GameData, rng: Rng) {
     }
   }
 
+  // ── The Family Album (1.10) ──
+  // Every hamster that retires gets a page: who it was, what it wore and how its life
+  // went. It's only a record (nothing reads it for the balance), kept for good through
+  // every migration. A long-lived family keeps the newest `album.keep` pages, and
+  // always its very first hamster (the founder of the family line).
+  function addAlbumPage(seeds: Money, how: AlbumPage['how']): void {
+    const trial = state.trial || state.run.trialBeaten;
+    state.album.push({
+      name: getPupName(), generation: state.generation, colony: state.colony,
+      playTime: state.run.playTime, coinsEarned: state.run.coinsEarned, bestWin: state.run.bestWin, seeds,
+      trial, trialBeaten: !!trial && trial === state.run.trialBeaten, how,
+      fur: getEquippedSkin('fur'), hat: getEquippedSkin('hat'),
+    });
+    trimAlbum(state.album, data);
+    events.emit('albumPage', { page: state.album[state.album.length - 1] });
+  }
+
   // Retire to the Big Cage: collect the pending seeds, and a new pup starts a new
   // life. Coins, upgrades, machines, deliveries and timers go back to the start.
   // The family keeps: generation, Heirloom Seeds, the tree, Machine Stars and lifetime stats.
@@ -1927,6 +1954,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     if (!canRetire()) return false;
     const gained = getPendingSeeds();
     if (state.gamble) endGamble('retire');
+    addAlbumPage(gained, auto ? 'elders' : 'retired'); // 1.10: before the trial ends and the life resets
     endTrial(false); // 1.4.0: retiring before a Colony Trial's goal ends it (no whiskers)
     casino.beforeRetire(); // M11: the family remembers this life's earnings (a chip's price never falls)
     const oldName = getPupName();
@@ -2139,6 +2167,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function migrate(): boolean {
     if (!canMigrate()) return false;
     if (state.gamble) endGamble('retire');
+    if (!state.bigCage) addAlbumPage(getPendingSeeds(), 'migrated'); // the hamster who led the way (1.10)
     endTrial(false);
     const seedsEarned = getMigrationSeeds();
     const gained = whiskersFor(seedsEarned);
@@ -2168,10 +2197,11 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   // ── Colony Trials ──
-  // From the first migration on, a life can be a trial: one twist (no family
-  // bonuses, no auto-spin, no stars, bets ×1 only, or nothing worn) until the life's
-  // pending seeds reach the goal. Beating it pays whiskers and lifts the twist at
-  // once (the rest of the life is ordinary). Each trial pays once a colony.
+  // From the first migration on, a life can be a trial: a twist (no family
+  // bonuses, no auto-spin, no stars, bets ×1 only, nothing worn; 1.10 adds five more
+  // and Double Trouble, two at once) until the life's pending seeds reach the goal.
+  // Beating it pays whiskers and lifts the twist at once (the rest of the life is
+  // ordinary). Each trial pays once a colony.
 
   function getTrialDef(id: string | null): TrialDef | null {
     return (id && data.colony && data.colony.trials.find((t) => t.id === id)) || null;
@@ -2179,7 +2209,7 @@ export function createGame(initialData: GameData, rng: Rng) {
   function trialRule(rule: TrialRule): boolean {
     if (previewing) return false; // a preview shows what a buy does for the family, twist or not
     const t = getTrialDef(state.trial);
-    return !!t && t.rule === rule;
+    return !!t && t.rules.includes(rule);
   }
   function trialsOpen(): boolean {
     return !!data.colony && state.colony >= data.colony.trialsFrom && state.generation >= data.colony.trialGeneration;
@@ -2197,7 +2227,19 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
   // Chosen in the Big Cage before the life starts (a fresh life, nothing played yet).
   function canStartTrial(id: string): boolean {
-    return state.bigCage && trialsOpen() && !!getTrialDef(id) && !state.trialsDone[id] && state.run.playTime === 0;
+    return state.bigCage && trialsOpen() && isTrialUnlocked(id) && !state.trialsDone[id] && state.run.playTime === 0;
+  }
+  // 1.10: Double Trouble (two twists at once) opens once both its halves are beaten this
+  // colony, so it's always something the family has managed one twist at a time.
+  function isTrialUnlocked(id: string): boolean {
+    const t = getTrialDef(id);
+    return !!t && (t.needs || []).every((n) => !!state.trialsDone[n]);
+  }
+  // Slow Wheel (1.10): spin time and the auto-spin interval × this (1 otherwise).
+  function trialSlowdown(): number {
+    if (previewing) return 1;
+    const t = getTrialDef(state.trial);
+    return t && t.rules.includes('slowWheel') ? t.slowdown ?? 1 : 1;
   }
   // startTrial(null) goes back to an ordinary life.
   function startTrial(id: string | null): boolean {
@@ -2224,6 +2266,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     const whiskers = getTrialWhiskers(id);
     state.trial = null; // the twist lifts at once
     state.trialsDone[id] = true;
+    state.run.trialBeaten = id; // (for the Family Album, 1.10)
     state.whiskers = state.whiskers.add(whiskers);
     state.stats.whiskersEarned = state.stats.whiskersEarned.add(whiskers);
     state.stats.trialsCompleted++;
@@ -2760,7 +2803,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     migrate, buyPerk, startTrial, setAuto, addWhiskers,
     canMigrate, isTreeComplete, getTreeProgress, getPendingWhiskers, getMigrationSeeds, getWhiskerGain, getSeedGain, getMaxStars,
     getPerkDef, getPerkLevel, getPerkCost, isPerkMaxed, canBuyPerk, previewPerk,
-    trialsOpen, getTrialDef, getTrialGoal, getTrialWhiskers, canStartTrial, hasAutoRetire, getAutoShares, getAutoRetireGoal, isMachineOpen: (id: string) => {
+    trialsOpen, getTrialDef, getTrialGoal, isTrialUnlocked, getTrialWhiskers, canStartTrial, hasAutoRetire, getAutoShares, getAutoRetireGoal, isMachineOpen: (id: string) => {
       const md = data.machines.find((m) => m.id === id);
       return !!md && isMachineOpen(md);
     },
@@ -2902,7 +2945,7 @@ export function newState(data: GameData): GameState {
     autoTimer: 0,
     autoPaused: false, // a fresh pup's auto-spin runs by default
     gamble: null, // { machineId, stake, rounds, won, started, timer } while a gamble is offered or played (never saved)
-    run: { coinsEarned: money(0), playTime: 0 }, // totals for this hamster only
+    run: { coinsEarned: money(0), playTime: 0, bestWin: money(0), trialBeaten: null }, // totals for this hamster only
 
     // ── the family (kept when retiring) ──
     generation: 1, // 1 = the first hamster; +1 per retirement
@@ -2921,6 +2964,7 @@ export function newState(data: GameData): GameState {
     trial: null, // the Colony Trial this life is, e.g. "noFamily" (null = an ordinary life)
     trialsDone: {}, // trials beaten this colony, e.g. { noFamily: true }
     auto: { retire: false, share: data.colony ? data.colony.autoRetire.shares[0] : 0.5, plant: true }, // the Wise Elders' settings
+    album: [], // 1.10: the Family Album, a page for every hamster that retired (kept for good)
 
     // ── collection (also kept when retiring) ──
     tokens: money(0), // unspent Hamster Tokens
@@ -3081,8 +3125,25 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
     save.saveVersion = 15;
   }
 
+  // v15 → v16 (1.10, the Family Album). The hamsters who retired before it aren't
+  // known, so the album starts empty, and this life's best win starts at 0
+  // (sanitizeState fills both in), so only the version changes here.
+  if (save.saveVersion === 15) {
+    save.saveVersion = 16;
+  }
+
   if (save.saveVersion !== SAVE_VERSION) return null;
   return save;
+}
+
+// The Family Album keeps the newest `album.keep` pages, and always the family's very
+// first hamster (generation 1 of the first colony), the founder of the line.
+function trimAlbum(album: AlbumPage[], data: GameData): void {
+  const keep = Math.max(2, data.album ? data.album.keep : Infinity);
+  while (album.length > keep) {
+    const founder = album[0].generation === 1 && album[0].colony === 0;
+    album.splice(founder ? 1 : 0, 1);
+  }
 }
 
 function num(x: unknown, fallback: number): number {
@@ -3223,6 +3284,8 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   if (raw.run && typeof raw.run === 'object') {
     s.run.coinsEarned = moneyFrom(raw.run.coinsEarned, 0).max(0);
     s.run.playTime = Math.max(0, num(raw.run.playTime, 0));
+    s.run.bestWin = moneyFrom(raw.run.bestWin, 0).max(0);
+    s.run.trialBeaten = (data.colony?.trials || []).some((t) => t.id === raw.run.trialBeaten) ? raw.run.trialBeaten : null;
   }
 
   s.generation = Math.max(1, Math.floor(num(raw.generation, 1)));
@@ -3247,6 +3310,31 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
   s.auto.retire = ra.retire === true;
   s.auto.plant = ra.plant !== false;
   if (cdef && cdef.autoRetire.shares.includes(ra.share)) s.auto.share = ra.share;
+
+  // The Family Album (1.10): pages that make sense; a skin or trial that no longer
+  // exists is forgotten (the page stays).
+  if (Array.isArray(raw.album)) {
+    const skinIds = new Set((data.skins || []).map((x) => x.id));
+    const trialIds = new Set(trials.map((t) => t.id));
+    for (const p of raw.album) {
+      if (!p || typeof p !== 'object' || typeof p.name !== 'string') continue;
+      const trial = trialIds.has(p.trial) ? p.trial : null;
+      s.album.push({
+        name: p.name.slice(0, 40),
+        generation: Math.max(1, Math.floor(num(p.generation, 1))),
+        colony: Math.max(0, Math.floor(num(p.colony, 0))),
+        playTime: Math.max(0, num(p.playTime, 0)),
+        coinsEarned: moneyFrom(p.coinsEarned, 0).max(0),
+        bestWin: moneyFrom(p.bestWin, 0).max(0),
+        seeds: moneyFrom(p.seeds, 0).floor().max(0),
+        trial, trialBeaten: !!trial && p.trialBeaten === true,
+        how: p.how === 'elders' || p.how === 'migrated' ? p.how : 'retired',
+        fur: skinIds.has(p.fur) ? p.fur : null,
+        hat: skinIds.has(p.hat) ? p.hat : null,
+      });
+    }
+    trimAlbum(s.album, data);
+  }
 
   // Machine Stars, capped at the max (Trailblazer and Starry Roots, 1.4.0, raise it by their levels).
   let maxStars = data.stars ? data.stars.max : 0;

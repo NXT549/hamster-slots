@@ -204,6 +204,12 @@ describe('Colony Trials', () => {
 
   for (const t of col.trials) {
     const g = trialFamily(332);
+    const has = (r) => t.rules.includes(r);
+    // Double Trouble opens once its halves are beaten this colony.
+    if (t.needs) {
+      check(`${t.name}: locked until ${t.needs.join(' and ')} are beaten this colony`, !g.isTrialUnlocked(t.id) && !g.canStartTrial(t.id));
+      for (const n of t.needs) g.state.trialsDone[n] = true;
+    }
     g.state.seedsEarned = money(400);
     g.state.seeds = money(10);
     // A family with a bit of everything, so each twist has something to take away.
@@ -218,16 +224,33 @@ describe('Colony Trials', () => {
     g.on('trialStarted', (e) => started.push(e));
     check(`${t.name}: starts in the Big Cage`, g.canStartTrial(t.id) && g.startTrial(t.id) && g.state.trial === t.id && started.length === 1 && num(started[0].goal) === goal);
     g.leaveBigCage();
+    g.addCoins(1e12); // (not earned)
     g.buyUpgrade('wheel', 5);
     g.buyUpgrade('highRoller', 4);
-    if (t.rule === 'noFamily') check(`${t.name}: no heirloom bonus and no family traits`, num(g.getHeirloomBonus()) === 0 && treeOff(g));
-    if (t.rule === 'noAuto') check(`${t.name}: no auto-spin, even with Wheel Training`, g.getAutoInterval() === null);
-    if (t.rule === 'noAuto') check(`${t.name}: … but the shop still says what Wheel Training gives (previews ignore the twist)`,
+    if (has('noFamily')) check(`${t.name}: no heirloom bonus and no family traits`, num(g.getHeirloomBonus()) === 0 && treeOff(g));
+    if (has('noAuto')) check(`${t.name}: no auto-spin, even with Wheel Training`, g.getAutoInterval() === null);
+    if (has('noAuto')) check(`${t.name}: … but the shop still says what Wheel Training gives (previews ignore the twist)`,
       typeof g.previewUpgrade('wheel').now === 'number' && g.getAutoInterval() === null);
-    if (t.rule === 'betCap') check(`${t.name}: … and High Roller's tile still shows the family's bets`, g.previewUpgrade('highRoller').now > 1);
-    if (t.rule === 'noStars') check(`${t.name}: stars don't count`, g.getStarMultiplier() === 1 && g.getStars('clunky') === 3);
-    if (t.rule === 'betCap') check(`${t.name}: bets ×1 only`, g.getMaxBetIndex() === 0 && g.setBet(2) === false);
-    if (t.rule === 'noWardrobe') check(`${t.name}: nothing worn does anything`, g.getWardrobe().length > 0 && wardrobeOff(g));
+    if (has('betCap')) check(`${t.name}: … and High Roller's tile still shows the family's bets`, g.previewUpgrade('highRoller').now > 1);
+    if (has('noStars')) check(`${t.name}: stars don't count`, g.getStarMultiplier() === 1 && g.getStars('clunky') === 3);
+    if (has('betCap')) check(`${t.name}: bets ×1 only`, g.getMaxBetIndex() === 0 && g.setBet(2) === false);
+    if (has('noWardrobe')) check(`${t.name}: nothing worn does anything`, g.getWardrobe().length > 0 && wardrobeOff(g));
+    if (has('noHeadStart')) check(`${t.name}: no free levels from the tree`, g.getUpgradeLevel('thirdReel') === 0 && g.state.machines.length === 1);
+    if (has('slowWheel')) check(`${t.name}: spins and auto-spins take ×${t.slowdown}, and auto-spin still waits for spin + rest`, (() => {
+      const slow = [g.getSpinDuration(), g.getAutoInterval()];
+      const id = g.state.trial;
+      g.state.trial = null;
+      const fast = [g.getSpinDuration(), g.getAutoInterval()];
+      g.state.trial = id;
+      return Math.abs(slow[0] - fast[0] * t.slowdown) < 1e-9 && slow[1] > fast[1] && slow[1] > slow[0];
+    })());
+    if (has('noLuck')) check(`${t.name}: no Luck at all (the stars' Luck too)`, g.getLuck().total === 0 && g.getStars('clunky') === 3);
+    if (has('noUpgradePayouts')) check(`${t.name}: the coin upgrades add no payouts`, (() => {
+      const pay = num(g.getPayoutMultiplier());
+      g.buyUpgrade('cheeks', 3);
+      return g.getUpgradeLevel('cheeks') > 0 && num(g.getPayoutMultiplier()) === pay;
+    })());
+    if (has('noUnlocks')) check(`${t.name}: unlocked symbols stay off the reels`, (g.buyUpgrade('newSeeds', 2), g.getUpgradeLevel('newSeeds') === 2) && g.isSymbolLocked('golden'));
     // Beat it: earn coins until the life's pending seeds reach the goal.
     const done = [];
     g.on('trialCompleted', (e) => done.push(e));
@@ -237,8 +260,10 @@ describe('Colony Trials', () => {
     check(`${t.name}: beating the goal pays its whiskers (× Whisker Wisdom) and lifts the twist`,
       g.state.trial === null && done.length === 1 && num(done[0].whiskers) === pay && num(g.state.whiskers) === whiskers + pay
       && g.state.trialsDone[t.id] === true && g.state.stats.trialsCompleted === 1);
-    if (t.rule === 'noAuto') check(`${t.name}: … auto-spin works again at once`, g.getAutoInterval() !== null);
-    if (t.rule === 'betCap') check(`${t.name}: … the bets are back`, g.getMaxBetIndex() > 0);
+    if (has('noAuto')) check(`${t.name}: … auto-spin works again at once`, g.getAutoInterval() !== null);
+    if (has('betCap')) check(`${t.name}: … the bets are back`, g.getMaxBetIndex() > 0);
+    if (has('noHeadStart')) check(`${t.name}: … and the head start arrives`, g.getUpgradeLevel('thirdReel') > 0 && g.state.machines.length > 1);
+    if (has('noUnlocks')) check(`${t.name}: … and the symbols come back`, !g.isSymbolLocked('golden'));
     g.retire();
     check(`${t.name}: once a colony`, g.canStartTrial(t.id) === false && g.startTrial(t.id) === false);
   }
@@ -426,7 +451,7 @@ describe('save v14', () => {
   g.state.trialsDone[col.trials[0].id] = true;
   g.setAuto({ retire: true, share: col.autoRetire.shares[2], plant: false });
   const save = g.toSaveData();
-  check('a save is v15, with the colony', save.saveVersion === SAVE_VERSION && SAVE_VERSION === 15 && save.colony === 1 && save.whiskers === '19'
+  check('a save is v14 or later, with the colony', save.saveVersion === SAVE_VERSION && SAVE_VERSION >= 14 && save.colony === 1 && save.whiskers === '19'
     && save.perks.colonyPride === 1 && save.trial === col.trials[1].id && save.trialsDone[col.trials[0].id] === true
     && deepEqual(save.auto, { retire: true, share: col.autoRetire.shares[2], plant: false }) && typeof save.colonyCoins === 'string');
   const h = newGame(362);
