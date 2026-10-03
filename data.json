@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 15,
+  "schemaVersion": 16,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -87,7 +87,7 @@
         "golden": { "2": 3800, "3": 37800, "4": 283500, "5": 1890000 },
         "wild": { "2": 3200, "3": 31500, "4": 252000, "5": 1890000 }
       },
-      "freeSpins": { "symbol": "ball", "awards": { "3": 8, "4": 12, "5": 20 }, "multiplier": 2, "pause": 1 }
+      "freeSpins": { "symbol": "ball", "awards": { "3": 8, "4": 12, "5": 20 }, "multiplier": 2, "pause": 1, "climb": 1 }
     },
     {
       "id": "palace",
@@ -311,6 +311,14 @@
     "duration": 45,
     "reward": 20
   },
+  "zoomies": {
+    "minReels": 5,
+    "reels": [
+      { "count": 1, "weight": 70 },
+      { "count": 2, "weight": 25 },
+      { "count": 3, "weight": 5 }
+    ]
+  },
   "upgrades": [
     {
       "id": "cheeks",
@@ -448,6 +456,17 @@
       "growthRate": 1.5,
       "maxLevel": null,
       "effect": { "type": "payoutMultiplier", "perLevel": 1 }
+    },
+    {
+      "id": "zoomies",
+      "name": "Zoomies",
+      "description": "Your hamster gets the zoomies! Now and then a paid spin on a five-reel machine has it dash across the reels, turning one to three of them wild.",
+      "scope": "global",
+      "unlock": { "generation": 7 },
+      "baseCost": 2000000,
+      "growthRate": 10,
+      "maxLevel": 3,
+      "effect": { "type": "zoomies", "perLevel": 0.005 }
     },
     {
       "id": "hotSauce",
@@ -760,6 +779,28 @@
       "growthRate": 3,
       "maxLevel": 3,
       "effect": { "type": "extraFreeSpins", "perLevel": 1 }
+    },
+    {
+      "id": "stickyWilds",
+      "name": "Sticky Wilds",
+      "description": "Honey on the paws: a Hamster Wild that lands in free spins stays put for one more free spin, each level.",
+      "scope": "machine",
+      "machines": ["bonanza"],
+      "baseCost": 400000,
+      "growthRate": 5,
+      "maxLevel": 2,
+      "effect": { "type": "stickyWilds", "perLevel": 1 }
+    },
+    {
+      "id": "partyClimb",
+      "name": "Party Climb",
+      "description": "The burrow party gets louder: every free spin pays ×1 more than the last, up to one step higher each level (×2, ×3, ×4, ×5).",
+      "scope": "machine",
+      "machines": ["bonanza"],
+      "baseCost": 300000,
+      "growthRate": 3,
+      "maxLevel": 3,
+      "effect": { "type": "freeSpinClimb", "perLevel": 1 }
     },
     {
       "id": "velvetGears",

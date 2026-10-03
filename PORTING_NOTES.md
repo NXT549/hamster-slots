@@ -724,6 +724,12 @@ Headless tests can check round-trips, and a new platform only swaps the storage.
 - **Settings** `uiSounds` and `guide` (both on; older settings gain them). No logic, data, balance or save change: the golden run and fixtures are untouched. Checked in Chromium at 390×844 and 1280×800 (a fresh game through Spin, the first upgrade, a new symbol, the Family tab's padlock, a new machine, retiring and the Big Cage) and with Motion "Less", no console errors; the sounds can't be heard in a test browser, so the user listens.
 - **Released** as 1.9.0 "Welcome Mat" at the user's "publish it", before a playtest. Tag pushes are refused (403), so the user publishes the GitHub Release **"v1.9.0 · Welcome Mat"** on the "Release 1.9.0" commit.
 
+**D166 — Zoomies and the Burrow Bonanza's free spins, as 1.10.0 "Burrow Party"** (2026-10-03; the user asked for brainstorms of "actual updates and content", then said "you decide" to the coordinator's shortlist; a slot-machine thread ranked six machine ideas and picked these two; DESIGN §33).
+- **Chosen: Zoomies** as a hamster rebirth upgrade (generation 7, the one generation without one), on every payline machine with 5 reels and a wild, paid spins only: 1, 2 or 3 whole reels turn wild (70/25/5). **Exact** by cases: each (reels zoomed) case is an ordinary spin whose zoomed reels are all wild, so the line EV is the old formula reel by reel; the hit rate still depends only on the end reels; features count scatters over the cells left. The no-Zoomies path is kept byte for byte, so every old number (and the golden run) is unchanged without the upgrade. 0.5% a level (max 1.5%): 1% was already +20–60% EV, 5% doubled most machines.
+- **Chosen: Sticky Wilds** that stay a set number of free spins (1 a level, max 2), not until the free spins end: with the Bonanza's wild at ~3% a cell, wilds held for 20 spins covered ~45% of the grid and the bonus was worth ×3 the machine. "Every cell draws every spin, a held wild shows over it" keeps cells independent, so free spin k is an ordinary spin (wild chance 1 − (1 − w)^min(k, sticky + 1)). **Party Climb** +1 a free spin up to ×5. After max(sticky, steps) + 1 spins nothing changes, so the session is a short exact sum plus the old retrigger formula.
+- **Rejected:** Zoomies on the Hamster Maze (ways: a wild reel 1 would need a new ways formula, and its wild never lands on reel 1 on purpose) and on free spins (the session maths would mix both); Zoomies as a per-machine feature (one upgrade reaching five machines is more noticeable); a multiplier that climbs per *win* (depends on history, not exact); sticky wilds that never leave (above); a cap on held wilds (still exact but harder to explain).
+- **Save v16** (`freeSpins.sticky`, stats `zoomies` and `stickyWilds`), data schema 16. The golden run was re-recorded: the only session that changed is "allMachines", which buys every upgrade it can and now also buys Party Climb (so its coins and later spins moved); every other session matched with the new fields left out. Fixtures v16 made with `node tools/golden.mjs --fixtures`.
+
 ---
 
 ## Balance log
@@ -790,6 +796,7 @@ Every `data.json` change: date · value · old → new · why.
 | 2026-10-03 | Machine skins (1.6.1) | 4 → 9 (+Bubblegum, Moss: spins 5% cheaper · Copper Pipes, Seaside: 10% · Arcade Neon: 15% + 5% double-win chance) | The user's "add new skins" (D161). Same buff sizes as the old ones; the capsule pool grows 24 → 29, so the full set takes ~194 pulls (was ~151). No sim run: the buffs match the existing machine skins, and the simulator wears the rarest skin it owns (§25). |
 | 2026-10-03 | `familyTree.costPerColony` (new) · `colony.perks` Colony Pride `perLevel` | — → **3** · 0.5 → **0.3** | Later colonies' lives were 1–6 min (D163). Sim (`--migrate --lives 45 --seeds 3`, idle): colony 2 1.8–2.1 h → 3.5–4.8 h, its gens 9–15 2.8–4.4 → 6.0–8.4 min; active 1.1–1.5 → 3.1–4.5 h. Colony 1 unchanged. Golden run re-recorded (migration session only). |
 | 2026-10-03 | `ownCasino` (new, M12) · `schemaVersion` · diary | — → 8 cabinets (bets 5 … 300,000 Takings, guests win back 92–95%, 0 … 400M Takings), 5 floor upgrades, 2 back-office buys, till 2 h, rest 2 s, min guest return 88% · 14 → 15 · 57 → 60 stickers (+Grand Opening 3, Full Floor 10, Casino Mogul 8) | The Family Casino (D164, DESIGN §32). Paced with a greedy model (empties the till the moment it pays): first cabinet ~20 min, full floor ~14 h of casino time. Takings never touch coins; sim before/after in Playtest notes. |
+| 2026-10-03 | `zoomies` (new) · Zoomies, Sticky Wilds, Party Climb (new upgrades) · Bonanza `freeSpins.climb` · `schemaVersion` | — → reels 1/2/3 weights 70/25/5, 5+ reels · Zoomies gen 7, 2M × 10ⁿ, max 3, +0.5% a level · Sticky Wilds (Bonanza) 400K × 5ⁿ, max 2, +1 spin · Party Climb (Bonanza) 300K × 3ⁿ, max 3, +1 step · climb 1 · 15 → 16 | 1.10.0 "Burrow Party" (D166, DESIGN §33). Zoomies at max: +17–37% RTP fresh, +21–58% fully upgraded (the Big Cheese most); both Bonanza upgrades maxed: +28% fresh, +82% full (free spins 14% → 53% of its EV). Sim (18 lives, idle and active): lives 1–7 unchanged, 8–18 within the noise, whole tree at the same time (Playtest notes, 1.10.0-rc.1). |
 
 ---
 
@@ -797,6 +804,25 @@ Every `data.json` change: date · value · old → new · why.
 ---
 
 ## Playtest notes
+
+### 1.10.0-rc.1 "Burrow Party": the simulator, before and after (2026-10-03)
+
+`node tools/sim.mjs --lives 18` (5 seeds), with `--data` a copy of data.json without the three new upgrades as "before". The bot buys Zoomies, Sticky Wilds and Party Climb like any upgrade (best payback first). Life lengths in minutes, ranges over seeds:
+
+| Gen | Idle before | Idle after | Active before | Active after |
+|---|---|---|---|---|
+| 1–7 | unchanged | unchanged | unchanged | unchanged |
+| 8 | 6.4–16.0 | 5.8–16.0 | 7.8–12.6 | 7.8–12.7 |
+| 9 | 11.0–15.1 | 10.4–15.6 | 6.4–13.0 | 9.2–13.0 |
+| 10 | 3.1–13.2 | 6.0–13.9 | 5.6–9.6 | 5.9–12.8 |
+| 11 | 5.4–10.5 | 5.9–10.7 | 5.4–8.2 | 4.8–8.5 |
+| 12 | 4.7–11.1 | 5.6–6.9 | 3.1–6.8 | 3.1–8.8 |
+| 13 | 5.1–8.8 | 5.9–10.3 | 3.5–8.8 | 5.0–8.2 |
+| 14–15 | 6.1–44.1 · 8.0–58.7 | 7.6–36.0 · 8.9–85.0 | 7.1–14.8 · 11.1–33.6 | 5.3–12.7 · 12.9–26.3 |
+| Whole tree planted | 4.7–5.9 h | 4.7–5.9 h | 3.4–3.7 h | 3.4–3.7 h |
+| 18 lives in all | 7.5–13.3 h | 7.8–13.1 h | 6.5–10.1 h | 7.1–9.5 h |
+
+The first 7 lives are untouched (Zoomies opens at generation 7; the bot rarely buys the Bonanza's last upgrades before moving on to the Palace). From generation 8 the lives are within the seed-to-seed noise: the extra income is small next to the payout multipliers by then, and the seed curve decides when to retire. No pacing change is needed; the short late lives (§10) are neither helped nor made worse.
 
 *The first real feedback on the whole game came after M6 (below). Before that there were only the user's first look at M1 and short reactions ("really good", "is good").*
 

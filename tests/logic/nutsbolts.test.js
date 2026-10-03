@@ -27,11 +27,11 @@ const stickerUps = gated.filter((u) => u.unlock.sticker);
 // ─────────────────────────────────────────────────────────────
 describe('1.3.1 data: the new upgrades, traits and stickers', () => {
   check('20 new upgrades: 3 for everyone, 6 rebirth upgrades, 11 sticker upgrades',
-    ['luckyPennies', 'nightShift', 'cosyNest'].every((id) => upgrade(id) && !upgrade(id).unlock) && rebirth.length === 6 && stickerUps.length === 11);
+    ['luckyPennies', 'nightShift', 'cosyNest'].every((id) => upgrade(id) && !upgrade(id).unlock) && rebirth.filter((u) => u.id !== 'zoomies').length === 6 && stickerUps.length === 11);
   check('every "unlock" is a generation of 2 or more, or a sticker in the diary',
     gated.every((u) => (u.unlock.generation === undefined || (Number.isInteger(u.unlock.generation) && u.unlock.generation >= 2))
       && (u.unlock.sticker === undefined || data.diary.some((d) => d.id === u.unlock.sticker))));
-  check('rebirth upgrades open at generations 2, 3, 4, 5, 6 and 8', rebirth.map((u) => u.unlock.generation).join() === '2,3,4,5,6,8');
+  check('rebirth upgrades open at generations 2, 3, 4, 5, 6, 7 (Zoomies, 1.10.0) and 8', rebirth.map((u) => u.unlock.generation).join() === '2,3,4,5,6,7,8');
   check('no two sticker upgrades need the same sticker', new Set(stickerUps.map((u) => u.unlock.sticker)).size === stickerUps.length);
   check('the bets still stop at x10 (DESIGN §18: bigger bets made late lives collapse, D80)', data.betSteps.join() === '1,2,3,5,10'
     && !gated.some((u) => u.effect.type === 'betSteps'));
@@ -67,8 +67,8 @@ describe('rebirth and sticker upgrades are locked until they open', () => {
     byGeneration[gen] = opened.filter((e) => e.reason === 'generation').map((e) => e.id);
     opened.length = 0;
   }
-  check('generation 2 opens Running Shoes, 3 the Coupon Book, 4 the Sticker Album, 5 Star Polish, 6 Mega Cheeks, 8 Hot Sauce (each once)',
-    [2, 3, 4, 5, 6, 7, 8].map((gen) => byGeneration[gen].join('+')).join() === 'runningShoes,couponBook,stickerAlbum,starPolish,megaCheeks,,hotSauce',
+  check('generation 2 opens Running Shoes, 3 the Coupon Book, 4 the Sticker Album, 5 Star Polish, 6 Mega Cheeks, 7 Zoomies, 8 Hot Sauce (each once)',
+    [2, 3, 4, 5, 6, 7, 8].map((gen) => byGeneration[gen].join('+')).join() === 'runningShoes,couponBook,stickerAlbum,starPolish,megaCheeks,zoomies,hotSauce',
     JSON.stringify(byGeneration));
   check('by generation 8 every rebirth upgrade is on sale', rebirth.every((u) => h.isUpgradeUnlocked(u.id)));
 

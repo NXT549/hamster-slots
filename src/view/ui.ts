@@ -80,6 +80,10 @@ const UPGRADE_LINES: Record<string, (level: number, game: Game, def: UpgradeDef)
   bothWays: () => 'Pays both ways! Matches on the right-hand reels count now too.',
   extraRespins: (level, game) => `Sticky paws! Hold & spin starts with ${game.getHoldRespins()} respins now.`,
   wheelBonus: (level, game) => `Aged to perfection! The cheese wheel averages ×${game.getWheelAverage().toFixed(1)} now.`,
+  // 1.10.0: Burrow Party
+  zoomies: (level, game) => `I've got the zoomies! ${Number((game.getZoomChance() * 100).toFixed(1))}% of paid spins on five-reel machines, I'll dash across and turn reels wild.`,
+  stickyWilds: (level, game) => `Honey paws! In free spins, a wild sticks around for ${game.getStickyWilds()} more spin${game.getStickyWilds() === 1 ? '' : 's'}.`,
+  freeSpinClimb: (level, game) => `Party time! Every free spin pays more than the last, up to ×${game.getMaxFreeSpinMultiplier()}.`,
   luck: (level, game) => `Luck ${game.getLuck().total}! Fewer Wood Shavings, more wins.`,
   unlockSymbol: (level, game, def) => {
     const id = effectAs(def, 'unlockSymbol').symbols[level - 1];
@@ -203,6 +207,8 @@ export function createUI(
       if (cells.length >= 5 && !lessMotion()) say(`${cells.length} boxes, all the same inside!`, 1800);
     },
     quick: () => settings.quickReels,
+    // 1.10.0: Zoomies: the hamster (in its fur and hat) dashing across the reels, at 2×.
+    runner: () => spriteImg(hamsterSprite('hamsterRun2', hatOf(game)), 64, '', furColors(game)),
   });
   // The prize wheel: { machineId, pot, turns, start, landedAt } while the jackpot wheel shows.
   // M9: the same wheel is the Big Cheese's cheese wheel (kind "cheese"): it's timed by the view (the win was
@@ -436,8 +442,13 @@ export function createUI(
   game.on('spinStarted', (e) => {
     if (e.machineId !== activeId()) return;
     winShow.stop();
-    reels.startSpin(e.result, e.mystery);
+    reels.startSpin(e.result, e.mystery, { zoom: e.zoom, sticky: e.sticky });
     el.machine.classList.remove('big-win');
+    // 1.10.0: Zoomies! The hamster dashes across and turns whole reels wild.
+    if (e.zoom.length) {
+      sound.play('zoomies');
+      say(e.zoom.length === 1 ? 'Zoomies! A whole reel of wilds!' : `Zoomies! ${e.zoom.length} whole reels of wilds!`, 2400);
+    }
     lastSpinSource = e.source;
     if (e.source === 'manual') {
       celebrate.close(); // a spin you pulled yourself: on with the game
@@ -550,7 +561,9 @@ export function createUI(
     fx.burstAt(el.machine, { count: 30, palette: fx.colors.party, speed: 220 });
     if (!lessMotion()) replayClass(el.hamster, 'hop');
     cheerUntil = performance.now() + 1400;
-    say(e.retrigger ? `More Hamster Balls! +${e.count} free spins!` : `Hamster Balls! ${e.count} free spins, and every win is doubled!`, 3500);
+    const climbs = game.getMaxFreeSpinMultiplier() > (game.getMachineData().freeSpins?.multiplier || 1); // 1.10.0: Party Climb
+    say(e.retrigger ? `More Hamster Balls! +${e.count} free spins!`
+      : climbs ? `Hamster Balls! ${e.count} free spins, and every win pays more than the last!` : `Hamster Balls! ${e.count} free spins, and every win is doubled!`, 3500);
   });
   game.on('freeSpinsEnded', (e) => {
     if (e.machineId !== activeId()) return;
@@ -1411,7 +1424,9 @@ export function createUI(
     // The machine's own extras: free-spin mode on the marquee, pots, streak, gamble.
     el.machine.classList.toggle('free-spins', !!free);
     const hold = game.getHold();
-    setText(el.machineName, free ? `Free spins ${free.played}/${free.total} · +${formatCoins(free.won)}`
+    // (1.10.0: with Party Climb the marquee shows what the free spins pay now.)
+    const climbing = !!free && game.getMaxFreeSpinMultiplier() > (game.getMachineData().freeSpins?.multiplier || 1);
+    setText(el.machineName, free ? `Free spins ${free.played}/${free.total}${climbing ? ` · ×${free.multiplier}` : ''} · +${formatCoins(free.won)}`
       : hold ? `${hold.full ? 'Every cell!' : `${hold.respinsLeft} respin${hold.respinsLeft === 1 ? '' : 's'} left`} · ${formatCoins(hold.total)}`
         : game.getMachineData().name);
     // Machine Stars (M8): little stars on the marquee, and a gold trim once it has one.
@@ -1500,7 +1515,7 @@ export function createUI(
     else if (delivering) hint = `Out delivering! No power to the machine for ${Math.ceil(s.delivery.timer)}s.`;
     else if (machine.bonus) hint = 'Round and round it goes… where it stops, nobody knows!';
     else if (machine.hold) hint = 'Acorns lock in place. Every new one resets the respins. Fill the vault for the Grand!';
-    else if (free && free.left > 0) hint = `Free spins! ${free.left} to go, and every win is doubled.`;
+    else if (free && free.left > 0) hint = free.multiplier === 2 ? `Free spins! ${free.left} to go, and every win is doubled.` : `Free spins! ${free.left} to go, and every win is ×${free.multiplier}.`;
     else if (s.gamble && s.gamble.machineId === activeId()) hint = 'Feeling lucky? Guess the card: a colour doubles it, a suit makes it ×4!';
     else if (guideLine) hint = guideLine;
     else if (!machine.spinning && spinBet === null) hint = 'Out of coins! Send me on a delivery (D).';

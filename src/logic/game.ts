@@ -21,7 +21,7 @@
 //   game.state                                                      ← read-only snapshot for drawing
 
 import { createEmitter } from './events.ts';
-import { rollGrid, revealMystery, evaluateGrid, evaluateWays, rowCount, allPaylines, symbolRules, findSymbol, freeSpinAward, spinExpectation, wheelAverage } from './machine.ts';
+import { rollGrid, revealMystery, evaluateGrid, evaluateWays, rowCount, allPaylines, symbolRules, findSymbol, freeSpinAward, spinExpectation, wheelAverage, canZoom, pickZoomReels, zoomGrid } from './machine.ts';
 import type { SpinValue } from './machine.ts';
 import type { Rng } from './rng.ts';
 import { money, roundMoney, divide, power, moneyFrom, isMoney } from './money.ts';
@@ -60,8 +60,10 @@ import type {
 // Trials and the Wise Elders' settings, and six stats.
 // v15 (M12, the Family Casino) added the family's own casino (its cabinets, floor
 // upgrades, back-office buys, the till and the Takings) and three stats.
+// v16 (1.10.0, Burrow Party) added Sticky Wilds held during free spins
+// (freeSpins.sticky) and the stats zoomies and stickyWilds.
 // See migrateSave() below.
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -689,6 +691,43 @@ export function createGame(initialData: GameData, rng: Rng) {
     return extra;
   }
 
+  // ── 1.10.0: Burrow Party ──
+  // Zoomies: the chance a paid spin turns whole reels wild (machines with paylines and 5 reels).
+  function getZoomChance(overrides?: Overrides): number {
+    let chance = 0;
+    for (const { effect, level } of effectsOfType('zoomies', overrides)) chance += effect.perLevel * level;
+    return Math.min(1, chance);
+  }
+
+  // Sticky Wilds: how many more free spins a wild that lands stays for (0 = none).
+  function getStickyWilds(overrides?: Overrides, machine: MachineState = activeMachine()): number {
+    if (!getMachineData(machine).freeSpins) return 0;
+    let spins = 0;
+    for (const { effect, level } of effectsOfType('stickyWilds', overrides, machine)) spins += effect.perLevel * level;
+    return spins;
+  }
+
+  // Party Climb: how many steps the free-spin multiplier can climb (0 = it stays put).
+  function getClimbSteps(overrides?: Overrides, machine: MachineState = activeMachine()): number {
+    const fs = getMachineData(machine).freeSpins;
+    if (!fs || !fs.climb) return 0;
+    let steps = 0;
+    for (const { effect, level } of effectsOfType('freeSpinClimb', overrides, machine)) steps += effect.perLevel * level;
+    return steps;
+  }
+
+  // The multiplier on free spin number `k` (1 = the first): it climbs one step a spin.
+  function getFreeSpinMultiplier(k: number, overrides?: Overrides, machine: MachineState = activeMachine()): number {
+    const fs = getMachineData(machine).freeSpins;
+    if (!fs) return 1;
+    return fs.multiplier + (fs.climb || 0) * Math.min(Math.max(0, k - 1), getClimbSteps(overrides, machine));
+  }
+
+  // The highest the free-spin multiplier can climb (for the shop card).
+  function getMaxFreeSpinMultiplier(overrides?: Overrides, machine: MachineState = activeMachine()): number {
+    return getFreeSpinMultiplier(Infinity, overrides, machine);
+  }
+
   // Free spins for the smallest trigger (for the shop card), or 0.
   function getFreeSpinAward(overrides?: Overrides, machine: MachineState = activeMachine()): number {
     const fs = getMachineData(machine).freeSpins;
@@ -822,6 +861,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     winStreak: (def, o) => getMaxStreakMultiplier(o),
     symbolWeight: (def, o) => getSymbolChance(effectAs(def, 'symbolWeight').symbol, o),
     extraFreeSpins: (def, o) => getFreeSpinAward(o),
+    zoomies: (def, o) => getZoomChance(o),
+    stickyWilds: (def, o) => getStickyWilds(o),
+    freeSpinClimb: (def, o) => getMaxFreeSpinMultiplier(o),
     jackpotGrowth: (def, o) => getJackpotGrowth(o),
     // Both Ways: like a symbol unlock, it shows what it does to the hit rate and the average win.
     bothWays: (def, o) => {
@@ -916,6 +958,10 @@ export function createGame(initialData: GameData, rng: Rng) {
       extraRespins: getHoldRespins(overrides, machine) - (getMachineData(machine).holdSpin?.respins || 0),
       wheelBonus: getWheelBonus(overrides, machine),
       doubleChance: getDoubleChance(overrides),
+      zoomChance: getZoomChance(overrides),
+      zoomies: data.zoomies,
+      stickyWilds: getStickyWilds(overrides, machine),
+      climbSteps: getClimbSteps(overrides, machine),
     });
   }
 
@@ -969,7 +1015,8 @@ export function createGame(initialData: GameData, rng: Rng) {
     const value = spinValue(machine);
     return {
       wild: md.symbols.some((s) => s.wild) ? getSymbolChance(md.symbols.find((s) => s.wild)!.id) : 0,
-      freeSpins: md.freeSpins ? { ...value.freeSpins, multiplier: md.freeSpins.multiplier } : null,
+      freeSpins: md.freeSpins ? { ...value.freeSpins, multiplier: md.freeSpins.multiplier, maxMultiplier: getMaxFreeSpinMultiplier(undefined, machine), sticky: getStickyWilds(undefined, machine) } : null,
+      zoom: value.zoom.chance > 0 ? value.zoom : null, // 1.10.0: Zoomies on this machine
       jackpot: md.jackpot ? value.jackpot : null,
       hold: md.holdSpin ? { ...value.hold, trigger: md.holdSpin.trigger, respins: getHoldRespins(undefined, machine), averageRespins: value.hold.respins } : null,
       wheel: md.wheel ? { average: value.wheel.average, bonus: getWheelBonus(undefined, machine) } : null,
@@ -1073,6 +1120,37 @@ export function createGame(initialData: GameData, rng: Rng) {
     // Roll with the luck-adjusted weights (Lucky Whiskers, Carrot Patch, Hamster Wild).
     const md = { ...getMachineData(machine), symbols: getSymbols() };
     machine.result = rollGrid(md, getReelCount(), rng);
+    // 1.10.0: Zoomies (paid spins) turn whole reels wild; Sticky Wilds (free spins)
+    // keep earlier wilds in place. Both before the boxes open, so a box under them is gone.
+    const wild = symbolRules(md).wild;
+    let zoom: number[] = [];
+    const held: Cell[] = [];
+    if (!free) {
+      const chance = getZoomChance();
+      // (Only rolled when it could happen, so without Zoomies the RNG runs as before.)
+      if (chance > 0 && wild && canZoom(md, getReelCount(), data.zoomies) && rng.next() < chance) {
+        zoom = pickZoomReels(getReelCount(), data.zoomies!, rng);
+        machine.result = zoomGrid(machine.result, zoom, wild);
+        state.stats.zoomies++;
+      }
+    } else {
+      const stickFor = getStickyWilds(undefined, machine);
+      const fs = machine.freeSpins!;
+      if (stickFor > 0 && wild) {
+        const rows = rowCount(md);
+        while (fs.sticky.length < machine.result.length * rows) fs.sticky.push(0); // one count per cell
+        machine.result.forEach((column, reel) => column.forEach((id, row) => {
+          const i = reel * rows + row;
+          if (id === wild) fs.sticky[i] = stickFor; // a new wild: it stays for the next stickFor free spins
+          else if ((fs.sticky[i] || 0) > 0) {
+            column[row] = wild; // still held from an earlier free spin
+            fs.sticky[i]--;
+            held.push([reel, row]);
+          }
+        }));
+        state.stats.stickyWilds += held.length;
+      }
+    }
     // 1.4.0: Moving Day's boxes all turn into one symbol before the spin is scored.
     const reveal = md.mystery ? revealMystery(machine.result, md, rng) : null;
     if (reveal) {
@@ -1093,7 +1171,8 @@ export function createGame(initialData: GameData, rng: Rng) {
     else state.stats.manualSpins++;
 
     const mystery = reveal ? { cells: reveal.cells, symbol: reveal.symbol } : null;
-    events.emit('spinStarted', { machineId: machine.typeId, result: copyGrid(machine.result), source, cost, bet, free, mystery });
+    const multiplier = free ? getFreeSpinMultiplier(machine.freeSpins!.total - machine.freeSpins!.left, undefined, machine) : 1;
+    events.emit('spinStarted', { machineId: machine.typeId, result: copyGrid(machine.result), source, cost, bet, free, mystery, zoom, sticky: held, multiplier });
     checkDiary(); // spin counts are diary goals ("First Spin", "Warming Up" …)
     return true;
   }
@@ -1116,7 +1195,9 @@ export function createGame(initialData: GameData, rng: Rng) {
     const manual = machine.spinSource === 'manual';
     const multiplier = getPayoutMultiplier().mul(getStarMultiplier(machine)).mul(bet);
     const fullLineBonus = getFullLineMultiplier();
-    const featureMultiplier = free && md.freeSpins ? md.freeSpins.multiplier : 1;
+    // Free spins: × the multiplier for this free spin (Party Climb makes it climb, 1.10.0).
+    // The spin being paid is number total − left (a retrigger only adds after this).
+    const featureMultiplier = free && md.freeSpins && machine.freeSpins ? getFreeSpinMultiplier(machine.freeSpins.total - machine.freeSpins.left, undefined, machine) : free && md.freeSpins ? md.freeSpins.multiplier : 1;
     const streakMultiplier = free ? 1 : getStreakMultiplier(machine); // the streak BEFORE this spin
     // The cheese wheel (M9): every full line spins it, and lands on its own wedge now.
     if (md.wheel) {
@@ -1226,7 +1307,7 @@ export function createGame(initialData: GameData, rng: Rng) {
       machine.freeSpins!.left += count;
       machine.freeSpins!.total += count;
     } else {
-      machine.freeSpins = { left: count, total: count, bet, won: money(0), timer: md.freeSpins!.pause };
+      machine.freeSpins = { left: count, total: count, bet, won: money(0), timer: md.freeSpins!.pause, sticky: [] };
     }
     state.stats.freeSpinTriggers++;
     events.emit('freeSpinsStarted', { machineId: machine.typeId, count, retrigger, bet, left: machine.freeSpins!.left });
@@ -1241,7 +1322,15 @@ export function createGame(initialData: GameData, rng: Rng) {
 
   function getFreeSpins(machine: MachineState = activeMachine()) {
     const fs = machine.freeSpins;
-    return fs ? { left: fs.left, total: fs.total, played: fs.total - fs.left, won: fs.won, bet: fs.bet } : null;
+    if (!fs) return null;
+    // The multiplier the next free spin pays (or the one in the air), and the cells
+    // Sticky Wilds still hold (1.10.0).
+    const played = fs.total - fs.left;
+    const k = machine.spinning && machine.spinFree ? played : played + 1;
+    const rows = rowCount(getMachineData(machine));
+    const sticky: Cell[] = [];
+    fs.sticky.forEach((n, i) => { if (n > 0) sticky.push([Math.floor(i / rows), i % rows]); });
+    return { left: fs.left, total: fs.total, played, won: fs.won, bet: fs.bet, multiplier: getFreeSpinMultiplier(k, undefined, machine), sticky };
   }
 
   // Debug only: free spins on the active machine (if it has them).
@@ -2747,7 +2836,7 @@ export function createGame(initialData: GameData, rng: Rng) {
 
     // queries: bets and bonus features
     getBetSteps, getMaxBetIndex, getBetIndex, getBet, getBetCost, getSpinBet,
-    getFreeSpins, hasFreeSpins, getJackpotPots, getBonusProgress, getStreakMultiplier, getMaxStreakMultiplier,
+    getFreeSpins, hasFreeSpins, getZoomChance, getStickyWilds, getFreeSpinMultiplier, getMaxFreeSpinMultiplier, getJackpotPots, getBonusProgress, getStreakMultiplier, getMaxStreakMultiplier,
     getHold, getHoldRespins, getWheelBonus, getWheelAverage, getWays,
     getFeatureOdds, canGamble, getGambleInfo, getCardHistory,
 
@@ -2888,6 +2977,8 @@ function newStats(): Stats {
     mysteryBoxes: 0, bestBoxes: 0, // Moving Day's boxes opened, and the most in one spin
     // v15 (M12): the Family Casino
     takingsEarned: money(0), tillsEmptied: 0, cabinetsBought: 0, // Takings banked, tills emptied, cabinets on the floor
+    // v16 (1.10.0): Burrow Party
+    zoomies: 0, stickyWilds: 0, // paid spins the hamster zoomed across; wilds Sticky Wilds held for another free spin
   };
 }
 
@@ -3081,6 +3172,15 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
     save.saveVersion = 15;
   }
 
+  // v15 → v16 (1.10.0, Burrow Party). Free spins under way hold no Sticky Wilds yet,
+  // and the two new stats start at 0 (sanitizeState fills them in).
+  if (save.saveVersion === 15) {
+    for (const m of Array.isArray(save.machines) ? save.machines : []) {
+      if (m && m.freeSpins && typeof m.freeSpins === 'object') m.freeSpins.sticky = [];
+    }
+    save.saveVersion = 16;
+  }
+
   if (save.saveVersion !== SAVE_VERSION) return null;
   return save;
 }
@@ -3191,7 +3291,10 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
       const left = clamp(Math.floor(num(fs.left, 0)), 0, 10000);
       if (left > 0 || clean.spinFree) {
         const total = Math.max(left, Math.floor(num(fs.total, left)));
-        clean.freeSpins = { left, total, bet: validBet(fs.bet), won: moneyFrom(fs.won, 0).max(0), timer: clamp(num(fs.timer, 0), 0, md.freeSpins.pause) };
+        // Sticky Wilds: one count per cell (whole numbers ≥ 0), never more than the grid.
+        const cells = md.maxReels * rowCount(md);
+        const sticky = Array.isArray(fs.sticky) ? fs.sticky.slice(0, cells).map((x: unknown) => clamp(Math.floor(num(x, 0)), 0, 1000)) : [];
+        clean.freeSpins = { left, total, bet: validBet(fs.bet), won: moneyFrom(fs.won, 0).max(0), timer: clamp(num(fs.timer, 0), 0, md.freeSpins.pause), sticky };
       }
     }
     if (clean.spinFree && !clean.freeSpins) clean.spinFree = false;

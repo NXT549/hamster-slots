@@ -339,6 +339,7 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's
 12. **The new upgrades keep every rule** (1.3.1, §28): Lucky Pennies' double is exact (the lines × (1 + chance)); free spins still end with Ball Bearings; auto-spin never beats spin + rest with Running Shoes; offline earnings stay below playing with Night Shift maxed; the bet still stops at ×10 (D80).
 
 13. **The Family Casino can't farm anything and never touches your odds** (M12, §32): every cabinet's guest return is below 100% and at least `minGuestRtp` (88%) with every Floor Manager level; the takings are an exact average (no RNG); Takings never become coins or count as coins earned; every machine's economy is identical with the whole Family Casino.
+14. **Zoomies, Sticky Wilds and Party Climb are exact and only add** (1.10.0, §33): every grid of a small machine matches the exact line EV, hit rate and trigger with zoomed reels; the game's free spins match the worked-out session; free spins still always end at every level.
 
 ## 10. Balance targets (what "good" looks like)
 
@@ -393,6 +394,7 @@ Web-first (PORTING_NOTES D106): one web codebase ships to GitHub Pages, then itc
 | — | 1.7.0 "Family Room" | UI redesign part 4 (the Family tab) | done (§31 part 4) |
 | — | 1.7.1 "Settling In" | Balancing pass: each new colony's Family Tree costs ×3 more, Colony Pride +30% a level | done (§29) |
 | — | 1.9.0 "Welcome Mat" | UI redesign part 8: the first-time guide (a pointing paw), UI sounds, and an unlock moment for everything new | done (§31 part 8) |
+| — | 1.10.0 "Burrow Party" | Zoomies (whole reels turn wild on five-reel machines), and the Burrow Bonanza's Sticky Wilds and climbing free-spin multiplier | built on a branch, rc.1 (§33) |
 | → | Releases | GitHub Pages from the start; then itch.io, Steam, maybe mobile, all from the same web codebase (PORTING_NOTES → The plan) | ongoing |
 
 **Particles and animations are a thread, not a milestone:** every milestone ships the effects for what it adds, and 1.0 went through the whole game (§20, §23). Every new animation needs its `.less-motion` rule (AGENTS.md → Code style).
@@ -796,6 +798,8 @@ Free spins start about 1 in 255 paid spins on a fresh machine (1 in 354 with bot
 | 🌱 **Deeper Digging** *(M7)* | 30,000 × 6ⁿ | 2 | Unlocks the Red Apple, then the Golden Seed |
 | 🧲 **Lucky Acorn** *(M7)* | 25,000 × 2ⁿ | 5 | +10 Machine Luck per level |
 | ⇄ **Pays Both Ways** *(after M7)* | 5,000,000 | 1 | Every line also pays from the right (§3). 10 lines + both unlocks: RTP 1,223% → 2,370%, hit rate 45.2% → 70.0% |
+| 🍯 **Sticky Wilds** *(1.10.0)* | 400,000 × 5ⁿ | 2 | A wild that lands in free spins stays for 1 more free spin per level (§33) |
+| 🎉 **Party Climb** *(1.10.0)* | 300,000 × 3ⁿ | 3 | Free spins pay ×2, ×3, ×4 … one step higher per level, up to ×5 (§33) |
 
 ### The Pouch Palace (milestone 6)
 
@@ -916,7 +920,7 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 ### ⚽ Free spins (Hamster Ball scatter)
 
 - 3 or more Hamster Balls **anywhere** on the grid start free spins: 3 → 8, 4 → 12, 5+ → 20 (data.json `freeSpins.awards`; Bouncy Ball adds +3 each).
-- Free spins **play by themselves** one after another (no Wheel Training needed), with a short pause (1 s since M7, so the win show gets a beat). They **cost nothing**, use **the bet that won them**, and **every win is ×2**. More balls during free spins add more (a retrigger).
+- Free spins **play by themselves** one after another (no Wheel Training needed), with a short pause (1 s since M7, so the win show gets a beat). They **cost nothing**, use **the bet that won them**, and **every win is ×2** (with 1.10.0's Party Climb it climbs ×1 a spin; Sticky Wilds keep wilds in place: §33). More balls during free spins add more (a retrigger).
 - While they play, Spin shows "Free · 5 left", auto-spin's timer stands still, Self-Starter waits, and a delivery pauses them. They only play on the active machine: switch away and they wait for you (the machine card says "N free spins waiting").
 - **Exact maths:** scatters follow the binomial formula over reels × rows cells. With trigger chance q and average award N, one trigger gives N / (1 − q·N) spins counting retriggers. EV per paid spin = q × that × line EV × 2.
 - Retiring loses unplayed free spins (the machines reset); the retire card says so.
@@ -2185,3 +2189,71 @@ Grand Opening (open it, 3 tokens) · Full Floor (all 8 cabinets, 10) · Casino M
 - Should it give something more to the coin game (it gives nothing on purpose, to keep the late lives from getting shorter)?
 - Is a sub-tab the right place, or should it be its own page?
 - Is "Grand Opening" the right name?
+
+---
+
+## 33. Burrow Party: Zoomies and better free spins (update 1.10.0)
+
+> **Status: built on a branch as 1.10.0-rc.1, not released** (2026-10-03). From a slot-machine brainstorm thread: the user asked for "actual updates and content" and left the pick to Claude ("you decide"); Claude picked Zoomies and the Burrow Bonanza's free spins as one update (PORTING_NOTES D166).
+
+*"The hamster gets the zoomies, and the burrow throws a party."* Two pokie features the game didn't have: **wild reels** (on every five-reel machine) and **sticky wilds with a climbing multiplier** (the Burrow Bonanza's free spins). Both keep every spin's EV exact (rule 4), so the Info tab's odds, offline earnings and the simulator stay true.
+
+### 🐾 Zoomies (a rebirth upgrade for every machine with five reels)
+
+- **Zoomies** (hamster upgrade, opens at **generation 7**, the one generation that had no rebirth upgrade): 2M × 10ⁿ, max 3. Each level: **0.5% of paid spins** (1.5% at max, about one spin in 67) the hamster dashes across the reels mid-spin and turns **whole reels wild**: 1 reel (70%), 2 (25%) or 3 (5%), which ones at random (data.json `zoomies`).
+- **Where:** every payline machine with 5 reels and a wild: the Burrow Bonanza, the Pouch Palace, the Acorn Vault, Moving Day and the Big Cheese. Not Old Clunky, the Snack Stacker (no 5 reels) or the Hamster Maze (ways, D166). **Paid spins only**, never a free spin.
+- A zoomed reel holds a wild in every row, so it **can't land a scatter**: fewer cells can start free spins, the jackpot wheel or hold & spin on that spin. A Moving Box under a zoomed reel is gone too (the wilds go on first).
+- On screen: the hamster (in its fur and hat) dashes across the reel window while they spin, "Zoomies!" in its speech bubble, a pitter-patter sound, and the zoomed reels land all wild on a warm glow behind the symbols. Motion "Less": no dash, the glow stays.
+- **The maths** (machine.ts `spinExpectation`): a paid spin is one of several **cases**: no Zoomies, or these reels wild. Every other cell is still its own draw, so each case is an ordinary spin whose zoomed reels have a wild's chance of 1: the line EV is the usual formula reel by reel (products instead of powers), Pays Both Ways reads the reels backwards, and the hit rate still depends only on the end reels (a zoomed reel next to a line symbol always pairs). Features count their scatters over the cells left. The spin's EV is the cases' average by chance. Tested against every grid of a small machine.
+
+| Machine (Zoomies Lv 3, 1.5%) | Fresh: RTP | Every upgrade (no Luck): RTP |
+|---|---:|---:|
+| Burrow Bonanza | 400% → 469% (+17%) | 2,624% → 3,167% (+21%) |
+| Pouch Palace | 784% → 939% (+20%) | 5,977% → 7,622% (+28%) |
+| Acorn Vault | 1,246% → 1,486% (+19%) | 8,133% → 10,641% (+31%) |
+| Moving Day | 1,566% → 1,874% (+20%) | 8,815% → 10,798% (+22%) |
+| The Big Cheese | 1,322% → 1,817% (+37%) | 10,012% → 15,783% (+58%) |
+
+The Big Cheese gains the most: a wild reel helps a line match all five reels, and those spin the cheese wheel.
+
+### 🎉 Burrow Party (the Burrow Bonanza's free spins)
+
+Two machine upgrades for the Bonanza, the last things to buy on it (they cost about what the Pouch Palace does):
+
+| Upgrade | Price | Max | Effect |
+|---|---:|---:|---|
+| **Sticky Wilds** | 400K × 5ⁿ | 2 | A Hamster Wild that lands in free spins **stays put for 1 more free spin a level** (landing there again starts its count again) |
+| **Party Climb** | 300K × 3ⁿ | 3 | Free spins pay **×2, ×3, ×4, ×5**: +1 a spin (`freeSpins.climb`), up to 1 step higher a level |
+
+- On screen: a held wild lands on a honey glow; the marquee says "Free spins 3/8 · ×4 · +coins" and the hamster says what the next win pays. Sticky Wilds held halfway through free spins are saved (save v16).
+- **The maths:** every cell still draws a symbol on every free spin, and a cell shows a wild when any of its last (sticky + 1) draws was one, so free spin k is an ordinary spin with the wild's chance 1 − (1 − w)^min(k, sticky + 1) (and every other symbol's p × (1 − w)^min(k − 1, sticky)). After free spin max(sticky, steps) + 1 nothing changes any more, so the session is worked out spin by spin up to there (the chances of how many spins are left, with retriggers) and with the usual formula after (machine.ts `freeSpinSession`). Without either upgrade it's exactly the old formula. A held wild covers a cell a Hamster Ball could land on, so retriggers get a little rarer: free spins still always end.
+
+| Burrow Bonanza | Fresh (5 lines) | Every upgrade (10 lines, both ways, Bouncy Ball 5, Ball Bearings 3) |
+|---|---:|---:|
+| Before | RTP 400% · free spins 6% of it | RTP 2,624% · free spins 14% of it (28.4 spins a trigger) |
+| Sticky Wilds Lv 2 | 435% (+9%) | 3,287% (+25%) |
+| Party Climb Lv 3 | 429% (+7%) | 3,129% (+19%) |
+| Both maxed | 513% (+28%) · free spins 27% | 4,764% (+82%) · free spins **53%** of it |
+
+Maxed, free spins go from a seventh of the Bonanza's money to more than half: the bonus is worth waiting for.
+
+### Balance
+
+The simulator (18 lives, idle and active, PORTING_NOTES → Playtest notes, 1.10.0-rc.1): the first 7 lives are unchanged, lives 8–18 stay within the seed-to-seed noise, and the whole tree is planted at the same time (4.7–5.9 h idle, 3.4–3.7 h active). By the time Zoomies opens, payout multipliers dwarf its extra income, and the seed curve decides when to retire.
+
+### Save v16
+
+Free spins under way keep their Sticky Wilds (`freeSpins.sticky`, one count per cell), and two stats: `zoomies` (paid spins the hamster zoomed across) and `stickyWilds` (wilds held for another free spin). An older save: no wilds held, both stats 0. Data schema 16 (`zoomies`, `freeSpins.climb`, three effect types: `zoomies`, `stickyWilds`, `freeSpinClimb`).
+
+### The rules still hold (tested, `tests/logic/burrowparty.test.js`)
+
+- Every grid of a small machine (zoomed or not, both ways or not) matches the exact line EV, hit rate and free-spin trigger; a share of Zoomies is exactly the mix of the two; without Zoomies every machine's numbers are exactly what they were.
+- Zoomies and both upgrades only ever raise a machine's EV; Zoomies never comes on Old Clunky, the Stacker, the Maze or a free spin, and comes as often as it says.
+- The game's free spins match the worked-out session: every cell's wild and ball chances on free spin k, the spins and the pay per session (a long run with flat prizes); free spins always end at every level; a save halfway through keeps the held wilds.
+
+### Questions the playtest must answer
+
+- Is Zoomies fun to see, or too rare at 1.5% (one paid spin in ~67)? Is the dash too fast to notice?
+- Do the sticky wilds read clearly (the honey glow), and does the climbing multiplier make free spins feel like a party?
+- Does the Bonanza now hold you too long before the Pouch Palace?
+- Is "Burrow Party" the right name?

@@ -239,6 +239,19 @@
   background: color-mix(in srgb, var(--gold) 45%, transparent); box-shadow: inset 0 0 0 3px var(--gold-dark);
   animation: win-pulse 0.4s ease-in-out infinite alternate;
 }
+/* 1.10.0, Zoomies: the hamster dashes across the reel window (reels.ts), and the reels
+   it ran over land all wild on a warm glow; Sticky Wilds held from an earlier free spin
+   land on a honey glow. Both behind the symbols. */
+.cell.zoomed { background: color-mix(in srgb, var(--primary) 32%, transparent); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--primary) 70%, transparent); }
+.cell.sticky { background: color-mix(in srgb, var(--gold) 50%, transparent); box-shadow: inset 0 0 0 3px var(--gold-dark), inset 0 -10px 0 color-mix(in srgb, var(--gold-dark) 35%, transparent); }
+.zoomies-runner {
+  position: absolute; z-index: 6; top: 50%; left: 0; pointer-events: none;
+  animation: zoom-dash 0.9s steps(18) forwards;
+}
+.zoomies-runner .sprite { display: block; animation: zoom-hop 0.15s steps(2) infinite; }
+@keyframes zoom-dash { from { transform: translate(-72px, -50%); } to { transform: translate(var(--reels-width, 480px), -50%); } }
+@keyframes zoom-hop { 50% { transform: translateY(-6px); } }
+.less-motion .zoomies-runner, .less-motion .zoomies-runner .sprite { animation: none; display: none; }
 /* Anticipation: reels that could still complete a feature shimmer while they spin */
 .reel.tease { box-shadow: 0 0 0 3px var(--gold), 0 0 14px 4px color-mix(in srgb, var(--gold) 70%, transparent); animation: tease 0.25s steps(2) infinite; }
 @keyframes tease { 50% { box-shadow: 0 0 0 3px var(--primary), 0 0 18px 6px color-mix(in srgb, var(--primary) 60%, transparent); } }
