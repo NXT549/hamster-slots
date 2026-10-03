@@ -292,8 +292,7 @@ export function createCasino(host: CasinoHost) {
   function getBlackjackHint(): 'stand' | 'hit' | 'double' | null {
     const hand = casino().hand;
     if (!hand || hand.outcome !== null) return null;
-    const hint = bestPlay(hand.player, hand.dealer[0]);
-    return hint === 'double' && !canDouble() ? 'hit' : hint;
+    return bestPlay(hand.player, hand.dealer[0], canDouble()); // (can't double: the better of hit and stand)
   }
 
   // ───────────────────── The Hamster Derby ─────────────────────
