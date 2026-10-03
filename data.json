@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 14,
+  "schemaVersion": 15,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -1620,7 +1620,10 @@
     { "id": "trialByFur", "name": "Trial by Fur", "description": "Beat a Colony Trial.", "goal": { "type": "stat", "stat": "trialsCompleted", "target": 1 }, "tokens": 3 },
     { "id": "hardKnocks", "name": "School of Hard Knocks", "description": "Beat five Colony Trials.", "goal": { "type": "stat", "stat": "trialsCompleted", "target": 5 }, "tokens": 5 },
     { "id": "wiseOld", "name": "Wise Old Hamster", "description": "Let the Wise Elders retire a hamster for you.", "goal": { "type": "stat", "stat": "autoRetires", "target": 1 }, "tokens": 2 },
-    { "id": "boxFull", "name": "Box Full", "description": "Open five Moving Boxes in one spin on Moving Day.", "goal": { "type": "stat", "stat": "bestBoxes", "target": 5 }, "tokens": 3 }
+    { "id": "boxFull", "name": "Box Full", "description": "Open five Moving Boxes in one spin on Moving Day.", "goal": { "type": "stat", "stat": "bestBoxes", "target": 5 }, "tokens": 3 },
+    { "id": "grandOpening", "name": "Grand Opening", "description": "Open the Family Casino (it opens in your second colony).", "goal": { "type": "stat", "stat": "cabinetsBought", "target": 1 }, "tokens": 3 },
+    { "id": "fullFloor", "name": "Full Floor", "description": "Put a cabinet of every machine on the Family Casino's floor.", "goal": { "type": "stat", "stat": "cabinetsBought", "target": 8 }, "tokens": 10 },
+    { "id": "casinoMogul", "name": "Casino Mogul", "description": "Bank a million Takings from the Family Casino's till.", "goal": { "type": "stat", "stat": "takingsEarned", "target": 1000000 }, "tokens": 8 }
   ],
   "casino": {
     "enabled": true,
@@ -1653,6 +1656,36 @@
       { "id": "visor", "name": "Dealer's Visor", "description": "A green dealer's visor for the hamster. Only at the casino.", "cost": 2500, "kind": "skin", "skin": "hatVisor" },
       { "id": "tuxedo", "name": "Tuxedo", "description": "A smart black-and-white coat. Only at the casino.", "cost": 3500, "kind": "skin", "skin": "furTuxedo" },
       { "id": "casinoNight", "name": "Casino Night", "description": "The cage in red velvet and gold. Only at the casino.", "cost": 3500, "kind": "skin", "skin": "roomCasino" }
+    ]
+  },
+  "ownCasino": {
+    "enabled": true,
+    "name": "The Family Casino",
+    "currencyName": "Takings",
+    "unlockColony": 1,
+    "guestRestSeconds": 2,
+    "tillHours": 2,
+    "minGuestRtp": 0.88,
+    "cabinets": [
+      { "machine": "clunky", "cost": 0, "bet": 5, "guestRtp": 0.92 },
+      { "machine": "stacker", "cost": 100, "bet": 20, "guestRtp": 0.925 },
+      { "machine": "bonanza", "cost": 1500, "bet": 100, "guestRtp": 0.93 },
+      { "machine": "palace", "cost": 15000, "bet": 500, "guestRtp": 0.935 },
+      { "machine": "maze", "cost": 200000, "bet": 2500, "guestRtp": 0.94 },
+      { "machine": "vault", "cost": 2500000, "bet": 12500, "guestRtp": 0.94 },
+      { "machine": "moving", "cost": 30000000, "bet": 60000, "guestRtp": 0.945 },
+      { "machine": "cheese", "cost": 400000000, "bet": 300000, "guestRtp": 0.95 }
+    ],
+    "upgrades": [
+      { "id": "neonSign", "name": "Neon Sign", "description": "A big pink sign out front: +20% guests each level.", "kind": "decor", "baseCost": 25, "growthRate": 1.6, "maxLevel": 10, "effect": { "type": "guests", "perLevel": 0.2 } },
+      { "id": "plushCarpet", "name": "Plush Carpet", "description": "Soft red carpet, swirly and warm: +15% guests each level.", "kind": "decor", "baseCost": 2000, "growthRate": 1.7, "maxLevel": 10, "effect": { "type": "guests", "perLevel": 0.15 } },
+      { "id": "highLimit", "name": "High-Limit Room", "description": "A velvet-roped room for big spenders: guests bet +25% each level.", "kind": "room", "baseCost": 500, "growthRate": 2, "maxLevel": 8, "effect": { "type": "guestBet", "perLevel": 0.25 } },
+      { "id": "floorManager", "name": "Floor Manager", "description": "A sharp-eyed hamster in a waistcoat: the guests win back 1% less each level.", "kind": "staff", "baseCost": 50000, "growthRate": 8, "maxLevel": 4, "effect": { "type": "houseEdge", "perLevel": 0.01 } },
+      { "id": "cashier", "name": "Cashier", "description": "Someone to mind the till: it holds 2 more hours of takings each level.", "kind": "staff", "baseCost": 300, "growthRate": 3, "maxLevel": 5, "effect": { "type": "tillHours", "perLevel": 2 } }
+    ],
+    "rewards": [
+      { "id": "chipCrate", "name": "Chip Crate", "description": "500 Casino Chips for the Prize Counter.", "kind": "chips", "chips": 500, "baseCost": 200, "growthRate": 1.3, "maxLevel": null },
+      { "id": "tokenBox", "name": "Token Box", "description": "A Hamster Token for the Capsule Machine.", "kind": "tokens", "tokens": 1, "baseCost": 400, "growthRate": 1.25, "maxLevel": null }
     ]
   }
 }

@@ -30,6 +30,9 @@ export function createDebugPanel(
     <div class="row"><span class="row-label">The Great Migration (1.4.0)</span>
       <button id="dbg-tree">Plant the whole tree</button><button id="dbg-whiskers">+10 whiskers</button><button id="dbg-migrate">Migrate now</button>
     </div>
+    <div class="row"><span class="row-label">The Family Casino (M12)</span>
+      <button data-takings="1000">+1,000 Takings</button><button data-takings="1000000">+1M Takings</button><button id="dbg-till">Fill the till (2 h away)</button>
+    </div>
     <div class="row"><span class="row-label">Capsules</span>
       <button data-tokens="10">+10 tokens</button><button data-tokens="100">+100 tokens</button><button id="dbg-skins">Every skin</button>
       <button data-chips="1000">+1,000 chips</button>
@@ -91,6 +94,16 @@ export function createDebugPanel(
   panel.querySelector('#dbg-whiskers')!.addEventListener('click', () => game.addWhiskers(10));
   panel.querySelector('#dbg-migrate')!.addEventListener('click', () => {
     if (!game.migrate()) setStatus('Plant the whole tree first (or wait for the bonus or gamble to finish).');
+  });
+  panel.querySelectorAll<HTMLElement>('[data-takings]').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (!game.isOwnCasinoOpen()) { setStatus('The Family Casino opens in the first life after a migration.'); return; }
+      game.addTakings(Number(b.dataset.takings));
+    });
+  });
+  panel.querySelector('#dbg-till')!.addEventListener('click', () => {
+    if (!game.isOwnCasinoOpen()) { setStatus('The Family Casino opens in the first life after a migration.'); return; }
+    game.applyOfflineEarnings(7200);
   });
   panel.querySelectorAll<HTMLElement>('[data-chips]').forEach((b) => {
     b.addEventListener('click', () => game.addChips(Number(b.dataset.chips))); // M11 (the casino)

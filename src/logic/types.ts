@@ -283,6 +283,45 @@ export interface CasinoDef {
   prizes: PrizeDef[];
 }
 
+// ── M12: the Family Casino (your own casino, for a migrated family) ──
+// A cabinet of one of your machines, on the casino's floor: hamster guests play it
+// at `bet` Takings a spin and win back `guestRtp` of it on average (below 100%: the
+// rest is the house's edge, your takings). Bought once, for `cost` Takings.
+export interface CabinetDef {
+  machine: string; // a machine id (its name, picture and spin time)
+  cost: number;
+  bet: number;
+  guestRtp: number;
+}
+// What a floor upgrade does, per level: more guests (+perLevel of them), bigger guest
+// bets (+perLevel), a bigger house edge (the guests win back perLevel less), or a till
+// that holds perLevel more hours of takings.
+export type FloorEffectType = 'guests' | 'guestBet' | 'houseEdge' | 'tillHours';
+export interface FloorUpgradeDef extends Priced {
+  id: string;
+  name: string;
+  description: string;
+  kind: 'decor' | 'room' | 'staff';
+  effect: { type: FloorEffectType; perLevel: number };
+}
+// The back office: what Takings buy outside the casino (chips, tokens), rule 3 prices.
+export type OwnRewardDef = Priced & Named & { description: string } & (
+  | { kind: 'chips'; chips: number }
+  | { kind: 'tokens'; tokens: number }
+);
+export interface OwnCasinoDef {
+  enabled: boolean; // false = no Family Casino (a store build can leave it out)
+  name: string; // "The Family Casino"
+  currencyName: string; // "Takings"
+  unlockColony: number; // it opens for a family that has migrated this many times
+  guestRestSeconds: number; // a guest waits this long between spins (on top of the machine's spin time)
+  tillHours: number; // the till holds this many hours of takings before it's full
+  minGuestRtp: number; // the guests always win back at least this much (the house edge never grows past 1 − this)
+  cabinets: CabinetDef[];
+  upgrades: FloorUpgradeDef[];
+  rewards: OwnRewardDef[];
+}
+
 // A Hamster Diary goal. "stat" goals name a lifetime stat (see Stats below).
 export type Goal =
   | { type: 'stat'; stat: keyof Stats; target: number }
@@ -344,6 +383,7 @@ export interface GameData {
   skins: SkinDef[];
   diary: Sticker[];
   casino?: CasinoDef; // M11
+  ownCasino?: OwnCasinoDef; // M12
   colony?: ColonyDef; // 1.4.0: The Great Migration
 }
 
@@ -452,6 +492,16 @@ export interface CasinoState {
   hand: BlackjackHand | null;
 }
 
+// M12: the Family Casino (kept for good: through retirements and migrations).
+export interface OwnCasinoState {
+  opened: boolean; // the grand opening has happened (the free first cabinet is on the floor)
+  cabinets: Record<string, boolean>; // machine id → its cabinet is on the floor
+  upgrades: Levels; // floor upgrade levels
+  rewards: Levels; // back-office rewards bought (each one's price grows with rule 3)
+  till: Money; // takings waiting in the till (tap to empty it)
+  takings: Money; // takings banked, to spend
+}
+
 export interface GambleState {
   machineId: string;
   stake: Money;
@@ -523,6 +573,10 @@ export interface Stats {
   autoRetires: number; // hamsters the Wise Elders retired
   mysteryBoxes: number; // moving boxes opened (Moving Day)
   bestBoxes: number; // the most boxes in one spin
+  // M12 (save v15): the Family Casino
+  takingsEarned: Money; // Takings ever banked from the till
+  tillsEmptied: number;
+  cabinetsBought: number; // cabinets put on the floor (the free first one included)
 }
 
 export interface GameState {
@@ -560,6 +614,7 @@ export interface GameState {
   skins: { owned: Record<string, boolean>; equipped: Record<string, string> };
   capsules: { sincePity: number };
   casino: CasinoState; // M11
+  ownCasino: OwnCasinoState; // M12
   stats: Stats;
 }
 
@@ -590,8 +645,8 @@ export interface Card {
 // Every event game.ts emits, and what it carries.
 // game.on('spinResolved', (e) => …) knows that e.payout is a Money, and so on.
 
-export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug' | 'casino';
-export type ChipSource = 'buy' | 'spins' | 'retire' | 'bet' | 'win' | 'prize' | 'refund' | 'debug';
+export type TokenSource = 'sticker' | 'jackpot' | 'delivery' | 'retire' | 'pull' | 'refund' | 'debug' | 'casino' | 'takings';
+export type ChipSource = 'buy' | 'spins' | 'retire' | 'bet' | 'win' | 'prize' | 'refund' | 'debug' | 'takings';
 // One roulette bet (M11): a kind, which one (dozen / column / number), and the chips on it.
 export interface RouletteBet { kind: RouletteKind; pick: number; amount: Money | number }
 export type GambleEndReason = 'collect' | 'lose' | 'max' | 'spin' | 'expired' | 'switch' | 'retire';
@@ -653,6 +708,13 @@ export interface GameEvents {
   seedDropped: { path: number[]; bin: number; multiplier: number; bet: Money; returned: Money };
   prizeBought: { id: string; cost: Money };
   boostEnded: { id: string };
+  // M12: the Family Casino
+  ownCasinoOpened: { cabinet: string | null }; // the grand opening (the free first cabinet, if any)
+  cabinetBought: { machine: string; cost: Money };
+  floorUpgradeBought: { id: string; level: number; cost: Money };
+  ownRewardBought: { id: string; cost: Money };
+  tillEmptied: { amount: Money; takings: Money };
+  tillOffline: { seconds: number; takings: Money }; // takings that went into the till while the game was closed
   dataReloaded: Record<string, never>;
   stateLoaded: Record<string, never>;
 }

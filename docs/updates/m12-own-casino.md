@@ -1,6 +1,6 @@
 # M12: Your own casino (late game)
 
-**Status:** next on the roadmap. **A new system: design it with the user before any code** (AGENTS → Ask first, rule 8). **Version:** next minor, with a name. **Read:** DESIGN §11 row 12 and the M6 wishlist line ("late game you can eventually start your own casino"), §27 (the Hamster Casino: chips, exact returns), §29 (colonies, Golden Whiskers, the Wise Elders), §9 (balance rules), §10 (open late-game issues); PORTING_NOTES D88, D146.
+**Status:** done, released in 1.8.0 "Grand Opening" (2026-10-03). The user left every question below to Claude ("you decide everything based on the current and future state of the game"); the answers are in DESIGN §32 and PORTING_NOTES D164. Kept below as the record of the plan. **Version:** next minor, with a name. **Read:** DESIGN §11 row 12 and the M6 wishlist line ("late game you can eventually start your own casino"), §27 (the Hamster Casino: chips, exact returns), §29 (colonies, Golden Whiskers, the Wise Elders), §9 (balance rules), §10 (open late-game issues); PORTING_NOTES D88, D146.
 
 ## What the roadmap says
 

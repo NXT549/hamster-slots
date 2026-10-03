@@ -33,6 +33,9 @@ const HELP = `node tools/sim.mjs [options]
                          spend the Golden Whiskers on perks (cheapest first) and play on in the
                          new colony; --lives counts every life, in every colony
   --colonies N           --migrate until N migrations are made (ignores --lives)
+  --owncasino [M]        run the Family Casino (M12) once it opens: empty the till every M minutes
+                         of play (default 10) and buy cabinets and floor upgrades, best payback
+                         first; with --casino, spare Takings buy Chip Crates for the boosts
   --plant S              at the Big Cage, plant a trait if it costs at most S x the
                          seeds held (or 1 seed); hold the rest for their bonus   (default 0.25)
   --data FILE            another data.json to try                               (default data.json)
@@ -41,7 +44,7 @@ const HELP = `node tools/sim.mjs [options]
 // ───────────────────────── Options ─────────────────────────
 
 function parseArgs(argv) {
-  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true, casino: false, helper: true, migrate: false, colonies: null };
+  const opts = { player: 'idle', seeds: 5, lives: 7, minutes: 120, retire: 0.5, firstMinutes: null, bankroll: 40, plant: 0.25, data: null, verbose: false, capsules: true, casino: false, helper: true, migrate: false, colonies: null, owncasino: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -61,6 +64,7 @@ function parseArgs(argv) {
     else if (a === '--casino') opts.casino = true;
     else if (a === '--no-helper') opts.helper = false;
     else if (a === '--migrate') opts.migrate = true;
+    else if (a === '--owncasino') { opts.owncasino = argv[i + 1] && !argv[i + 1].startsWith('--') ? Number(next()) : 10; }
     else { console.log(`Unknown option ${a}\n\n${HELP}`); process.exit(1); }
   }
   if (!['idle', 'active'].includes(opts.player)) { console.log('--player must be idle or active'); process.exit(1); }
@@ -240,6 +244,45 @@ function buyPerks(g) {
     g.buyPerk(pick.id);
   }
 }
+// M12: with --owncasino the bot runs the Family Casino: it empties the till every few
+// minutes of play, then buys the cabinet or floor upgrade that pays back soonest
+// (cost ÷ the takings per second it adds), as long as it can afford the best one. With
+// --casino, Takings left over once the floor is full buy Chip Crates (for the boosts).
+function runOwnCasino(g, stats) {
+  if (!g.isOwnCasinoOpen || !g.isOwnCasinoOpen()) return;
+  if (g.emptyTill()) stats.empties++;
+  const oc = data.ownCasino;
+  for (;;) {
+    const rate0 = g.getTakingsPerSecond();
+    const options = [];
+    for (const c of oc.cabinets) {
+      if (g.state.ownCasino.cabinets[c.machine]) continue;
+      options.push({ cost: c.cost, gain: g.getCabinetRate(c.machine), buy: () => g.buyCabinet(c.machine), cabinet: c.machine });
+    }
+    for (const u of oc.upgrades) {
+      if (g.isFloorMaxed(u.id) || u.effect.type === 'tillHours') continue;
+      const copy = cloneGame(g);
+      copy.addTakings(num(copy.getFloorCost(u.id)));
+      copy.buyFloorUpgrade(u.id);
+      options.push({ cost: num(g.getFloorCost(u.id)), gain: copy.getTakingsPerSecond() - rate0, buy: () => g.buyFloorUpgrade(u.id) });
+    }
+    // The Cashier: only when the till would fill between two visits.
+    const cashier = oc.upgrades.find((u) => u.effect.type === 'tillHours');
+    if (cashier && !g.isFloorMaxed(cashier.id) && g.getTillHours() * 60 < opts.owncasino * 1.5) options.push({ cost: num(g.getFloorCost(cashier.id)), gain: Infinity, buy: () => g.buyFloorUpgrade(cashier.id) });
+    const best = options.filter((o) => o.gain > 0).sort((a, b) => a.cost / a.gain - b.cost / b.gain)[0];
+    if (best && num(g.state.ownCasino.takings) >= best.cost) {
+      best.buy();
+      if (best.cabinet) stats.cabinets[best.cabinet] = stats.t / 3600;
+      continue;
+    }
+    if (!options.length && opts.casino) {
+      const crate = oc.rewards.find((r) => r.kind === 'chips');
+      if (crate && g.canBuyOwnReward(crate.id)) { g.buyOwnReward(crate.id); stats.crates++; continue; }
+    }
+    return;
+  }
+}
+
 const treeDone = (g) => (typeof g.isTreeComplete === 'function' ? g.isTreeComplete() : data.familyTree.nodes.every((n) => n.maxLevel === null || g.isTreeMaxed(n.id)));
 
 // ───────────────────────── One run (one seed) ─────────────────────────
@@ -276,6 +319,7 @@ function playSeed(seed) {
   let rankedAt = -Infinity;
   let nextClick = 0;
   let nextMachineCheck = 0;
+  const own = { t: 0, empties: 0, crates: 0, cabinets: {}, playSince: null, next: 0 }; // --owncasino (M12)
 
   // --colonies N: stop when colony N+1 would start (N migrations), however many lives that takes.
   while (lives.length < opts.lives && !(opts.colonies !== null && migrations.length >= opts.colonies)) {
@@ -314,6 +358,7 @@ function playSeed(seed) {
       const ok = top.kind === 'machine' ? g.buyMachine(top.id) : g.buyUpgrade(top.id);
       if (ok) { ranking = null; nextMachineCheck = 0; }
     }
+    if (opts.owncasino !== null && t >= own.next) { own.t = t; runOwnCasino(g, own); own.next = t + opts.owncasino * 60; }
     if (t >= nextMachineCheck) { chooseMachine(g); chooseBet(g); dressUp(g); life.boosts += useCasino(g); nextMachineCheck = t + 10; }
 
     // When the Family tab (first seed pending) and the Capsules tab (10 tokens) would appear.
@@ -368,7 +413,7 @@ function playSeed(seed) {
       break;
     }
   }
-  return { lives, treeDoneAt, migrations };
+  return { lives, treeDoneAt, migrations, own };
 }
 
 // ───────────────────────── Report ─────────────────────────
@@ -475,6 +520,16 @@ if (opts.migrate) {
     const late = per.map((ls) => median(ls.filter((l) => l.generation >= 9 && l.generation <= 15).map((l) => l.length))).filter((v) => v !== null);
     console.log(`Colony ${c + 1}: ${hours.length ? `${range(hours)} h to migrate` : 'not finished'} · shortest life past gen 3 ${shortest.length ? range(shortest) : '—'} min · median life gens 9–15 ${late.length ? range(late) : '—'} min`);
   }
+}
+if (opts.owncasino !== null) {
+  // M12: when each cabinet went on the floor (hours of play from the start), and what the rest bought.
+  const opened = results.map((r) => r.migrations[0] && r.migrations[0].at).filter((x) => x !== undefined);
+  const cabs = data.ownCasino.cabinets.filter((c) => c.cost > 0).map((c) => {
+    const hrs = results.map((r) => (r.own.cabinets[c.machine] !== undefined && r.migrations[0] ? r.own.cabinets[c.machine] - r.migrations[0].at : null));
+    return `${c.machine} ${range(hrs)}`;
+  });
+  console.log(`Family Casino (empties the till every ${opts.owncasino} min): opens at ${range(opened)} h; cabinets, hours after it opens: ${cabs.join(' · ')}`);
+  console.log(`  tills emptied ${range(results.map((r) => r.own.empties))}${opts.casino ? ` · Chip Crates ${range(results.map((r) => r.own.crates))}` : ''}`);
 }
 console.log(`Planted after each life (seed 1): ${runs[0].map((l, i) => `gen ${i + 1}: ${l.planted.join(', ') || '-'}`).join(' | ')}`);
 console.log(`Took ${((Date.now() - started) / 1000).toFixed(1)} s.`);

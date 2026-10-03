@@ -1,0 +1,33 @@
+/* owncasino.css — the Family Casino (M12, owncasino.ts): the Casino tab's "Your casino" sub-tab. */
+
+.oc { display: flex; flex-direction: column; gap: var(--space-2); }
+.oc-bank { display: flex; align-items: center; gap: 8px; }
+.oc-bank .k-amount .num { font-size: 24px; }
+.oc-till-line { margin: 4px 0 6px; }
+.oc-empty { align-self: flex-start; }
+/* A full till: the button breathes (a hint, not an alarm) */
+.oc-empty.is-full { animation: oc-breathe 1.6s ease-in-out infinite; }
+@keyframes oc-breathe { 50% { transform: scale(1.04); } }
+.less-motion .oc-empty.is-full { animation: none; }
+
+/* The floor: a painted carpet (owncasino.ts paints the tile, 2 screen px a pixel) with the cabinets on it */
+.oc-floor {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 8px; padding: 8px;
+  background: var(--danger-dark) var(--carpet) repeat; background-size: 32px 32px; image-rendering: pixelated;
+  clip-path: var(--notch);
+}
+.oc-slot {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px;
+  background: color-mix(in srgb, var(--paper) 78%, transparent); clip-path: var(--notch); text-align: center;
+}
+.oc-stand { position: relative; height: 104px; display: flex; align-items: flex-end; justify-content: center; }
+.oc-cabinet { display: block; image-rendering: pixelated; }
+.oc-slot:not(.owned) .oc-cabinet { opacity: 0.45; filter: grayscale(0.7); } /* for sale: a dim shape */
+/* A guest on the stool in front of an owned cabinet, bobbing as the reels spin */
+.oc-guest { position: absolute; bottom: -2px; right: 4px; width: 32px; height: 32px; animation: oc-bob 1.4s steps(2) infinite; animation-delay: var(--bob-delay, 0s); }
+.oc-slot:not(.owned) .oc-guest { display: none; }
+@keyframes oc-bob { 50% { transform: translateY(-2px); } }
+.less-motion .oc-guest { animation: none; }
+.oc-name { font-family: var(--font-display); font-weight: 500; font-size: var(--text-sm); line-height: 1.1; }
+.oc-stats { font-size: 12px; line-height: 1.25; }
+.oc-floor-note { margin-top: 6px; }

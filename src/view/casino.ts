@@ -13,6 +13,7 @@
 
 import { formatCoins, setText, setHTML, iconHTML, replayClass, mix } from './dom.ts';
 import { createSubTabs } from './kit.ts';
+import { createOwnCasinoView } from './owncasino.ts';
 import { spriteImg, applySprite, runFrame, SUIT_SPRITES } from './art.ts';
 import { furPalette, skinPreview } from './skins.ts';
 import { WHEEL_ORDER, POCKETS, pocketColor } from '../logic/roulette.ts';
@@ -54,9 +55,14 @@ export function createCasinoView(
     bjHint: $('bj-hint'), bjNote: $('bj-note'),
     track: $('derby-track'), dResult: $('derby-result'), dRun: $<HTMLButtonElement>('derby-run'), dNote: $('derby-note'),
     dropBoard: $('drop-board'), dropResult: $('drop-result'), dropBtn: $<HTMLButtonElement>('drop-btn'), dropNote: $('drop-note'),
-    prizes: $('prize-grid'), badges: $('boost-badges'),
+    prizes: $('prize-grid'), badges: $('boost-badges'), chipBar: $('chip-bar'),
   };
   const subtabs = createSubTabs($('casino-subtabs'), el.panel, { key: 'casino', settings, onSettingsChange });
+  // M12: the Family Casino, on its own sub-tab (shown once a migrated family has it).
+  let tillFull = false;
+  const own = game.data.ownCasino && game.data.ownCasino.enabled
+    ? createOwnCasinoView(game, { root: $('own-casino'), say, sound, fx, lessMotion, onFullTill: (full) => { tillFull = full; } })
+    : null;
   const casino = () => game.data.casino!;
   const enabled = () => !!game.data.casino && game.data.casino.enabled; // (a build can leave the casino out)
   const chips = () => game.state.casino.chips.toNumber();
@@ -804,8 +810,11 @@ export function createCasinoView(
     setHTML(el.chipPrice, `a chip costs ${iconHTML('coin', 12)} ${formatCoins(price)}`);
     setText(el.chipNote, `Chips cost about ${casino().chipPriceSeconds} s of your family's best earnings. You also earn one every ${casino().chipsPerSpins.spins} paid spins, `
       + `and ${casino().chipsPerRetirement} when a hamster retires. Chips only buy prizes: they never turn back into coins.`);
+    subtabs.setHidden('own', !own || !game.isOwnCasinoOpen());
     const current = subtabs.current;
+    el.chipBar.classList.toggle('hidden', current === 'own'); // (Takings, not chips, over there)
     el.bet.classList.toggle('hidden', current === 'prizes');
+    if (current === 'own' && own) own.render();
     setHTML(el.betValue, `${chipIcon(12)} ${formatCoins(bet())}`);
     el.betValue.classList.toggle('dim', bet() > chips());
     el.betDown.disabled = betIndex <= 0;
@@ -820,6 +829,7 @@ export function createCasinoView(
     if (current !== 'derby' && race && !race.done && now - race.start >= race.duration) renderDerby(now);
     if (current !== 'drop' && drops.length) renderDrop(now);
     subtabs.setDot('prizes', casino().prizes.some((p) => p.kind === 'skin' && game.canBuyPrize(p.id)));
+    subtabs.setDot('own', game.isOwnCasinoOpen() && (tillFull || game.isTillFull()));
   }
 
   build();

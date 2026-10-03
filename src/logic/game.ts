@@ -26,6 +26,7 @@ import type { SpinValue } from './machine.ts';
 import type { Rng } from './rng.ts';
 import { money, roundMoney, divide, power, moneyFrom, isMoney } from './money.ts';
 import { createCasino, newCasinoState } from './casino.ts';
+import { createOwnCasino, newOwnCasinoState } from './owncasino.ts';
 import { handValue } from './blackjack.ts';
 import type { BjCard } from './blackjack.ts';
 import type { Money, MoneyLike } from './money.ts';
@@ -57,8 +58,10 @@ import type {
 // v14 (1.4.0, The Great Migration) added the colony: migrations, Golden Whiskers,
 // colony perks, the coins earned this colony (the seed formula reads them), Colony
 // Trials and the Wise Elders' settings, and six stats.
+// v15 (M12, the Family Casino) added the family's own casino (its cabinets, floor
+// upgrades, back-office buys, the till and the Takings) and three stats.
 // See migrateSave() below.
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 15;
 
 // The gamble's deck: 4 suits, 2 of each colour. Every card is a fresh draw (an
 // endless deck), so the cards you saw before tell you nothing about the next one.
@@ -2484,6 +2487,18 @@ export function createGame(initialData: GameData, rng: Rng) {
     checkDiary,
   });
 
+  // ─────────────────────── The Family Casino (M12) ───────────────────────
+  // The family's own casino lives in owncasino.ts; it never touches coins.
+  const ownCasino = createOwnCasino({
+    state: () => state,
+    data: () => data,
+    emit: (name, payload) => events.emit(name, payload),
+    costAtLevel,
+    earnTokens,
+    earnChips: casino.earnChips,
+    checkDiary,
+  });
+
   // ─────────────────────── Offline earnings ───────────────────────
   // While the game is closed, the hamster keeps running the wheel, but at a
   // reduced rate (offline.efficiency) and for at most offline.maxSeconds.
@@ -2502,6 +2517,9 @@ export function createGame(initialData: GameData, rng: Rng) {
   }
 
   function applyOfflineEarnings(seconds: number): boolean {
+    // M12: the Family Casino's till fills while you're away too (its own limit: the
+    // till's size). It's Takings, not coins, so it's apart from what follows.
+    if (data.offline && seconds >= data.offline.minSeconds) ownCasino.applyOffline(seconds);
     const { seconds: counted, coins } = getOfflineEarnings(seconds);
     if (coins.lte(0)) return false;
     state.stats.offlineCoins = roundMoney(state.stats.offlineCoins.add(coins));
@@ -2530,6 +2548,7 @@ export function createGame(initialData: GameData, rng: Rng) {
     state.stats.playTime += dt;
     state.run.playTime += dt;
     casino.tick(dt); // M11: timed boosts count down while you play
+    ownCasino.tick(dt); // M12: the guests fill the Family Casino's till (it opens here, the first time)
 
     // 1) Delivery timer
     if (state.delivery.active) {
@@ -2752,6 +2771,18 @@ export function createGame(initialData: GameData, rng: Rng) {
     getPrize: casino.getPrize, canBuyPrize: casino.canBuyPrize, getPrizeBlock: casino.getPrizeBlock, getBoosts: casino.getBoosts,
     getCasinoOdds: casino.getCasinoOdds,
 
+    // the Family Casino (M12): actions, then queries (owncasino.ts)
+    emptyTill: ownCasino.emptyTill, buyCabinet: ownCasino.buyCabinet, buyFloorUpgrade: ownCasino.buyFloorUpgrade,
+    buyOwnReward: ownCasino.buyOwnReward, addTakings: ownCasino.addTakings,
+    isOwnCasinoUnlocked: ownCasino.isUnlocked, isOwnCasinoOpen: ownCasino.isOpen,
+    getCabinet: ownCasino.getCabinet, getGuestRtp: ownCasino.getGuestRtp, getGuestMultiplier: ownCasino.getGuestMultiplier,
+    getGuestBetMultiplier: ownCasino.getBetMultiplier, getGuestBet: ownCasino.getGuestBet, getCabinetRate: ownCasino.getCabinetRate,
+    getTakingsPerSecond: ownCasino.getTakingsPerSecond, getTillHours: ownCasino.getTillHours, getTillCapacity: ownCasino.getTillCapacity,
+    isTillFull: ownCasino.isTillFull, canBuyCabinet: ownCasino.canBuyCabinet,
+    getFloorUpgrade: ownCasino.getFloorUpgrade, getFloorLevel: ownCasino.getFloorLevel, isFloorMaxed: ownCasino.isFloorMaxed,
+    getFloorCost: ownCasino.getFloorCost, canBuyFloorUpgrade: ownCasino.canBuyFloorUpgrade,
+    getOwnReward: ownCasino.getOwnReward, getOwnRewardCost: ownCasino.getOwnRewardCost, canBuyOwnReward: ownCasino.canBuyOwnReward,
+
     // saving
     toSaveData, loadSaveData,
   };
@@ -2848,6 +2879,8 @@ function newStats(): Stats {
     migrations: 0, whiskersEarned: money(0), // migrations made, Golden Whiskers earned (migrating and trials)
     trialsCompleted: 0, autoRetires: 0, // Colony Trials beaten; retirements the Wise Elders did
     mysteryBoxes: 0, bestBoxes: 0, // Moving Day's boxes opened, and the most in one spin
+    // v15 (M12): the Family Casino
+    takingsEarned: money(0), tillsEmptied: 0, cabinetsBought: 0, // Takings banked, tills emptied, cabinets on the floor
   };
 }
 
@@ -2888,6 +2921,7 @@ export function newState(data: GameData): GameState {
     skins: { owned: {}, equipped: {} }, // owned: { furCinnamon: true }; equipped: { fur: "furCinnamon" }
     capsules: { sincePity: 0 }, // pulls since the last pity-rarity (Epic) capsule
     casino: newCasinoState(), // M11: chips, boosts under way, a blackjack hand
+    ownCasino: newOwnCasinoState(), // M12: the family's own casino (kept for good, even through a migration)
 
     stats: newStats(),
   };
@@ -3031,6 +3065,13 @@ export function migrateSave(obj: unknown, data: GameData | null): SaveData | nul
     }
     save.colonyCoins = colonyCoins.toString();
     save.saveVersion = 14;
+  }
+
+  // v14 → v15 (M12, the Family Casino). An older family hasn't opened it yet: a
+  // migrated family opens it the next time it plays (owncasino.ts), and the new stats
+  // start at 0 (sanitizeState fills both in), so only the version changes here.
+  if (save.saveVersion === 14) {
+    save.saveVersion = 15;
   }
 
   if (save.saveVersion !== SAVE_VERSION) return null;
@@ -3242,6 +3283,16 @@ export function sanitizeState(raw: Untrusted, data: GameData): GameState {
     else if (p.kind === 'charm') s.casino.boosts[p.id] = Math.min(Math.ceil(left), p.maxSpins);
   }
   s.casino.hand = cd ? cleanHand(rc.hand) : null;
+
+  // The Family Casino (M12): cabinets and upgrades that still exist (levels capped), the till and the Takings.
+  const ro = raw.ownCasino && typeof raw.ownCasino === 'object' ? raw.ownCasino : {};
+  const od = data.ownCasino;
+  s.ownCasino.opened = ro.opened === true;
+  for (const c of (od && od.cabinets) || []) if (ro.cabinets && ro.cabinets[c.machine] === true) s.ownCasino.cabinets[c.machine] = true;
+  s.ownCasino.upgrades = cleanLevels(ro.upgrades, (od && od.upgrades) || []);
+  s.ownCasino.rewards = cleanLevels(ro.rewards, (od && od.rewards) || []);
+  s.ownCasino.till = moneyFrom(ro.till, 0).max(0);
+  s.ownCasino.takings = moneyFrom(ro.takings, 0).max(0);
 
   if (raw.stats && typeof raw.stats === 'object') {
     // The amounts of money are read as Money; counts, seconds and bests as plain numbers.

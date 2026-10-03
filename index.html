@@ -239,10 +239,11 @@
             <button class="subtab" data-sub="derby">Derby</button>
             <button class="subtab" data-sub="drop">Seed Drop</button>
             <button class="subtab" data-sub="prizes">Prizes</button>
+            <button class="subtab hidden" data-sub="own">Your casino</button>
           </nav>
         </div>
         <!-- Your chips, and the bet (a chip size: Roulette puts one on a spot per tap) -->
-        <div class="chip-bar">
+        <div class="chip-bar" id="chip-bar">
           <div class="chip-count"><img data-sprite="chip" data-size="24" alt=""><span id="chip-count">0</span><span class="note">chips</span></div>
           <div class="casino-bet" id="casino-bet">
             <span class="casino-bet-label">Bet</span>
@@ -310,6 +311,8 @@
           <p class="note subpanel-note">Spend your chips here. Boosts run while you play (not while you're away), and buying one again adds more time. The skins are only sold here.</p>
           <div class="prize-grid" id="prize-grid"></div>
         </div>
+        <!-- M12, the Family Casino (owncasino.ts): a migrated family's own casino. Built in code. -->
+        <div class="subpanel" data-sub="own" id="own-casino"></div>
       </div>
 
       <!-- Info: the machine you're running (paytable, paylines, bonus features) and recent wins -->

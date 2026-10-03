@@ -10,6 +10,20 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-10-03 · Grand Opening
+
+**After the Great Migration your family opens its own casino: hamster guests play cabinets of your machines, and the house's share fills a till with Takings.**
+
+### Added
+
+- **The Family Casino** (Casino → **Your casino**), for a family that has made the Great Migration. It opens with an Old Clunky cabinet on a red carpet; seven more cabinets, one of each machine, are for sale.
+- **Hamster guests play your cabinets.** Your own machines always pay you more than they cost, but on the floor the guests win back a bit less than they bet (92% to 95%, shown on each cabinet). What they don't win back goes in the **till**, as **Takings**: a new currency in your purse.
+- **The till fills while you play and while you're away**, up to two hours of takings. Tap **Empty the till** to bank them.
+- **Decor, a room and staff** to spend Takings on: the Neon Sign and Plush Carpet bring more guests, the High-Limit Room makes them bet more, the Floor Manager keeps a little more of each bet, and the Cashier makes the till hold more.
+- **The back office**: Takings buy Chip Crates (500 chips for the Prize Counter) and Token Boxes (a Hamster Token). Each one costs a little more than the last.
+- **The Family Casino is kept for good**: retiring and migrating never touch it. Takings never turn into coins, so they don't change how fast you earn Heirloom Seeds.
+- **Three new diary stickers**: Grand Opening, Full Floor and Casino Mogul.
+
 ## [1.7.1] - 2026-10-03 · Settling In
 
 **Later colonies last longer: after a Great Migration, a new colony takes hours to build up again instead of racing through two-minute hamsters.**
