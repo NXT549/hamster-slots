@@ -13,7 +13,20 @@ Goal: the issues round 1 left open, without touching colony 1's first 8 lives (D
 
 ## Baseline (measured 2026-10-03 on 1.7.1, Node 22)
 
-BASELINE_TABLE
+`node tools/sim.mjs --migrate --lives 45 --seeds 3`, idle and `--player active`, each without and with `--casino` (the bot spends its chips on boosts). From the sim's `Colony N:` summary lines; ranges over seeds. Colony 3 doesn't finish in 45 lives. Re-run before starting.
+
+| | idle | idle + casino | active | active + casino |
+|---|---|---|---|---|
+| Colony 1, hours | 5.5–5.9 | 4.4–5.4 | 3.4–3.6 | 3.0–3.6 |
+| Colony 1, median life gens 9–15 (min) | 9.1–10.6 | 8.0–11.1 | 5.7–8.9 | **3.3–7.1** |
+| Colony 2, hours | 4.0–5.0 | 3.4–4.0 | 3.1–5.0 | 2.7–2.9 |
+| Colony 2, median gens 9–15 | 6.5–6.8 | 4.2–8.6 | 5.2–6.2 | **3.6–4.7** |
+| Colony 2, shortest past gen 3 | 4.3–5.2 | 2.5–4.4 | 2.1–4.1 | 2.5–3.0 |
+| Whiskers at migration 2 | 63–72 | 57–68 | 64–72 | 61–68 |
+| **Colony 3, median gens 9–15** | **4.6–5.7** | **3.9–4.4** | **3.1–4.6** | **2.3–4.3** |
+| **Colony 3, shortest past gen 3** | **2.4–3.9** | **1.8–2.9** | **2.3** | **1.2–1.6** |
+
+Reading: colony 2 now meets round 1's targets without the casino. Colony 3 misses them (lives under 4 min idle, ~2 min active). **The casino boosts still cut late lives by up to ~40% for an active player** (colony 1's median 5.7–8.9 → 3.3–7.1), so C3 is real, not a maybe.
 
 ## Issues, ranked
 
@@ -21,7 +34,7 @@ BASELINE_TABLE
 |---|---|---|---|
 | **C1** | Colony 3's middle lives 2–5 min (more whiskers from the longer colony 2 → more Pride) | baseline | **Main work** |
 | C2 | Colony 1 gens 9–10 dip (6–9 min idle) before the softcap starts (round 1's B2, not tried) | balancing.md baseline | Try in the same pass |
-| C3 | Casino boosts on top of 1.7.1 | `--casino` rows above | Data trim only if a boost cuts late lives > 25% |
+| **C3** | Casino boosts cut active players' late lives by up to ~40% on 1.7.1 | `--casino` columns above | Data trim (ask first); over round 1's 25% line |
 | C4 | Offline upgrades the sim never values (Night Shift, Cosy Nest; round 1's B5) | §28 | Sim addition `--away` first, then judge |
 
 ## Levers for C1 (from round 1's finding)
@@ -37,7 +50,7 @@ Only how fast the family's power climbs between lives sets a life's length. For 
 ## Ask first (one `ask_decision` card)
 
 1. **Colony 3:** leave it fast (a quick replay; the Wise Elders automate it) / a gentler whisker formula (rec. once the variants agree: it touches only later colonies) / pricier Pride / a dearer tree.
-2. **Casino boosts:** leave / trim (only if C3 is over 25%).
+2. **Casino boosts:** leave (the casino is a choice) / trim Golden Hour or chips per retirement (rec.: the baseline shows up to ~40% shorter lives).
 
 ## Steps
 

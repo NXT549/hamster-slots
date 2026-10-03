@@ -18,7 +18,7 @@ One file per planned update. **Open a file only when the user tells you to work 
 | [content-machine-skins.md](content-machine-skins.md) | Machine skins paint every machine, plus five new ones | Done: released in 1.6.1 "Fresh Coat" (D161) |
 | [balancing.md](balancing.md) | Balancing round 1: later colonies (a dearer tree per colony) | Done: released in 1.7.1 "Settling In" (D163); kept for its variants |
 | [playtest-fixes.md](playtest-fixes.md) | 1.7.x: fixes from playtest feedback | Waiting on the user's playtest |
-| [balancing-2.md](balancing-2.md) | Balancing round 2: colony 3's short lives, casino boosts, a sim `--away` mode | Planned; best after the playtest; ask first |
+| [balancing-2.md](balancing-2.md) | Balancing round 2: colony 3's short lives, casino boosts (up to ~40% shorter lives), a sim `--away` mode | Planned; best after the playtest; ask first |
 | [ui-5-capsules-info.md](ui-5-capsules-info.md) | New Digs part 5: Capsules (reveal, Wardrobe, Diary) and Info | Planned (DESIGN §31) |
 | [ui-6-casino.md](ui-6-casino.md) | New Digs part 6: Casino chrome, cashier, roulette spots, prizes | Planned (DESIGN §31) |
 | [ui-7-menu-dialogs.md](ui-7-menu-dialogs.md) | New Digs part 7: Menu, Stats, Save backup, Welcome back, crash screen | Planned (DESIGN §31) |
