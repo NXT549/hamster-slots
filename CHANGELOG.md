@@ -19,6 +19,12 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 - **"NEW SYMBOL!" and "NEW MACHINE!"**: a new symbol on the reels or a brand-new machine gets a little celebration with its picture.
 - **UI sounds**: soft clicks and ticks for buttons, tabs, switches and sheets, much quieter than the game. Switch them off in **Menu → UI sounds**.
 
+## [1.8.1] - 2026-10-03 · Grand Opening
+
+### Fixed
+
+- **Takings in the purse** showed a long decimal (like 15.21415999999927). They're now shown as whole numbers with K/M/B, the same as everywhere else in the Family Casino.
+
 ## [1.8.0] - 2026-10-03 · Grand Opening
 
 **After the Great Migration your family opens its own casino: hamster guests play cabinets of your machines, and the house's share fills a till with Takings.**

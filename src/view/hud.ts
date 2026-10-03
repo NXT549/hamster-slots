@@ -11,7 +11,7 @@
 // and to pop a counter when it gains (pop).
 
 import { spriteImg, applySprite } from './art.ts';
-import { formatCoins, formatWhole, setText, replayClass } from './dom.ts';
+import { formatCoins, setText, replayClass } from './dom.ts';
 import { h, button, listRow, CURRENCIES, formatAmount, appeared } from './kit.ts';
 import { titleLetters, rampFromTokens } from './pixelfont.ts';
 import type { Currency, Sheet } from './kit.ts';
@@ -194,7 +194,8 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
       }
       if (show) {
         extra++;
-        setText(p.num, formatWhole(amountOf(c)));
+        // formatAmount, like the purse's sheet: Takings get their K/M/B and are shown whole.
+        setText(p.num, formatAmount(c, amountOf(c)));
       }
     }
     drawn = true;
