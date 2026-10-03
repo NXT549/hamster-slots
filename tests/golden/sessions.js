@@ -19,7 +19,7 @@ import { createGame } from '../../src/logic/game.ts';
 
 export const data = JSON.parse(readFileSync(new URL('../../data.json', import.meta.url), 'utf8'));
 
-// Every event game.ts emits (AGENTS.md → Events).
+// Every event game.ts emits (GameEvents in src/logic/types.ts).
 const EVENTS = [
   'spinStarted', 'spinResolved', 'spinBlocked', 'betChanged', 'freeSpinsStarted', 'freeSpinsEnded',
   'jackpotStarted', 'jackpotWon', 'gambleOffered', 'gambleResolved', 'gambleEnded', 'coinsChanged',
