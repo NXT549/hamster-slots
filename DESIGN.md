@@ -2239,7 +2239,7 @@ Maxed, free spins go from a seventh of the Bonanza's money to more than half: th
 
 ### Balance
 
-See PORTING_NOTES → Playtest notes, 1.10.0-rc.1 (the simulator, before and after).
+The simulator (18 lives, idle and active, PORTING_NOTES → Playtest notes, 1.10.0-rc.1): the first 7 lives are unchanged, lives 8–18 stay within the seed-to-seed noise, and the whole tree is planted at the same time (4.7–5.9 h idle, 3.4–3.7 h active). By the time Zoomies opens, payout multipliers dwarf its extra income, and the seed curve decides when to retire.
 
 ### Save v16
 
