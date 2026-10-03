@@ -493,3 +493,21 @@ describe('the balance rules still hold for a migrated family', () => {
     return h.getMachineData().id === 'moving' && h.getEconomy().rtp > 1;
   })());
 });
+
+// ─────────────────────────────────────────────────────────────
+describe('a dearer Family Tree in each new colony (the balancing pass)', () => {
+  const k = 3;
+  const d = structuredClone(data);
+  d.familyTree.costPerColony = k;
+  const g = createGame(d, createRng(5));
+  g.unlockAllUpgrades();
+  const plain = createGame(structuredClone(data), createRng(5));
+  const node = d.familyTree.nodes[0];
+  const base = num(plain.getTreeCost(node.id));
+  check('the first colony pays rule 3\'s price', num(g.getTreeCost(node.id)) === base);
+  g.state.colony = 1;
+  check('colony 2 pays floor(price × k)', num(g.getTreeCost(node.id)) === Math.floor(base * k));
+  g.state.colony = 2;
+  check('colony 3 pays floor(price × k²)', num(g.getTreeCost(node.id)) === Math.floor(base * k * k));
+  check('data.json\'s factor is never below 1 (a later colony never pays less)', (data.familyTree.costPerColony ?? 1) >= 1);
+});

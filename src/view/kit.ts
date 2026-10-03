@@ -199,8 +199,9 @@ export function buyButton({ onClick, size = 'md', className = '', ariaLabel }: {
   };
   return {
     el: b.el,
-    update({ state: s, cost, currency = 'coin', count = 1, progress = 0, label }:
-      { state: BuyState; cost?: Money | number; currency?: Currency; count?: number; progress?: number; label?: string }) {
+    // `verb` goes before the cost ("Plant · 12"); `label` is what an unpriced state says instead of its default.
+    update({ state: s, cost, currency = 'coin', count = 1, progress = 0, label, verb = '' }:
+      { state: BuyState; cost?: Money | number; currency?: Currency; count?: number; progress?: number; label?: string; verb?: string }) {
       if (s !== state) {
         b.update({ tone: BUY_TONE[s] });
         b.el.classList.toggle('is-saving', s === 'saving');
@@ -210,7 +211,7 @@ export function buyButton({ onClick, size = 'md', className = '', ariaLabel }: {
       const priced = s === 'ready' || s === 'saving';
       setIcon(priced ? CURRENCIES[currency].sprite : s === 'locked' ? 'lock' : '');
       const text = label !== undefined && !priced ? label
-        : priced && cost !== undefined ? `${count > 1 ? `×${count} · ` : ''}${formatAmount(currency, cost)}`
+        : priced && cost !== undefined ? `${verb ? `${verb} · ` : ''}${count > 1 ? `×${count} · ` : ''}${formatAmount(currency, cost)}`
           : s === 'maxed' ? 'Max' : s === 'locked' ? 'Locked' : s === 'switch' ? 'Switch' : s === 'running' ? 'Running' : '';
       b.update({ label: text, disabled: s === 'maxed' || s === 'locked' || s === 'running' });
       b.label.classList.toggle('num', priced);

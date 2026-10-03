@@ -388,6 +388,8 @@ Web-first (PORTING_NOTES D106): one web codebase ships to GitHub Pages, then itc
 | — | 1.5.0 "The Glow Up" | Second visual redesign: painted room, cage, cabinets, a 32×32 hamster, pixel-art titles | done (§30) |
 | — | 1.6.0 "New Digs" | UI redesign parts 1–3 (room look, purse, control deck, phone tab bar, Upgrades tab); **parts 4–9 planned, don't build until asked** | parts 1–3 done (§31) |
 | — | 1.6.1 "Fresh Coat" | Every machine skin paints all 8 machines, plus 5 new machine skins | done (§14, §25) |
+| — | 1.7.0 "Family Room" | UI redesign part 4 (the Family tab) | done (§31 part 4) |
+| — | 1.7.1 "Settling In" | Balancing pass: each new colony's Family Tree costs ×3 more, Colony Pride +30% a level | done (§29) |
 | → | Releases | GitHub Pages from the start; then itch.io, Steam, maybe mobile, all from the same web codebase (PORTING_NOTES → The plan) | ongoing |
 
 **Particles and animations are a thread, not a milestone:** every milestone ships the effects for what it adds, and 1.0 went through the whole game (§20, §23). Every new animation needs its `.less-motion` rule (AGENTS.md → Code style).
@@ -1591,6 +1593,8 @@ Once the **whole Family Tree is planted** (every trait at its max; Family Fortun
 
 **Golden Whiskers** (the colony's currency, 12 px whiskers by a pink nose): `floor((seeds earned this colony ÷ 4) ^ 0.5)`, at least 1, × (1 + Whisker Wisdom): about 9 for the ~350 seeds a family has when its tree is first complete, 27 for 3,000. So more seeds, more whiskers, but a square root: a longer colony pays more, not endlessly more. Colony Trials pay whiskers too. They never come from coins or chips, and there's nothing to buy them with.
 
+**Each new colony's Family Tree costs ×3 more** (`familyTree.costPerColony`: colony 2 pays 3× rule 3's price, colony 3 9×, and so on; the balancing pass, 2026-10-03, D163, 1.7.1). A migrated family earns seeds so fast that it used to replant the whole tree in a few lives and grow ~10× stronger every life, so its lives shrank to 2–5 minutes.
+
 A migrated family's **rebirth upgrades stay open** from its first pup (it has had every generation before: §28's `unlock.generation` counts only in the first colony), and its **casino stays open**. Every colony's pups start further along the name list.
 
 ### Colony perks (Golden Whiskers, kept for good)
@@ -1599,7 +1603,7 @@ Family → Colony. Rule 3's formula (`floor(baseCost × growthRate ^ owned)`), i
 
 | Perk | Cost | Max | What it does |
 |---|---|---:|---|
-| ❤️ **Colony Pride** | 1 × 1.6ⁿ | none | **+50% payouts a level**, in a group of its own (it multiplies the others): the whiskers' sink |
+| ❤️ **Colony Pride** | 1 × 1.6ⁿ | none | **+30% payouts a level** (+50% before the balancing pass, 2026-10-03), in a group of its own (it multiplies the others): the whiskers' sink |
 | 🌱 **Seed Sense** | 2 × 1.8ⁿ | 10 | **+10% Heirloom Seeds a level** (every seed total × 1.1, 1.2 …). **New effect** `seedGain` |
 | 👓 **Wise Elders** | 3 | 1 | **The automation** (below). **New effect** `autoRetire` |
 | 🥨 **Old Friends** | 4 | 1 | Every pup starts owning the Burrow Bonanza (like Snack Inheritance's Stacker) |
@@ -1681,7 +1685,17 @@ The open problem since M7 (§10): from generation ~11 the lives shrank to 2–4 
 
 - **The first colony's late lives are 2–3× longer**, the first 8 lives are the same, and the whole tree (the Great Migration's unlock) comes at the same time. After generation ~16 the lives climb steeply (the family owns everything): the nudge to migrate.
 - **The migration loop** (`--migrate`): the first migration after 5.0–5.8 h idle (3.4–3.9 active) pays **9–11 whiskers**; a migrated family's early game is 3–4× faster (colony 2's first lives 10–15 min idle, 4–10 active); the second migration comes about 2 h later idle (1.2 h active) and pays **33–49**.
-- **Open:** later colonies' late lives are short again (colony 2's generations 9–15: 2.5–8 min idle, 1.7–4 active), because Colony Pride multiplies the income and the seed curve is the same. The Wise Elders take the clicking out of it; if it's still too fast, the levers are Colony Pride's size and price, or a softcap that tightens with each colony (PORTING_NOTES D146).
+- **Later colonies (the balancing pass, 2026-10-03, D163, 1.7.1):** a migrated family's late lives were short again (colony 2's generations 9–15: 2.5–6.5 min idle, 1–5 active) because it replanted the tree in a few lives and Colony Pride stacked on top. **Now each colony's tree costs ×3 more and Colony Pride gives +30% a level** (was +50%). `node tools/sim.mjs --migrate --lives 45 --seeds 3`:
+
+  | | idle before | idle after | active before | active after |
+  |---|---|---|---|---|
+  | Colony 2, hours | 1.8–2.1 | **3.5–4.8** | 1.1–1.5 | **3.1–4.5** |
+  | Colony 2, gens 1–8 | 3–20 min | 7–26 | 4–11 | 7–22 |
+  | Colony 2, gens 9–15 (median) | 2.8–4.4 min | **6.0–8.4** | 2.3–3.1 | **4.9–7.7** |
+  | Colony 3, gens 4–14 | 2–5 min | 2–7 | 1–2 | 1.6–5 |
+  | Whiskers at migration 2 | 38–49 | 65–67 | 33–37 | 66–71 |
+
+  Colony 1 doesn't change. Colony 2 is still faster than colony 1 (the migration's reward) but plays out over 3–5 hours. **Still open:** colony 3's middle lives (2–5 min), because a longer colony 2 pays more whiskers (more Pride). If the playtest finds them too fast, the levers are the tree factor, Pride's size, or a whisker formula that grows more slowly. Why not the seed curve: retiring at "+X% seeds" is relative, so a cost multiplier on seeds cancels out, and a gentler exponent per colony only adds a wall at the colony's end (docs/updates/balancing.md has every variant).
 
 ### Save v14
 
@@ -1785,9 +1799,9 @@ All 14 are redrawn at **32×32** with five-step ramps (six new deep-shade colour
 - Does anything feel slow on your phone?
 - Is "The Glow Up" the right name?
 
-## 31. New Digs: a full UI redesign (update 1.6.0: parts 1–3 released, parts 4–9 planned)
+## 31. New Digs: a full UI redesign (1.6.0: parts 1–3, 1.7.0 "Family Room": part 4, parts 5–9 planned)
 
-> **Status: parts 1–3 done, released in 1.6.0 "New Digs"** (2026-10-03, at the user's "that looks good publish it", after they saw screenshots; planned 2026-09-29, built from their "build it" on 2026-10-02; PORTING_NOTES D156–D160): the foundations, the shell and the Upgrades tab, built on the branch `ccr-dd00c9db-4v56oa`. **Parts 4–9 are still planned** (Family, Capsules and Info, Casino, Menu and dialogs, the guide and UI sounds, polish): built when the user asks, as later updates; until then those screens wear the new materials in their old layouts. **View only:** no rules, balance or save changes (the golden run, the save fixtures and the simulator stay untouched).
+> **Status: parts 1–3 done, released in 1.6.0 "New Digs"** (2026-10-03, at the user's "that looks good publish it", after they saw screenshots; planned 2026-09-29, built from their "build it" on 2026-10-02; PORTING_NOTES D156–D160): the foundations, the shell and the Upgrades tab, built on the branch `ccr-dd00c9db-4v56oa`. **Parts 4–9 are still planned** (Family, Capsules and Info, Casino, Menu and dialogs, the guide and UI sounds, polish): built when the user asks, as later updates; until then those screens wear the new materials in their old layouts. **Part 4 (Family) is released in 1.7.0 "Family Room"** (2026-10-03, D162); as built, see the Family, Colony and Big Cage rows below. **View only:** no rules, balance or save changes (the golden run, the save fixtures and the simulator stay untouched).
 
 *"Make a full plan to redesign the full UI"* (the user, 2026-09-29)
 
@@ -1948,7 +1962,7 @@ Every screen is built from these, and they replace the copies listed in Before:
 | **Upgrades** *(built in part 3)* | **Tiles:** a tap on the tile opens the sheet (the description, the whole now → next line with hit rates and average wins, "ready in", the buy button); the tile's own buy button is 44 px. **×1/×10/Max** always shows all three (on a line of its own in a narrow tray). **The Hamster Helper's switch** sits at the top of both upgrade sub-tabs, since it buys the machine's upgrades too. **One meaning of "locked":** a tile that needs another upgrade stays in place and says what it needs; rebirth and sticker upgrades sit in one **Locked drawer**, each saying how it opens ("with your 4th hamster", "earn the On Fire sticker"). **Machine cards** become catalogue pages: icon, name, one line of numbers, the features as icon chips (named in the sheet), stars and one action; the description moves to the sheet. **Rebuild:** one framed workshop ticket with a ConfirmButton, worded the same on the machine card. *As built:* the list's hint ("Tap one to read about it") shares the bar with ×1/×10/Max and gives way to the Helper's switch; on a narrow tray the sub-tabs show only their icons but the open one's name, the Helper is its paw and its switch, and a tile's buy button is slimmer (its coin at 1×); the Upgrades tab's dot says something is newly affordable; the previews refresh 4 times a second |
 | **Family** | **The retire card** is a letter from the pup: portrait and name, the big line "Retire now: +N Heirloom Seeds", the bonus now → after, a gauge to the next seed, and a ConfirmButton; what resets and what's kept goes in a "How it works" fold. **Planted traits** are chips you can tap (a sheet says what each does; today it's a hover tooltip, which a phone can't show) |
 | **Colony** | The migration card: a progress gauge, the whiskers it would bring, a ConfirmButton; the long explanation in a fold. **Perks** become real tiles with a sheet, like the upgrades. The Wise Elders get Toggles and a Segmented; the trials become ListRows |
-| **The Big Cage** | **The meadow, the tree, the rebirth animation and `treeLayout()` don't change.** The numbers become StatTiles on a wooden garden sign. The trait card is the shop's Sheet, with no fixed 150 px height and no scroll inside it: it rises over the lower meadow, and the scene shifts so the tapped trait stays in view. The trial picker is a Segmented with icons, Start an extra-large enamel button, the Migration a ConfirmButton. Nothing under 12 px |
+| **The Big Cage** | **The meadow, the tree, the rebirth animation and `treeLayout()` don't change.** The numbers become StatTiles on a wooden garden sign. The trait card is the shop's Sheet, with no fixed 150 px height and no scroll inside it: it rises over the lower meadow, and the scene shifts so the tapped trait stays in view. The trial picker is a Segmented with icons, Start an extra-large enamel button, the Migration a ConfirmButton. Nothing under 12 px | *As built (D162): the trait sheet opens by itself only on a first family's first visit with nothing planted; otherwise nothing is picked until you tap a trait. The trial picker is a Segmented without icons ("None" first). The panel under the meadow scrolls on a short screen with Start pinned at its bottom.*
 | **Capsules** | **The reveal** is a sheet with "Wear it" and a close button. **The Wardrobe** shows five hangers (one per slot) with what's worn, and the buffs as StatRows (not one long sentence). Skin tiles show the preview, the name and a rarity chip; a tap opens a sheet, also for skins not found yet ("how to get it"). **The Diary** puts the stickers in progress first (nearest first) and folds the done ones under "Done (N)", with sticker upgrades marked |
 | **Info** | **The paytable** on a phone is one card per symbol with its pays as chips, so nothing scrolls sideways. **Paylines** as now (its captions fixed). **Features:** each card leads with its key number; the explanation is in a fold. **Recent wins** become a receipt roll |
 | **Casino** | **The chip bar** stays at the top with **"+ Chips"**, which opens the cashier from any table. The games become icon sub-tabs (one row on a phone). **Roulette** gets finger-sized spots on a phone (the board in two halves, or zoomed) and an "undo last chip". The long odds notes go in folds; "not enough chips" is said one way; the prizes become kit tiles |
@@ -2038,7 +2052,7 @@ On a branch, as **1.6.0-rc.1**. Every part leaves the game playable, passes the 
 | 1. Foundations | The tokens, frames.ts, kit.ts, layout.ts, style.css split into files, the kit gallery. The game itself doesn't change yet |
 | 2. The shell | The wallet, the wooden tray and brass tabs, the phone's bottom bar, safe areas, the control deck, the labels on the machine |
 | 3. Upgrades | Tiles, the sheet, the Locked drawer, machine cards, Rebuild, the Helper's switch. **Then a stop: screenshots for the user to OK the look** before the rest is redone |
-| 4. Family | The retire letter, the traits, the Colony, the Big Cage's panels |
+| 4. Family *(released in 1.7.0, D162)* | The retire letter, the traits, the Colony, the Big Cage's panels |
 | 5. Capsules and Info | The reveal, the Wardrobe, the Diary, the paytable cards, the features, recent wins |
 | 6. Casino | The chip bar and cashier, the tables, the roulette spots, the prizes |
 | 7. Menu and dialogs | The Menu board, Stats, Save backup, Welcome back, the crash screen |
