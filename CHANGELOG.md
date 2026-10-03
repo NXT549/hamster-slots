@@ -10,6 +10,14 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Changed
+
+- **Machine skins now paint every machine**, not just Old Clunky. Each machine keeps its own shape and details (the Bonanza's grass, the Big Cheese's rind, the boxes' tape) in your skin's colours, and the signs match. They're renamed to fit: Factory Paint, Peach Paint, Sky Paint, Grape Paint and Midnight Paint.
+
+### Added
+
+- **Five new machine skins** in the Capsule Machine: Bubblegum Paint and Moss Paint (Common), Copper Pipes and Seaside Paint (Rare), and **Arcade Neon** (Epic), a dark cabinet with neon trim whose twist gives every win you pay for a 5% chance to pay double. Like every machine skin, they make spins cheaper on every machine.
+
 ## [1.6.0] - 2026-10-03 · New Digs
 
 **The first part of a full redesign of everything around the cage, in the hamster's room: wood, paper and brass. The new look reaches every screen, with your purse along the top, a control deck on the cage, the tabs at the bottom of a phone and a new Upgrades tab; the other screens get their new layouts in later updates.**

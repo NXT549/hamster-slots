@@ -68,7 +68,7 @@ describe('the buffs, slot by slot', () => {
   check('…and auto-spin is still never quicker than the spin + the rest', wheel.getAutoInterval() >= wheel.getSpinDuration() + rest - 1e-9);
 
   const machine = wearing('machineGrape');
-  check('machine: Grape Clunky makes spins 10% cheaper', near(num(machine.getSpinCost()), clunky.spinCost * 0.9, 1e-9));
+  check('machine: Grape Paint makes spins 10% cheaper', near(num(machine.getSpinCost()), clunky.spinCost * 0.9, 1e-9));
   machine.addCoins(1e9);
   machine.buyMachine('bonanza');
   check('…on every machine', near(num(machine.getSpinCost()), bonanza.spinCost * 0.9, 1e-9));
@@ -114,7 +114,11 @@ describe('the Epic twists', () => {
   const b0 = newGame(72);
   b0.addCoins(1e9);
   b0.buyMachine('bonanza');
-  check('Midnight Clunky: 2 more free spins a trigger', near(mid.getEconomy().freeSpins.perTrigger, b0.getEconomy().freeSpins.perTrigger + 2, 1e-9));
+  check('Midnight Paint: 2 more free spins a trigger', near(mid.getEconomy().freeSpins.perTrigger, b0.getEconomy().freeSpins.perTrigger + 2, 1e-9));
+
+  // 1.6.1 (Fresh Coat): Arcade Neon's twist adds to Lucky Pennies' double chance.
+  const arcade = wearing('machineArcade');
+  check('Arcade Neon: 5% of paid wins pay double, with no Lucky Pennies', near(arcade.getDoubleChance(), 0.05, 1e-12) && newGame(72).getDoubleChance() === 0);
 
   const sun = wearing('roomSunflower');
   check(`Sunflower Field: a token every 3rd delivery (not every ${data.tokens.deliveryEvery}th)`, sun.getDeliveryTokenEvery() === 3);
@@ -148,7 +152,7 @@ describe('wardrobe: the rules still hold with the best of everything worn', () =
     prev = v;
   }
   check('every Luck level still raises the hit rate and the EV, with the Crown on', ok);
-  // Free spins still always end: max Luck, every Bouncy Ball, the Crown and Midnight Clunky's 2 more.
+  // Free spins still always end: max Luck, every Bouncy Ball, the Crown and Midnight Paint's 2 more.
   const f = wearing(...best);
   f.addCoins(1e12);
   f.buyMachine('bonanza');
@@ -157,7 +161,7 @@ describe('wardrobe: the rules still hold with the best of everything worn', () =
   const extra = soldOn(bonanza, 'extraFreeSpins').reduce((sum, u) => sum + u.maxLevel * u.effect.perLevel, 0) + 2;
   const s = freeSpinStats({ ...bonanza, symbols: f.getSymbols() }, 5, extra);
   check(`free spins always end with the best wardrobe (retrigger loop ${(s.q * s.perTrigger).toFixed(3)} < 1)`, s.q * s.perTrigger < 1);
-  check('the game\'s own free-spin maths counts Midnight Clunky too', near(f.getEconomy().freeSpins.perTriggerWithRetriggers, s.total, 1e-9));
+  check('the game\'s own free-spin maths counts Midnight Paint too', near(f.getEconomy().freeSpins.perTriggerWithRetriggers, s.total, 1e-9));
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -185,7 +189,7 @@ describe('wardrobe: saves, the diary and capsules', () => {
   for (let i = 0; i < 3000; i++) c.pullCapsule();
   const pool = data.skins.filter((s) => s.rarity !== 'starter' && !s.casino); // M11: the casino's skins are only at its Prize Counter
   check(`hats come from capsules: ${pool.length} skins in the pool, all found in 3,000 pulls`,
-    pool.length === 24 && pool.every((s) => got.has(s.id)));
+    pool.length === 29 && pool.every((s) => got.has(s.id)));
   check('no casino skin ever comes out of a capsule', data.skins.filter((s) => s.casino).every((s) => !got.has(s.id)));
   check('a spin with a hat on plays like any spin', (() => { const h = wearing('hatCrown'); h.spin(); land(h); return h.state.stats.spins === 1; })());
 });

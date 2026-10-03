@@ -1,6 +1,6 @@
 # Content idea: Machine skins for every machine
 
-> **Idea, not approved.** The user asked for it (2026-10-03: "add new skins since skins currently only work on the first slot machine"); new skins change the capsule pool, so confirm the picks below before building (AGENTS.md → Ask first). Read only when told to work on this update. Working name: **"Fresh Coat"** (minor update).
+> **Built** (2026-10-03, the user picked "All together"; PORTING_NOTES D161, CHANGELOG `[Unreleased]`), not released yet. Kept as the record of the plan; read only when told to work on machine skins. Picks made: Arcade Neon's twist is a 5% double-win chance; the old skins are renamed "… Paint".
 
 ## The problem today
 - A machine skin's **buff** (cheaper spins) already works on every machine (DESIGN §25).

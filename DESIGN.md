@@ -682,19 +682,19 @@ The first five goals (First Spin, Beginner's Luck, Look No Paws!, Warming Up, Th
 - **Duplicates** refund tokens: Common +2, Rare +4, Epic +8.
 - Pulls use the game's seeded RNG (like spins), so the same seed gives the same capsules.
 
-### Skins (29)
+### Skins (34)
 
 | Category | Starter | Common | Rare | Epic |
 |---|---|---|---|---|
 | **Fur** (hamster palette) | Classic | Cinnamon, Snowball, Cocoa | Lavender, Mint Chip | Golden Glow |
 | **Hat** (M10, on the hamster's head) | No Hat | Party Hat, Beanie, Flower Crown | Top Hat, Cowboy Hat | Crown |
 | **Wheel** | Classic Wheel | Mint Wheel, Berry Wheel | Oak Wheel | Gold Wheel |
-| **Machine** | Mint Clunky | Peach Clunky, Sky Clunky | Grape Clunky | Midnight Clunky |
+| **Machine** (every machine's paint, 1.6.1) | Factory Paint | Peach Paint, Sky Paint, Bubblegum Paint, Moss Paint | Grape Paint, Copper Pipes, Seaside Paint | Midnight Paint, Arcade Neon |
 | **Room** (wall + floor) | Cozy Cream | Strawberry Milk, Mint Garden | Starry Night | Sunflower Field |
 
-24 skins are in the capsule pool: 12 common, 7 rare, 5 epic (18 before the hats). Collecting all of them takes **~151 pulls on average** (median 136; 1 in 10 players needs 237+; measured over 2,000 seeds; ~110 before the hats), because the last Epics are the hard part. With refunds that's roughly 1,000–1,150 tokens. What each skin does when worn is in §25.
+29 skins are in the capsule pool: 14 common, 9 rare, 6 epic (18 before the hats, 24 before 1.6.1's machine skins). Collecting all of them takes **~194 pulls on average** (median 178; 1 in 10 players needs 301+; measured over 2,000 seeds; ~151 with 24 skins, ~110 before the hats), because the last Epics are the hard part. With refunds that's about 1,350 tokens for the median player (half of players 1,085–1,753). What each skin does when worn is in §25.
 
-- data.json lists each skin's id, name, category and rarity. **What a skin looks like lives in `src/view/skins.ts`**, because data.json never holds colours. Fur skins recolour the hamster sprite's palette letters. Wheel, machine and room skins override theme tokens (`--wheel-*`, `--machine`, `--marquee`, `--wall-*`, `--floor*`), set **on the stage element only**.
+- data.json lists each skin's id, name, category and rarity. **What a skin looks like lives in `src/view/skins.ts`**, because data.json never holds colours. Fur skins recolour the hamster sprite's palette letters. Wheel, machine and room skins override theme tokens (`--wheel-*`, `--paint*`, `--marquee`, `--wall-*`, `--floor*`), set **on the stage element only**. **A machine skin paints every machine** (1.6.1 "Fresh Coat"; before, only Old Clunky): `--paint`, `--paint-dark` and `--paint-light` replace every cabinet's body colours (`painted()` in cabinet.ts), so the trims made from them follow, while each machine keeps its own shape and details (the Bonanza's grass, the Big Cheese's rind, the boxes' tape, the Palace's gold); `--paint-marquee` colours every sign. Copper Pipes and Arcade Neon also recolour the chrome trim and levers.
 - The **Wardrobe** shows every skin (unfound ones greyed out, with their names, rarities and buffs), grouped by category, under a line that adds up **what you're wearing** (M10). Tap an owned skin to wear it: one per slot. The choice is saved.
 - Hats (M10) are drawn on the hamster sprite itself, wherever the hamster appears (the wheel, the tube, the Family tab, the Big Cage, the logo), and use only colours fur skins never change, so every hat fits every fur.
 
@@ -1413,7 +1413,8 @@ The Hamster Maze arrives around generation 12–13, the Big Cheese around 16–1
 | Golden Glow (fur) | golden jackpots give 2 tokens instead of 1 |
 | Crown (hat) | the card gamble shows 2 more past cards (7) |
 | Gold Wheel | Hot Streak climbs one step higher (once you own Hot Streak) |
-| Midnight Clunky (machine) | +2 free spins every time they trigger |
+| Midnight Paint (machine) | +2 free spins every time they trigger |
+| Arcade Neon (machine, 1.6.1) | +5% chance a win you paid for pays double (adds to Lucky Pennies) |
 | Sunflower Field (room) | a Hamster Token every 3rd delivery instead of every 5th |
 
 - **How it works:** a worn skin counts like an upgrade at level 1 (`effects` on each skin in data.json), so everything that reads an effect picks it up: the EV stays exact, Luck works like any Luck, a faster spin also speeds auto-spin (never below the spin + the rest), and the Info tab's odds include it. Fur is its own payout group, so its +5% is worth the same however many Chubby Cheeks you own.

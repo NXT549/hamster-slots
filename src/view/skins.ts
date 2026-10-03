@@ -8,8 +8,11 @@
 //
 // A "room" skin colours the cage: the wall behind the bars (--wall-*), the wire
 // (--wire), and the plastic base the bedding sits in (--floor, --floor-dark).
-// Machine skins recolour Old Clunky (their names say so); the Snack Stacker has
-// its own look for now.
+// A machine skin paints EVERY machine (1.6.1 "Fresh Coat"; before, only Old Clunky):
+// it sets --paint, --paint-dark and --paint-light, and cabinet.ts paints each
+// machine's body (and the trims made from it) in them, keeping the machine's own
+// shape and details (the Bonanza's grass, the Big Cheese's rind, the boxes' tape).
+// The starter skin sets nothing, so every machine wears its own colours.
 //
 // The equipped wheel/machine/room tokens are set on the STAGE element, so they
 // only recolour the cage. A Wardrobe swatch sets its own tokens on itself, and
@@ -26,6 +29,18 @@ export interface SkinArt {
   colors?: Colors;
   tokens?: Record<string, string>;
   hat?: string; // M10: a hat in art.ts HATS
+}
+
+// A machine skin's tokens: the paint every cabinet's body takes (base, shade, and a
+// light worked out from the base), the sign's colour, and maybe a few extra tokens.
+// --machine is set too, so the Wardrobe swatch (and Old Clunky) read it like before.
+function paint(base: string, dark: string, sign?: string, extra: Record<string, string> = {}): Record<string, string> {
+  const light = mix(base, '#ffffff', 0.45);
+  const out: Record<string, string> = {
+    '--paint': base, '--paint-dark': dark, '--paint-light': light, '--machine': base, '--machine-dark': dark, ...extra,
+  };
+  if (sign) out['--marquee'] = out['--paint-marquee'] = sign;
+  return out;
 }
 
 export const SKIN_ART: Record<string, SkinArt> = {
@@ -65,10 +80,16 @@ export const SKIN_ART: Record<string, SkinArt> = {
   },
 
   machineClassic: {},
-  machinePeach: { tokens: { '--machine': '#ffb899', '--machine-dark': '#e8906c' } },
-  machineSky: { tokens: { '--machine': '#93cfe8', '--machine-dark': '#5ea6c8' } },
-  machineGrape: { tokens: { '--machine': '#b9a3e3', '--machine-dark': '#8f78c2', '--marquee': '#f59aa5' } },
-  machineMidnight: { tokens: { '--machine': '#4b5185', '--machine-dark': '#33375f', '--marquee': '#ffd35c' } },
+  machinePeach: { tokens: paint('#ffb899', '#e8906c') },
+  machineSky: { tokens: paint('#93cfe8', '#5ea6c8') },
+  machineGrape: { tokens: paint('#b9a3e3', '#8f78c2', '#f59aa5') },
+  machineMidnight: { tokens: paint('#4b5185', '#33375f', '#ffd35c') },
+  // 1.6.1 (Fresh Coat): five more. Copper Pipes and Arcade also recolour the chrome trim and the lever.
+  machineBubblegum: { tokens: paint('#ff9ccf', '#e070a8', '#a8ecff') },
+  machineMossy: { tokens: paint('#8fbf6a', '#648f45', '#f5e6a8') },
+  machineCopper: { tokens: paint('#c8794a', '#9a5530', '#ffd35c', { '--chrome': '#e3a06e', '--chrome-light': '#ffd2a8', '--chrome-dark': '#a8623a' }) },
+  machineSeaside: { tokens: paint('#6cc9c4', '#3f9c98', '#fbe3b0') },
+  machineArcade: { tokens: paint('#3d3850', '#262233', '#6ef0ff', { '--chrome': '#ff6ad5', '--chrome-light': '#ffc2ee', '--chrome-dark': '#b03a92' }) },
 
   roomClassic: {},
   roomStrawberry: { tokens: { '--wall-top': '#fff4f6', '--wall-bottom': '#fbdbe3', '--floor': '#f4a7b9', '--floor-dark': '#d67b92' } },

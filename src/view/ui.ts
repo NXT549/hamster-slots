@@ -282,7 +282,7 @@ export function createUI(
     paintStaticSprites();
     applyStageSkins(game, el.stage);
     cage.invalidate(); // a room skin repaints the cage
-    cabinet.invalidate(); // …and a machine skin Old Clunky
+    cabinet.invalidate(); // …and a machine skin every machine
     wheel.invalidate(); // …and a wheel skin the wheel
   }
   applySkins();
