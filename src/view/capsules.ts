@@ -53,6 +53,7 @@ export function createCapsulesView(
       case 'extraFreeSpins': return `+${e.perLevel} free spins a trigger`;
       case 'deliveryTokens': return `a token every ${ordinal(e.every)} delivery`;
       case 'gambleHistory': return `the card gamble shows ${e.perLevel} more past cards`;
+      case 'doubleWin': return `+${pct(e.perLevel)} chance a paid win pays double`; // 1.6.1: Arcade Neon
       default: return '';
     }
   }

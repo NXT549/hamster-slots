@@ -22,7 +22,7 @@ import { createCasinoView } from './casino.ts';
 import { createBackupView } from './backup.ts';
 import { createShopView } from './shop.ts';
 import { createBigCage } from './bigcage.ts';
-import { createColonyView } from './colony.ts';
+import { createFamilyView } from './family.ts';
 import { createPayoutsView } from './payouts.ts';
 import { createFx } from './fx.ts';
 import { createCelebration, createIris, IRIS_MS } from './celebrate.ts';
@@ -134,7 +134,7 @@ export function createUI(
   // The element with this id (every id used here is in index.html).
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
-    trialBadge: $('trial-badge'), boostBadges: $('boost-badges'), familyPanel: $('tab-family'), srLive: $('sr-live'),
+    trialBadge: $('trial-badge'), boostBadges: $('boost-badges'), srLive: $('sr-live'),
     menuBtn: $('menu-btn'), menu: $<HTMLDialogElement>('menu'), debugBtn: $('debug-btn'), debugKey: $('debug-key'), resetBtn: $('reset-btn'),
     stage: $('stage'), wall: $('wall'), rig: document.querySelector<HTMLElement>('.rig')!, machineTags: $('machine-tags'),
     bubble: $('bubble'), hamster: $<HTMLImageElement>('hamster'), belt: $('belt'),
@@ -146,10 +146,7 @@ export function createUI(
     gambleCard: $('gamble-card'), gambleHistory: $('gamble-history'), gambleKeep: $('gamble-keep'),
     gamblePicks: [...document.querySelectorAll<HTMLButtonElement>('#gamble [data-pick]')],
     road: $('road'), roadFill: $('road-fill'), roadHamster: $<HTMLImageElement>('road-hamster'), tabs: document.querySelector<HTMLElement>('.tabs')!,
-    upgradesTab: $('upgrades-tab'), familyTab: $('family-tab'), pupName: $('pup-name'), pupGen: $('pup-gen'),
-    retireGain: $('retire-gain'), seedBarFill: $('seed-bar-fill'), seedNext: $('seed-next'),
-    heirloomPerSeed: $('heirloom-per-seed'), retireBtn: $<HTMLButtonElement>('retire-btn'), retireBonus: $('retire-bonus'),
-    familyCount: $('family-count'), familyTraits: $('family-traits'), heirloomJar: $('heirloom-jar'),
+    upgradesTab: $('upgrades-tab'),
     machineStars: $('machine-stars'),
     capsulesTab: $('capsules-tab'), stageGacha: $('stage-gacha'), tray: document.querySelector<HTMLElement>('.tray')!,
     casinoTab: $('casino-tab'), casinoPanel: $('tab-casino'),
@@ -222,7 +219,6 @@ export function createUI(
   let currentTab = 'upgrades'; // the tray tab that's open (1.6.0: only it renders)
   let shownTabsKey = ''; // which tabs show, to fit their names when one appears
   let lastHiddenTabs = 0; // when the hidden tabs' dots were last worked out (4 times a second)
-  let retireArmed = 0; // same for retiring
   let lastRetired: GameEvents['retired'] | null = null; // what the Big Cage page says about the hamster that just retired
   let rigFitKey = ''; // stage width + machine + reel count the rig was last fitted for
   let rigShared = 0; // stacked: the height the rig and the tray share (fitRig refits when it changes)
@@ -243,15 +239,6 @@ export function createUI(
   });
   let cardShown: { card: Card; win: boolean; until: number } | null = null; // the gamble card turned face up: { card, win, until } (view only)
   let lastLuck = game.getLuck().total;
-
-  // The Family tab appears once the hamster could retire for its first seed.
-  // If it was already unlocked when the page loaded, don't announce it again.
-  const familyUnlocked = () => {
-    const s = game.state;
-    return s.generation > 1 || s.seeds.gt(0) || s.seedsEarned.gt(0) || game.canRetire();
-  };
-  let familyShown = familyUnlocked();
-  let familyNew = false; // shows a dot on the tab until you open it
 
   // The Capsules tab appears once the family has earned enough tokens for a pull.
   const capsulesUnlocked = () => {
@@ -282,7 +269,7 @@ export function createUI(
     paintStaticSprites();
     applyStageSkins(game, el.stage);
     cage.invalidate(); // a room skin repaints the cage
-    cabinet.invalidate(); // …and a machine skin Old Clunky
+    cabinet.invalidate(); // …and a machine skin every machine
     wheel.invalidate(); // …and a wheel skin the wheel
   }
   applySkins();
@@ -362,7 +349,6 @@ export function createUI(
     };
     requestAnimationFrame(rollup);
   }
-  const seedLabel = (text: string) => `${iconHTML('heirloom')}${text}`;
   // A payout bonus as "+4.5%" (one decimal while it's small, whole percents after).
   const bonusText = (bonus: Money) => (bonus.lt(1) ? `+${(bonus.toNumber() * 100).toFixed(1).replace(/\.0$/, '')}%` : `+${formatWhole(bonus.mul(100).round())}%`);
   const starIcons = (n: number) => iconHTML('star', 16).repeat(n);
@@ -714,7 +700,6 @@ export function createUI(
   game.on('retired', (e) => {
     showMachine();
     hud.resetCoins(); // jump, don't roll down from millions
-    retireArmed = 0;
     lastRetired = e;
     celebrate.close();
     sound.play('retire');
@@ -874,13 +859,13 @@ export function createUI(
       tab.tabIndex = active ? 0 : -1;
       $(`tab-${tab.dataset.tab}`).classList.toggle('hidden', !active);
     }
-    if (name === 'family') familyNew = false;
+    if (name === 'family') family.opened();
     if (name === 'capsules') capsulesNew = false;
     if (name === 'casino') casinoNew = false;
     // M11: on a phone the casino's tables need the room, so the cage steps aside while it's open (layout.css).
     document.querySelector('.app')!.classList.toggle('at-casino', name === 'casino');
     if (sub) {
-      const views: Record<string, { openSub: (s: string) => void }> = { upgrades: shop, family: colony, capsules, casino: casinoView, info: payouts };
+      const views: Record<string, { openSub: (s: string) => void }> = { upgrades: shop, family, capsules, casino: casinoView, info: payouts };
       if (views[name]) views[name].openSub(sub);
     }
     fitTabs();
@@ -929,17 +914,6 @@ export function createUI(
     (e.currentTarget as HTMLElement).blur();
     openTab('capsules');
     el.tray.scrollIntoView({ behavior: lessMotion() ? 'auto' : 'smooth', block: 'start' });
-  });
-
-  // Retiring needs two taps within 3 s, like Reset: it can't happen by accident.
-  el.retireBtn.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    if (!game.canRetire()) return;
-    if (performance.now() < retireArmed) {
-      game.retire();
-      return;
-    }
-    retireArmed = performance.now() + 3000;
   });
 
   // Menu
@@ -1125,70 +1099,6 @@ export function createUI(
     // The shadows under the wheel and the machine follow them (again once a switch-in has settled).
     cage.invalidate();
     setTimeout(() => cage.invalidate(), 450);
-  }
-
-  function renderFamily(now: number, visible: boolean, tick: boolean): void {
-    const s = game.state;
-
-    // Unlock the tab the first time a seed is on offer.
-    if (!familyShown && familyUnlocked()) {
-      familyShown = true;
-      familyNew = true;
-      say(`I've earned an Heirloom Seed! I could retire and pass it on to a new pup. Peek at the Family tab.`, 6000);
-    }
-    el.familyTab.classList.toggle('hidden', !familyShown);
-    // The tab's dot: something to plant, a perk to buy, or a migration ready (1.6.0: worked out
-    // 4 times a second, not every frame).
-    if (visible || tick) {
-      const anyBuyable = game.data.familyTree && game.data.familyTree.nodes.some((n) => game.canBuyTreeNode(n.id));
-      const colonyNews = game.canMigrate() || (game.data.colony ? game.data.colony.perks.some((p) => game.canBuyPerk(p.id)) : false);
-      el.familyTab.classList.toggle('alert', familyNew || anyBuyable || colonyNews);
-    }
-    colony.render(now, familyShown && visible);
-    renderTrialBadge();
-    if (!familyShown || !visible) return;
-
-    // Retire card
-    const name = game.getPupName();
-    setText(el.pupName, name);
-    setText(el.pupGen, `Generation ${s.generation} · earned ${formatCoins(s.run.coinsEarned)} this life`);
-    const pending = game.getPendingSeeds();
-    setHTML(el.retireGain, seedLabel(`+${formatWhole(pending)} Heirloom Seed${pending.eq(1) ? '' : 's'}`));
-    const prog = game.getSeedProgress();
-    el.seedBarFill.style.width = `${(prog.progress * 100).toFixed(1)}%`;
-    // (Since 1.4.0 seeds come from the coins earned this colony, on a curve that bends
-    // past its softcap: "coins still to go" says it plainly.)
-    setText(el.seedNext, `Next Heirloom Seed in ${formatCoins(prog.nextAt.sub(prog.earned).max(0))} more coins earned`);
-    const perSeed = game.getHeldSeedBonusPerSeed();
-    setText(el.heirloomPerSeed, String(Math.round(perSeed * 1000) / 10));
-    setText(el.heirloomJar, `${Math.round(game.getSeedJar() * 100)}`);
-    // The seed jar (M9): past a full jar, more seeds held add nothing (plant them).
-    const after = game.getHeirloomBonusFor(s.seeds.add(pending));
-    const jarFull = s.seeds.add(pending).gte(game.getSeedJarSeeds());
-    setText(el.retireBonus, `Heirloom bonus: ${bonusText(game.getHeirloomBonus())} now → ${bonusText(after)} with the new seeds held`
-      + (jarFull ? ' (the seed jar is full: plant the extra seeds, or grow the jar with Family Fortune)' : ''));
-    el.retireBtn.disabled = !game.canRetire(); // also not while the jackpot wheel turns or a gamble is on
-    setText(el.retireBtn, now < retireArmed ? `Tap again to retire ${name}` : 'Retire to the Big Cage');
-
-    // The family's traits (M15: the tree itself only shows in the Big Cage): a row of
-    // the planted ones, with their levels.
-    const ft = game.data.familyTree;
-    const planted = ft ? ft.nodes.filter((n) => game.getTreeLevel(n.id) > 0) : [];
-    const growable = ft ? ft.nodes.filter((n) => (n.colony || 0) <= s.colony).length : 0; // (colony traits, 1.4.0, after a migration)
-    setText(el.familyCount, `${planted.length} of ${growable} traits planted`);
-    const traitsKey = planted.map((n) => `${n.id}${game.getTreeLevel(n.id)}`).join();
-    if (el.familyTraits.dataset.key !== traitsKey) {
-      el.familyTraits.dataset.key = traitsKey;
-      el.familyTraits.replaceChildren(...planted.map((n) => {
-        const chip = document.createElement('span');
-        chip.className = 'trait-chip';
-        chip.title = `${n.name}: ${n.description}`;
-        chip.appendChild(spriteImg(treeIcon(n), 16, n.name[0]));
-        const level = game.getTreeLevel(n.id);
-        chip.append(level > 1 ? `${n.name} ${level}` : n.name);
-        return chip;
-      }));
-    }
   }
 
   // 1.4.0: a Colony Trial under way: its twist, and this life's seeds towards the goal.
@@ -1572,7 +1482,7 @@ export function createUI(
     const tick = now - lastHiddenTabs > 250;
     if (tick) lastHiddenTabs = now;
     // A tab appeared (or went): do the names still fit?
-    const tabsKey = `${familyShown}${capsulesShown}${casinoShown}`;
+    const tabsKey = `${family.shown}${capsulesShown}${casinoShown}`;
     if (tabsKey !== shownTabsKey) {
       shownTabsKey = tabsKey;
       requestAnimationFrame(fitTabs);
@@ -1580,7 +1490,8 @@ export function createUI(
     // (The Upgrades tab's dot: something you can afford now that you couldn't when you last looked.)
     el.upgradesTab.classList.toggle('alert', shop.render(now, currentTab === 'upgrades', tick));
     if (currentTab === 'info') payouts.render(now);
-    renderFamily(now, currentTab === 'family', tick);
+    family.render(now, currentTab === 'family', tick);
+    renderTrialBadge();
     renderCapsules(now, currentTab === 'capsules', tick);
     renderCasino(now, currentTab === 'casino');
     bigCage.render(now); // (the page between lives: it opens by itself when a hamster retires)
@@ -1615,7 +1526,7 @@ export function createUI(
   }
 
   const capsules = createCapsulesView(game, { say, sound, fx, settings, onSettingsChange });
-  const colony = createColonyView(game, { say, sound, fx, settings, onSettingsChange });
+  const family = createFamilyView(game, { sheet, say, sound, fx, settings, onSettingsChange, bonusText });
   const casinoView = createCasinoView(game, { say, sound, fx, lessMotion, settings, onSettingsChange });
   const backupView = createBackupView(game, backup);
   const shop = createShopView(game, { settings, onSettingsChange, sheet });

@@ -191,87 +191,10 @@
             <button class="subtab" data-sub="colony">Colony</button>
           </nav>
         </div>
-        <div class="subpanel" data-sub="family">
-        <div class="retire-card">
-          <div class="retire-info">
-            <div class="retire-who">
-              <img id="pup-img" data-sprite="hamster" data-size="64" alt="">
-              <div>
-                <div class="retire-name" id="pup-name"></div>
-                <div class="tile-tag" id="pup-gen"></div>
-              </div>
-            </div>
-            <div class="retire-gain">Retire now: <span class="seed-amount" id="retire-gain"></span></div>
-            <div class="note" id="retire-bonus"></div>
-            <div class="seed-bar"><div class="seed-bar-fill" id="seed-bar-fill"></div></div>
-            <div class="note" id="seed-next"></div>
-          </div>
-          <div class="retire-action">
-            <p class="note">A new pup starts over: coins, upgrades (High Roller too), machines and unplayed free spins reset.
-              The family keeps its Heirloom Seeds (<b>+<span id="heirloom-per-seed"></span>% payouts for every seed you hold</b>, up to +<span id="heirloom-jar"></span>%: the seed jar), the Family Tree and Machine Stars.
-              Retiring opens the Big Cage, where you plant.</p>
-            <button class="btn btn-gold" id="retire-btn">Retire to the Big Cage</button>
-          </div>
-        </div>
-
-        <!-- M15: the tree itself only grows in the Big Cage (when you retire); here, just what the family has -->
-        <div class="family-sum">
-          <div class="section-head section-first">
-            <h3>Family Tree</h3>
-            <span class="note" id="family-count"></span>
-          </div>
-          <div class="family-traits" id="family-traits"></div>
-          <p class="note">Traits every future pup is born with. Retire and the family's tree grows in the Big Cage, where you plant them.</p>
-        </div>
-        </div>
-
-        <!-- 1.4.0: The Great Migration (colony.ts): the mega rebirth, the perks, the Wise Elders, the trials -->
-        <div class="subpanel" data-sub="colony">
-          <div class="migrate-card">
-            <div class="migrate-info">
-              <div class="migrate-head">
-                <img data-sprite="whiskerIcon" data-size="48" alt="">
-                <div>
-                  <div class="retire-name" id="colony-name">The Great Migration</div>
-                  <div class="tile-tag" id="colony-sub"></div>
-                </div>
-              </div>
-              <div class="seed-bar"><div class="seed-bar-fill whisker-fill" id="colony-bar-fill"></div></div>
-              <div class="note" id="colony-progress"></div>
-              <div class="retire-gain"><span id="colony-gain-label">Migrate now:</span> <span id="colony-gain"></span></div>
-            </div>
-            <div class="retire-action">
-              <p class="note" id="colony-explain"></p>
-              <button class="btn btn-gold" id="migrate-btn">Migrate to a new colony</button>
-            </div>
-          </div>
-          <div class="section-head">
-            <h3>Colony perks</h3>
-            <span class="note" id="perk-note"></span>
-          </div>
-          <div class="upgrade-grid perk-grid" id="perk-grid"></div>
-          <!-- The Wise Elders' settings (once the perk is bought) -->
-          <div class="elders-card hidden" id="elders-card">
-            <div class="section-head section-first"><h3>The Wise Elders</h3><span class="note" id="elders-note"></span></div>
-            <div class="elders-row">
-              <span>Retire by themselves</span>
-              <button class="btn btn-soft helper-btn" id="elders-retire" aria-pressed="false">Off</button>
-            </div>
-            <div class="elders-row">
-              <span>…when a life's seeds reach</span>
-              <div class="seg" id="elders-share" role="group" aria-label="When to retire"></div>
-            </div>
-            <div class="elders-row">
-              <span>Plant the cheap traits</span>
-              <button class="btn btn-soft helper-btn" id="elders-plant" aria-pressed="true">On</button>
-            </div>
-          </div>
-          <!-- Colony Trials: which are beaten this colony (a trial is picked in the Big Cage) -->
-          <div class="trials-card hidden" id="trials-card">
-            <div class="section-head section-first"><h3>Colony Trials</h3><span class="note" id="trials-note"></span></div>
-            <div class="trial-list" id="trial-list"></div>
-          </div>
-        </div>
+        <!-- "New Digs" part 4: family.ts builds the retire letter and the planted traits, colony.ts the
+             Great Migration, the perks, the Wise Elders and the trials, from the kit -->
+        <div class="subpanel family-panel" data-sub="family" id="family-main"></div>
+        <div class="subpanel family-panel" data-sub="colony" id="colony-main"></div>
       </div>
 
       <!-- Capsules: spend Hamster Tokens on skins, wear them, and see how to earn tokens -->
@@ -481,32 +404,16 @@
       <!-- 1.4.0: "The Great Migration!" over the meadow -->
       <div class="bc-banner hidden" id="bc-banner"></div>
     </div>
+    <!-- "New Digs" part 4: the numbers on a wooden garden sign, the trait you tap in a sheet over the
+         lower meadow, and the trial, the migration and Start below (bigcage.ts builds them from the kit) -->
     <div class="bc-top">
       <div class="bc-head">
         <h2>The Big Cage</h2>
         <p class="note" id="bc-sub"></p>
       </div>
-      <div class="bc-summary">
-        <div class="bc-stat"><span class="bc-label">Seeds held</span><span class="seed-amount" id="bc-held"></span></div>
-        <div class="bc-stat"><span class="bc-label">Heirloom bonus</span><span class="bc-value" id="bc-bonus"></span></div>
-        <div class="bc-stat"><span class="bc-label">Machine Stars</span><span class="bc-value" id="bc-stars"></span></div>
-        <div class="bc-stat bc-jar" id="bc-jar"><span class="bc-label">Seed jar</span><span class="bc-jar-bar"><span class="bc-jar-fill" id="bc-jar-fill"></span></span><span class="bc-jar-text" id="bc-jar-text"></span></div>
-      </div>
+      <div class="bc-sign fr" id="bc-sign"></div>
     </div>
-    <!-- The trait you tapped: what it does, and Plant -->
-    <div class="tree-detail" id="tree-detail"></div>
-    <div class="bc-foot">
-      <!-- 1.4.0: a Colony Trial for the next life (after the first migration) -->
-      <div class="bc-trials hidden" id="bc-trials">
-        <span class="bc-label">Colony Trial for this life</span>
-        <div class="seg bc-trial-picks" id="bc-trial-picks" role="group" aria-label="Colony Trial"></div>
-        <p class="note" id="bc-trial-note"></p>
-      </div>
-      <p class="note bc-explain" id="bc-explain"></p>
-      <!-- 1.4.0: the Great Migration (the whole tree planted): two taps -->
-      <button class="btn btn-soft bc-migrate hidden" id="bc-migrate"></button>
-      <button class="btn btn-gold" id="bc-start">Start the new life</button>
-    </div>
+    <div class="bc-foot" id="bc-foot"></div>
   </dialog>
 
   <!-- ── Welcome back: coins earned while the game was closed ── -->

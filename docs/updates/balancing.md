@@ -1,6 +1,6 @@
 # Balancing pass (plan)
 
-> **Status: B1 built (2026-10-03, D161): each colony's tree ×3, Colony Pride +30%. Open: colony 3's middle lives, B2–B6.** Earlier status: planned, don't build until asked. Balance direction is an ask-first change (AGENTS.md): show the user the decisions in "Ask first" before touching data.json. Ships as its own update after 1.6.x; the user picks version and name (D138).
+> **Status: B1 shipped in 1.7.1 "Settling In" (2026-10-03, D163): each colony's tree ×3, Colony Pride +30%. Open: colony 3's middle lives, B2–B6.** Earlier status: planned, don't build until asked. Balance direction is an ask-first change (AGENTS.md): show the user the decisions in "Ask first" before touching data.json. Ships as its own update after 1.6.x; the user picks version and name (D138).
 
 Goal: fix the open balance issues in AGENTS.md → Current status without touching the first life the user signed off ("real slog", D93) or any balance rule (DESIGN §9).
 

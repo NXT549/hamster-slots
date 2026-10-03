@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs';
 import { createRng } from '../src/logic/rng.ts';
 import { createGame } from '../src/logic/game.ts';
 import { lockShort, lockText, machineFeatures, pipCount, newlyAffordable } from '../src/view/shop.ts';
+import { perkState } from '../src/view/colony.ts';
 
 const data = JSON.parse(readFileSync(new URL('../data.json', import.meta.url), 'utf8'));
 const freshGame = () => createGame(structuredClone(data), createRng(1));
@@ -85,5 +86,22 @@ describe("the Upgrades tab's dot", () => {
     expect(newlyAffordable(['cheeks'], new Set(['cheeks']))).toBe(false);
     expect(newlyAffordable([], new Set(['cheeks']))).toBe(false); // (bought it: nothing new)
     expect(newlyAffordable(['cheeks', 'machine:stacker'], new Set(['cheeks']))).toBe(true);
+  });
+});
+
+// The Colony's perk tiles (New Digs part 4) are bought like upgrades: their state comes from the
+// game's own canBuyPerk / isPerkMaxed, and their price is the game's (rule 3's one cost formula).
+describe('colony perk tiles', () => {
+  test('saving → ready → maxed follows the game, and the price is the game\'s', () => {
+    const g = freshGame();
+    const perk = g.data.colony.perks.find((p) => p.maxLevel);
+    expect(perkState(g, perk.id)).toBe('saving');
+    expect(g.getPerkCost(perk.id).eq(Math.floor(perk.baseCost))).toBe(true);
+    g.addWhiskers(g.getPerkCost(perk.id));
+    expect(perkState(g, perk.id)).toBe('ready');
+    g.addWhiskers(1e9);
+    while (g.canBuyPerk(perk.id)) g.buyPerk(perk.id);
+    expect(g.getPerkLevel(perk.id)).toBe(perk.maxLevel);
+    expect(perkState(g, perk.id)).toBe('maxed');
   });
 });

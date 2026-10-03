@@ -147,25 +147,26 @@
 .machine.pulled .lever-stick { transform: scaleY(0.5); }
 .machine.pulled .lever-knob { transform: translateY(39px); }
 
-/* Each machine: its padding (room round the reels for its cabinet) and its sign's colour.
+/* Each machine: its padding (room round the reels for its cabinet) and its sign's colour
+   (a machine skin's --paint-marquee wins, so one skin colours every sign).
    The Snack Stacker has a push button instead of a lever, and room for the payline tags. */
 .machine[data-machine="stacker"] { padding: 15px 37px 37px; }
-.machine[data-machine="stacker"] .marquee { --marquee: var(--stacker-marquee); }
+.machine[data-machine="stacker"] .marquee { --marquee: var(--paint-marquee, var(--stacker-marquee)); }
 .machine[data-machine="stacker"] .lever { top: 104px; height: 40px; right: -26px; }
 .machine[data-machine="stacker"] .lever-stick { display: none; }
 .machine[data-machine="stacker"] .lever-knob { width: 22px; height: 22px; top: 8px; }
 .machine[data-machine="stacker"].pulled .lever-knob { transform: translateX(-5px); }
 .machine[data-machine="bonanza"] { padding: 25px 25px 37px; }
-.machine[data-machine="bonanza"] .marquee { --marquee: var(--bonanza-light); }
+.machine[data-machine="bonanza"] .marquee { --marquee: var(--paint-marquee, var(--bonanza-light)); }
 .machine[data-machine="palace"] { padding: 17px 25px 37px; }
-.machine[data-machine="palace"] .marquee { --marquee: var(--palace-gold); }
+.machine[data-machine="palace"] .marquee { --marquee: var(--paint-marquee, var(--palace-gold)); }
 .machine[data-machine="bonanza"] .payline-arrow, .machine[data-machine="palace"] .payline-arrow { display: none; }
 .machine[data-machine="maze"] { padding: 19px 25px 37px; }
-.machine[data-machine="maze"] .marquee { --marquee: var(--maze-path); }
+.machine[data-machine="maze"] .marquee { --marquee: var(--paint-marquee, var(--maze-path)); }
 .machine[data-machine="vault"] { padding: 17px 25px 37px; }
-.machine[data-machine="vault"] .marquee { --marquee: var(--gold); }
+.machine[data-machine="vault"] .marquee { --marquee: var(--paint-marquee, var(--gold)); }
 .machine[data-machine="cheese"] { padding: 21px 25px 37px; }
-.machine[data-machine="cheese"] .marquee { --marquee: var(--cheese-light); }
+.machine[data-machine="cheese"] .marquee { --marquee: var(--paint-marquee, var(--cheese-light)); }
 .machine[data-machine="maze"] .payline-arrow, .machine[data-machine="vault"] .payline-arrow, .machine[data-machine="cheese"] .payline-arrow { display: none; }
 
 /* Hold & spin (M9): a board over the reels. Locked acorns show their coins; empty cells shimmer. */
@@ -347,7 +348,7 @@
 
 /* Moving Day (the 8th machine): a big cardboard box, taped shut, with a blue label (cabinet.ts) */
 .machine[data-machine="moving"] { padding: 21px 25px 37px; }
-.machine[data-machine="moving"] .marquee { --marquee: var(--box-label); }
+.machine[data-machine="moving"] .marquee { --marquee: var(--paint-marquee, var(--box-label)); }
 .machine[data-machine="moving"] .payline-arrow { display: none; }
 
 /* A narrow cage (a phone): the card table in three rows, so it fits the shorter cage. The card

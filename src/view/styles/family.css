@@ -1,54 +1,51 @@
-/* family.css — the Family tab: the retire card, the planted traits, and the Colony sub-tab (1.4.0:
-   the Great Migration card, the colony perks, the Wise Elders, the Colony Trials). */
+/* family.css — the Family tab ("New Digs" part 4: family.ts and colony.ts build it from the kit):
+   the retire letter, the planted traits as chips, and the Colony sub-tab (the Great Migration card,
+   the colony perks, the Wise Elders' switches, the Colony Trials).
+   (The cards, gauges, chips, tiles, switches and the sheet themselves are the kit's: kit.css.) */
 
-/* ── Family tab: retire card + family tree ──────────── */
-.retire-card {
-  --frame: var(--frame-paper-heirloom);
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center; padding: 4px 6px;
+.family-panel { display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* ── The retire letter (and the migration card, which is laid out the same) ── */
+.family-who { display: flex; align-items: center; gap: var(--space-3); }
+.family-portrait { flex: none; }
+.family-who-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.family-name { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); line-height: 1.1; overflow-wrap: anywhere; }
+.family-line { font-weight: 700; font-size: var(--text-xs); color: var(--ink-soft); line-height: 1.3; }
+/* "Retire now: +12 Heirloom Seeds", the letter's big line */
+.family-gain {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 0 var(--space-1);
+  font-family: var(--font-display); font-weight: 500; font-size: var(--text-md);
 }
-.retire-info { display: flex; flex-direction: column; gap: 6px; }
-.retire-who { display: flex; align-items: center; gap: 10px; }
-.retire-name { font-family: var(--font-display); font-weight: 500; font-size: 20px; line-height: 1.1; }
-.retire-gain { display: flex; align-items: center; gap: 6px; font-size: 15px; flex-wrap: wrap; }
-.seed-amount { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; color: var(--heirloom-dark); }
-.seed-bar { height: 8px; background: var(--paper-2); overflow: hidden; clip-path: var(--notch); }
-.seed-bar-fill { height: 100%; width: 0; background: var(--heirloom-dark); transition: width 0.3s; }
-.retire-action { display: flex; flex-direction: column; gap: 8px; }
-.retire-action .note { margin: 0; line-height: 1.4; }
+.family-gain .k-amount { font-size: var(--text-xl); color: var(--heirloom-dark); }
+.colony-migrate .family-gain .k-amount { color: var(--whisker-dark); }
+.family-plus { font-family: var(--font-num); font-weight: 900; font-size: var(--text-xl); color: var(--heirloom-dark); margin-right: -2px; }
+.colony-migrate .family-plus { color: var(--whisker-dark); }
+.family-letter .k-stat-row { padding: 2px 0 4px; }
+.family-letter .k-chip { align-self: flex-start; }
+.family-next { font-weight: 700; font-size: var(--text-xs); color: var(--ink-soft); margin-top: calc(-1 * var(--space-1)); }
+.k-btn.family-retire { width: 100%; }
 
-/* The Family tab's list of planted traits (M15: the tree itself only grows in the Big Cage) */
-.family-sum { margin-top: 14px; }
-.family-traits { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 2px 8px; }
+/* ── The planted traits: chips you can tap (the sheet says what each does) ── */
+.family-count { margin-left: auto; font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--ink-soft); }
+.family-traits { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 .family-traits:empty { display: none; }
-.trait-chip {
-  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 4px;
-  background: var(--heirloom-soft); clip-path: var(--notch); font-size: 12px; font-weight: 800;
+.k-chip.family-trait {
+  min-height: var(--tap); padding: 0 var(--space-2) 0 var(--space-1); border: 0; cursor: pointer;
+  font-family: var(--font-body); font-size: var(--text-sm);
 }
+.k-chip.family-trait:focus-visible { outline: 3px solid var(--soft-dark); outline-offset: 2px; }
+@media (hover: hover) { .k-chip.family-trait:hover { filter: brightness(1.05); } }
 
-.whisker-amount { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; color: var(--whisker-dark); }
-.seed-bar-fill.whisker-fill { background: var(--whisker-dark); }
-/* The Family tab's Colony sub-tab: the migration card, the perks, the Wise Elders, the trials */
-.migrate-card { --frame: var(--frame-paper-gold); display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center; padding: 4px 6px; }
-.migrate-info { display: flex; flex-direction: column; gap: 6px; }
-.migrate-head { display: flex; align-items: center; gap: 10px; }
-.perk-tile .tile-info { cursor: default; }
-.perk-desc { margin: 0; font-size: 12px; color: var(--ink-soft); font-weight: 600; line-height: 1.3; }
-.elders-card, .trials-card { margin-top: 14px; }
-.elders-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px 8px; font-size: 14px; flex-wrap: wrap; }
-.elders-row .helper-btn { flex: none; min-width: 64px; font-size: 15px; } /* (On / Off, until part 4 makes them switches) */
-.elders-card.off .elders-row + .elders-row { opacity: 0.6; }
-.trial-list { display: flex; flex-direction: column; gap: 6px; }
-.trial-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 8px; background: var(--paper-2); clip-path: var(--notch); }
-.trial-row .note { margin: 2px 0 0; font-size: 12px; line-height: 1.3; }
-.trial-row.done { opacity: 0.7; }
-.trial-row.now { background: color-mix(in srgb, var(--whisker) 35%, var(--paper)); }
-.trial-status { flex: none; display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 900; font-size: 14px; color: var(--whisker-dark); white-space: nowrap; }
-.trial-row.done .trial-status { color: var(--buy-dark); }
-.trial-status img { width: 16px; height: 16px; }
-
-@container tray (max-width: 560px) {
-  .retire-card { grid-template-columns: 1fr; }
-}
-@container tray (max-width: 420px) {
-  .migrate-card { grid-template-columns: 1fr; }
-}
+/* ── The Colony sub-tab ── */
+.colony-perks { margin-top: calc(-1 * var(--space-2)); }
+.colony-head-note { margin-left: auto; font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--ink-soft); text-align: right; }
+.colony-elders .k-toggle { justify-content: space-between; width: 100%; padding: 0; }
+.colony-elders-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
+.colony-elders.is-off .k-card-body > :not(:first-child) { opacity: 0.6; }
+.colony-elders-row .k-seg-opt { min-width: var(--tap); }
+.colony-trial-list { display: flex; flex-direction: column; gap: var(--space-1); }
+.colony-trial-list .k-row { background: var(--paper-2); }
+.colony-trial-list .k-row-value { color: var(--whisker-dark); }
+.colony-trial-list .k-row.is-done { opacity: 0.7; }
+.colony-trial-list .k-row.is-done .k-row-value { color: var(--buy-dark); }
+.colony-trial-list .k-row.is-now { background: color-mix(in srgb, var(--whisker) 35%, var(--paper)); }

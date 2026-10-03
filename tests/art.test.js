@@ -11,7 +11,7 @@ import { SPRITES, PALETTE, SYMBOL_SPRITES, CAPSULE_SPRITES, MACHINE_SPRITES, upg
 import { SKIN_ART, SKIN_TOKENS } from '../src/view/skins.ts';
 import { FRAME_SPRITES, THEME_TOKENS } from '../src/view/theme.ts';
 import { CAGE_TOKENS, cageLayout } from '../src/view/cage.ts';
-import { CABINET_TOKENS } from '../src/view/cabinet.ts';
+import { CABINET_TOKENS, painted } from '../src/view/cabinet.ts';
 
 const data = JSON.parse(readFileSync(new URL('../data.json', import.meta.url), 'utf8'));
 
@@ -113,4 +113,18 @@ for (const [W, H, wallB, floorT] of [[374, 360, 250, 276], [520, 420, 300, 326],
   check(`${tag}: the window, shelf and portrait are on the back wall`, parts.every((r) => r.x > L.back.l && r.x + r.w < L.back.r && r.y > L.back.top && r.y + r.h < L.back.floor));
   const overlap = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   check(`${tag}: nothing on the wall overlaps`, parts.every((a, i) => parts.every((b, j) => i === j || !overlap(a, b))));
+}
+
+// 1.6.1 (Fresh Coat): a machine skin paints every machine, not only Old Clunky.
+for (const skin of data.skins.filter((s) => s.category === 'machine' && s.rarity !== 'starter')) {
+  const t = SKIN_ART[skin.id].tokens || {};
+  check(`${skin.name} sets the paint for every machine`, ['--paint', '--paint-dark', '--paint-light'].every((n) => /^#[0-9a-f]{6}$/.test(t[n] || '')));
+}
+{
+  const c = Object.fromEntries(CABINET_TOKENS.map((n) => [n, '#123456']));
+  check('the starter machine skin (no paint) leaves every machine its own colours', painted({ ...c, '--paint': 'none' })['--cheese'] === '#123456');
+  const p = painted({ ...c, '--paint': '#aaaaaa', '--paint-dark': '#bbbbbb', '--paint-light': '#cccccc' });
+  const bodies = ['machine', 'stacker', 'bonanza', 'palace', 'maze', 'vault', 'cheese', 'box'];
+  check('a painted skin swaps every machine body for its paint', bodies.every((b) => p[`--${b}`] === '#aaaaaa' && p[`--${b}-dark`] === '#bbbbbb'));
+  check('…but keeps each machine\'s own details (grass, rind, tape, gold)', ['--bonanza-grass', '--cheese-rind', '--box-tape', '--palace-gold', '--maze-path'].every((n) => p[n] === '#123456'));
 }
