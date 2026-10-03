@@ -15,8 +15,10 @@ export function setNumberStyle(style: string): void {
 
 // 12.3456 → "12.34" (never rounds UP, so "1.99K" is never really 1,989.6),
 // and trailing zeros go: 1.50 → "1.5", 2.00 → "2".
+// (+1e-9: 2300 / 1000 × 100 comes out as 229.99999… in floating point, which
+// would floor to "2.29K". Like scientific() below.)
 function twoDecimals(x: number): string {
-  return String(Math.floor(x * 100) / 100);
+  return String(Math.floor(x * 100 + 1e-9) / 100);
 }
 
 // Small amounts show cents (a 4.05-coin spin matters); big ones show whole numbers.

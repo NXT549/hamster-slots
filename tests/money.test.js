@@ -107,6 +107,15 @@ describe('how money is written on screen', () => {
     expect(formatCoins(money(n))).toBe(text); // a Money is written the same way
   });
 
+  // 1.8.x fix: 1,150 / 1,000 is 1.1499999… in floating point, so it was written "1.14K".
+  test.each([[1150, '1.15K'], [1130, '1.13K'], [2300, '2.3K'], [2010, '2.01K'], [4.07e6, '4.07M'], [5.29e9, '5.29B']])(
+    '%s → %s (no floating-point step down)',
+    (n, text) => {
+      expect(formatCoins(n)).toBe(text);
+      expect(formatCoins(money(n))).toBe(text);
+    },
+  );
+
   test('full numbers below a million', () => {
     setNumberStyle('full');
     expect(formatCoins(47275)).toBe('47,275');
