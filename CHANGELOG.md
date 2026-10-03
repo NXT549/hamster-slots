@@ -10,6 +10,8 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-10-03 · Grand Opening
+
 ### Fixed
 
 - **Takings in the purse** showed a long decimal (like 15.21415999999927). They're now shown as whole numbers with K/M/B, the same as everywhere else in the Family Casino.
