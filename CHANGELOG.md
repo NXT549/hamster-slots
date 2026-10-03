@@ -10,6 +10,12 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+### Changed
+
+- **Stats come in sections** (Menu → Stats), starting with **This life**: your hamster's time, coins earned and coins per minute. They now also show numbers the game was already counting: casino games, chips and blackjacks, your own casino's takings, Lucky Pennies doubles, coins won and spent, and spins on the wheel.
+- **The Diary shows the stickers you're closest to first.** Finished stickers fold away at the bottom.
+- **Recent wins are kept between visits** (Info → Recent wins), so you can see what you won after a reload. Reset and loading a backup clear them.
+
 ## [1.9.1] - 2026-10-03 · Welcome Mat
 
 ### Fixed

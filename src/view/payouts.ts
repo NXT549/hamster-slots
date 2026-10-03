@@ -6,11 +6,13 @@
 //      (wild, free spins, jackpot pots, the gamble, Hot Streak, bets; M9: ways,
 //      hold & spin, the cheese wheel).
 //   4) Recent wins: the last few wins, free spins, pots and gambles, newest first.
-//      View only: it's not saved, and it starts empty every session.
+//      View only: it isn't part of the save. It's kept in storage of its own (save.ts
+//      loadWinLog), so it's still there after a reload; Reset and loading a backup clear it.
 
 import { symbolImg, MACHINE_SPRITES, SYMBOL_SPRITES } from './art.ts';
 import { formatCoins, iconHTML, setHTML } from './dom.ts';
 import { createSubTabs } from './kit.ts';
+import { moneyFrom } from '../logic/money.ts';
 import { effectAs } from '../logic/game.ts';
 import { mysteryOptions } from '../logic/machine.ts';
 import type { Game } from '../logic/game.ts';
@@ -18,19 +20,66 @@ import type { PaidWin } from '../logic/types.ts';
 import type { Money } from '../logic/money.ts';
 import type { Settings } from '../platform/save.ts';
 
+// What a row shows of each winning line.
+type LogWin = Pick<PaidWin, 'symbolId' | 'count' | 'ways' | 'wheel'>;
+
 // One row of the Recent wins log.
 interface LogEntry {
   machineId: string;
   kind: 'spin' | 'free' | 'pot' | 'gamble' | 'hold';
   payout: Money; // below 0 for a lost gamble
-  wins?: PaidWin[];
+  wins?: LogWin[];
   tier?: string;
   bet?: number;
   text?: string;
-  at: number; // performance.now() when it happened
+  at: number; // real-world time in ms (platform.now()) when it happened, so "3 min ago" survives a reload
+}
+
+// Where the log is kept between visits (main.ts hands these over from the platform).
+export interface WinLogStore {
+  load(): string | null;
+  save(text: string): void;
+  now(): number;
 }
 
 const LOG_SIZE = 10;
+const escapeHTML = (t: string) => t.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+// The log as text, and back. Only what a row shows is kept (a win's symbol, count, ways and
+// wedge), with money as text like the save. Reading throws nothing: anything odd (an
+// unknown machine after an update, a broken entry) is just left out.
+export function serializeLog(log: LogEntry[]): string {
+  return JSON.stringify(log.map((e) => ({
+    ...e,
+    payout: e.payout.toString(),
+    wins: e.wins && e.wins.map((w) => ({ symbolId: w.symbolId, count: w.count, ways: w.ways, wheel: w.wheel })),
+  })));
+}
+export function parseLog(text: string | null, machineIds: string[]): LogEntry[] {
+  let raw: unknown;
+  try { raw = JSON.parse(text || '[]'); } catch { return []; }
+  if (!Array.isArray(raw)) return [];
+  const kinds = ['spin', 'free', 'pot', 'gamble', 'hold'];
+  const out: LogEntry[] = [];
+  for (const r of raw) {
+    if (!r || typeof r !== 'object' || !machineIds.includes(r.machineId) || !kinds.includes(r.kind) || typeof r.at !== 'number') continue;
+    const num = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) ? x : undefined);
+    const wins: LogWin[] | undefined = Array.isArray(r.wins)
+      ? r.wins.filter((w: any) => w && typeof w.symbolId === 'string' && num(w.count) !== undefined)
+        .map((w: any) => ({ symbolId: w.symbolId, count: w.count, ways: num(w.ways), wheel: num(w.wheel) }))
+      : undefined;
+    if (r.kind === 'spin' && !wins) continue;
+    out.push({
+      machineId: r.machineId, kind: r.kind, payout: moneyFrom(r.payout, 0), wins, at: r.at,
+      tier: typeof r.tier === 'string' && /^[a-z]{1,12}$/.test(r.tier) ? r.tier : undefined, // (it becomes a class name)
+      bet: num(r.bet),
+      text: typeof r.text === 'string' ? r.text : undefined,
+    });
+    if (out.length >= LOG_SIZE) break;
+  }
+  return out;
+}
+
 const TIER_NAMES: Record<string, string> = { nice: 'Nice', big: 'Big win', jackpot: 'Jackpot' };
 
 // "1 in 76 spins" (or "every spin" for anything that likely).
@@ -40,7 +89,7 @@ function oneIn(chance: number): string {
   return n < 1.5 ? 'almost every spin' : `about 1 in ${n < 100 ? Math.round(n) : formatCoins(Math.round(n / 10) * 10)} spins`;
 }
 
-export function createPayoutsView(game: Game, { settings, onSettingsChange }: { settings: Settings; onSettingsChange: () => void }) {
+export function createPayoutsView(game: Game, { settings, onSettingsChange, winLog }: { settings: Settings; onSettingsChange: () => void; winLog: WinLogStore }) {
   // The element with this id (every id used here is in index.html).
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const el = {
@@ -48,7 +97,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     note: $('paytable-note'), features: $('features'),
   };
   const subtabs = createSubTabs($('info-subtabs'), $('tab-info'), { key: 'info', settings, onSettingsChange });
-  const log: LogEntry[] = []; // { machineId, kind, wins?, payout, tier?, text?, at (performance.now()) }
+  const log: LogEntry[] = parseLog(winLog.load(), game.data.machines.map((m) => m.id)); // newest first
   let logDirty = true;
   let lastLogDraw = 0;
   let tableKey = '';
@@ -56,8 +105,9 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
   let unseenWins: boolean | string | undefined = false;
 
   function addLog(entry: Omit<LogEntry, 'at'>): void {
-    log.unshift({ ...entry, at: performance.now() });
+    log.unshift({ ...entry, at: winLog.now() });
     log.length = Math.min(log.length, LOG_SIZE);
+    winLog.save(serializeLog(log)); // (ten short rows: cheap enough to write on every win)
     logDirty = true;
     if (subtabs.current !== 'wins') unseenWins = entry.kind !== 'spin' || (entry.tier && entry.tier !== 'win');
   }
@@ -78,17 +128,22 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     addLog({ machineId: e.machineId, kind: 'gamble', payout: e.won, text: e.won.gte(0) ? `Gamble: ${e.rounds} card${e.rounds === 1 ? '' : 's'} right` : 'Gamble lost' });
   });
 
-  // "12s ago", "3 min ago"
+  // "12s ago", "3 min ago", "2 h ago", "4 days ago" (the log now lasts between visits)
   function ago(ms: number): string {
-    const s = Math.floor(ms / 1000);
-    return s < 60 ? `${s}s ago` : `${Math.floor(s / 60)} min ago`;
+    const s = Math.max(0, Math.floor(ms / 1000));
+    if (s < 60) return `${s}s ago`;
+    if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
+    const d = Math.floor(s / 86400);
+    return `${d} day${d === 1 ? '' : 's'} ago`;
   }
 
-  function drawLog(now: number): void {
+  function drawLog(): void {
     if (log.length === 0) {
-      el.log.innerHTML = '<div class="note">No wins yet this visit. Give the lever a pull!</div>';
+      el.log.innerHTML = '<div class="note">No wins yet. Give the lever a pull!</div>';
       return;
     }
+    const now = winLog.now();
     el.log.replaceChildren(...log.map((entry) => {
       const row = document.createElement('div');
       row.className = `log-row tier-${entry.tier || entry.kind}`;
@@ -102,7 +157,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
         if (TIER_NAMES[entry.tier!]) chip = `<span class="tier-chip tier-${entry.tier}">${TIER_NAMES[entry.tier!]}</span>`;
       } else {
         const icon = ({ free: 'ballIcon', pot: 'pouchPolish', gamble: 'cardBack', hold: 'acornIcon' } as Record<string, string>)[entry.kind];
-        middle = `<span class="log-line">${iconHTML(icon, 16)} ${entry.text}</span>`;
+        middle = `<span class="log-line">${iconHTML(icon, 16)} ${escapeHTML(entry.text || '')}</span>`; // (it may come from storage)
         chip = `<span class="tier-chip tier-${entry.kind}">${({ free: 'Free spins', pot: 'Pot', gamble: 'Gamble', hold: 'Hold & spin' } as Record<string, string>)[entry.kind]}</span>`;
       }
       const sign = entry.payout.lt(0) ? '−' : '+';
@@ -385,7 +440,7 @@ export function createPayoutsView(game: Game, { settings, onSettingsChange }: { 
     if (logDirty || now - lastLogDraw > 1000) {
       logDirty = false;
       lastLogDraw = now;
-      drawLog(now);
+      drawLog();
     }
     if (subtabs.current === 'wins') unseenWins = false;
     subtabs.setDot('wins', unseenWins);

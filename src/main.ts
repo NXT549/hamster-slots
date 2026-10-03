@@ -25,7 +25,7 @@ import '@fontsource/nunito/900.css';
 import { createRng } from './logic/rng.ts';
 import { createGame } from './logic/game.ts';
 import { createWebPlatform } from './platform/web.ts';
-import { loadGame, clearSave, loadSettings, saveSettings } from './platform/save.ts';
+import { loadGame, clearSave, loadSettings, saveSettings, loadWinLog, saveWinLog } from './platform/save.ts';
 import { createAutosave } from './platform/autosave.ts';
 import { makeSaveCode, readSaveCode, loadSaveCode } from './platform/savecode.ts';
 import { createSound } from './view/sound.ts';
@@ -104,6 +104,8 @@ function boot(platform: Platform) {
       location.reload();
     },
     onToggleDebug: debug ? debug.toggle : null, // null: the Menu hides its debug button
+    // Info → Recent wins, kept between visits (the clock is real-world time, for "3 min ago")
+    winLog: { load: () => loadWinLog(platform), save: (text) => saveWinLog(platform, text), now: () => platform.now() },
     onSettingsChange() {
       settings.muted = sound.muted;
       settings.volume = sound.volume;

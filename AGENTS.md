@@ -35,7 +35,7 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 - **Open balance issues:** late lives short around generations 11–15 (§10); 1.4.0's seed softcap made them 2–3× longer, and 1.7.1's balancing pass (D163: each colony's tree ×3, Colony Pride +30%) made colony 2 last 3–5 h with 5–8 min late lives, but colony 3's middle lives are still 2–5 min (§29 → Balance); the wardrobe makes mid-game lives ~10–30% shorter (§25); casino boosts can cut late lives by up to a third (§27, `node tools/sim.mjs --casino`).
 - **Not yet verified:** how the M7/1.0/M9 sounds sound; a natural jackpot-wheel label, hold & spin Grand and ×10 cheese wedge in the browser (only tests/console); Epic twists in a real session; Firefox and Safari look (rays' `mask`, line trace, reel blur).
 - **Tags:** `v0.1.0 v0.2.0 v1.0.0 v1.3.0 v1.3.1` are on GitHub. Missing (the session git proxy refuses tag pushes, HTTP 403), so the user adds them as GitHub Releases: v1.1.0 `7f2fe32`, v1.2.0 `4fa56c3`, v1.3.2 `1084cb6`, v1.4.0 on its docs-only deploy commit (same game as "Release 1.4.0" `76aec6d`, D149), v1.5.0 `bb98c2d`, v1.6.0 `6558459`, v1.6.1 on the "Release 1.6.1" commit, v1.7.0 on the "Release 1.7.0" commit, v1.7.1 on the "Release 1.7.1" commit, v1.8.0 on the "Release 1.8.0" commit, v1.8.1 on the "Release 1.8.1" commit, v1.9.0 on the "Release 1.9.0" commit, v1.9.1 on the "Release 1.9.1" commit.
-- **Tests:** `npm test`, 3,042 tests, ~1.5 min.
+- **Tests:** `npm test`, 3,050 tests, ~1.5 min.
 
 ## Commands
 
@@ -112,7 +112,7 @@ All tests are JavaScript in `tests/` (Vitest; older ones use `check(name, cond)`
 - `tests/logic/*.test.js`: one file per area. `helpers.js`: **`newGame` puts every rebirth and sticker upgrade on sale**; planting needs the Big Cage, so use `plant(g, …ids)`.
 - **`tests/golden.test.js`, the golden run:** scripted sessions (`tests/golden/sessions.js`) on fixed seeds must reproduce `tests/golden/golden.json` exactly. **Never re-record it to make a failing test pass**; only for an intended, approved gameplay change, said in the commit message. It must play the same on every Node: `Math.pow` can differ in the last bit between Node 22 and 24, so sessions round any power-derived amount before feeding it in (`seedCoinsToAdd`); check a new recording on Node 24.
 - `tests/fixtures.test.js`: real saves `tests/fixtures/save-v<N>-<name>.json`, kept for good. The current version's load and save back unchanged; older ones migrate to exactly the current file of the same name.
-- `art.test.js` (sprite sizes and palette, 9-slice, skins, tokens, cage layout at 5 sizes) · `kit.test.js` (frame tokens, `--fw`, one breakpoint, style.css imports each `styles/` file once, no class styled by two files, **never the `border-image: none` shorthand**, use `border-image-source: none`; the minifier empties it) · `shop.test.js` · `money.test.js` · `savecode.test.js` · `platform.test.js` (`memory.ts` fake platform, `web.ts` on a fake browser) · `bigtree.test.js` · `release.test.js` (icons, manifest, version = package-lock, the update has a name) · `guide.test.js` (the guide's steps on real games).
+- `art.test.js` (sprite sizes and palette, 9-slice, skins, tokens, cage layout at 5 sizes) · `kit.test.js` (frame tokens, `--fw`, one breakpoint, style.css imports each `styles/` file once, no class styled by two files, **never the `border-image: none` shorthand**, use `border-image-source: none`; the minifier empties it) · `shop.test.js` · `money.test.js` · `savecode.test.js` · `platform.test.js` (`memory.ts` fake platform, `web.ts` on a fake browser) · `bigtree.test.js` · `release.test.js` (icons, manifest, version = package-lock, the update has a name) · `guide.test.js` (the guide's steps on real games) · `stats.test.js` (every stat shown, the Diary's order, Recent wins kept between visits).
 
 ## Git and releases
 
@@ -158,6 +158,7 @@ src/view/        draws the game, turns input into actions
   shop.ts        Upgrades tab (describeEffect is reused by colony + Big Cage)
   family.ts      Family tab: the retire letter, planted traits; colony.ts is its Colony sub-tab
   payouts.ts capsules.ts casino.ts bigcage.ts backup.ts debug.ts   the other tabs/pages
+  stats.ts       Menu → Stats: statSections() (pure, tested), every lifetime stat in sections, This life first
   owncasino.ts   the Casino tab's "Your casino" sub-tab (the Family Casino, M12; casino.ts creates it)
   ui.ts          creates and drives everything (only the open tab renders)
 tests/ tools/    see Testing and Commands; tools/ also has sprites.html, kit.html

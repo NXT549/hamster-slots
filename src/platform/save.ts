@@ -13,6 +13,9 @@ const SAVE_KEY = 'hamsterSlots.save';
 // Settings (sound, motion, number style …) are the player's preferences, not game
 // progress, so they live under their own key and survive "Reset progress".
 const SETTINGS_KEY = 'hamsterSlots.settings';
+// Info → Recent wins, kept between visits. Not part of the save (it's only for looking
+// back, never game state), but it belongs to this save's progress: Reset clears it.
+const WIN_LOG_KEY = 'hamsterSlots.recentWins';
 
 // Everything is wrapped in try/catch: storage can be full, disabled (private
 // windows), or hold broken text. A failed save or load must never crash the game.
@@ -50,6 +53,18 @@ export function clearSave(platform: Platform): void {
   } catch (err) {
     console.warn('Could not clear save:', err);
   }
+  clearWinLog(platform);
+}
+
+// Recent wins (payouts.ts reads and writes the text). Failing quietly is fine: it's only a log.
+export function loadWinLog(platform: Platform): string | null {
+  try { return platform.storage.get(WIN_LOG_KEY); } catch { return null; }
+}
+export function saveWinLog(platform: Platform, text: string): void {
+  try { platform.storage.set(WIN_LOG_KEY, text); } catch { /* storage full or blocked: the log just isn't kept */ }
+}
+export function clearWinLog(platform: Platform): void {
+  try { platform.storage.remove(WIN_LOG_KEY); } catch { /* nothing to do */ }
 }
 
 // The player's preferences (Menu):

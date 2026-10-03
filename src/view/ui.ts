@@ -24,6 +24,7 @@ import { createShopView } from './shop.ts';
 import { createBigCage } from './bigcage.ts';
 import { createFamilyView } from './family.ts';
 import { createPayoutsView } from './payouts.ts';
+import type { WinLogStore } from './payouts.ts';
 import { createFx } from './fx.ts';
 import { createCelebration, createIris, IRIS_MS } from './celebrate.ts';
 import { createCageScene } from './cage.ts';
@@ -32,6 +33,7 @@ import { createWheel } from './wheel.ts';
 import { wideMedia, rigRoom, rigZoom } from './layout.ts';
 import { createSheet, uiSound, setAppearHook } from './kit.ts';
 import { createUnlocks } from './unlock.ts';
+import { statSections, renderStats } from './stats.ts';
 import { createGuide, GUIDE_LINES } from './guide.ts';
 import type { GuideStep, GuideTarget } from './guide.ts';
 import { createHud } from './hud.ts';
@@ -133,8 +135,8 @@ const SETTING_ROWS: Record<string, [keyof Settings, [unknown, string][]]> = {
 
 export function createUI(
   game: Game,
-  { onReset, onToggleDebug, sound, settings, onSettingsChange, backup, version }:
-    { onReset: () => void; onToggleDebug: (() => void) | null; sound: Sound; settings: Settings; onSettingsChange: () => void; backup: BackupActions; version: string },
+  { onReset, onToggleDebug, sound, settings, onSettingsChange, backup, version, winLog }:
+    { onReset: () => void; onToggleDebug: (() => void) | null; sound: Sound; settings: Settings; onSettingsChange: () => void; backup: BackupActions; version: string; winLog: WinLogStore },
 ) {
   // The element with this id (every id used here is in index.html).
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -1021,58 +1023,7 @@ export function createUI(
   });
 
   function buildStats() {
-    const s = game.state;
-    const st = s.stats;
-    const pool = (game.data.skins || []).filter((x) => x.rarity !== 'starter');
-    const count = (n: number) => n.toLocaleString('en-US');
-    const rows = [
-      ['Time played (all lives)', formatDuration(st.playTime)],
-      ['Generation', `${s.generation} · ${game.getPupName()}`],
-      ['Spins', `${count(st.spins)} (${count(st.manualSpins)} by hand)`],
-      ['Wins', `${count(st.wins)} (${st.spins ? Math.round((st.wins / st.spins) * 100) : 0}%)`],
-      ['Biggest win', formatCoins(st.biggestWin)],
-      ['Biggest bet', st.biggestBet ? `×${st.biggestBet}` : '—'],
-      ['Most paylines won at once', String(st.mostLinesWon)],
-      ['Best winning streak', String(st.bestStreak)],
-      ['Wins with a Hamster Wild', count(st.wildWins)],
-      ['Free spins', `${count(st.freeSpins)} (started ${st.freeSpinTriggers}×, +${formatCoins(st.freeSpinCoins)})`],
-      ['Jackpot pots won', `${st.jackpotsWon} (${st.grandJackpots} Grand)`],
-      ['Gambles', `${st.gambleWins} won (${st.suitWins} by suit) · ${st.gambleLosses} lost · best ${st.bestGambleRun} in a row`],
-      ['Symbols unlocked', count(st.symbolsUnlocked)],
-      ['Best Luck', String(st.bestLuck)],
-      ['Golden jackpots', String(st.goldenJackpots)],
-      ['Coins earned (all lives)', formatCoins(st.coinsEarned)],
-      ['… of that while away', formatCoins(st.offlineCoins)],
-      ['Deliveries', String(st.deliveries)],
-      ['Upgrades bought', count(st.upgradesBought)],
-      ['Machines bought', String(st.machinesBought)],
-      ['Heirloom Seeds earned', String(s.seedsEarned)],
-      ['Family traits planted', String(Object.keys(s.tree).length)],
-      ['Machine Stars', `${Object.values(s.stars).reduce((a, b) => a + b, 0)} (${st.rebuilds} rebuilds)`],
-      ['Most Heirloom Seeds held', count(st.mostSeedsHeld)],
-      ['Most ways won by one symbol', st.bestWays ? count(st.bestWays) : '—'],
-      ['Hold & spin', `${count(st.holdBonuses)} played · ${count(st.holdGrands)} Grand${st.holdGrands === 1 ? '' : 's'}`],
-      ['Best cheese wheel', st.bestWheel ? `×${st.bestWheel}` : '—'],
-      ['Diary stickers', `${Object.keys(s.diary).length} / ${(game.data.diary || []).length}`],
-      ['Capsules opened', String(st.capsulesOpened)],
-      ['Skins collected', `${Object.keys(s.skins.owned).length} / ${pool.length}`],
-      // 1.4.0: The Great Migration
-      ...(game.data.colony && (s.colony > 0 || st.migrations > 0) ? [
-        ['Colony', `${s.colony + 1} (${count(st.migrations)} migration${st.migrations === 1 ? '' : 's'})`],
-        ['Golden Whiskers earned', formatWhole(st.whiskersEarned)],
-        ['Colony Trials beaten', count(st.trialsCompleted)],
-        ['Retired by the Wise Elders', count(st.autoRetires)],
-        ['Moving Boxes opened', `${count(st.mysteryBoxes)} (best ${st.bestBoxes} in one spin)`],
-      ] : []),
-    ];
-    el.statsList.replaceChildren(...rows.map(([label, value]) => {
-      const row = document.createElement('div');
-      row.className = 'stat-row';
-      row.innerHTML = '<span></span><b></b>';
-      row.firstChild!.textContent = label;
-      row.lastChild!.textContent = value;
-      return row;
-    }));
+    renderStats(el.statsList, statSections(game)); // (stats.ts: in sections, This life first)
   }
 
   // ─────────────────────── drawing ───────────────────────
@@ -1570,7 +1521,7 @@ export function createUI(
   const casinoView = createCasinoView(game, { say, sound, fx, lessMotion, settings, onSettingsChange });
   const backupView = createBackupView(game, backup);
   const shop = createShopView(game, { settings, onSettingsChange, sheet });
-  const payouts = createPayoutsView(game, { settings, onSettingsChange });
+  const payouts = createPayoutsView(game, { settings, onSettingsChange, winLog });
   // The Big Cage (M8; a scene of its own since M15): the page between lives, where the tree grows.
   const bigCage = createBigCage(game, {
     fx, sound, lessMotion, bonusText,

@@ -16,7 +16,7 @@ import type { Game } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
 import type { GameData, SaveData } from '../logic/types.ts';
 import type { Platform } from './platform.ts';
-import { saveGame } from './save.ts';
+import { saveGame, clearWinLog } from './save.ts';
 
 const PREFIX = 'HS1:';
 
@@ -95,5 +95,6 @@ export function readSaveCode(text: string, data: GameData): CodeCheck {
 // platform wouldn't store it (the save is loaded anyway, but closing the game loses it).
 export function loadSaveCode(game: Game, platform: Platform, save: SaveData): boolean {
   if (!game.loadSaveData(save)) return false;
+  clearWinLog(platform); // the old save's Recent wins aren't this save's
   return saveGame(game, platform);
 }
