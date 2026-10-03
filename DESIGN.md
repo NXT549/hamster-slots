@@ -362,87 +362,35 @@ The user picked **"real slog"** for the first life (PORTING_NOTES D93). Measured
 
 **A limit to keep in mind:** balance rules 2 and 3 together mean the base RTP must be at least **1 + auto-spin interval ÷ delivery time** (a delivery pays at least one spin, and must earn less per second than auto-spin at Wheel Training 1). So the slog comes from **time and prices** (slower spins, slower auto-spin, longer deliveries, higher prices), not from an RTP below that floor. RTP stays above 100% (Old Clunky starts at 150%).
 
-### Milestone 6 measurements (history: the game before M7)
-
-| Moment | Target time |
-|--------|-------------|
-| First upgrade affordable | ~15 s |
-| Wheel Training 1 bought | ~1 min |
-| Third Reel bought | ~4–6 min |
-| Wheel Training + Oiled Lever maxed | ~12–15 min |
-| Milestone 1 feels "done" | ~15 min |
-| Capsules tab appears (10 tokens, first pull) | ~3–6 min |
-| Family tab appears (1 seed pending) | ~4 min for an active clicker, ~11 min for an idle player |
-| First retirement (3 seeds) | ~10–20 min |
-| Snack Stacker bought (first life) | ~13–20 min idle, ~7–14 min active (bot) |
-| Snack Stacker fully upgraded | ~7–9 min after buying it (bot) |
-| Bet ×2 (High Roller Lv 1) | first life ~12–18 min idle, ~5–9 min active; later lives in the first few minutes |
-| Burrow Bonanza bought | ~9–12 min into the 3rd life (idle and active) |
-| Pouch Palace bought | ~4–8 min into the 7th life |
-| Life length (idle bot, retiring at +50% seeds) | 15–21 min, then 9–14 min for lives 2–6, a dip to 4–8 min while the Pouch Palace arrives (lives 7–9), then longer again |
-| Whole Family Tree planted | ~1.1–1.4 h idle, ~0.9–1.0 h active (bot). Was ~3 h in M2; milestone 8 (the Big Cage) adds new Family Tree traits, so this target is revisited there |
-
-**Measured with `node tools/sim.mjs`** (milestone 6: the balance simulator is now a real tool; see AGENTS.md → How to run). Its tables go in PORTING_NOTES → Playtest notes whenever balance changes. The idle bot's Third Reel (9–14 min) is later than the 4–6 min target because it buys Chubby Cheeks first; the active bot is on target (3–6 min).
-
-### Questions the prototype must answer
-
-- Is going broke frustrating or funny? Does the delivery feel like a fair way back?
-- Is the 45 s delivery (4 spins) too long, too short, or boring?
-- Does a 28% hit rate feel like a pokie, or stingy? Does Luck feel like it fixes that?
-- Is the Third Reel a big "wow" moment?
-- When do you stop clicking and let the hamster do it?
-- Once everything is maxed except Chubby Cheeks, does the game go flat? That tells us how urgently the next machine type is needed.
-
----
-
 ## 11. Roadmap
 
-The user asked for rebirth + skill tree next, then skins, so the old "Prestige" milestone (7) moved up to 2 and everything after shifted.
+Web-first (PORTING_NOTES D106): one web codebase ships to GitHub Pages, then itch.io, Steam (Electron or Tauri) and maybe mobile (Capacitor); platform steps are in PORTING_NOTES → The plan. The user's wishes behind each row (their own words and picks) are kept in git history and the PORTING_NOTES decision log (D-numbers); the rows below say only what was built.
 
-**Web-first (2026-09-25):** there's no engine port (PORTING_NOTES D106). Before M8, the code moved to TypeScript + Vite (0.2.0, 2026-09-26) with **no gameplay changes**, and next it deploys to GitHub Pages; then friends can join the M7 playtest from a link. The platform steps (itch.io, Steam, mobile) are in PORTING_NOTES → The plan.
+| # | Milestone | What it is | Status |
+|---|-----------|------------|--------|
+| 1 | First playable economy | Old Clunky, spin cost, food deliveries, 4 upgrades, autosave, debug panel | done (§3–§8) |
+| 2 | Retirement & Family Tree | Retire for Heirloom Seeds, the Family Tree, save v2 | done (§13) |
+| 3 | Hamster Tokens & Capsule Machine | Tokens, the Diary, capsules with pity, skins, the Wardrobe | done (§14) |
+| 4 | Polish & feel | Art cleanup, win tiers, sound, offline earnings, little touches | done (§15) |
+| 5 | New look, QoL, second machine | The hamster-cage look, collect & switch machines, grids and paylines, the Snack Stacker, Buy ×10/Max, Settings | done (§12, §16, §17) |
+| 6 | Pokies night | Bets and High Roller, Wild, free spins, jackpot wheel, gamble, Hot Streak, Burrow Bonanza, Pouch Palace | done (§16, §18–§20) |
+| 7 | Real pokies | Slower spins, reels stop one by one, the win show, unlockable symbols, visible Luck, the card gamble; Pays Both Ways after feedback | done (§21, §3) |
+| 8 | The Big Cage | A full page between lives, the only place to plant; held seeds, bigger tree, Machine Stars | done, 1.0.0 (§22) |
+| 9 | More machines | Hamster Maze (243 ways), Acorn Vault (hold & spin), The Big Cheese (multiplier wheel), the seed jar | done, 1.1.0 (§24) |
+| 10 | Wardrobe buffs | Every skin buffs while worn, 6 hats, a twist on every Epic | done, 1.1.0 (§25) |
+| 11 | Hamster Casino | Roulette, blackjack, Derby, Seed Drop; Casino Chips; the Prize Counter | done, 1.3.0 (§27) |
+| 12 | **Your own casino (late game)** | The family opens its own casino: machines you own on the floor, hamster guests play them, you earn the house edge while idle; decor, staff, rooms, a late-game currency. Unlocked far into the game. **Planned in detail with the user when we get there; don't build before they ask.** | planned |
+| 13 | Delivery depth | Only if playtests say deliveries are fun: routes (short/safe vs long/lucrative), helper hamsters | idea |
+| 14 | Release prep | The 1.0 polish: celebrations, effects, icons, link card, version line | done, 1.0.0 (§23) |
+| 15 | Visual redesign | A layout that fits the window, small upgrade tiles, the Big Cage as a meadow with a growing tree, a rebirth animation | done, 1.2.0 (§26) |
+| — | 1.3.1 "Nuts & Bolts" | 20 upgrades (rebirth and sticker unlocks), 4 traits, the Hamster Helper, Lucky Pennies, save v12 | done (§28) |
+| — | 1.4.0 "The Great Migration" | The mega rebirth: colonies, Golden Whiskers, perks, Colony Trials, Wise Elders, Moving Day, the seed softcap | done (§29) |
+| — | 1.5.0 "The Glow Up" | Second visual redesign: painted room, cage, cabinets, a 32×32 hamster, pixel-art titles | done (§30) |
+| — | 1.6.0 "New Digs" | UI redesign parts 1–3 (room look, purse, control deck, phone tab bar, Upgrades tab); **parts 4–9 planned, don't build until asked** | parts 1–3 done (§31) |
+| — | 1.6.1 "Fresh Coat" | Every machine skin paints all 8 machines, plus 5 new machine skins | done (§14, §25) |
+| → | Releases | GitHub Pages from the start; then itch.io, Steam, maybe mobile, all from the same web codebase (PORTING_NOTES → The plan) | ongoing |
 
-**Re-planned after M6 (2026-09-25):** the user's M6 feedback (the first real playtest) asked for a slower, more pokie-like game, luck you can see, symbols you unlock, a card gamble, a real rebirth decision, machine rebirths, more machines, buffs on hats and skins, a hamster casino with side games, and, late game, your own casino. They picked **"Real pokies" first**. Rows 7–14 below replace the old 7–9 (the old M7 "Wardrobe buffs" is now M10; its Family Tree ideas moved to M8). The order after M7 can be re-picked after each playtest. See PORTING_NOTES D88.
-
-| # | Milestone | Contents |
-|---|-----------|----------|
-| 1 | First playable economy *(done)* | Old Clunky (2→3 reels), spin cost, food deliveries, 4 upgrades, autosave, debug panel. Plus the UI refresh (diorama look). |
-| 2 | Retirement & Family Tree *(done)* | Retire to the Big Cage for Heirloom Seeds (lifetime formula + heirloom bonus), an 11-node Family Tree (Roots, Luck, Speed, Delivery), Family tab, save v2 with migration. See §13. |
-| 3 | Hamster Tokens & Capsule Machine *(done)* | Hamster Tokens, an 18-sticker Hamster Diary, the Capsule Machine (rarities, pity, duplicate refunds), 22 skins in 4 categories, the Wardrobe, save v3. See §14. |
-| 4 | Polish & feel *(done)* | The user asked for "refining the game and adding new and fun features" and said the assets were "almost too clunky". So: **an art cleanup** (every sprite redrawn at a finer resolution with colour ramps and matching outlines, a lighter stage with a wall and floor, thinner outlines), **win tiers** with banners, flying coins, a hamster hop and a jackpot shake, **synthesized sound effects** with volume and mute, **offline earnings** with a welcome-back dialog, a **stats screen**, a sleepy hint, save v4. See §12 and §15. |
-| 5 | New look, QoL & a second machine *(done)* | The user asked to "start on qol features and begin adding new slot machine" and for "a full redesign of the ascetic", and picked: the **hamster cage** look, **collect & switch** machines, and the QoL sets **Buy ×10 / Max** and **Settings & info**. So: the **cage redesign** with pixel cardboard/paper UI frames (§12), reels as a **grid with paylines** and the **Snack Stacker** (§16, this pulls in most of the old "Machine types I"), buying and switching machines, ×1/×10/Max with "ready in" hints, Menu settings (Motion, Quick reels, Numbers), coins in the tab title, a recent-wins log (§17), save v5. ("1.2K" numbers are now the default.) |
-| 6 | Pokies night *(done)* | The user gave ten goals and picked, in a question round: two milestones with the pokies part first, **all four bonus features**, bets unlocked by an upgrade. So: **bets** ×1 … ×10 with **High Roller** (§18); the **Hamster Wild**, **free spins** (Hamster Ball scatter), the **jackpot wheel with four pots**, the **gamble** and **Hot Streak** (§19); two new machines, the **Burrow Bonanza** and the **Pouch Palace** (§16); new upgrades (High Roller, Hot Streak, Hamster Wild, Bouncy Ball, Pouch Polish, and spin-cost and payline upgrades for the new machines); the **balance simulator** `tools/sim.mjs` and a tuning pass (the old roadmap's "Balance simulator"); **sub-tabs** in the tray and the Info tab (§12, §17); **pixel particles and animations** (§20); save v6; 8 diary stickers. (This absorbs the old "Machine types II": a third machine and the wild.) |
-| 7 | Real pokies *(done; §21; + Pays Both Ways after the first feedback, §3)* | The user's "slow down spin speed… early game to feel like a slog", "make it more like slot machines… make them go one by one", luck you can see, symbols to unlock, and a new double-or-nothing. So: **slower spins and auto-spin** with reels that stop one at a time; a **win show** that lights each winning line **one by one** while a **WIN meter** counts up; a **blank symbol** (Wood Shaving); **unlockable symbols** (the user's "new seeds": machines start with fewer symbols); **Hamster Luck + Machine Luck** with a visible Luck number; the **pokies card gamble** (red/black ×2, suit ×4); a full **rebalance to the "real slog"** with `tools/sim.mjs` (§10); save v7; particles for all of it. Built with one change to the plan: each machine's unlocks are ONE upgrade that opens its symbols in a fixed order (PORTING_NOTES D96). |
-| 8 | The Big Cage (rebirth rework) *(done; §22; released in 1.0.0)* | The user's "use the rebirth system more… a reason to both rebirth and hold heirloom seeds" and "when you rebirth it takes you to a fully in-depth page of just the upgrades". So: retiring opens a **full-screen Big Cage page** between lives, and it's the **only place to plant** (the Family tab keeps the retire card and a read-only tree). **Held seeds give +X% income each** (planting spends them, so plant-or-hold is a real choice); a "Retire now: +N seeds → +X%" preview. A **bigger tree**: start with High Roller steps, keep symbol unlocks / Machine Luck / a machine, free-spin luck, bigger pot seeds. **Machine rebirths ("Rebuild")**: a fully upgraded machine can be rebuilt for a permanent **Machine Star** (+payouts and +Machine Luck on that machine, a gold trim), kept through retirement. Numbers from the simulator. Save v8. It should also fix M7's known issue: lives from generation ~9 get short again (§10). |
-| **9** | **More machines** *(done; with the seed jar; released in 1.1.0; §24)* | The user's "more slot machines". The user picked (2026-09-27) three late-game machines, each with a new pokie mechanic and exact EV: the **Hamster Maze** (**243 ways**: wins on any row, reel to reel), the **Acorn Vault** (**hold & spin**: 6+ Golden Acorns lock in place with 3 respins; fill it for the Grand) and **The Big Cheese** (a **multiplier wheel** on every full line). Each with its own unlockable symbols, Machine Luck, spin-cost upgrade and stars; new symbol sprites, machine looks, stickers; save v10. (The early machine between Old Clunky and the Snack Stacker wasn't picked.) Plus the **seed jar** (the user's pick for the short late lives): held seeds pay up to +100%, Family Fortune makes the jar bigger (§13). |
-| **10** | **Wardrobe buffs** *(done; released in 1.1.0; §25)* | The user's "hats & skins which both give unique changes and improvements" (was M7): **every skin gives a buff while worn** (fur → payouts, wheel → faster spins, machine → cheaper spins, room → offline earnings; rarer = stronger, the user's "gentle" sizes), **6 hats** as a 5th capsule category (drawn on the hamster; +Luck), **a twist on every Epic**, the Wardrobe as a loadout (one per slot, the total shown). The user chose "what you wear gives the buff" and "hats come from capsules" (reversing D39: tokens were cosmetic only), then (2026-09-27) gentle buffs, hats for Luck, Epic twists, one per slot. |
-| **11** | **Hamster Casino** *(done; released in 1.3.0; §27)* | The user's "minigames or side games… roulette, blackjack etc in a hamster casino". A casino room (a new tab) with side games: **roulette** (the hamster in a ball on the wheel), **blackjack**, and hamster ones (a derby race, a seed drop). Played with **Casino Chips**, which never count as coins earned (they can't farm seeds, like rule 4). A **Prize Counter** for hats, timed boosts and luck charms. Honest odds on screen. Each game is its own headless logic module (rule 1), not more code in game.ts. **The user's picks** (2026-09-27): all four games, chips earned *and* bought, every kind of prize, a small house edge. |
-| 12 | Your own casino (late game) | The user's "late game you can eventually start your own casino". The family opens **its own casino**: put machines you own on the floor, hamster guests play them, and you earn the **house edge** while idle; decor, staff, more rooms, a new late-game currency/layer. Unlocked far into the game (e.g. every machine owned and several generations). Planned in detail when we get there. |
-| 13 | Delivery depth | Only if playtests say deliveries are fun: routes (short/safe vs long/lucrative), helper hamsters. (The scooter, backpack and auto-delivery are now Family Tree traits.) |
-| 14 | Release prep (toward 1.0.0) *(done: moved up after M8 and released as 1.0.0 on 2026-09-27, §23)* | The user's "I want a full release before trying to make the game longer" (2026-09-27): **1.0 = M1–M8, polished**, with the user's "cool animations and effects" (celebrations, reel and win-show effects, little touches, the big moments between lives) and the release basics (icons, a link card, the version in the Menu, a crash screen, a README). Then 1.0.0, the full public release (AGENTS → Git and releases); M9 onwards come after it as updates. Still before each store release: the store-rule checks below. *Was "Port-prep freeze" for the Godot rebuild (D106).* |
-| **15** | **Visual redesign** *(done; released in 1.2.0; §26)* | The user's "i want an entire visual redesign" (2026-09-27), built before M11 ("build this now"): still pixel art, **a cleaner layout that fits the window** on big and small screens (the tray beside the cage, or under it on a phone; no page scrolling), **small upgrade tiles like the tree's** with a detail card, **the Family Tree only in the Big Cage**, the Big Cage as **a meadow with the family's pixel-art tree**, which **grows with the family** (a sapling at first; every trait planted grows the trunk and a branch out to the traits it unlocks; only traits you can plant show), and **a new rebirth animation** (the hamster plants an Heirloom Seed, the tree shoots up, the traits branch off it). View only: no rules, balance or save changes. |
-| — | **Update 1.3.1 "Nuts & Bolts"** *(done; released in 1.3.1; §28)* | Not a milestone: the user's "a ton of new upgrades and improvements some gated behind rebirths… maybe some from achievements" (2026-09-27). 20 upgrades (3 for everyone, 6 rebirth upgrades, 11 sticker upgrades), 4 Family Tree traits (the Hamster Helper buys cheap upgrades for you), 7 stickers, Lucky Pennies (a win can pay double), save v12. And from now on **every update has a name** (the user's wish). |
-| — | **Update 1.4.0 "The Great Migration"** *(done; released in 1.4.0; §29)* | Not a milestone: the user's "a new update to keep late game interesting like a mega rebirth… I just want the late game to remain interesting and fun" (2026-09-27), with their picks: the **Great Migration** (the whole tree planted → a new colony: the generation, seeds, tree and stars start again, for **Golden Whiskers** and colony perks kept for good), **Colony Trials**, the **Wise Elders** (automation), **Moving Day** (an 8th machine with boxes that all open into one symbol), **colony traits**, and **longer late lives** (a softcap on the seed curve). Save v14. |
-| — | **Update 1.5.0 "The Glow Up"** *(done; released in 1.5.0; §30)* | Not a milestone: the user's "a full visual redesign of the game… a massive improvement in graphics/visuals, better animations, more detail, everything" (2026-09-28). Still pixel art, but painted to fit instead of CSS boxes: a cosy **room** round a **cage in perspective** (window with a drifting sky, curtains, shelf, portrait, deep bedding, sunlight; a night version in free spins), **painted cabinets** for all 8 machines with chasing **bulbs**, a **32×32 hamster** with a run cycle and expressions, a **wheel that really turns**, **32×32 reel symbols**, **pixel-art titles** (a font of our own), glints, reel wind-up and landing flash, coins into the tray, a **logo**, and tray, meadow and casino polish. View only. |
-| — | **Update 1.6.0 "New Digs"** *(parts 1–3 done, released in 1.6.0; parts 4–9 planned; §31)* | Not a milestone: the user's "make a full plan to redesign the full UI" (2026-09-29), with their picks: **restyle + restructure**, **the hamster's room** look (painted wood, paper and brass round 1.5.0's painted scene), a **first-time guide** and **UI sounds**, and "plan into docs only". The plan: one kit of pieces for every screen, a brass wallet with every currency, a control deck for Spin, Deliver and the bet, the main tabs at the bottom on a phone, a detail sheet inside the tray, readable sizes and finger-sized targets, safe areas. View only. The user said "build it" (2026-10-02), and published parts 1–3 as 1.6.0 after seeing screenshots (2026-10-03). |
-| — | **Update 1.6.1 "Fresh Coat"** *(done; released in 1.6.1; §14, §25)* | Not a milestone: the user's "add new skins since skins currently only work on the first slot machine" (2026-10-03). Every machine skin paints all 8 machines (each keeps its shape and details), and **5 new machine skins** (Bubblegum Paint, Moss Paint, Copper Pipes, Seaside Paint, Arcade Neon); the old ones renamed "… Paint". No save change. |
-| → | **Releases** | GitHub Pages from the start; then itch.io, Steam (Electron or Tauri), maybe mobile (Capacitor), all from the same web codebase. See PORTING_NOTES → The plan. |
-
-**Particles and animations are now a thread, not a milestone** (the user's "fun particle effects and animations"): every milestone ships the effects for what it adds (M7: dust puffs as each reel stops, sparkles per winning line, rolling WIN digits, a card flip, a clover sparkle when luck goes up; M8: the Big Cage scene and a star burst on a rebuild; and so on). **1.0 went through the whole game** (the user's "I also really want some cool animations and effects", §23). Motion "Less" keeps turning them all off.
-
-### User wishlist
-
-- ~~**Skill tree**~~ → built as the **Family Tree** (milestone 2, §13).
-- ~~**Rebirth system**~~ → built as **Retirement** (milestone 2, §13).
-- ~~**Skins**~~ → built as the **Capsule Machine** with Hamster Tokens (milestone 3, §14), as the user asked: a separate gacha system with its own tokens.
-- **Art & UI direction:** the user picked **the hamster cage** (milestone 5, §12): the stage is the inside of a cage, the UI is cardboard and paper. Still a prototype look; the playtest decides whether it's the final direction. After 1.1.0 the user asked for **an entire visual redesign** (M15, §26).
-- **QoL:** the user picked *Buy ×10 / Max* and *Settings & info* first (§17). Not picked yet: keyboard shortcuts for buying and tabs. The save backup (export/import code) was built in 3.8: the user asked for it with the web-first plan (2026-09-25, §7).
-- **Milestone 6 goals (user):** "different denoms like actual pokies", "features where you can win more", "more slot machines", "better game balances", "new and unique upgrade", "different tabs for upgrades and stuff", "cool particle effects and animations" → milestone 6. "Hats that give different buffs", "skins give different buffs", "new Heirloom Seed upgrades" → planned as milestone 7, now M10 (hats, skins) and M8 (tree traits).
-- **First M7 feedback (user, 2026-09-27):** "issue with 3 slots its based left to right meaning if you get 2 on the right it doesnt count" → the user picked **Pays Both Ways as an upgrade** (§3, D119), over "both ways always", "keep left to right, explain it better" and "both ways on Old Clunky only".
-- **M9 (user, 2026-09-27):** after 1.0 ("looks good keep going"), the user picked **all three** proposed machines (243 ways, hold & spin, a multiplier wheel) and placed them in the **late game**, "priced so lives from generation ~9 get longer again" (§24; that part didn't work out, §10).
-- **After 1.4.0 (user, 2026-09-28):** "I want you to do a full visual redesign of the game I mean I want a massive improvement in graphics/visuals better animations more detail everything" → update 1.5.0 "The Glow Up" (§30).
-- **After 1.5.0 (user, 2026-09-29):** "Make a full plan to redesign the full UI" → asked four questions, the user picked restyle + restructure, the hamster's room (wood, paper, brass), a first-time guide and UI sounds, and "plan into docs only" → planned as update 1.6.0 "New Digs" (§31).
-- **After 1.1.0 (user, 2026-09-27):** "i want an entire visual redesign" · "i want better ui for upgrades as having to scroll down is a pain" · "i want a rebirth animation" · "i want a separate screen where you spend heirloom seeds and you can only spend those seeds when you rebirth" → M15 (§26). The last two partly existed (1.0's iris and seed rain, M8's Big Cage page); asked what should change, the user picked: still pixel art, "a full cleaner way more user friendly ui for both big and small screens", the Big Cage and the animation "more detailed", "tree only apears when you rebirth", "the hamster planting an heirloom seed and a huge tree shoots up and the rebirth skill tree is branching off the huge tree", upgrades "similar to the rebirth… fit a bit better", and "build this now" (§26).
-- **After M6 (user, 2026-09-25):** new: "more slot machines" → M9 · "rebirths for slot machines" → M8 · "unlock/buy new seeds (carrot, sunflower, golden)", which the user explained as *unlockable symbols you don't start with, kept balanced* → M7 · "more new fun upgrades" → every milestone (luck M7, stars M8, casino M11) · "roulette, blackjack etc in a hamster casino" → M11 · "late game you can eventually start your own casino" → M12 · "hats & skins which both give unique changes and improvements" → M10 · "fun particle effects and animations" → every milestone. Balancing: "slow down spin speed… early game to feel like a slog" → M7 (the user picked "real slog") · "with new symbols added change how likely you are to actually get wins therefore making players buy the luck upgrade" → M7 · "a reason to both rebirth and hold heirloom seeds" → M8. Changes: "change how the double or nothing system works" → M7 (the user picked the pokies card gamble) · "make it more like slot machines… make them go one by one" → M7 · "luck upgrades so you can see how much luck you have… hamster luck and machine luck" → M7 · "when you rebirth it takes you to a fully in-depth page of just the upgrades" → M8.
+**Particles and animations are a thread, not a milestone:** every milestone ships the effects for what it adds, and 1.0 went through the whole game (§20, §23). Every new animation needs its `.less-motion` rule (AGENTS.md → Code style).
 
 ### Things to keep in mind for release (itch.io, Steam, mobile)
 
@@ -574,36 +522,6 @@ Both symbols unlocked, Lucky Whiskers, Carrot Patch and Jackpot Dance, no Luck u
 
 These family traits **lower the hit rate** (fewer Sunflower pairs) but raise the payout per spin: fewer, bigger wins. Since milestone 7 that's the job of symbol unlocks too, and **Luck** (§21) is what raises the hit rate. (M8 plans Luck traits for the tree.)
 
-### Pacing (from the balance simulator, not a real playtest)
-
-**M8:** the numbers in §22 replace this table (lives 1–8 stay close to M7's). The M7 table below is kept for comparison.
-
-`node tools/sim.mjs --lives 12 --seeds 5` (milestone 7) plays the real game logic: an **idle** player (clicks every 1.5 s until Wheel Training, then lets the hamster work), buying by "time to afford + time to pay back" (PORTING_NOTES D100), retiring when the pending seeds reach max(3, +50% of the seeds already earned), 120 min max per life. Ranges are over 5 seeds.
-
-| Life | Length (idle) | Length (active) | New this life (idle) |
-|---|---:|---:|---|
-| Gen 1 | 46–77 min | 28–45 min | Wheel Training 8–23 min, Third Reel 37–70 min, +3 seeds |
-| Gen 2 | 35–43 min | 24–31 min | **Snack Stacker** ~30–37 min in |
-| Gen 3 | 32–50 min | 27–39 min | |
-| Gen 4 | 39–65 min | 28–37 min | **Burrow Bonanza** (~38–65 min in) |
-| Gen 5 | 33–46 min | 22–35 min | Bonanza ~32–44 min in |
-| Gen 6 | 31–40 min | 22–28 min | |
-| Gen 7 | 16–31 min | 12–21 min | |
-| Gen 8 | 10–18 min | 7–14 min | **Pouch Palace** (in some lives) |
-| Gen 9–12 | 3–18 min | 3–11 min | Palace in every life; bet ×10 |
-
-The whole tree is planted after ~4.0–4.9 h (idle) or ~2.7–3.4 h (active). **Known issue for M8:** lives from generation ~9 get short again (3–10 min), because once bets ×10 and the Palace multiply income, a square root hands out seeds easily; M8 reworks the rebirth economy (held seeds, new traits, D94). (M6's bot table, with the cube root and a different buying rule, had lives of 15–21 min then 4–14 min; see PORTING_NOTES.)
-
-### Questions the prototype must answer
-
-- Is the first retirement a "yay, a new pup!" moment or an "oh no, I lose everything" one? Does the card make clear what's kept?
-- Do +3 seeds after ~1 hour feel like enough? Does the Family tab showing up at ~10 min (1 seed) tempt people to retire too early?
-- Do later lives feel fast? Warm-up Laps and Heirloom Reel should make the first minutes zip.
-- Is the Delivery branch worth seeds, or does everyone skip it?
-- When do lives start to drag? That's where the next machine type should arrive.
-
----
-
 ## 14. Hamster Tokens & the Capsule Machine (milestone 3)
 
 > **The user's direction:** skins come from *a separate gacha system*, paid with *"hamster tokens" earned separately*, "in whatever way you come up with". The proposal was shown to the user, who said "this is really good, continue", so it was built with the proposed defaults.
@@ -706,15 +624,6 @@ The first five goals (First Spin, Beginner's Luck, Look No Paws!, Warming Up, Th
 - **Wardrobe**, then the **Hamster Diary** (each sticker with a progress bar and its reward).
 - On wide screens, a little **capsule machine stands in the corner of the room**. It bobs when you can afford a pull, and clicking it opens the tab.
 
-### Questions the prototype must answer
-
-- Does the first pull (~3–6 min) come at a nice moment, or is a second new tab this early too much?
-- Do the diary goals feel like a helpful guide or like homework?
-- Is 10 tokens a pull and ~1 token per few minutes (later) a fun pace? Do duplicates feel OK with the refund?
-- Which skins do people actually wear? Are the rooms readable (e.g. Starry Night is dark)? (Since M10 the buffs decide some of that: §25.)
-
----
-
 ## 15. Feel & feedback (milestone 4)
 
 ### Win tiers
@@ -755,14 +664,6 @@ How big a win *feels* depends on the **base payout ÷ the machine's base spin co
 
 - **Stats screen:** Menu → Stats (see §12).
 - **Sleepy hamster:** with no auto-spin and no spin for 25 s, the bubble says "Zzz… (tap Spin to wake me up)".
-
-### Questions the prototype must answer
-
-- Do the tiers feel right? Is a Golden pair exciting enough to deserve coins flying?
-- Are the sounds charming or annoying after 10 minutes? Is the volume default (60%) right?
-- Is 50% for up to 2 hours a generous-feeling "welcome back", or should it be more?
-
----
 
 ## 16. Machines & paylines (milestone 5)
 
@@ -847,17 +748,6 @@ When bought, a fresh Stacker's EV is ~2.6× a finished Old Clunky's (14.24); ful
 | ⇄ **Pays Both Ways** *(after M7)* | 100,000 | 1 | Every line also pays from the right (§3). Full (4 reels, 5 lines, wild Lv 3, both unlocks): RTP 784% → 1,344%, hit rate 57.5% → 82.0% |
 
 New effect type: `extraPayline` (`linesPerLevel`). The Fourth Reel reuses `extraReel`, and Smooth Gears reuses `spinCostMultiplier`; each is sold only on the Stacker (`"machines": ["stacker"]`).
-
-### Pacing (from the simulator, not a real playtest)
-
-Since M7 (§10, §13): the Snack Stacker costs about what a whole first life earns, so it arrives at the first retirement: **retire now, or buy the Stacker and push on?** The idle bot retires, and buys it ~30–37 minutes into the second life (the active bot ~20–29 min). (M5's bot had it at 13–20 min of a first life; see PORTING_NOTES.)
-
-### Questions the prototype must answer
-
-- Is 5,000 a good price? Does the Stacker feel like a big "wow" (new look, more rows, lines lighting up one at a time)?
-- Is switching useful, or does everyone just stay on the best machine? (Old Clunky's cheaper spins help when you're broke.)
-- Is losing the machine on retiring OK, or should a Family Tree trait keep it (like the Heirloom Reel)? (Planned for M8.)
-- The Stacker speeds up seeds a lot in long lives (~9× income at 30 min). Does the Family Tree now fill up too fast?
 
 ### The Burrow Bonanza (milestone 6)
 
@@ -952,14 +842,6 @@ The wheel starts about 1 in 341 paid spins on a fresh machine (1 in 487 with bot
 | 🧲 **Lucky Charm** *(M7)* | 800,000 × 2ⁿ | 5 | +10 Machine Luck per level |
 | ⇄ **Pays Both Ways** *(after M7)* | 200,000,000 | 1 | Every line also pays from the right (§3). 20 lines + both unlocks: RTP 3,139% → 5,978%, hit rate 49.8% → 74.8% |
 
-### Questions for the new machines
-
-- Do the Bonanza (lives 4–5) and the Palace (from ~the 8th life) arrive at good moments? Is the Palace too far away?
-- Are free spins exciting enough every ~255 spins (rarer than in M6)? Is the jackpot wheel worth the wait?
-- Does the wooden burrow / velvet palace look read as "new machine" at a glance?
-
----
-
 ## 17. Quality of life (milestone 5)
 
 The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
@@ -996,13 +878,6 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 ### Not done yet
 
 - Keyboard shortcuts for buying upgrades and switching tabs/machines (the user didn't pick them).
-
-### Questions the prototype must answer
-
-- Does ×10 / Max get used? Is "ready in" helpful or noise?
-- Do people turn on Quick reels? Is the log of recent wins interesting?
-
----
 
 ## 18. Bets ("denoms") (milestone 6)
 
@@ -1058,13 +933,6 @@ The user picked two QoL sets: **Buy ×10 / Max** and **Settings & info**.
 ### 🔥 Hot Streak
 
 A hamster upgrade (§5): every machine counts its winning paid spins in a row, and the next win pays more. It favours machines that win often.
-
-### Questions the prototype must answer
-
-- Are wilds easy to read? Does "3 wilds beat 5 seeds" ever confuse?
-- Do free spins feel special? Is ×2 enough?
-- Is the jackpot wheel exciting? Are the pots too small or too big next to line wins (~10% of the Palace's EV)?
-- Does anyone gamble? Is the card gamble fun, or does it feel too much like real gambling (a release concern, §11)?
 
 ## 20. Particles & motion (milestone 6)
 
@@ -1139,14 +1007,6 @@ The user's pick, and how real pokies do it: after a win you pulled yourself, a g
 - **How:** 100 starting coins (a 28% hit rate went broke too often from fewer), a delivery worth 4 spins (20 coins, 45 s), prices up across the board, machines re-spaced (5,000 / 60,000 / 3,000,000), a **square-root** seed curve with 3 seeds at 11,700 coins, a +1.5% heirloom bonus per seed, and Warm-up Laps for 1 seed so generation 2 starts with auto-spin. Every number is in PORTING_NOTES → Balance log with its reason.
 - **Rules 2 and 3 set an RTP floor** (§10), so the slow start comes from time and prices, not from spins that lose money: Old Clunky starts at RTP 150%, and RTP stays above 100% for every setup, locked symbols included (rule 1).
 - **Known issue for M8:** lives from generation ~9 get short again (3–10 min). M8 reworks the rebirth economy.
-
-### Save v7
-
-A v6 (or older) save gives every machine every symbol unlock it sells, maxed: an older hamster had every symbol, so nobody loses one. New stats `symbolsUnlocked`, `bestLuck` and `suitWins` start at 0. Luck is worked out from upgrade levels, so it's never stored, and neither is the card history.
-
-### Tests (687 in total)
-
-Blanks never pay and never count as a hit · every unlock raises the EV and lowers the hit rate in every setup (no Luck and max Luck) · every Luck level raises the hit rate and the EV on every machine · the card gamble is fair (colour and suit, 20,000 picks each, win rates and pay-back) · the auto-spin interval is never shorter than spin time + rest · RTP > 100% for every setup, locked symbols included · rules 2 and 3 with the new numbers · the brute-force wild test with a blank added · a brute force of the new multi-line hit rate over every grid of a toy machine · every real machine's one-line EV against every possible line (sampled checks now use that exact spread, D99) · save v7 migration · Luck and unlocks in the game (locks, order, previews, reset on retiring, tree shifts skipping locked symbols).
 
 ### Particles & sound
 
@@ -1943,58 +1803,7 @@ All 14 are redrawn at **32×32** with five-step ramps (six new deep-shade colour
 
 ### Before (1.5.0)
 
-**Measured** in headless Chromium (2026-10-02; `npm run dev`, a game with 1B coins and every upgrade on sale, then one retirement so all five tabs show):
-
-| | 1280×800 | 390×844 (phone) | 844×390 (phone on its side) | 360×640 |
-|---|---|---|---|---|
-| The tray's open tab (height) | 653 px | **296 px** | 395 px | — |
-| Hamster upgrade tiles fully in view (of 22) | 6 | **2** | 2 | — |
-| Buttons under 44 px (finger size) | 32 of 57 | 31 of 55 | 30 of 55 | — |
-| Smallest text on screen | 10 px | **9 px** | 9 px | — |
-| Text under 12 px | 24 places | 27 | 27 | — |
-| The five tabs | fit (29 px tall) | just fit (27 px tall, 13 px text) | **28 px too wide** | **24 px too wide** |
-| The page scrolls | no | no | **150 px** | — |
-| The WIN meter on a 5-reel machine (the rig zoomed) | 18 px | **8 px** (zoom 0.46) | 10 px | — |
-| Roulette spots | — | ~20 px wide | — | ~18 px wide |
-
-**Read in the code:**
-- **No shared pieces.** `createSubTabs` (dom.ts) is the only reusable widget. Everything else is copied:
-  - the two-tap confirm, 6 times (Retire, Reset, Rebuild, Migrate in two places, Load a save), each with different words, sound and timer, and none that *looks* armed;
-  - painting a buy button, 4 times;
-  - tile markup, 4 times (upgrades, perks, prizes, skins);
-  - the detail card, twice (the shop's and the Big Cage's);
-  - progress bars, 8 ways;
-  - on/off switches, 5 of them, with 3 different "off" looks.
-- **style.css** is 1,868 lines in release order:
-  - ~30 font sizes and no spacing or type tokens;
-  - ~77 raw colours outside `:root`;
-  - three ways to draw a box (9-slice frames, notched corners, rounded corners);
-  - frames at in-between scales (`--fw` 6, 10 and 18 px are 1.5×, 2.5× and 4.5×);
-  - dead rules, and a few animations with no `.less-motion` rule.
-- **Bugs found:**
-  - `.line-label` is two different things (the win show's strip and the Info tab's payline captions), so both are styled wrongly.
-  - The Rebuild card's gold frame never draws.
-  - `.btn-small` only works in dialogs.
-  - The boost badges' tooltips can't be reached.
-  - The Upgrades and Info tabs never get a dot.
-  - Four state classes have no CSS.
-  - Numbers appear in the pixel font in about 8 places (against rule 11).
-- **On a phone:**
-  - a tile has two tap areas and a 34 px buy button;
-  - the detail card covers much of the 296 px tab, and its × is 28 px;
-  - ×1/×10/Max shrinks to one button that cycles;
-  - machine cards are the densest thing in the game;
-  - the Diary is 57 rows in data order;
-  - skin tiles stack four lines of 10.5–13 px text;
-  - the paytable scrolls sideways;
-  - chips can only be bought on the Prizes sub-tab;
-  - the Big Cage's trait card is a fixed 150 px with its own scroll, and its labels are 9.5 px;
-  - nothing keeps clear of notches or home bars.
-- **Speed and access:**
-  - ui.ts (1,622 lines) renders every tab every frame, hidden ones too (only the colony and the casino check).
-  - The tabs have no `aria-selected` or tab panels.
-  - The hamster's speech bubble, the game's main voice, isn't announced to screen readers.
-  - Emoji (⏸ ▶ 🔒) sit in a pixel UI.
+The measurements of the 1.5.0 UI that motivated this redesign (taken 2026-10-02 at four screen sizes) were cut from this file to save space; they are in git history, in the commit that added this section.
 
 ### Goals
 
@@ -2235,29 +2044,6 @@ On a branch, as **1.6.0-rc.1**. Every part leaves the game playable, passes the 
 | 7. Menu and dialogs | The Menu board, Stats, Save backup, Welcome back, the crash screen |
 | 8. Guide and sounds | guide.ts, `playUi`, the two settings |
 | 9. Polish | Motion "Less", access (contrast, 44 px targets, focus rings, tab roles), speed, skins, docs, the CHANGELOG |
-
-### Tests and checks
-
-- **Kept:** every test passes. The golden run, the save fixtures and the simulator don't change (view only).
-- **New tests:**
-  - every token frames.ts reads is a `#rrggbb` in `:root`, and every painted frame's edges repeat;
-  - `WHEEL_TOKENS` too (no test checks it today);
-  - `guideStep()` at every step;
-  - the new settings' defaults, and old settings loading with them;
-  - every copy of the breakpoint matches `layout.ts`;
-  - the rig's fit maths;
-  - a test for each fixed bug where one can catch it (e.g. no class shared by two components' rules).
-- **In the browser:** Chromium at 1280×800, 1920×1080, 390×844, 360×640, 844×390 and 320 px wide, in dev and in the built game:
-  - every tab, sheet and dialog; all 8 machines;
-  - a real retirement and the Big Cage; the casino;
-  - the guide from a fresh game; the UI sounds;
-  - skins and Motion "Less"; no console errors.
-- **Speed:** frames a second in D153's test, at least 1.5.0's 54.
-- **Not checkable in a session:** a real phone, Firefox and Safari. They go to the user's playtest.
-
-### Version and name
-
-**1.6.0**, a minor version (a new look, the guide and UI sounds; no new content), like 1.2.0 and 1.5.0. The working name is **"New Digs"** (a new place to live, and hamsters dig); the user can rename it. **As released:** 1.6.0 "New Digs" is parts 1–3 (the user published them after seeing screenshots, D160); parts 4–9 come in later updates, each with its own version and name.
 
 ### Questions the playtest must answer
 
