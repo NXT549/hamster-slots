@@ -16,7 +16,7 @@
 // Around the sign there are real light bulbs: they chase slowly at rest, race while
 // the reels spin and all flash on a win (drawn every frame on a second, see-through
 // canvas, so the cabinet itself is only painted when its size or skin changes).
-// Colours are theme tokens (CABINET_TOKENS); machine skins still recolour Old Clunky.
+// Colours are theme tokens (CABINET_TOKENS); a machine skin repaints every machine (painted()).
 
 import { Pixmap, Mask, pixel, mixPixel, withAlpha, hash, readTokens, ramp, paintMask, HILITE, LIGHT, BASE, SHADE, DEEP } from './paint.ts';
 import type { Pixel, Ramp } from './paint.ts';
@@ -31,6 +31,7 @@ export const CABINET_TOKENS = [
   '--cheese', '--cheese-dark', '--cheese-light', '--cheese-rind', '--cheese-rind-dark',
   '--box', '--box-dark', '--box-light', '--box-tape', '--box-label',
   '--danger', '--danger-dark', '--primary', '--leaf-light', '--pot', '--soil', '--soil-dark',
+  '--paint', '--paint-dark', '--paint-light',
 ] as const;
 export type CabinetColors = Record<(typeof CABINET_TOKENS)[number], string>;
 
@@ -127,7 +128,24 @@ function grille(out: Pixmap, x: number, y: number, w: number, rows: number, dark
 
 // Paint the cabinet of machine `id` for these parts. The result is placed at (left, top)
 // in the machine's own screen pixels (it reaches past the machine for the decorations).
-export function paintCabinet(id: string, P: CabinetParts, c: CabinetColors, starred = false): Cabinet {
+// A worn machine skin (1.6.1) sets --paint (else it's "none"): every machine's body
+// colours (base, dark, light) become the skin's paint. Swapping the tokens, rather than
+// adding a skin case to every painter, means the trims and knobs made from a body
+// colour follow it, while each machine's own details (grass, rind, tape, gold) stay.
+const BODIES = ['--machine', '--stacker', '--bonanza', '--palace', '--maze', '--vault', '--cheese', '--box'] as const;
+export function painted(c: CabinetColors): CabinetColors {
+  if (!c['--paint'] || c['--paint'] === 'none') return c;
+  const out = { ...c };
+  for (const b of BODIES) {
+    out[b] = c['--paint'];
+    out[`${b}-dark` as keyof CabinetColors] = c['--paint-dark'];
+    if (`${b}-light` in out) out[`${b}-light` as keyof CabinetColors] = c['--paint-light'];
+  }
+  return out;
+}
+
+export function paintCabinet(id: string, P: CabinetParts, colors: CabinetColors, starred = false): Cabinet {
+  const c = painted(colors);
   const s = (v: number) => Math.round(v / CAB_PX);
   const W = s(P.w);
   const H = s(P.h);
@@ -517,7 +535,8 @@ const KNOBS: Record<string, [string, string]> = {
   palace: ['--palace-gold', '--gold-dark'], maze: ['--maze-light', '--maze'], vault: ['--gold', '--gold-dark'],
   cheese: ['--cheese-rind', '--cheese-rind-dark'], moving: ['--box-tape', '--box-dark'],
 };
-export function paintKnob(id: string, c: CabinetColors): Pixmap {
+export function paintKnob(id: string, colors: CabinetColors): Pixmap {
+  const c = painted(colors);
   const [a, b] = KNOBS[id] || KNOBS.clunky;
   const r = ramp(c[a as keyof CabinetColors], c[b as keyof CabinetColors], mixCss(c[b as keyof CabinetColors], c['--outline-ink'], 0.55));
   if (id === 'stacker') {

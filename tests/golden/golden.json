@@ -5630,19 +5630,19 @@
    {
     "events": {
      "bigCageLeft": 1,
-     "capsuleOpened": 36,
+     "capsuleOpened": 35,
      "chipsChanged": 1,
      "coinsChanged": 2,
      "retired": 1,
      "seedsChanged": 4,
-     "skinEquipped": 23,
+     "skinEquipped": 27,
      "stickerEarned": 5,
-     "tokensChanged": 61,
+     "tokensChanged": 55,
      "treeNodeBought": 3
     },
     "label": "capsules and skins",
     "paid": 0,
-    "rng": 1192153876,
+    "rng": 1823989546,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -5654,7 +5654,7 @@
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
-      "sincePity": 1
+      "sincePity": 0
      },
      "casino": {
       "bestIncome": "0.8264081255771002",
@@ -5710,7 +5710,7 @@
       "equipped": {
        "fur": "furGolden",
        "hat": "hatCowboy",
-       "machine": "machineGrape",
+       "machine": "machineSeaside",
        "room": "roomSunflower",
        "wheel": "wheelGold"
       },
@@ -5723,8 +5723,12 @@
        "hatFlowers": true,
        "hatParty": true,
        "hatTop": true,
+       "machineBubblegum": true,
+       "machineCopper": true,
        "machineGrape": true,
+       "machineMossy": true,
        "machinePeach": true,
+       "machineSeaside": true,
        "machineSky": true,
        "roomStarry": true,
        "roomStrawberry": true,
@@ -5750,7 +5754,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "0",
       "blackjacks": 0,
-      "capsulesOpened": 36,
+      "capsulesOpened": 35,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "250",
@@ -5794,7 +5798,7 @@
       "wildWins": 0,
       "wins": 0
      },
-     "tokens": "9",
+     "tokens": "5",
      "tree": {
       "familyPride": 1,
       "speedyScooter": 1,
@@ -5812,22 +5816,22 @@
    {
     "events": {
      "bigCageLeft": 1,
-     "capsuleOpened": 36,
-     "chipsChanged": 7,
-     "coinsChanged": 20,
+     "capsuleOpened": 35,
+     "chipsChanged": 33,
+     "coinsChanged": 87,
      "retired": 1,
      "seedsChanged": 4,
-     "skinEquipped": 23,
-     "spinResolved": 13,
-     "spinStarted": 13,
+     "skinEquipped": 27,
+     "spinResolved": 65,
+     "spinStarted": 65,
      "stickerEarned": 7,
-     "tokensChanged": 63,
+     "tokensChanged": 57,
      "treeNodeBought": 3,
-     "upgradeBought": 1
+     "upgradeBought": 3
     },
     "label": "an idle life, 15 min",
-    "paid": 162,
-    "rng": 1568224758,
+    "paid": 810.06,
+    "rng": 3704343956,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -5839,18 +5843,18 @@
      "autoTimer": 3.9099999999999997,
      "bigCage": false,
      "capsules": {
-      "sincePity": 1
+      "sincePity": 0
      },
      "casino": {
       "bestIncome": "0.8264081255771002",
       "boosts": {},
-      "chips": "256",
+      "chips": "282",
       "hand": null,
       "spinsToChip": 1
      },
-     "coins": "3.5",
+     "coins": "1.86",
      "colony": 0,
-     "colonyCoins": "20162",
+     "colonyCoins": "20810.06",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -5876,7 +5880,7 @@
        "pots": {},
        "result": [
         [
-         "blank"
+         "seed"
         ],
         [
          "blank"
@@ -5889,12 +5893,14 @@
        "spinning": false,
        "streak": 0,
        "typeId": "clunky",
-       "upgrades": {}
+       "upgrades": {
+        "lever": 1
+       }
       }
      ],
      "perks": {},
      "run": {
-      "coinsEarned": "162",
+      "coinsEarned": "810.06",
       "playTime": 899.9999999995101
      },
      "saveVersion": 14,
@@ -5904,7 +5910,7 @@
       "equipped": {
        "fur": "furGolden",
        "hat": "hatCowboy",
-       "machine": "machineGrape",
+       "machine": "machineSeaside",
        "room": "roomSunflower",
        "wheel": "wheelGold"
       },
@@ -5917,8 +5923,12 @@
        "hatFlowers": true,
        "hatParty": true,
        "hatTop": true,
+       "machineBubblegum": true,
+       "machineCopper": true,
        "machineGrape": true,
+       "machineMossy": true,
        "machinePeach": true,
+       "machineSeaside": true,
        "machineSky": true,
        "roomStarry": true,
        "roomStrawberry": true,
@@ -5932,7 +5942,7 @@
      "stars": {},
      "stats": {
       "autoRetires": 0,
-      "autoSpins": 13,
+      "autoSpins": 65,
       "bestBoxes": 0,
       "bestGambleRun": 0,
       "bestLuck": 6,
@@ -5942,15 +5952,15 @@
       "bestWheel": 0,
       "biggestBet": 1,
       "biggestCasinoWin": "0",
-      "biggestWin": "40.5",
+      "biggestWin": "50.63",
       "blackjacks": 0,
-      "capsulesOpened": 36,
+      "capsulesOpened": 35,
       "casinoGames": 0,
       "chipsBought": "0",
-      "chipsEarned": "256",
-      "coinsEarned": "20162",
-      "coinsSpent": "58.5",
-      "coinsWon": "162",
+      "chipsEarned": "282",
+      "coinsEarned": "20810.06",
+      "coinsSpent": "277.2",
+      "coinsWon": "810.06",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
@@ -5978,17 +5988,17 @@
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 13,
+      "spins": 65,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "tokensEarned": "21",
       "trialsCompleted": 0,
-      "upgradesBought": 1,
+      "upgradesBought": 3,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 4
+      "wins": 17
      },
-     "tokens": "13",
+     "tokens": "9",
      "tree": {
       "familyPride": 1,
       "speedyScooter": 1,
@@ -5997,7 +6007,7 @@
      "trial": null,
      "trialsDone": {},
      "upgrades": {
-      "cheeks": 1,
+      "cheeks": 2,
       "wheel": 1
      },
      "whiskers": "0"
@@ -6007,22 +6017,22 @@
    {
     "events": {
      "bigCageLeft": 2,
-     "capsuleOpened": 36,
-     "chipsChanged": 8,
-     "coinsChanged": 22,
+     "capsuleOpened": 35,
+     "chipsChanged": 34,
+     "coinsChanged": 89,
      "retired": 2,
      "seedsChanged": 16,
-     "skinEquipped": 23,
-     "spinResolved": 13,
-     "spinStarted": 13,
+     "skinEquipped": 27,
+     "spinResolved": 65,
+     "spinStarted": 65,
      "stickerEarned": 10,
-     "tokensChanged": 67,
+     "tokensChanged": 61,
      "treeNodeBought": 14,
-     "upgradeBought": 1
+     "upgradeBought": 3
     },
     "label": "third generation",
-    "paid": 162,
-    "rng": 1568224758,
+    "paid": 810.06,
+    "rng": 3704343956,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -6034,18 +6044,18 @@
      "autoTimer": 0,
      "bigCage": false,
      "capsules": {
-      "sincePity": 1
+      "sincePity": 0
      },
      "casino": {
-      "bestIncome": "2.6360399971878734",
+      "bestIncome": "3.5085165388249364",
       "boosts": {},
-      "chips": "506",
+      "chips": "532",
       "hand": null,
       "spinsToChip": 1
      },
      "coins": "100",
      "colony": 0,
-     "colonyCoins": "2020162",
+     "colonyCoins": "2020810.06",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -6097,7 +6107,7 @@
       "equipped": {
        "fur": "furGolden",
        "hat": "hatCowboy",
-       "machine": "machineGrape",
+       "machine": "machineSeaside",
        "room": "roomSunflower",
        "wheel": "wheelGold"
       },
@@ -6110,8 +6120,12 @@
        "hatFlowers": true,
        "hatParty": true,
        "hatTop": true,
+       "machineBubblegum": true,
+       "machineCopper": true,
        "machineGrape": true,
+       "machineMossy": true,
        "machinePeach": true,
+       "machineSeaside": true,
        "machineSky": true,
        "roomStarry": true,
        "roomStrawberry": true,
@@ -6125,7 +6139,7 @@
      "stars": {},
      "stats": {
       "autoRetires": 0,
-      "autoSpins": 13,
+      "autoSpins": 65,
       "bestBoxes": 0,
       "bestGambleRun": 0,
       "bestLuck": 26,
@@ -6135,15 +6149,15 @@
       "bestWheel": 0,
       "biggestBet": 1,
       "biggestCasinoWin": "0",
-      "biggestWin": "40.5",
+      "biggestWin": "50.63",
       "blackjacks": 0,
-      "capsulesOpened": 36,
+      "capsulesOpened": 35,
       "casinoGames": 0,
       "chipsBought": "0",
-      "chipsEarned": "506",
-      "coinsEarned": "2020162",
-      "coinsSpent": "58.5",
-      "coinsWon": "162",
+      "chipsEarned": "532",
+      "coinsEarned": "2020810.06",
+      "coinsSpent": "277.2",
+      "coinsWon": "810.06",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
@@ -6171,17 +6185,17 @@
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 13,
+      "spins": 65,
       "suitWins": 0,
       "symbolsUnlocked": 0,
       "tokensEarned": "33",
       "trialsCompleted": 0,
-      "upgradesBought": 1,
+      "upgradesBought": 3,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 4
+      "wins": 17
      },
-     "tokens": "25",
+     "tokens": "21",
      "tree": {
       "bigBackpack": 1,
       "bigSpender": 1,
@@ -6209,23 +6223,23 @@
    {
     "events": {
      "bigCageLeft": 2,
-     "capsuleOpened": 36,
-     "chipsChanged": 56,
-     "coinsChanged": 151,
+     "capsuleOpened": 35,
+     "chipsChanged": 82,
+     "coinsChanged": 227,
      "offlineEarned": 1,
      "retired": 2,
      "seedsChanged": 16,
-     "skinEquipped": 23,
-     "spinResolved": 108,
-     "spinStarted": 108,
+     "skinEquipped": 27,
+     "spinResolved": 160,
+     "spinStarted": 160,
      "stickerEarned": 13,
-     "tokensChanged": 70,
+     "tokensChanged": 64,
      "treeNodeBought": 14,
-     "upgradeBought": 14
+     "upgradeBought": 18
     },
     "label": "third generation, 5 min",
-    "paid": 3731.62,
-    "rng": 1673378252,
+    "paid": 5859.33,
+    "rng": 3809497450,
     "save": {
      "activeMachine": 0,
      "auto": {
@@ -6237,18 +6251,18 @@
      "autoTimer": 2.8399999999998755,
      "bigCage": false,
      "capsules": {
-      "sincePity": 1
+      "sincePity": 0
      },
      "casino": {
-      "bestIncome": "2.6360399971878734",
+      "bestIncome": "3.5085165388249364",
       "boosts": {},
-      "chips": "554",
+      "chips": "580",
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "12.26",
+     "coins": "341.69",
      "colony": 0,
-     "colonyCoins": "2024818.83",
+     "colonyCoins": "2026946.54",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -6283,7 +6297,7 @@
          "carrot"
         ],
         [
-         "carrot"
+         "blank"
         ]
        ],
        "spinBet": 1,
@@ -6291,10 +6305,10 @@
        "spinSource": "auto",
        "spinTimer": 0,
        "spinning": false,
-       "streak": 1,
+       "streak": 0,
        "typeId": "clunky",
        "upgrades": {
-        "horseshoe": 1,
+        "horseshoe": 2,
         "lever": 4,
         "newSeeds": 1
        }
@@ -6302,7 +6316,7 @@
      ],
      "perks": {},
      "run": {
-      "coinsEarned": "4656.83",
+      "coinsEarned": "6136.48",
       "playTime": 300.0000000000558
      },
      "saveVersion": 14,
@@ -6312,7 +6326,7 @@
       "equipped": {
        "fur": "furGolden",
        "hat": "hatCowboy",
-       "machine": "machineGrape",
+       "machine": "machineSeaside",
        "room": "roomSunflower",
        "wheel": "wheelGold"
       },
@@ -6325,8 +6339,12 @@
        "hatFlowers": true,
        "hatParty": true,
        "hatTop": true,
+       "machineBubblegum": true,
+       "machineCopper": true,
        "machineGrape": true,
+       "machineMossy": true,
        "machinePeach": true,
+       "machineSeaside": true,
        "machineSky": true,
        "roomStarry": true,
        "roomStrawberry": true,
@@ -6340,25 +6358,25 @@
      "stars": {},
      "stats": {
       "autoRetires": 0,
-      "autoSpins": 108,
+      "autoSpins": 160,
       "bestBoxes": 0,
       "bestGambleRun": 0,
-      "bestLuck": 36,
+      "bestLuck": 46,
       "bestStars": 0,
-      "bestStreak": 2,
+      "bestStreak": 3,
       "bestWays": 0,
       "bestWheel": 0,
       "biggestBet": 1,
       "biggestCasinoWin": "0",
-      "biggestWin": "396.58",
+      "biggestWin": "432.63",
       "blackjacks": 0,
-      "capsulesOpened": 36,
+      "capsulesOpened": 35,
       "casinoGames": 0,
       "chipsBought": "0",
-      "chipsEarned": "554",
-      "coinsEarned": "2024818.83",
-      "coinsSpent": "396.07",
-      "coinsWon": "3731.62",
+      "chipsEarned": "580",
+      "coinsEarned": "2026946.54",
+      "coinsSpent": "599.99",
+      "coinsWon": "5859.33",
       "deliveries": 0,
       "deliveryCoins": "0",
       "derbyLongshots": 0,
@@ -6386,17 +6404,17 @@
       "rebuilds": 0,
       "rouletteNumbers": 0,
       "seedDropEdges": 0,
-      "spins": 108,
+      "spins": 160,
       "suitWins": 0,
       "symbolsUnlocked": 1,
       "tokensEarned": "39",
       "trialsCompleted": 0,
-      "upgradesBought": 14,
+      "upgradesBought": 18,
       "whiskersEarned": "0",
       "wildWins": 0,
-      "wins": 24
+      "wins": 44
      },
-     "tokens": "31",
+     "tokens": "27",
      "tree": {
       "bigBackpack": 1,
       "bigSpender": 1,
@@ -6414,7 +6432,7 @@
      "trial": null,
      "trialsDone": {},
      "upgrades": {
-      "cheeks": 7,
+      "cheeks": 8,
       "clover": 1,
       "highRoller": 1,
       "wheel": 1

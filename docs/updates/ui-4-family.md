@@ -1,6 +1,6 @@
 # New Digs part 4: Family, Colony, Big Cage panels
 
-**Status:** built (2026-10-03, D161) on `claude/update-plans-cdpo0k`, waiting for the user's OK after screenshots. **Version:** next minor (view only, no save change). **Read:** DESIGN §31 "Screen by screen" rows Family, Colony, The Big Cage (`grep -n "^### Screen by screen" DESIGN.md`, read that table), §13, §22, §29 for what each number means; PORTING_NOTES D157–D159 for how parts 1–3 were built (copy their patterns).
+**Status:** done, released in 1.7.0 "Family Room" (2026-10-03, D162). Kept as the record. **Version:** next minor (view only, no save change). **Read:** DESIGN §31 "Screen by screen" rows Family, Colony, The Big Cage (`grep -n "^### Screen by screen" DESIGN.md`, read that table), §13, §22, §29 for what each number means; PORTING_NOTES D157–D159 for how parts 1–3 were built (copy their patterns).
 
 ## Goal
 

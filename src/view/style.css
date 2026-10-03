@@ -74,6 +74,9 @@
   /* Old Clunky (machine skins override these) */
   --machine: #7fcbb8;       --machine-dark: #58a894;
   --marquee: #ffd35c;
+  /* 1.6.1: a machine skin's paint for every machine's body (cabinet.ts painted()); "none" = each its own */
+  --paint: none;            --paint-dark: none;        --paint-light: none;
+  --paint-marquee: initial; /* unset (a skin may set it): every sign keeps its own colour (styles/machine.css) */
   /* the Snack Stacker */
   --stacker: #f6a3b2;       --stacker-dark: #d97a8e;   --stacker-light: #ffd3db;
   --stacker-marquee: #fff0a6;
