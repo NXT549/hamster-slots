@@ -1732,6 +1732,8 @@ Once the **whole Family Tree is planted** (every trait at its max; Family Fortun
 
 **Golden Whiskers** (the colony's currency, 12 px whiskers by a pink nose): `floor((seeds earned this colony ÷ 4) ^ 0.5)`, at least 1, × (1 + Whisker Wisdom): about 9 for the ~350 seeds a family has when its tree is first complete, 27 for 3,000. So more seeds, more whiskers, but a square root: a longer colony pays more, not endlessly more. Colony Trials pay whiskers too. They never come from coins or chips, and there's nothing to buy them with.
 
+**Each new colony's Family Tree costs ×3 more** (`familyTree.costPerColony`: colony 2 pays 3× rule 3's price, colony 3 9×, and so on; the balancing pass, 2026-10-03, D163, 1.7.1). A migrated family earns seeds so fast that it used to replant the whole tree in a few lives and grow ~10× stronger every life, so its lives shrank to 2–5 minutes.
+
 A migrated family's **rebirth upgrades stay open** from its first pup (it has had every generation before: §28's `unlock.generation` counts only in the first colony), and its **casino stays open**. Every colony's pups start further along the name list.
 
 ### Colony perks (Golden Whiskers, kept for good)
@@ -1740,7 +1742,7 @@ Family → Colony. Rule 3's formula (`floor(baseCost × growthRate ^ owned)`), i
 
 | Perk | Cost | Max | What it does |
 |---|---|---:|---|
-| ❤️ **Colony Pride** | 1 × 1.6ⁿ | none | **+50% payouts a level**, in a group of its own (it multiplies the others): the whiskers' sink |
+| ❤️ **Colony Pride** | 1 × 1.6ⁿ | none | **+30% payouts a level** (+50% before the balancing pass, 2026-10-03), in a group of its own (it multiplies the others): the whiskers' sink |
 | 🌱 **Seed Sense** | 2 × 1.8ⁿ | 10 | **+10% Heirloom Seeds a level** (every seed total × 1.1, 1.2 …). **New effect** `seedGain` |
 | 👓 **Wise Elders** | 3 | 1 | **The automation** (below). **New effect** `autoRetire` |
 | 🥨 **Old Friends** | 4 | 1 | Every pup starts owning the Burrow Bonanza (like Snack Inheritance's Stacker) |
@@ -1822,7 +1824,17 @@ The open problem since M7 (§10): from generation ~11 the lives shrank to 2–4 
 
 - **The first colony's late lives are 2–3× longer**, the first 8 lives are the same, and the whole tree (the Great Migration's unlock) comes at the same time. After generation ~16 the lives climb steeply (the family owns everything): the nudge to migrate.
 - **The migration loop** (`--migrate`): the first migration after 5.0–5.8 h idle (3.4–3.9 active) pays **9–11 whiskers**; a migrated family's early game is 3–4× faster (colony 2's first lives 10–15 min idle, 4–10 active); the second migration comes about 2 h later idle (1.2 h active) and pays **33–49**.
-- **Open:** later colonies' late lives are short again (colony 2's generations 9–15: 2.5–8 min idle, 1.7–4 active), because Colony Pride multiplies the income and the seed curve is the same. The Wise Elders take the clicking out of it; if it's still too fast, the levers are Colony Pride's size and price, or a softcap that tightens with each colony (PORTING_NOTES D146).
+- **Later colonies (the balancing pass, 2026-10-03, D163, 1.7.1):** a migrated family's late lives were short again (colony 2's generations 9–15: 2.5–6.5 min idle, 1–5 active) because it replanted the tree in a few lives and Colony Pride stacked on top. **Now each colony's tree costs ×3 more and Colony Pride gives +30% a level** (was +50%). `node tools/sim.mjs --migrate --lives 45 --seeds 3`:
+
+  | | idle before | idle after | active before | active after |
+  |---|---|---|---|---|
+  | Colony 2, hours | 1.8–2.1 | **3.5–4.8** | 1.1–1.5 | **3.1–4.5** |
+  | Colony 2, gens 1–8 | 3–20 min | 7–26 | 4–11 | 7–22 |
+  | Colony 2, gens 9–15 (median) | 2.8–4.4 min | **6.0–8.4** | 2.3–3.1 | **4.9–7.7** |
+  | Colony 3, gens 4–14 | 2–5 min | 2–7 | 1–2 | 1.6–5 |
+  | Whiskers at migration 2 | 38–49 | 65–67 | 33–37 | 66–71 |
+
+  Colony 1 doesn't change. Colony 2 is still faster than colony 1 (the migration's reward) but plays out over 3–5 hours. **Still open:** colony 3's middle lives (2–5 min), because a longer colony 2 pays more whiskers (more Pride). If the playtest finds them too fast, the levers are the tree factor, Pride's size, or a whisker formula that grows more slowly. Why not the seed curve: retiring at "+X% seeds" is relative, so a cost multiplier on seeds cancels out, and a gentler exponent per colony only adds a wall at the colony's end (docs/updates/balancing.md has every variant).
 
 ### Save v14
 

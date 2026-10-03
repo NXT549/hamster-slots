@@ -703,6 +703,13 @@ Headless tests can check round-trips, and a new platform only swaps the storage.
 - Checked in Chromium at 390×844, 360×640, 844×390 and 1280×800: a retirement, planting, a trait's sheet, the Colony, a migration and a trial, no console errors. Not checked: a real phone, Firefox, Safari.
 - **Released** as 1.7.0 "Family Room" (a minor version, a name picked for the family screens in the hamster's room; the user can rename it), after 1.6.1. Tag pushes are refused (403), so the user publishes the GitHub Release **"v1.7.0 · Family Room"** on the "Release 1.7.0" commit.
 
+**D163 — Balancing pass: later colonies, a dearer tree per colony, released as 1.7.1 "Settling In"** (the user picked "dearer tree" on 2026-10-03; DESIGN §29 → Balance; plan and every variant in docs/updates/balancing.md).
+- **Problem:** after a Great Migration every colony was faster than the last, with late lives of 1–6 min (colony 2 lasted ~2 h idle, ~1.3 h active).
+- **Finding:** players, the bot and the Wise Elders retire when pending seeds reach a *share* of the seeds earned, so a multiplier on coins or on `seedDivisor` cancels out (×2/×3/×5 per colony: no change). A softcap that tightens per colony (seeds ×0.5/×0.25, exponent ×0.75…×0.5) left the short lives and added a wall at the colony's end. A weaker Colony Pride alone helped a little. What sets a life's length is how fast the family's power climbs between lives, and a migrated family climbed ~10× a life by replanting the tree with its flood of seeds.
+- **Chosen:** `familyTree.costPerColony` 3 (a trait costs rule 3's price × 3^colony; rule 3's formula is unchanged, the colony only scales it) and Colony Pride +50% → +30% a level. Colony 2 now 3.5–4.8 h idle, 3.1–4.5 active, late lives 5–8 min; colony 1 untouched. Rejected: ×4 (colony 2 longer than colony 1, losing the migration's reward), ×2.5 + Pride 0.35 and ×3 + Pride growth 2.0 (similar, shorter colony 2 or shorter colony 3).
+- **Open:** colony 3's middle lives stay 2–5 min (more whiskers from the longer colony 2). The casino boosts weren't re-measured on top (§27's "up to a third" may still hold). No save change: planted traits stay; only the next ones cost more.
+
+
 ---
 
 ## Balance log
@@ -767,6 +774,7 @@ Every `data.json` change: date · value · old → new · why.
 | 2026-09-28 | Moving Day upgrades | — → Packing Tape 12B × 1.3ⁿ · More Rooms 24B × 2.5ⁿ · Bubble Wrap 30B × 2.2ⁿ (+2 box weight) · Valuables 40B · Lucky Van 24B × 2ⁿ · Pays Both Ways 10T | Like the Cheese's set, scaled to price. |
 | 2026-09-28 | Colony traits (new, `colony: 1`) | — → Moving Boxes 40 × 2ⁿ (+2 box weight, max 2) · Whisker Wisdom 60 × 2ⁿ (+25% whiskers, max 2) · Pack Leader 50 × 2ⁿ (+50% payouts, max 3) · Starry Roots 60 × 2ⁿ (+1 star, max 2) | For a colony's late part (the rest of the tree costs ~250 seeds). |
 | 2026-10-03 | Machine skins (1.6.1) | 4 → 9 (+Bubblegum, Moss: spins 5% cheaper · Copper Pipes, Seaside: 10% · Arcade Neon: 15% + 5% double-win chance) | The user's "add new skins" (D161). Same buff sizes as the old ones; the capsule pool grows 24 → 29, so the full set takes ~194 pulls (was ~151). No sim run: the buffs match the existing machine skins, and the simulator wears the rarest skin it owns (§25). |
+| 2026-10-03 | `familyTree.costPerColony` (new) · `colony.perks` Colony Pride `perLevel` | — → **3** · 0.5 → **0.3** | Later colonies' lives were 1–6 min (D163). Sim (`--migrate --lives 45 --seeds 3`, idle): colony 2 1.8–2.1 h → 3.5–4.8 h, its gens 9–15 2.8–4.4 → 6.0–8.4 min; active 1.1–1.5 → 3.1–4.5 h. Colony 1 unchanged. Golden run re-recorded (migration session only). |
 
 ---
 
@@ -780,6 +788,20 @@ Every `data.json` change: date · value · old → new · why.
 Template: date · build/milestone · what felt good · what felt bad · what to try.
 
 **What to look for in the first playtest:** Is going broke frustrating or funny? Is the 30 s delivery too long or too short? Is the Third Reel a "wow" moment? When do you stop clicking? Does anything feel pointless?
+
+**2026-10-03 · balancing pass: later colonies (simulator, not a real playtest)**
+- `node tools/sim.mjs --migrate --lives 45 --seeds 3` (the new `Colony N:` summary lines), before → after (tree ×3 per colony, Colony Pride +30%):
+
+| | idle before | idle after | active before | active after |
+|---|---|---|---|---|
+| Colony 1 (hours · median gens 9–15) | 5.0–5.8 · 6.6–9.8 min | the same | 3.4–3.9 · 6.7–7.1 | the same |
+| Colony 2 hours | 1.8–2.1 | 3.5–4.8 | 1.1–1.5 | 3.1–4.5 |
+| Colony 2 shortest life past gen 3 | 2.5–2.6 min | 2.3–4.4 | 1.0–1.8 | 2.5–3.6 |
+| Colony 2 median gens 9–15 | 2.8–4.4 min | 6.0–8.4 | 2.3–3.1 | 4.9–7.7 |
+| Colony 3 median gens 9–15 | 2.5–3.9 min | 4.2–6.2 | 1.6–1.9 | 2.8–4.2 |
+| Whiskers, migration 2 | 38–49 | 65–67 | 33–37 | 66–71 |
+
+- Variants that didn't work (idle, colony 2 hours · median gens 9–15): softcap seeds ×0.5/colony 1.9–2.1 · 4.5–5.0; ×0.25 2.2–2.5 · 4.6–5.8; exponent ×0.75 2.2–2.8 · 4.7–5.1, ×0.65 4.3–19.4 h (a wall); seedDivisor ×3/colony 1.7–2.1 · 3.6–4.4; Pride +30% alone 2.2–2.4 · 4.1–5.3; tree ×3 alone 3.0–4.6 · 4.8–6.1; tree ×4 + Pride +30% 6.1–7.2 · 5.6–7.5.
 
 **2026-10-03 · 1.6.0-rc.1 "New Digs", parts 1–3: the stop for the user's OK on the look (automated checks, not a real playtest)**
 - **Measured, before (1.5.0) → after parts 1–3** (same game: 1B coins, every upgrade on sale, one retirement): buttons under 44 px 32 of 57 → 6 of 38 (1280×800) and 31 of 55 → 7 of 27 (390×844); smallest text 9–10 px → 12 px everywhere (places under 12 px: 24–27 → 0); on a phone the tray's open tab 296 → 305 px, a phone on its side 395 (page scrolled 150 px) → 249 px with no scroll; the five tabs no longer overflow on short or narrow phones (a bottom bar, 53 px, on 390×844); the WIN meter's number on a 5-reel machine 8 → 14 px on a phone. On a phone only 1–2 upgrade rows are fully in view (as before).

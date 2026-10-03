@@ -328,7 +328,8 @@ export interface GameData {
   retirement: RetirementDef;
   // M8: Machine Stars, for rebuilding a machine with every upgrade maxed.
   stars: { max: number; payoutPerStar: number; luckPerStar: number };
-  familyTree: { branches: Named[]; nodes: TreeNodeDef[] };
+  // costPerColony: every trait costs × this more in each colony after the first (balancing pass).
+  familyTree: { branches: Named[]; nodes: TreeNodeDef[]; costPerColony?: number };
   tokens: {
     name: string;
     perJackpot: number;
