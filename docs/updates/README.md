@@ -14,7 +14,7 @@ One file per planned update. **Open a file only when the user tells you to work 
 
 | File | Update | Status |
 |---|---|---|
-| [ui-4-family.md](ui-4-family.md) | New Digs part 4: Family tab, Colony, Big Cage panels | Planned (DESIGN §31) |
+| [ui-4-family.md](ui-4-family.md) | New Digs part 4: Family tab, Colony, Big Cage panels | Done: released in 1.7.0 "Family Room" (D162) |
 | [ui-5-capsules-info.md](ui-5-capsules-info.md) | New Digs part 5: Capsules (reveal, Wardrobe, Diary) and Info | Planned (DESIGN §31) |
 | [ui-6-casino.md](ui-6-casino.md) | New Digs part 6: Casino chrome, cashier, roulette spots, prizes | Planned (DESIGN §31) |
 | [ui-7-menu-dialogs.md](ui-7-menu-dialogs.md) | New Digs part 7: Menu, Stats, Save backup, Welcome back, crash screen | Planned (DESIGN §31) |

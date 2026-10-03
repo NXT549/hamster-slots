@@ -27,6 +27,8 @@ import { furColors, hatOf } from './skins.ts';
 import { treeLayout, treeShape, trunkTop, leafClumps, drawTree, TREE_TOKENS } from './bigtree.ts';
 import { describeEffect } from './shop.ts';
 import { formatWhole, setText, setHTML, replayClass, iconHTML, popText } from './dom.ts';
+import { h, createSheet, statTile, gauge, segmented, confirmButton, button, buyButton, more, amountHTML } from './kit.ts';
+import type { BuyButton, BuyState } from './kit.ts';
 import { IRIS_MS } from './celebrate.ts';
 import { divide } from '../logic/money.ts';
 import type { Layout, Shape, TreeColors, Clump } from './bigtree.ts';
@@ -79,15 +81,77 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   const el = {
     dialog: $<HTMLDialogElement>('big-cage'), scene: $('bc-scene'), world: $('bc-world'), canvas: $<HTMLCanvasElement>('bc-canvas'), nodes: $('bc-nodes'),
     hamster: $<HTMLImageElement>('bc-hamster'), seed: $('bc-seed'), bubble: $('bc-bubble'), skip: $('bc-skip'),
-    sub: $('bc-sub'), held: $('bc-held'), bonus: $('bc-bonus'), stars: $('bc-stars'),
-    jar: $('bc-jar'), jarFill: $('bc-jar-fill'), jarText: $('bc-jar-text'), explain: $('bc-explain'),
-    detail: $('tree-detail'), start: $<HTMLButtonElement>('bc-start'),
-    // 1.4.0
-    migrate: $<HTMLButtonElement>('bc-migrate'), banner: $('bc-banner'),
-    trials: $('bc-trials'), trialPicks: $('bc-trial-picks'), trialNote: $('bc-trial-note'),
+    sub: $('bc-sub'), sign: $('bc-sign'), foot: $('bc-foot'),
+    banner: $('bc-banner'), // 1.4.0
   };
   const ctx = el.canvas.getContext('2d')!;
   const seedLabel = (text: string) => `${iconHTML('heirloom')}${text}`;
+
+  // ── "New Digs" part 4: the panels, from the kit ──
+  // The trait you tapped: a sheet rising over the lower meadow (the scene shifts up so the trait
+  // stays in view above it), not a fixed card with its own scroll.
+  const sheet = createSheet(el.scene);
+  // The numbers, on a wooden garden sign: seeds held, the heirloom bonus, Machine Stars, the seed jar.
+  const heldTile = statTile('Seeds held');
+  const bonusTile = statTile('Heirloom bonus');
+  const starsTile = statTile('Machine Stars');
+  const tilesRow = el.sign.appendChild(h('div', 'bc-tiles'));
+  tilesRow.append(heldTile.el, bonusTile.el, starsTile.el);
+  const jarRow = el.sign.appendChild(h('div', 'bc-jar'));
+  jarRow.append(h('span', 'bc-jar-label', 'Seed jar'));
+  const jarGauge = gauge({ tone: 'heirloom', label: 'Seed jar' });
+  jarRow.append(jarGauge.el);
+  const jarText = jarRow.appendChild(h('span', 'bc-jar-text'));
+  // Below: a Colony Trial for this life (1.4.0), how it works, the Great Migration and Start.
+  const trialBox = el.foot.appendChild(h('div', 'bc-trials hidden'));
+  trialBox.append(h('span', 'bc-trials-label', 'Colony Trial for this life'));
+  const colonyDef = game.data.colony;
+  const trialPick = segmented<string>({
+    options: [{ value: '', label: 'None' }, ...(colonyDef ? colonyDef.trials.map((t) => ({ value: t.id, label: t.name, title: t.description })) : [])],
+    ariaLabel: 'Colony Trial', className: 'bc-trial-picks',
+    onPick: (id) => {
+      if (id === (game.state.trial || '')) return;
+      if (game.startTrial(id || null)) {
+        const t = game.getTrialDef(id || null);
+        say(t ? `${t.name}: ${t.description} Beat it for ${formatWhole(game.getTrialWhiskers(t.id))} Golden Whiskers!` : 'An ordinary life it is.', 4000);
+      }
+    },
+  });
+  trialBox.append(trialPick.el);
+  const trialNote = trialBox.appendChild(h('p', 'k-note bc-trial-note'));
+  const how = more('How it works');
+  const explain = how.body.appendChild(h('p'));
+  // The Great Migration (1.4.0): two taps, it can't happen by accident.
+  const migrate = confirmButton({
+    label: 'The Great Migration', armedLabel: 'Tap again: pack up for a new colony!', tone: 'soft', size: 'lg', className: 'bc-migrate',
+    onConfirm: () => { game.migrate(); },
+  });
+  migrate.el.addEventListener('click', () => {
+    if (migrate.armed) say(`A new colony: the tree, the seeds and the stars start again, for ${formatWhole(game.getPendingWhiskers())} Golden Whiskers. Tap again to go!`, 4000);
+  });
+  // Only this button starts the new life (Escape doesn't close the page).
+  const start = button({ tone: 'gold', size: 'xl', label: 'Start the new life', className: 'bc-start', onClick: () => game.leaveBigCage() });
+  el.foot.append(how.el, migrate.el, start.el);
+
+  // The open trait's sheet: what it does, the trade (seeds held vs the trait), what it grows, Plant.
+  let traitSheet: { id: string; effect: HTMLElement; trade: HTMLElement; grows: HTMLElement; plant: BuyButton } | null = null;
+  function openTrait(id: string): void {
+    const key = `bc:trait:${id}`;
+    if (sheet.key === key) { sheet.hide(); return; }
+    const def = game.getTreeNodeDef(id);
+    if (!def) return;
+    if (sheet.show(key, { icon: treeIcon(def) || 'heirloom', iconSize: 32, title: def.name })) {
+      const effect = h('p', 'shop-effect');
+      const trade = h('p', 'k-note');
+      const grows = h('p', 'k-note');
+      sheet.body.append(h('p', 'k-note', def.description), effect, trade, grows);
+      const plant = buyButton({ size: 'lg', onClick: () => game.buyTreeNode(id), ariaLabel: `Plant ${def.name}` });
+      sheet.foot.append(plant.el);
+      traitSheet = { id, effect, trade, grows, plant };
+    }
+    selected = id;
+  }
+  sheet.onHide(() => { selected = null; traitSheet = null; });
 
   let nodeEls = new Map<string, HTMLButtonElement>();
   let selected: string | null = null;
@@ -107,9 +171,10 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   let openAt = 0; // the page waits for the iris to close on the old life first
   let heldRoll: { from: Money; at: number } | null = null; // the seeds held count up after a retirement
   let speech: { text: string; until: number } | null = null;
+  let autoOpened = false; // a first family's first visit: the first trait to plant opens by itself
+  let shift = 0; // how far the scene is moved up, so the trait you tapped shows above its sheet
   let hamsterX = 0; // where the scene's hamster stands (screen pixels in the scene)
   let lastMigrated: GameEvents['migrated'] | null = null; // 1.4.0: the family has just moved to a new colony
-  let migrateArmed = 0; // migrating needs two taps
   let replayAt = 0; // after a migration from the Big Cage: when the planting animation plays again
 
   // The traits that show: planted ones, and the ones whose needs are all planted.
@@ -135,12 +200,12 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       btn.setAttribute('aria-label', def.name);
       btn.addEventListener('click', (e) => {
         (e.currentTarget as HTMLElement).blur();
-        selected = def.id;
+        openTrait(def.id);
       });
       el.nodes.appendChild(btn);
       nodeEls.set(def.id, btn);
     }
-    if (!selected || !nodeEls.has(selected)) selected = ft.nodes[0] ? ft.nodes[0].id : null;
+    if (selected && !nodeEls.has(selected)) sheet.hide();
     sprouted = new Set();
     snap = true;
     layoutKey = ''; // place them again
@@ -343,7 +408,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     snap = true;
   }
   el.scene.addEventListener('click', (e) => {
-    if (intro && !(e.target as Element).closest('.bt-node')) skip();
+    if (intro && !(e.target as Element).closest('.bt-node, .k-sheet')) skip();
   });
   el.skip.addEventListener('click', skip);
 
@@ -359,6 +424,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     place();
     const animate = playIntro && !lessMotion();
     playIntro = false;
+    autoOpened = false;
     // The animation grows the tree from the seed; otherwise it's simply there.
     born = new Map();
     sprouted = new Set();
@@ -379,6 +445,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   }
 
   function close(): void {
+    sheet.hide();
     el.dialog.close();
     document.body.appendChild(fx.canvas);
     intro = null;
@@ -405,7 +472,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
   game.on('migrated', (e) => {
     lastMigrated = e;
     lastRetired = null;
-    migrateArmed = 0;
+    migrate.disarm();
     const now = performance.now();
     setHTML(el.banner, `<b>The Great Migration!</b><span>Colony ${e.colony + 1} · ${iconHTML('whisker', 24)}+${formatWhole(e.whiskers)} Golden Whiskers</span>`);
     el.banner.classList.remove('hidden');
@@ -436,12 +503,12 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       fx.burstAt(node, { count: 22, palette: [colors['--leaf'], colors['--leaf-dark'], colors['--leaf-light']], speed: 200, gravity: 360, size: 4, twinkle: false });
     }
     // The Plant button you pressed: a ring of sparks, and the word floating up from it.
-    const button = el.detail.querySelector('.buy-btn');
+    const button = traitSheet ? traitSheet.plant.el : null;
     fx.ringAt(button, { count: 18, speed: 240, palette: [fx.colors.heirloom[0], '#ffffff'] });
     if (!lessMotion()) {
       const level = game.getTreeLevel(e.id);
       popText(button || node, game.isTreeMaxed(e.id) && level > 1 ? 'MAX!' : level > 1 ? `LV ${level}!` : 'Planted!', 'seed');
-      popText(el.held, `−${formatWhole(e.cost)}`, 'seed');
+      popText(heldTile.el, `−${formatWhole(e.cost)}`, 'seed');
     }
     // The tree grows (render() eases it to its new shape); a new level makes it rumble.
     if (layout && e.level === 1) {
@@ -453,43 +520,6 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     say(unlocked ? `${line ? `${line} ` : ''}The tree is growing!` : line || '');
   });
 
-  // Plant: the detail card is redrawn often, so it listens on the card itself.
-  el.detail.addEventListener('click', (e) => {
-    const button = (e.target as Element).closest<HTMLElement>('.buy-btn');
-    if (!button || !selected) return;
-    button.blur();
-    game.buyTreeNode(selected);
-  });
-  // Only the button starts the new life (Escape doesn't close the page).
-  el.start.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    game.leaveBigCage();
-  });
-  // The Great Migration (1.4.0): two taps, it can't happen by accident.
-  el.migrate.addEventListener('click', (e) => {
-    (e.currentTarget as HTMLElement).blur();
-    const now = performance.now();
-    if (now < migrateArmed) {
-      migrateArmed = 0;
-      game.migrate();
-    } else {
-      migrateArmed = now + 3000;
-      sound.play('tick');
-      say(`A new colony: the tree, the seeds and the stars start again, for ${formatWhole(game.getPendingWhiskers())} Golden Whiskers. Tap again to go!`, 4000);
-    }
-  });
-  // A Colony Trial for this life (or none): the picks are redrawn often, so it listens on the row.
-  el.trialPicks.addEventListener('click', (e) => {
-    const button = (e.target as Element).closest<HTMLElement>('[data-trial]');
-    if (!button) return;
-    button.blur();
-    const id = button.dataset.trial || null;
-    if (id === game.state.trial) return;
-    if (game.startTrial(id)) {
-      const t = game.getTrialDef(id);
-      say(t ? `${t.name}: ${t.description} Beat it for ${formatWhole(game.getTrialWhiskers(t.id))} Golden Whiskers!` : 'An ordinary life it is.', 4000);
-    }
-  });
   el.dialog.addEventListener('cancel', (e) => e.preventDefault());
   // A new size (the window turned, or resized): lay the tree out again.
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { layoutKey = ''; }).observe(el.scene);
@@ -510,41 +540,50 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     }
   }
 
-  function renderDetail(): void {
-    const def = selected && game.getTreeNodeDef(selected);
-    if (!def) {
-      setHTML(el.detail, '');
-      return;
-    }
+  // The open trait's sheet, every frame while it's open.
+  function drawTraitSheet(): void {
+    const def = traitSheet && sheet.key === `bc:trait:${traitSheet.id}` ? game.getTreeNodeDef(traitSheet.id) : null;
+    if (!traitSheet || !def) return;
     const level = game.getTreeLevel(def.id);
     const maxed = game.isTreeMaxed(def.id);
     const cost = game.getTreeCost(def.id);
     const unlocked = game.isTreeNodeUnlocked(def.id);
     const affordable = game.canBuyTreeNode(def.id);
     const branch = game.data.familyTree.branches.find((b) => b.id === def.branch);
-    const maxText = def.maxLevel ? `Lv ${level}/${def.maxLevel}` : `Lv ${level}`;
+    sheet.setTag(`${branch ? `${branch.name} · ` : ''}${maxed ? 'Max' : def.maxLevel ? `Lv ${level} of ${def.maxLevel}` : `Lv ${level}`}`);
+    setHTML(traitSheet.effect, describeEffect(game, def, game.previewTreeNode(def.id)));
     // What planting does to the heirloom bonus: the seeds it spends stop paying,
     // unless the jar stays full (M9); Family Fortune also makes the jar bigger.
     const held = game.state.seeds;
     const nowBonus = game.getHeirloomBonus();
     const afterBonus = game.getHeirloomBonusFor(held.sub(cost).max(0), def.effect.type === 'seedJar' ? { [def.id]: level + 1 } : undefined);
-    const change = afterBonus.eq(nowBonus) ? `heirloom bonus stays ${bonusText(nowBonus)} (the seed jar is still full)` : `heirloom bonus ${bonusText(nowBonus)} → ${bonusText(afterBonus)}`;
-    const trade = unlocked && !maxed && held.gte(cost) ? `<div class="note">Planting spends ${formatWhole(cost)} of your ${formatWhole(held)} seeds: ${change}.</div>` : '';
+    const change = afterBonus.eq(nowBonus) ? `the heirloom bonus stays ${bonusText(nowBonus)} (the seed jar is still full)` : `the heirloom bonus goes ${bonusText(nowBonus)} → ${bonusText(afterBonus)}`;
+    setText(traitSheet.trade, unlocked && !maxed && held.gte(cost) ? `Planting spends ${formatWhole(cost)} of your ${formatWhole(held)} seeds: ${change}.` : '');
+    traitSheet.trade.classList.toggle('hidden', traitSheet.trade.textContent === '');
     // What planting it makes grow: the traits that need it.
     const opens = level === 0 ? game.data.familyTree.nodes.filter((n) => n.requires.includes(def.id)) : [];
-    const grows = opens.length ? `<div class="note">Planting it grows the tree: ${opens.map((n) => n.name).join(', ')} ${opens.length === 1 ? 'appears' : 'appear'}.</div>` : '';
-    const fill = maxed || affordable || !unlocked ? 0 : Math.min(100, divide(held, cost).toNumber() * 100);
-    const buttonClass = maxed ? 'maxed' : affordable ? '' : 'poor';
-    const buttonText = maxed ? 'Owned' : seedLabel(`Plant · ${formatWhole(cost)}`);
-    setHTML(el.detail, `
-      <div class="tile-top">
-        <div class="tile-icon">${iconHTML(treeIcon(def) || 'heirloom', 32)}</div>
-        <div><div class="tile-name">${def.name}</div><div class="tile-tag">${branch ? branch.name : ''} · ${maxText}</div></div>
-      </div>
-      <div class="tile-desc">${def.description}</div>
-      <div class="tile-effect">${describeEffect(game, def, game.previewTreeNode(def.id))}</div>
-      ${trade}${grows}
-      <button class="buy-btn ${buttonClass}"><span class="buy-fill" style="width:${fill.toFixed(1)}%"></span><span class="buy-label">${buttonText}</span></button>`);
+    setText(traitSheet.grows, opens.length ? `Planting it grows the tree: ${opens.map((n) => n.name).join(', ')} ${opens.length === 1 ? 'appears' : 'appear'}.` : '');
+    traitSheet.grows.classList.toggle('hidden', !opens.length);
+    const state: BuyState = maxed ? 'maxed' : !unlocked ? 'locked' : affordable ? 'ready' : 'saving';
+    traitSheet.plant.update({
+      state, cost, currency: 'seed', verb: 'Plant', progress: state === 'saving' ? divide(held, cost).toNumber() : 0,
+      label: maxed ? (level > 1 ? 'Max' : 'Planted') : undefined,
+    });
+  }
+
+  // The scene moves up (never past the trait's own top) so the trait you tapped shows above its sheet.
+  function shiftScene(): void {
+    let want = 0;
+    const btn = selected && sheet.key ? nodeEls.get(selected) : null;
+    if (btn) {
+      const top = parseFloat(btn.style.top || '0');
+      const room = el.scene.clientHeight - sheet.el.offsetHeight - 12;
+      want = Math.max(0, Math.min(top + btn.offsetHeight - room, top - 8));
+    }
+    want = Math.round(want);
+    if (want === shift) return;
+    shift = want;
+    el.world.style.transform = shift ? `translateY(${-shift}px)` : '';
   }
 
   function renderNumbers(now: number): void {
@@ -561,30 +600,27 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
       held = heldRoll.from.add(s.seeds.sub(heldRoll.from).mul(1 - (1 - t) * (1 - t))).floor();
       if (t >= 1) heldRoll = null;
     }
-    setHTML(el.held, seedLabel(formatWhole(held)));
+    heldTile.updateHTML(amountHTML('seed', held));
     const per = game.getHeldSeedBonusPerSeed();
     const jar = game.getSeedJar();
     const jarSeeds = game.getSeedJarSeeds();
-    setText(el.bonus, `${bonusText(game.getHeirloomBonus())} payouts`);
-    // The seed jar (M9): how full it is, as a bar and in seeds.
+    bonusTile.update(bonusText(game.getHeirloomBonus()));
+    // The seed jar (M9): how full it is, as a gauge and in seeds.
     const fillShare = jarSeeds > 0 ? Math.min(1, s.seeds.toNumber() / jarSeeds) : 0;
-    el.jarFill.style.width = `${(fillShare * 100).toFixed(1)}%`;
-    el.jar.classList.toggle('full', fillShare >= 1);
-    setText(el.jarText, fillShare >= 1
-      ? `Full: +${Math.round(jar * 100)}% (${formatWhole(jarSeeds)} seeds). Plant the seeds past that.`
-      : `${formatWhole(s.seeds)} of ${formatWhole(jarSeeds)} seeds · up to +${Math.round(jar * 100)}%`);
+    jarGauge.update(fillShare);
+    jarRow.classList.toggle('full', fillShare >= 1);
+    setText(jarText, fillShare >= 1
+      ? `Full: +${Math.round(jar * 100)}%. Plant the seeds past ${formatWhole(jarSeeds)}.`
+      : `${formatWhole(s.seeds)} of ${formatWhole(jarSeeds)} · up to +${Math.round(jar * 100)}%`);
     const stars = Object.values(s.stars).reduce((a, b) => a + b, 0);
-    setHTML(el.stars, stars > 0 ? `${iconHTML('star', 16)}${stars}` : 'none yet');
-    setText(el.explain, `Every seed you hold gives +${Math.round(per * 1000) / 10}% payouts, until the seed jar is full (Family Fortune makes it bigger). Planting a seed gives that up, but the trait is the family's forever, and the tree grows. `
-      + 'Coins, upgrades and machines start over; the seeds, the tree and Machine Stars stay. Time stands still until you start the new life.');
-    setText(el.start, `Start ${name}'s life`);
+    starsTile.updateHTML(stars > 0 ? `${iconHTML('star', 16)}${stars}` : 'None yet');
+    setText(explain, `Every seed you hold gives +${Math.round(per * 1000) / 10}% payouts, until the seed jar is full (Family Fortune makes it bigger). Planting a seed gives that up, but the trait is the family's forever, and the tree grows. `
+      + 'Tap a trait on the tree to read about it and plant it. Coins, upgrades and machines start over; the seeds, the tree and Machine Stars stay. Time stands still until you start the new life.');
+    start.update({ label: `Start ${name}'s life` });
     // The Great Migration (1.4.0), once the whole tree is planted
     const canMigrate = game.canMigrate();
-    el.migrate.classList.toggle('hidden', !canMigrate);
-    if (canMigrate) {
-      setHTML(el.migrate, now < migrateArmed ? 'Tap again: pack up for a new colony!'
-        : `The Great Migration · <span class="whisker-amount">${iconHTML('whisker', 16)}+${formatWhole(game.getPendingWhiskers())}</span> Golden Whiskers`);
-    }
+    migrate.el.classList.toggle('hidden', !canMigrate);
+    if (canMigrate) migrate.update({ label: `The Great Migration · +${formatWhole(game.getPendingWhiskers())} Golden Whiskers` });
     renderTrials();
   }
 
@@ -594,19 +630,12 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     const s = game.state;
     const c = game.data.colony;
     const open = !!c && game.trialsOpen() && s.run.playTime === 0;
-    el.trials.classList.toggle('hidden', !open);
+    trialBox.classList.toggle('hidden', !open);
     if (!open || !c) return;
-    const key = `${s.trial}|${c.trials.map((t) => (s.trialsDone[t.id] ? 1 : 0)).join('')}|${formatWhole(s.seedsEarned)}`;
-    if (el.trialPicks.dataset.key !== key) {
-      el.trialPicks.dataset.key = key;
-      const pick = (id: string, label: string, done: boolean) => `<button class="seg-btn${(s.trial || '') === id ? ' active' : ''}" data-trial="${id}"${done ? ' disabled' : ''}>${label}${done ? ' ✓' : ''}</button>`;
-      setHTML(el.trialPicks, pick('', 'None', false) + c.trials.map((t) => pick(t.id, t.name, !!s.trialsDone[t.id])).join(''));
-    }
+    trialPick.update(s.trial || '', (id) => id !== '' && !!s.trialsDone[id]);
     const t = game.getTrialDef(s.trial);
-    const seeds = (n: Money) => `<span class="seed-amount">${iconHTML('heirloom', 16)}${formatWhole(n)}</span>`;
-    const whiskers = (n: Money) => `<span class="whisker-amount">${iconHTML('whisker', 16)}${formatWhole(n)}</span>`;
-    setHTML(el.trialNote, t
-      ? `<b>${t.name}:</b> ${t.description} Reach ${seeds(game.getTrialGoal())} Heirloom Seeds this life for ${whiskers(game.getTrialWhiskers(t.id))} Golden Whiskers; then the twist is over.`
+    setHTML(trialNote, t
+      ? `<b>${t.name}:</b> ${t.description} Reach ${amountHTML('seed', game.getTrialGoal(), 12)} Heirloom Seeds this life for ${amountHTML('whisker', game.getTrialWhiskers(t.id), 12)} Golden Whiskers; then the twist is over.`
       : `A life with a twist, for Golden Whiskers (each once a colony). ${c.trials.filter((x) => s.trialsDone[x.id]).length} of ${c.trials.length} beaten this colony.`);
   }
 
@@ -661,7 +690,7 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     if (!layout) return;
     const t = intro ? now - intro.start : null;
     const shown = shownTraits();
-    if (selected && !shown.has(selected)) selected = [...shown][0] || null; // the card never shows a hidden trait
+    if (selected && !shown.has(selected)) sheet.hide(); // the sheet never shows a hidden trait
     const shape = treeShape(layout, shown);
     const clumps = grow(shape, shown, now, dt, t === null || t >= T.sprout);
     const done = settled(shape, clumps, now);
@@ -692,8 +721,18 @@ export function createBigCage(game: Game, { fx, sound, lessMotion, bonusText, tr
     el.hamster.classList.toggle('idle', !intro);
     renderCritters(now, dt);
     el.skip.classList.toggle('hidden', !intro || intro.uiAt !== null);
+    // A first family's first visit: once the tree is up, the first trait to plant opens by itself.
+    if (!intro && !autoOpened) {
+      autoOpened = true;
+      const ft = game.data.familyTree;
+      if (!sheet.key && ft && !ft.nodes.some((n) => game.getTreeLevel(n.id) > 0)) {
+        const first = ft.nodes.find((n) => shown.has(n.id) && game.canBuyTreeNode(n.id));
+        if (first) openTrait(first.id);
+      }
+    }
     renderNodes(shown);
-    renderDetail();
+    drawTraitSheet();
+    shiftScene();
     renderNumbers(now);
     // The scene's speech bubble, over the hamster.
     const line = speech && now < speech.until ? speech.text : '';

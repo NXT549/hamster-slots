@@ -13,9 +13,9 @@
    Every framed element sets its own --frame and --fw here, because custom
    properties are inherited: without this, a paper tile inside the cardboard tray
    would pick up the tray's cardboard frame. Later rules pick other frames. */
-.tray, .tile, .dialog, .capsule-card, .retire-card, .tree-detail, .bt-icon, .skin-tile,
+.tray, .tile, .dialog, .capsule-card, .bt-icon, .skin-tile,
 .diary-row, .reveal-card, .bubble, .bc-bubble, .machine-tag, .line-card, .dialog-card, .gamble,
-.btn, .buy-btn, .seg-btn, .tab, .subtab, .felt, .boost-badge, .trial-badge, .bc-banner, .migrate-card,
+.btn, .buy-btn, .seg-btn, .tab, .subtab, .felt, .boost-badge, .trial-badge, .bc-banner,
 .purse, .fr {
   --frame: var(--frame-paper);
   --fw: 8px;
