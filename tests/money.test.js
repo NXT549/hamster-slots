@@ -9,6 +9,7 @@ import { describe, test, expect, afterEach } from 'vitest';
 import { money, moneyFrom, roundMoney, divide, power, isMoney, isFiniteMoney } from '../src/logic/money.ts';
 import { createRng } from '../src/logic/rng.ts';
 import { formatCoins, formatWhole, setNumberStyle } from '../src/view/dom.ts';
+import { formatAmount } from '../src/view/kit.ts';
 
 // Everyday amounts, the way the game makes them: cents from 0.01 to billions,
 // plus multipliers and rates. A seeded RNG, so a failure can be replayed.
@@ -128,5 +129,13 @@ describe('how money is written on screen', () => {
     [0, '0'], [3, '3'], [1234, '1234'], [999999999999999, '999999999999999'], [1e15, '1e15'], ['2.773500981126202e198', '2.77e198'],
   ])('seeds and tokens: %s → %s', (x, text) => {
     expect(formatWhole(money(x))).toBe(text);
+  });
+
+  // 1.8.1: the purse showed Takings, which build up in fractions, as "15.21415999999927".
+  test('a fraction is never shown: whole numbers are floored', () => {
+    expect(formatWhole(money(15.21415999999927))).toBe('15');
+    expect(formatWhole(0.99)).toBe('0');
+    expect(formatAmount('takings', money(15.21415999999927))).toBe('15');
+    expect(formatAmount('takings', money(123456.7))).toBe('123.45K');
   });
 });
