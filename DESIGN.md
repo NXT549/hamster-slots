@@ -338,6 +338,8 @@ Toggle with the **`` ` ``** (backtick) key, or Menu → Toggle debug panel. It's
 11. **The casino keeps a small house edge and can't farm anything** (M11, §27): every casino bet gives back between 94% and 99.5% on average (each game's return is exact and matches play), and chips never turn into coins or count as coins earned. **Every rule above holds with every casino boost on:** the Lucky Charm is Luck (so it raises the hit rate and the EV), Turbo Wheel keeps the rest floor, deliveries stay below auto-spin, and free spins still end with the charm on top of the whole tree, max Luck, every Bouncy Ball and the best wardrobe.
 12. **The new upgrades keep every rule** (1.3.1, §28): Lucky Pennies' double is exact (the lines × (1 + chance)); free spins still end with Ball Bearings; auto-spin never beats spin + rest with Running Shoes; offline earnings stay below playing with Night Shift maxed; the bet still stops at ×10 (D80).
 
+13. **The Family Casino can't farm anything and never touches your odds** (M12, §32): every cabinet's guest return is below 100% and at least `minGuestRtp` (88%) with every Floor Manager level; the takings are an exact average (no RNG); Takings never become coins or count as coins earned; every machine's economy is identical with the whole Family Casino.
+
 ## 10. Balance targets (what "good" looks like)
 
 ### Milestone 7: the slog (targets and what the simulator measured)
@@ -379,7 +381,7 @@ Web-first (PORTING_NOTES D106): one web codebase ships to GitHub Pages, then itc
 | 9 | More machines | Hamster Maze (243 ways), Acorn Vault (hold & spin), The Big Cheese (multiplier wheel), the seed jar | done, 1.1.0 (§24) |
 | 10 | Wardrobe buffs | Every skin buffs while worn, 6 hats, a twist on every Epic | done, 1.1.0 (§25) |
 | 11 | Hamster Casino | Roulette, blackjack, Derby, Seed Drop; Casino Chips; the Prize Counter | done, 1.3.0 (§27) |
-| 12 | **Your own casino (late game)** | The family opens its own casino: machines you own on the floor, hamster guests play them, you earn the house edge while idle; decor, staff, rooms, a late-game currency. Unlocked far into the game. **Planned in detail with the user when we get there; don't build before they ask.** | planned |
+| 12 | **Your own casino (late game)** | The Family Casino: cabinets of your machines on the floor, hamster guests play them below 100%, the house edge comes in as Takings (a till you empty); decor, staff, a high-limit room; opens after the first Great Migration, kept for good | built, 1.8.0-rc.1 "Grand Opening" (§32) |
 | 13 | Delivery depth | Only if playtests say deliveries are fun: routes (short/safe vs long/lucrative), helper hamsters | idea |
 | 14 | Release prep | The 1.0 polish: celebrations, effects, icons, link card, version line | done, 1.0.0 (§23) |
 | 15 | Visual redesign | A layout that fits the window, small upgrade tiles, the Big Cage as a meadow with a growing tree, a rebirth animation | done, 1.2.0 (§26) |
@@ -2067,3 +2069,94 @@ On a branch, as **1.6.0-rc.1**. Every part leaves the game playable, passes the 
 - Is the guide helpful or in the way? Are the UI sounds nice, or too many?
 - Does anything you used to find easily feel lost?
 - Is "New Digs" the right name?
+
+## 32. The Family Casino: your own casino (milestone 12)
+
+> **Status: built on the branch `claude/project-thread-oip2a6` as 1.8.0-rc.1 "Grand Opening"** (2026-10-03; PORTING_NOTES D164), not merged. The project was set up to "begin roadmap 12", and the user left every design call to Claude: *"you decide everything based on the current and future state of the game"*. The picks below are Claude's; the playtest questions at the end are where they get checked.
+
+**The idea:** the family opens its own casino. Cabinets of its machines stand on the floor, hamster guests play them, and the house's edge comes in as **Takings** while you play and while you're away. It's the late game's long goal: it opens with the Great Migration and is **kept for good**, so it keeps growing however short a colony's lives are.
+
+### The picks, and why
+
+| Question | Pick | Why |
+|---|---|---|
+| When it opens | **The first life after the first Great Migration** (`unlockColony: 1`) | "Far into the game" (the roadmap); a migrated family has everything else, and the migration is the moment the game asks for something new. |
+| What it pays | **Its own currency, Takings**, which buy the casino's own things, plus **Chip Crates and Token Boxes** | Takings never become coins and never count as coins earned, so the casino **can't farm Heirloom Seeds or shorten a life**: the short late lives are already the open problem (§10, §29). Chips and tokens tie it back to the game without touching the seed curve; their prices grow (rule 3), so it can't flood the Prize Counter. |
+| How deep | **A small idle layer**: 8 cabinets, 5 floor upgrades (decor, a room, staff), 2 back-office buys | Enough to be a goal for many hours, small enough to fit the tray. A full management game (events, many rooms) would be a second game. |
+| Idle or active | **Mostly idle, with one light chore: the till** | Guests fill a till that holds a few hours of takings; a tap empties it. That's a reason to drop by without punishing anyone who doesn't. |
+| Where it lives | **A sub-tab of the Casino tab, "Your casino"** | Not a full page: the Big Cage is the only page because time stands still there, and the Casino tab's redesign (§31 part 6) will restyle the sub-tab with the rest. |
+| Reset layers | **Kept through retirements and migrations**; only Reset wipes it | It runs on real time, not on lives: that is what makes it a long goal next to colonies that reset. |
+| Store builds | `ownCasino.enabled: false` leaves it out (and `casino.enabled: false` does too) | Running a casino pushes the gambling look further (§11). |
+
+### "House edge" and rule 4
+
+Every machine pays **you** more than 100% (rule 4), so a guest playing your machines would beat the house. On the floor **each cabinet has its own guest return** (Old Clunky 92% … the Big Cheese 95%), shown on its card, and **your own odds never change** (tested: every machine's economy is identical with the whole Family Casino). The Floor Manager trims the guests' return by 1% a level, never below **88%** (`minGuestRtp`).
+
+### How the takings work (exact, never random)
+
+A guest's spins are counted at their average, so the takings while you play and while you're away come from one formula and the RNG is never touched:
+
+> a cabinet's takings per second = guest bet × (1 − guest return) ÷ (the machine's spin time + 2 s rest) × guests
+
+- **Guests** = 1 + Neon Sign + Plush Carpet; **guest bet** = the cabinet's bet × (1 + High-Limit Room).
+- **The till** fills while you play (not in the Big Cage: time stands still there) and while the game is closed (60 s or more, the coins' rule), **up to its size: 2 hours of takings** at today's rate, +2 h a Cashier level (up to 12 h). The coins' 2-hour offline cap doesn't apply; the till is the limit.
+- **Empty the till** to bank its takings; only banked Takings can be spent.
+
+### The floor (data.json `ownCasino.cabinets`)
+
+| Cabinet | Takings | Guest bet | Guests win back | Takings/s fresh |
+|---|---:|---:|---:|---:|
+| Old Clunky | free (the grand opening) | 5 | 92% | 0.08 |
+| Snack Stacker | 100 | 20 | 92.5% | 0.29 |
+| Burrow Bonanza | 1,500 | 100 | 93% | 1.25 |
+| Pouch Palace | 15,000 | 500 | 93.5% | 5.8 |
+| Hamster Maze | 200,000 | 2,500 | 94% | 27 |
+| Acorn Vault | 2.5M | 12,500 | 94% | 134 |
+| Moving Day | 30M | 60,000 | 94.5% | 611 |
+| The Big Cheese | 400M | 300,000 | 95% | 2,679 |
+
+### Floor upgrades (rule 3's formula, in Takings)
+
+| Upgrade | Kind | Cost | Max | Each level |
+|---|---|---|---:|---|
+| 💡 Neon Sign | decor | 25 × 1.6ⁿ | 10 | +20% guests |
+| 🟥 Plush Carpet | decor | 2,000 × 1.7ⁿ | 10 | +15% guests |
+| 🎩 High-Limit Room | room | 500 × 2ⁿ | 8 | guests bet +25% |
+| 🧐 Floor Manager | staff | 50,000 × 8ⁿ | 4 | guests win back 1% less |
+| 🧾 Cashier | staff | 300 × 3ⁿ | 5 | the till holds 2 more hours |
+
+### The back office (rule 3, no max)
+
+| Buy | Cost | What |
+|---|---|---|
+| Chip Crate | 200 × 1.3ⁿ | 500 Casino Chips (they count as chips earned, never coins) |
+| Token Box | 400 × 1.25ⁿ | a Hamster Token |
+
+### Pacing (a greedy buyer who empties the till the moment it pays)
+
+From the grand opening, counting only casino time (play and away; a real player who empties the till less often is slower): the Snack Stacker cabinet at ~20 min, the Burrow Bonanza at ~1.1 h, the Pouch Palace ~2 h, the Hamster Maze ~3 h, the Acorn Vault ~4.6 h, Moving Day ~7.5 h, **the Big Cheese (a full floor) at ~14 h**, every upgrade maxed by then. A migrated family's second colony lasts 3–5 h (§29), so the floor fills over the second and third colonies, and the back office is the sink after that.
+
+**The coins' pacing doesn't change:** the Family Casino never touches coins, the seed curve or the machines (the golden run's colony sessions only gained the new sticker's tokens). Its one route into the coin game is chips for the Prize Counter's boosts; `node tools/sim.mjs --casino` already measures the most those can do (§27), and Chip Crates' growing price keeps them from making Golden Hour permanent.
+
+### Save v15
+
+`ownCasino`: opened, the cabinets on the floor, upgrade levels, back-office buys, the till, the Takings. Three stats: Takings banked, tills emptied, cabinets bought. An older save hasn't opened it; a migrated family opens it the next time it plays. Data schema 15.
+
+### Three new diary stickers (60 in all)
+
+Grand Opening (open it, 3 tokens) · Full Floor (all 8 cabinets, 10) · Casino Mogul (bank a million Takings, 8).
+
+### The rules still hold (tested, `tests/logic/owncasino.test.js`)
+
+- Every cabinet's guest return is below 100% and at least 88%, with every Floor Manager level, so takings are never negative; the takings are exactly the formula above (with every upgrade).
+- Takings never change coins, the coins earned (this life, this colony, lifetime) or the pending seeds; your machines' economy, payout multiplier and Luck are identical with the whole Family Casino.
+- The till: fills by the rate, stops at its size, banks exactly what it held; away it fills by the same formula past the coins' 2-hour cap, not for a short absence, not in the Big Cage. Kept through retiring and migrating; the save keeps it and cleans what no longer exists.
+
+### Questions the playtest must answer
+
+- Is the Family Casino worth opening the tab for? Is the till a nice reason to drop by, or a chore?
+- Are the guests' returns (88–95%) and the edge clear on screen?
+- Does the floor fill too fast or too slow? Are Chip Crates and Token Boxes worth their Takings?
+- Should it give something more to the coin game (it gives nothing on purpose, to keep the late lives from getting shorter)?
+- Is a sub-tab the right place, or should it be its own page?
+- Is "Grand Opening" the right name?

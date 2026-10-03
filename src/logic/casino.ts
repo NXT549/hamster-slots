@@ -443,7 +443,7 @@ export function createCasino(host: CasinoHost) {
     playRoulette, dealBlackjack, hitBlackjack, standBlackjack, doubleBlackjack, canDouble, getBlackjackHint, handInPlay,
     runDerby, dropSeed,
     getPrize, canBuyPrize, getPrizeBlock, buyPrize, getBoosts, boostEffects,
-    getCasinoOdds, addChips,
+    getCasinoOdds, addChips, earnChips,
     onPaidSpin, beforeRetire, onRetire, onMigrate, tick,
   };
 }

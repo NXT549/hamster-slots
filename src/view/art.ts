@@ -2254,6 +2254,23 @@ const whiskerIcon = [
   '................',
 ];
 
+// Takings (the Family Casino's currency, M12, 12×12): a red velvet sack tied with
+// gold cord, a gold coin showing at the front.
+const takings = [
+  '....X..X....',
+  '...XeXXeX...',
+  '....XrrX....',
+  '....VyyV....',
+  '...XerrRX...',
+  '..XerrrrRX..',
+  '.XerrhyrrRX.',
+  '.XrrhyyVrRX.',
+  '.XrryyYVrRX.',
+  '.XRrrVVrRRX.',
+  '..XRRRRRRX..',
+  '...XXXXXX...',
+];
+
 // The Wise Elders (automation): an old hamster's spectacles.
 const glasses = [
   '................',
@@ -2476,6 +2493,7 @@ export const SPRITES: Record<string, string[]> = {
   box, machineMoving, boxIcon, whisker, whiskerIcon, glasses, // 1.4.0
   butterfly, butterfly2, bird, bird2, // 1.5.0
   lock, close, capsule16, die16, menu16, soundOn, soundOff, // 1.6.0
+  takings, // M12
   frameCard, framePaper, frameTab, frameButton, frameRail, bubbleTail,
 };
 

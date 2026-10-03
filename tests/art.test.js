@@ -12,6 +12,7 @@ import { SKIN_ART, SKIN_TOKENS } from '../src/view/skins.ts';
 import { FRAME_SPRITES, THEME_TOKENS } from '../src/view/theme.ts';
 import { CAGE_TOKENS, cageLayout } from '../src/view/cage.ts';
 import { CABINET_TOKENS, painted } from '../src/view/cabinet.ts';
+import { FLOOR_TOKENS } from '../src/view/owncasino.ts';
 
 const data = JSON.parse(readFileSync(new URL('../data.json', import.meta.url), 'utf8'));
 
@@ -99,7 +100,7 @@ for (const name of THEME_TOKENS) {
 
 // 1.5.0: the painted cage (cage.ts) and the machine cabinets (cabinet.ts) read their
 // colours from theme tokens. A token missing from style.css :root would paint magenta.
-for (const name of new Set([...CAGE_TOKENS, ...CABINET_TOKENS])) {
+for (const name of new Set([...CAGE_TOKENS, ...CABINET_TOKENS, ...FLOOR_TOKENS])) { // (FLOOR_TOKENS: the Family Casino's carpet, M12)
   check(`painted-scene token ${name} is a theme token in style.css :root`, rootBlock.includes(`${name}:`));
 }
 // The cage's layout at the sizes the stage really gets (a phone to a big screen): the

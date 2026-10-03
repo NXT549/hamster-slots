@@ -19,7 +19,7 @@ import type { Game } from '../logic/game.ts';
 import type { Money } from '../logic/money.ts';
 import type { Sound } from './sound.ts';
 
-const ORDER: Currency[] = ['coin', 'seed', 'token', 'chip', 'whisker'];
+const ORDER: Currency[] = ['coin', 'seed', 'token', 'chip', 'whisker', 'takings'];
 
 interface Purse {
   currency: Currency;
@@ -87,7 +87,7 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
 
   const amountOf = (c: Currency): Money => {
     const s = game.state;
-    return c === 'coin' ? s.coins : c === 'seed' ? s.seeds : c === 'token' ? s.tokens : c === 'chip' ? s.casino.chips : s.whiskers;
+    return c === 'coin' ? s.coins : c === 'seed' ? s.seeds : c === 'token' ? s.tokens : c === 'chip' ? s.casino.chips : c === 'takings' ? s.ownCasino.takings : s.whiskers;
   };
   const rateText = () => {
     const econ = game.getEconomy();
@@ -114,6 +114,10 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
     whisker: () => ({
       text: 'Brought along by the Great Migration. Spend them on colony perks, which the family keeps for good.',
       go: ['Colony perks', 'family', 'colony'],
+    }),
+    takings: () => ({
+      text: 'The house\'s share of what hamster guests bet in the Family Casino. They collect in its till: empty it, then spend them on cabinets, decor and staff, or on chips and tokens. Takings never turn into coins.',
+      go: ['Your casino', 'casino', 'own'],
     }),
   };
 
@@ -163,6 +167,7 @@ export function createHud(game: Game, { sheet, sound, openTab, onSettingsChange,
       case 'token': return shown.capsules(); // (told about once the Capsules tab shows)
       case 'chip': return shown.casino();
       case 'whisker': return s.colony > 0 || s.whiskers.gt(0);
+      case 'takings': return game.isOwnCasinoOpen();
     }
   }
 

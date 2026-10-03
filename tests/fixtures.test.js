@@ -53,8 +53,8 @@ describe('save v7 → v8: money is saved as text (big numbers)', () => {
       expect(fields.length).toBeGreaterThan(10);
       for (const [obj, key] of fields) expect(typeof obj[key]).toBe('string');
       // Turn the text back into numbers (and the version back to 7), and leave out
-      // what v9 … v14 added: then it's the old save again.
-      const later = withoutV11(withoutV12(withoutV13(withoutV14(now))));
+      // what v9 … v15 added: then it's the old save again.
+      const later = withoutV11(withoutV12(withoutV13(withoutV14(withoutV15(now)))));
       for (const [obj, key] of moneyFields(later)) obj[key] = Number(obj[key]);
       later.saveVersion = 7;
       expect(withoutV9(withoutV10(later))).toEqual(canonical(old));
@@ -80,7 +80,7 @@ describe('save v8 → v9: M8 adds Machine Stars and the Big Cage', () => {
       expect(now.bigCage).toBe(false);
       expect([now.stats.rebuilds, now.stats.bestStars, now.stats.mostSeedsHeld]).toEqual([0, 0, 0]);
       now.saveVersion = 8;
-      expect(withoutV9(withoutV10(withoutV11(withoutV12(withoutV13(withoutV14(now))))))).toEqual(canonical(old));
+      expect(withoutV9(withoutV10(withoutV11(withoutV12(withoutV13(withoutV14(withoutV15(now)))))))).toEqual(canonical(old));
     });
   }
 });
@@ -101,7 +101,7 @@ describe('save v9 → v10: M9 adds hold & spin and four stats', () => {
       expect(now.machines.every((m) => m.hold === null)).toBe(true);
       expect([now.stats.bestWays, now.stats.holdBonuses, now.stats.holdGrands, now.stats.bestWheel]).toEqual([0, 0, 0, 0]);
       now.saveVersion = 9;
-      expect(withoutV10(withoutV11(withoutV12(withoutV13(withoutV14(now)))))).toEqual(canonical(old));
+      expect(withoutV10(withoutV11(withoutV12(withoutV13(withoutV14(withoutV15(now))))))).toEqual(canonical(old));
     });
   }
 });
@@ -123,7 +123,7 @@ describe('save v10 → v11: M11 adds the casino and its stats', () => {
       expect(now.casino).toEqual({ chips: '0', bestIncome: '0', spinsToChip: 0, boosts: {}, hand: null });
       expect(CASINO_STATS.map((k) => Number(now.stats[k]))).toEqual(CASINO_STATS.map(() => 0));
       now.saveVersion = 10;
-      expect(withoutV11(withoutV12(withoutV13(withoutV14(now))))).toEqual(canonical(old));
+      expect(withoutV11(withoutV12(withoutV13(withoutV14(withoutV15(now)))))).toEqual(canonical(old));
     });
   }
 });
@@ -158,7 +158,7 @@ describe('save v11 → v12: 1.3.1 adds the Hamster Helper and two stats', () => 
       expect(now.helper).toBe(true);
       expect(V12_STATS.map((k) => now.stats[k])).toEqual([0, 0]);
       now.saveVersion = 11;
-      expect(withoutV12(withoutV13(withoutV14(now)))).toEqual(canonical(old));
+      expect(withoutV12(withoutV13(withoutV14(withoutV15(now))))).toEqual(canonical(old));
     });
   }
 });
@@ -177,7 +177,7 @@ describe('save v12 → v13: the auto-spin pause toggle', () => {
       const now = canonical(loadAndSave(old));
       expect(now.autoPaused).toBe(false);
       now.saveVersion = 12;
-      expect(withoutV13(withoutV14(now))).toEqual(canonical(old));
+      expect(withoutV13(withoutV14(withoutV15(now)))).toEqual(canonical(old));
     });
   }
 });
@@ -208,7 +208,29 @@ describe('save v13 → v14: 1.4.0 adds the colony (the seeds pending stay the sa
       expect(game.getPendingSeeds().toNumber() + 0).toBe(before); // (+ 0: the big numbers can say -0 for none)
       expect(Number(now.colonyCoins)).toBeGreaterThanOrEqual(Number(old.stats.coinsEarned));
       now.saveVersion = 13;
-      expect(withoutV14(now)).toEqual(canonical(old));
+      expect(withoutV14(withoutV15(now))).toEqual(canonical(old));
+    });
+  }
+});
+
+// What save v15 (M12, the Family Casino) added, taken out again: the casino and three stats.
+const V15_STATS = ['takingsEarned', 'tillsEmptied', 'cabinetsBought'];
+function withoutV15(save) {
+  const out = structuredClone(save);
+  delete out.ownCasino;
+  for (const key of V15_STATS) delete out.stats[key];
+  return out;
+}
+
+describe('save v14 → v15: M12 adds the Family Casino (not open yet)', () => {
+  for (const [, , name] of FIXTURES) {
+    test(`save-v14-${name}.json: no Family Casino yet, the new stats at 0; nothing else changes`, () => {
+      const old = read(`save-v14-${name}.json`);
+      const now = canonical(loadAndSave(old));
+      expect(now.ownCasino).toEqual({ opened: false, cabinets: {}, upgrades: {}, rewards: {}, till: '0', takings: '0' });
+      expect(V15_STATS.map((k) => Number(now.stats[k]))).toEqual([0, 0, 0]);
+      now.saveVersion = 14;
+      expect(withoutV15(now)).toEqual(canonical(old));
     });
   }
 });

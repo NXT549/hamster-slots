@@ -1,7 +1,7 @@
 {
   "name": "hamster-slots",
-  "version": "1.7.1",
-  "releaseName": "Settling In",
+  "version": "1.8.0-rc.1",
+  "releaseName": "Grand Opening",
   "private": true,
   "description": "A cute pixel-art idle slot machine powered by a hamster on a wheel.",
   "type": "module",

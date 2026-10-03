@@ -1,6 +1,6 @@
 {
  "recordedWith": {
-  "schemaVersion": 14
+  "schemaVersion": 15
  },
  "sessions": {
   "firstLife": [
@@ -81,12 +81,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "330",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -108,6 +116,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "27",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -145,6 +154,8 @@
       "spins": 42,
       "suitWins": 0,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "5",
       "trialsCompleted": 0,
       "upgradesBought": 0,
@@ -238,12 +249,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "707",
       "playTime": 599.999999999783
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -265,6 +284,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "27",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -302,6 +322,8 @@
       "spins": 85,
       "suitWins": 0,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "6",
       "trialsCompleted": 0,
       "upgradesBought": 0,
@@ -396,12 +418,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1084",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -423,6 +453,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "27",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -460,6 +491,8 @@
       "spins": 136,
       "suitWins": 0,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "9",
       "trialsCompleted": 0,
       "upgradesBought": 0,
@@ -556,12 +589,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1603",
       "playTime": 1199.9999999992374
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -583,6 +624,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "33.75",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -620,6 +662,8 @@
       "spins": 183,
       "suitWins": 1,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "12",
       "trialsCompleted": 0,
       "upgradesBought": 1,
@@ -720,12 +764,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "2493.25",
       "playTime": 1499.9999999989645
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -747,6 +799,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "40.5",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -784,6 +837,8 @@
       "spins": 239,
       "suitWins": 5,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "13",
       "trialsCompleted": 0,
       "upgradesBought": 3,
@@ -886,12 +941,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "3410.75",
       "playTime": 1799.9999999986917
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -913,6 +976,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "47.25",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -950,6 +1014,8 @@
       "spins": 305,
       "suitWins": 7,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "15",
       "trialsCompleted": 0,
       "upgradesBought": 6,
@@ -1052,12 +1118,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "3848.75",
       "playTime": 2099.9999999991282
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1079,6 +1153,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "47.25",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -1116,6 +1191,8 @@
       "spins": 361,
       "suitWins": 7,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "16",
       "trialsCompleted": 0,
       "upgradesBought": 6,
@@ -1219,12 +1296,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "5032.75",
       "playTime": 2400.000000002948
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1246,6 +1331,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "213.75",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -1283,6 +1369,8 @@
       "spins": 442,
       "suitWins": 9,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "16",
       "trialsCompleted": 0,
       "upgradesBought": 10,
@@ -1386,12 +1474,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "7310.5",
       "playTime": 2700.000000006768
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1413,6 +1509,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "261.25",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -1450,6 +1547,8 @@
       "spins": 533,
       "suitWins": 11,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "16",
       "trialsCompleted": 0,
       "upgradesBought": 15,
@@ -1556,12 +1655,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "10245.5",
       "playTime": 3000.000000010588
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -1583,6 +1690,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "308.75",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -1620,6 +1728,8 @@
       "spins": 603,
       "suitWins": 13,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "22",
       "trialsCompleted": 0,
       "upgradesBought": 19,
@@ -1720,12 +1830,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "2",
      "seedsEarned": "2",
      "skins": {
@@ -1747,6 +1865,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "308.75",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -1784,6 +1903,8 @@
       "spins": 603,
       "suitWins": 13,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "28",
       "trialsCompleted": 0,
       "upgradesBought": 19,
@@ -1882,12 +2003,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -1909,6 +2038,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "308.75",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -1946,6 +2076,8 @@
       "spins": 603,
       "suitWins": 13,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "28",
       "trialsCompleted": 0,
       "upgradesBought": 19,
@@ -2058,12 +2190,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1671.64",
       "playTime": 599.999999999783
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "2",
      "skins": {
@@ -2085,6 +2225,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "308.75",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -2122,6 +2263,8 @@
       "spins": 751,
       "suitWins": 14,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "28",
       "trialsCompleted": 0,
       "upgradesBought": 21,
@@ -2296,12 +2439,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2323,6 +2474,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "0",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -2360,6 +2512,8 @@
       "spins": 0,
       "suitWins": 0,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "19",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -2557,12 +2711,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "418950.02",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2584,6 +2746,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "118750",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -2621,6 +2784,8 @@
       "spins": 56,
       "suitWins": 2,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "32",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -2843,12 +3008,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "14285684.52",
       "playTime": 360.00000000000125
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -2870,6 +3043,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "6006375",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -2907,6 +3081,8 @@
       "spins": 108,
       "suitWins": 5,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "42",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -3158,12 +3334,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "94183950.29",
       "playTime": 539.9999999998375
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3185,6 +3369,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "9567984.38",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -3222,6 +3407,8 @@
       "spins": 154,
       "suitWins": 7,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "45",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -3505,12 +3692,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1114478903.43",
       "playTime": 732.8666666663288
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3532,6 +3727,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "714031875",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -3569,6 +3765,8 @@
       "spins": 202,
       "suitWins": 8,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "58",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -3852,12 +4050,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1115120153.43",
       "playTime": 744.333333332985
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -3879,6 +4085,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "714031875",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -3916,6 +4123,8 @@
       "spins": 206,
       "suitWins": 8,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "58",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -4199,12 +4408,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1115186653.43",
       "playTime": 744.7333333329847
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4226,6 +4443,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "714031875",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -4263,6 +4481,8 @@
       "spins": 206,
       "suitWins": 8,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "58",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -4548,12 +4768,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1122592134.26",
       "playTime": 744.7333333329847
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4575,6 +4803,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "714031875",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -4612,6 +4841,8 @@
       "spins": 206,
       "suitWins": 8,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "60",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -4897,12 +5128,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1122592134.26",
       "playTime": 744.7333333329847
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -4924,6 +5163,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "714031875",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -4961,6 +5201,8 @@
       "spins": 206,
       "suitWins": 8,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "60",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -5247,12 +5489,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1123359081.17",
       "playTime": 864.7333333328755
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5274,6 +5524,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "714031875",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -5311,6 +5562,8 @@
       "spins": 243,
       "suitWins": 9,
       "symbolsUnlocked": 7,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "64",
       "trialsCompleted": 0,
       "upgradesBought": 209,
@@ -5395,12 +5648,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "20000",
       "playTime": 0
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -5422,6 +5683,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "0",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -5459,6 +5721,8 @@
       "spins": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "0",
       "trialsCompleted": 0,
       "upgradesBought": 0,
@@ -5541,12 +5805,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5568,6 +5840,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "0",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -5605,6 +5878,8 @@
       "spins": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "8",
       "trialsCompleted": 0,
       "upgradesBought": 0,
@@ -5698,12 +5973,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5754,6 +6037,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "0",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 35,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -5791,6 +6075,8 @@
       "spins": 0,
       "suitWins": 0,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "17",
       "trialsCompleted": 0,
       "upgradesBought": 0,
@@ -5898,12 +6184,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "810.06",
       "playTime": 899.9999999995101
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "3",
      "skins": {
@@ -5954,6 +6248,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "50.63",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 35,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -5991,6 +6286,8 @@
       "spins": 65,
       "suitWins": 0,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "21",
       "trialsCompleted": 0,
       "upgradesBought": 3,
@@ -6095,12 +6392,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6151,6 +6456,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "50.63",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 35,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -6188,6 +6494,8 @@
       "spins": 65,
       "suitWins": 0,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "33",
       "trialsCompleted": 0,
       "upgradesBought": 3,
@@ -6314,12 +6622,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "6136.48",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "1",
      "seedsEarned": "39",
      "skins": {
@@ -6370,6 +6686,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "432.63",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 35,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -6407,6 +6724,8 @@
       "spins": 160,
       "suitWins": 0,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "39",
       "trialsCompleted": 0,
       "upgradesBought": 18,
@@ -6580,12 +6899,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -6607,6 +6934,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "0",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -6644,6 +6972,8 @@
       "spins": 0,
       "suitWins": 0,
       "symbolsUnlocked": 6,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "17",
       "trialsCompleted": 0,
       "upgradesBought": 303,
@@ -6846,12 +7176,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "68222700000",
       "playTime": 240.00000000008313
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -6873,6 +7211,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "36903600000",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -6910,6 +7249,8 @@
       "spins": 63,
       "suitWins": 2,
       "symbolsUnlocked": 6,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "38",
       "trialsCompleted": 0,
       "upgradesBought": 303,
@@ -7141,12 +7482,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1274404575000",
       "playTime": 479.9999999998921
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7168,6 +7517,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "445602937500",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -7205,6 +7555,8 @@
       "spins": 124,
       "suitWins": 4,
       "symbolsUnlocked": 6,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "45",
       "trialsCompleted": 0,
       "upgradesBought": 303,
@@ -7462,12 +7814,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "3028004780250",
       "playTime": 719.9999999996738
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7489,6 +7849,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "445602937500",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -7526,6 +7887,8 @@
       "spins": 185,
       "suitWins": 8,
       "symbolsUnlocked": 6,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "45",
       "trialsCompleted": 0,
       "upgradesBought": 303,
@@ -7845,12 +8208,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "3339639158250",
       "playTime": 724.9999999996693
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -7872,6 +8243,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "445602937500",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -7909,6 +8281,8 @@
       "spins": 185,
       "suitWins": 8,
       "symbolsUnlocked": 6,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "45",
       "trialsCompleted": 0,
       "upgradesBought": 303,
@@ -8169,12 +8543,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "3356837633250",
       "playTime": 784.9999999996147
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -8196,6 +8578,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "445602937500",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -8233,6 +8616,8 @@
       "spins": 197,
       "suitWins": 8,
       "symbolsUnlocked": 6,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "45",
       "trialsCompleted": 0,
       "upgradesBought": 303,
@@ -8348,12 +8733,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8375,6 +8768,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "59.77",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -8412,6 +8806,8 @@
       "spins": 71,
       "suitWins": 3,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "16",
       "trialsCompleted": 0,
       "upgradesBought": 4,
@@ -8529,12 +8925,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8556,6 +8960,7 @@
       "biggestCasinoWin": "200",
       "biggestWin": "59.77",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 62,
       "chipsBought": "1000",
@@ -8593,6 +8998,8 @@
       "spins": 71,
       "suitWins": 3,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "19",
       "trialsCompleted": 0,
       "upgradesBought": 4,
@@ -8717,12 +9124,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "1152.88",
       "playTime": 300.0000000000558
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8748,6 +9163,7 @@
       "biggestCasinoWin": "200",
       "biggestWin": "59.77",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 62,
       "chipsBought": "1000",
@@ -8785,6 +9201,8 @@
       "spins": 71,
       "suitWins": 3,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "22",
       "trialsCompleted": 0,
       "upgradesBought": 4,
@@ -8914,12 +9332,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "2448.88",
       "playTime": 399.99999999996487
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -8945,6 +9371,7 @@
       "biggestCasinoWin": "200",
       "biggestWin": "450.66",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 62,
       "chipsBought": "1000",
@@ -8982,6 +9409,8 @@
       "spins": 111,
       "suitWins": 4,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "29",
       "trialsCompleted": 0,
       "upgradesBought": 24,
@@ -9114,12 +9543,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9145,6 +9582,7 @@
       "biggestCasinoWin": "200",
       "biggestWin": "450.66",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 62,
       "chipsBought": "1000",
@@ -9182,6 +9620,8 @@
       "spins": 125,
       "suitWins": 4,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "31",
       "trialsCompleted": 0,
       "upgradesBought": 24,
@@ -9339,12 +9779,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "14527.2",
       "playTime": 459.9999999999103
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9370,6 +9818,7 @@
       "biggestCasinoWin": "200",
       "biggestWin": "450.66",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 62,
       "chipsBought": "1000",
@@ -9407,6 +9856,8 @@
       "spins": 125,
       "suitWins": 4,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "31",
       "trialsCompleted": 0,
       "upgradesBought": 24,
@@ -9539,12 +9990,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "14655.28",
       "playTime": 489.999999999883
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "1",
      "seedsEarned": "6",
      "skins": {
@@ -9570,6 +10029,7 @@
       "biggestCasinoWin": "200",
       "biggestWin": "450.66",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 63,
       "chipsBought": "1000",
@@ -9607,6 +10067,8 @@
       "spins": 135,
       "suitWins": 4,
       "symbolsUnlocked": 1,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "31",
       "trialsCompleted": 0,
       "upgradesBought": 24,
@@ -9749,12 +10211,20 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "711.55",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "6",
      "skins": {
@@ -9776,6 +10246,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "42.69",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -9813,6 +10284,8 @@
       "spins": 48,
       "suitWins": 1,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "32",
       "trialsCompleted": 0,
       "upgradesBought": 2,
@@ -9944,12 +10417,20 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {},
+      "opened": false,
+      "rewards": {},
+      "takings": "0",
+      "till": "0",
+      "upgrades": {}
+     },
      "perks": {},
      "run": {
       "coinsEarned": "0",
       "playTime": 0
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -9971,6 +10452,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "42.69",
       "blackjacks": 0,
+      "cabinetsBought": 0,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -10008,6 +10490,8 @@
       "spins": 48,
       "suitWins": 1,
       "symbolsUnlocked": 0,
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
       "tokensEarned": "50",
       "trialsCompleted": 0,
       "upgradesBought": 2,
@@ -10041,8 +10525,8 @@
      "spinBlocked": 1,
      "spinResolved": 76,
      "spinStarted": 78,
-     "stickerEarned": 14,
-     "tokensChanged": 15,
+     "stickerEarned": 15,
+     "tokensChanged": 16,
      "treeNodeBought": 72,
      "upgradeBought": 6
     },
@@ -10084,6 +10568,7 @@
       "firstRetirement": true,
       "firstSpin": true,
       "firstWin": true,
+      "grandOpening": true,
       "luck50": true,
       "millionaire": true,
       "nestEgg": true,
@@ -10138,6 +10623,16 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {
+       "clunky": true
+      },
+      "opened": true,
+      "rewards": {},
+      "takings": "0",
+      "till": "14.39999999999868",
+      "upgrades": {}
+     },
      "perks": {
       "colonyPride": 4,
       "oldFriends": 1,
@@ -10149,7 +10644,7 @@
       "coinsEarned": "544.9",
       "playTime": 180.00000000003539
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "0",
      "seedsEarned": "0",
      "skins": {
@@ -10171,6 +10666,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "89.1",
       "blackjacks": 0,
+      "cabinetsBought": 1,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -10208,14 +10704,16 @@
       "spins": 78,
       "suitWins": 3,
       "symbolsUnlocked": 0,
-      "tokensEarned": "50",
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
+      "tokensEarned": "53",
       "trialsCompleted": 0,
       "upgradesBought": 6,
       "whiskersEarned": "15",
       "wildWins": 0,
       "wins": 26
      },
-     "tokens": "50",
+     "tokens": "53",
      "tree": {},
      "trial": null,
      "trialsDone": {},
@@ -10243,8 +10741,8 @@
      "spinBlocked": 1,
      "spinResolved": 111,
      "spinStarted": 114,
-     "stickerEarned": 16,
-     "tokensChanged": 21,
+     "stickerEarned": 17,
+     "tokensChanged": 22,
      "treeNodeBought": 78,
      "trialStarted": 1,
      "upgradeBought": 11
@@ -10288,6 +10786,7 @@
       "firstSpin": true,
       "firstWin": true,
       "generation5": true,
+      "grandOpening": true,
       "luck50": true,
       "millionaire": true,
       "nestEgg": true,
@@ -10343,6 +10842,16 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {
+       "clunky": true
+      },
+      "opened": true,
+      "rewards": {},
+      "takings": "0",
+      "till": "24.00000000000828",
+      "upgrades": {}
+     },
      "perks": {
       "colonyPride": 4,
       "oldFriends": 1,
@@ -10354,7 +10863,7 @@
       "coinsEarned": "1627.55",
       "playTime": 119.99999999999447
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -10376,6 +10885,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "142.41",
       "blackjacks": 0,
+      "cabinetsBought": 1,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -10413,14 +10923,16 @@
       "spins": 114,
       "suitWins": 5,
       "symbolsUnlocked": 0,
-      "tokensEarned": "69",
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
+      "tokensEarned": "72",
       "trialsCompleted": 0,
       "upgradesBought": 11,
       "whiskersEarned": "15",
       "wildWins": 0,
       "wins": 39
      },
-     "tokens": "69",
+     "tokens": "72",
      "tree": {
       "bigBackpack": 1,
       "familyPride": 1,
@@ -10456,8 +10968,8 @@
      "spinBlocked": 1,
      "spinResolved": 121,
      "spinStarted": 124,
-     "stickerEarned": 17,
-     "tokensChanged": 22,
+     "stickerEarned": 18,
+     "tokensChanged": 23,
      "treeNodeBought": 78,
      "trialCompleted": 1,
      "trialEnded": 1,
@@ -10503,6 +11015,7 @@
       "firstSpin": true,
       "firstWin": true,
       "generation5": true,
+      "grandOpening": true,
       "luck50": true,
       "millionaire": true,
       "nestEgg": true,
@@ -10559,6 +11072,16 @@
        "upgrades": {}
       }
      ],
+     "ownCasino": {
+      "cabinets": {
+       "clunky": true
+      },
+      "opened": true,
+      "rewards": {},
+      "takings": "0",
+      "till": "26.400000000011214",
+      "upgrades": {}
+     },
      "perks": {
       "colonyPride": 4,
       "oldFriends": 1,
@@ -10570,7 +11093,7 @@
       "coinsEarned": "58501912.37",
       "playTime": 150.0000000000115
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -10592,6 +11115,7 @@
       "biggestCasinoWin": "0",
       "biggestWin": "142.41",
       "blackjacks": 0,
+      "cabinetsBought": 1,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
@@ -10629,14 +11153,16 @@
       "spins": 124,
       "suitWins": 6,
       "symbolsUnlocked": 0,
-      "tokensEarned": "72",
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
+      "tokensEarned": "75",
       "trialsCompleted": 1,
       "upgradesBought": 11,
       "whiskersEarned": "17",
       "wildWins": 0,
       "wins": 41
      },
-     "tokens": "72",
+     "tokens": "75",
      "tree": {
       "bigBackpack": 1,
       "familyPride": 1,
@@ -10677,8 +11203,8 @@
      "spinBlocked": 1,
      "spinResolved": 201,
      "spinStarted": 204,
-     "stickerEarned": 27,
-     "tokensChanged": 33,
+     "stickerEarned": 28,
+     "tokensChanged": 34,
      "treeNodeBought": 78,
      "trialCompleted": 1,
      "trialEnded": 1,
@@ -10686,7 +11212,7 @@
      "upgradeBought": 33
     },
     "label": "played Moving Day",
-    "paid": 46901716675163.13,
+    "paid": 46915749883800.88,
     "rng": 1017899009,
     "save": {
      "activeMachine": 2,
@@ -10708,9 +11234,9 @@
       "hand": null,
       "spinsToChip": 0
      },
-     "coins": "18776947569269.72",
+     "coins": "18780824723431.49",
      "colony": 1,
-     "colonyCoins": "46901776311621.58",
+     "colonyCoins": "46915809520259.32",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -10726,6 +11252,7 @@
       "firstWin": true,
       "generation5": true,
       "goldenJackpot": true,
+      "grandOpening": true,
       "highRoller": true,
       "luck50": true,
       "millionaire": true,
@@ -10838,6 +11365,16 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {
+       "clunky": true
+      },
+      "opened": true,
+      "rewards": {},
+      "takings": "0",
+      "till": "45.600000000034676",
+      "upgrades": {}
+     },
      "perks": {
       "colonyPride": 4,
       "oldFriends": 1,
@@ -10846,10 +11383,10 @@
       "wiseElders": 1
      },
      "run": {
-      "coinsEarned": "46901775173966.68",
+      "coinsEarned": "46915808382604.41",
       "playTime": 389.99999999997397
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "8",
      "seedsEarned": "35",
      "skins": {
@@ -10869,15 +11406,16 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "18644239681182.71",
+      "biggestWin": "18649819004778.11",
       "blackjacks": 0,
+      "cabinetsBought": 1,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "1352",
-      "coinsEarned": "47901776362333.13",
+      "coinsEarned": "47915809570970.88",
       "coinsSpent": "31976960.05",
-      "coinsWon": "46901716675163.13",
+      "coinsWon": "46915749883800.88",
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 0,
@@ -10908,14 +11446,16 @@
       "spins": 204,
       "suitWins": 10,
       "symbolsUnlocked": 1,
-      "tokensEarned": "97",
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
+      "tokensEarned": "100",
       "trialsCompleted": 1,
       "upgradesBought": 336,
       "whiskersEarned": "17",
       "wildWins": 33,
       "wins": 103
      },
-     "tokens": "97",
+     "tokens": "100",
      "tree": {
       "bigBackpack": 1,
       "familyPride": 1,
@@ -10972,8 +11512,8 @@
      "spinBlocked": 1,
      "spinResolved": 209,
      "spinStarted": 213,
-     "stickerEarned": 29,
-     "tokensChanged": 36,
+     "stickerEarned": 31,
+     "tokensChanged": 38,
      "treeNodeBought": 128,
      "trialCompleted": 1,
      "trialEnded": 1,
@@ -10981,7 +11521,7 @@
      "upgradeBought": 40
     },
     "label": "the elders retired a hamster",
-    "paid": 46929681906444.38,
+    "paid": 46943723478722.35,
     "rng": 1833981970,
     "save": {
      "activeMachine": 0,
@@ -10997,7 +11537,7 @@
       "sincePity": 0
      },
      "casino": {
-      "bestIncome": "60894456840.197075",
+      "bestIncome": "60912668752.59769",
       "boosts": {},
       "chips": "1606",
       "hand": null,
@@ -11005,7 +11545,7 @@
      },
      "coins": "3340",
      "colony": 1,
-     "colonyCoins": "985929741542902.9",
+     "colonyCoins": "985943783115180.8",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -11021,6 +11561,7 @@
       "firstWin": true,
       "generation5": true,
       "goldenJackpot": true,
+      "grandOpening": true,
       "highRoller": true,
       "littleHelper": true,
       "luck50": true,
@@ -11032,6 +11573,7 @@
       "secondMachine": true,
       "seeingDouble": true,
       "spins100": true,
+      "stickerBook": true,
       "thirdReel": true,
       "threeLines": true,
       "tree5": true,
@@ -11115,6 +11657,16 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {
+       "clunky": true
+      },
+      "opened": true,
+      "rewards": {},
+      "takings": "0",
+      "till": "47.24800000003669",
+      "upgrades": {}
+     },
      "perks": {
       "colonyPride": 4,
       "oldFriends": 1,
@@ -11126,7 +11678,7 @@
       "coinsEarned": "6246.9",
       "playTime": 19.60000000000017
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "242",
      "seedsEarned": "4520",
      "skins": {
@@ -11146,15 +11698,16 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "18644239681182.71",
+      "biggestWin": "18649819004778.11",
       "blackjacks": 0,
+      "cabinetsBought": 1,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "1606",
-      "coinsEarned": "986929741593614.4",
+      "coinsEarned": "986943783165892.4",
       "coinsSpent": "32376702.45",
-      "coinsWon": "46929681906444.38",
+      "coinsWon": "46943723478722.35",
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 0,
@@ -11185,14 +11738,16 @@
       "spins": 213,
       "suitWins": 11,
       "symbolsUnlocked": 1,
-      "tokensEarned": "104",
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
+      "tokensEarned": "112",
       "trialsCompleted": 1,
       "upgradesBought": 343,
       "whiskersEarned": "17",
       "wildWins": 34,
       "wins": 107
      },
-     "tokens": "104",
+     "tokens": "112",
      "tree": {
       "ballPit": 3,
       "bigBackpack": 1,
@@ -11256,8 +11811,8 @@
      "spinBlocked": 1,
      "spinResolved": 234,
      "spinStarted": 237,
-     "stickerEarned": 29,
-     "tokensChanged": 37,
+     "stickerEarned": 31,
+     "tokensChanged": 39,
      "treeNodeBought": 128,
      "trialCompleted": 1,
      "trialEnded": 1,
@@ -11265,7 +11820,7 @@
      "upgradeBought": 73
     },
     "label": "played on after loading",
-    "paid": 46929682141113.98,
+    "paid": 46943723713391.95,
     "rng": 2962194616,
     "save": {
      "activeMachine": 0,
@@ -11281,7 +11836,7 @@
       "sincePity": 0
      },
      "casino": {
-      "bestIncome": "60894456840.197075",
+      "bestIncome": "60912668752.59769",
       "boosts": {},
       "chips": "1618",
       "hand": null,
@@ -11289,7 +11844,7 @@
      },
      "coins": "191668.34",
      "colony": 1,
-     "colonyCoins": "985929741777572.5",
+     "colonyCoins": "985943783349850.2",
      "delivery": {
       "active": false,
       "duration": 0,
@@ -11305,6 +11860,7 @@
       "firstWin": true,
       "generation5": true,
       "goldenJackpot": true,
+      "grandOpening": true,
       "highRoller": true,
       "littleHelper": true,
       "luck50": true,
@@ -11316,6 +11872,7 @@
       "secondMachine": true,
       "seeingDouble": true,
       "spins100": true,
+      "stickerBook": true,
       "thirdReel": true,
       "threeLines": true,
       "tree5": true,
@@ -11399,6 +11956,16 @@
        }
       }
      ],
+     "ownCasino": {
+      "cabinets": {
+       "clunky": true
+      },
+      "opened": true,
+      "rewards": {},
+      "takings": "0",
+      "till": "52.048000000042556",
+      "upgrades": {}
+     },
      "perks": {
       "colonyPride": 4,
       "oldFriends": 1,
@@ -11410,7 +11977,7 @@
       "coinsEarned": "240916.5",
       "playTime": 79.59999999999677
      },
-     "saveVersion": 14,
+     "saveVersion": 15,
      "seeds": "242",
      "seedsEarned": "4520",
      "skins": {
@@ -11430,15 +11997,16 @@
       "bestWheel": 0,
       "biggestBet": 10,
       "biggestCasinoWin": "0",
-      "biggestWin": "18644239681182.71",
+      "biggestWin": "18649819004778.11",
       "blackjacks": 0,
+      "cabinetsBought": 1,
       "capsulesOpened": 0,
       "casinoGames": 0,
       "chipsBought": "0",
       "chipsEarned": "1618",
-      "coinsEarned": "986929741828284",
+      "coinsEarned": "986943783400561.9",
       "coinsSpent": "32376775.61",
-      "coinsWon": "46929682141113.98",
+      "coinsWon": "46943723713391.95",
       "deliveries": 3,
       "deliveryCoins": "60",
       "derbyLongshots": 0,
@@ -11469,14 +12037,16 @@
       "spins": 237,
       "suitWins": 11,
       "symbolsUnlocked": 1,
-      "tokensEarned": "105",
+      "takingsEarned": "0",
+      "tillsEmptied": 0,
+      "tokensEarned": "113",
       "trialsCompleted": 1,
       "upgradesBought": 376,
       "whiskersEarned": "17",
       "wildWins": 34,
       "wins": 111
      },
-     "tokens": "105",
+     "tokens": "113",
      "tree": {
       "ballPit": 3,
       "bigBackpack": 1,

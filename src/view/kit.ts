@@ -43,17 +43,20 @@ export function h<K extends keyof HTMLElementTagNameMap>(tag: K, className = '',
 }
 
 // The game's currencies: their icon (a 12×12 sprite) and their names.
-export type Currency = 'coin' | 'seed' | 'token' | 'chip' | 'whisker';
+export type Currency = 'coin' | 'seed' | 'token' | 'chip' | 'whisker' | 'takings';
 export const CURRENCIES: Record<Currency, { sprite: string; name: string; one: string }> = {
   coin: { sprite: 'coin', name: 'coins', one: 'coin' },
   seed: { sprite: 'heirloom', name: 'Heirloom Seeds', one: 'Heirloom Seed' },
   token: { sprite: 'token', name: 'Hamster Tokens', one: 'Hamster Token' },
   chip: { sprite: 'chip', name: 'Casino Chips', one: 'Casino Chip' },
   whisker: { sprite: 'whisker', name: 'Golden Whiskers', one: 'Golden Whisker' },
+  takings: { sprite: 'takings', name: 'Takings', one: 'Taking' },
 };
 
 // An amount as text: coins with their K/M/B ("1.22M"), the rest as whole numbers.
 export function formatAmount(currency: Currency, value: Money | number): string {
+  // Takings (M12) build up in fractions (a guest's share of a spin): shown whole, with K/M/B.
+  if (currency === 'takings') return formatCoins(typeof value === 'number' ? Math.floor(value) : value.floor());
   return currency === 'coin' ? formatCoins(value) : formatWhole(value);
 }
 
