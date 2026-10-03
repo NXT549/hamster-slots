@@ -11,7 +11,7 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 | File | What's in it |
 |---|---|
 | `DESIGN.md` | What the game is; source of truth for design. Every number in it comes from data.json. §1 pillars · §2 core loop · §3 Old Clunky · §4 deliveries · §5 upgrades · §6 currencies · §7 save · §8 debug panel · **§9 balance rules** · §10 balance targets · **§11 roadmap** · §12 look · §13 retirement + Family Tree · §14 tokens + capsules · §15 feel, offline earnings · §16 machines + paylines · §17 QoL, pause · §18 bets · §19 bonus features · §20 particles · §21 real pokies (M7) · §22 Big Cage · §23 1.0 · §24 M9 machines · §25 wardrobe · §26 redesign 1.2 · §27 casino · §28 Nuts & Bolts · §29 Great Migration · §30 Glow Up · §31 New Digs (UI redesign parts 1–9) · §32 the Family Casino (M12) |
-| `PORTING_NOTES.md` | Platform plan, platform layer, invariants any rewrite keeps, then logs: **Decisions** (D1…D165: chosen, rejected, why), **Balance log**, **Playtest notes**, Prototype history |
+| `PORTING_NOTES.md` | Platform plan, platform layer, invariants any rewrite keeps, then logs: **Decisions** (D1…D167: chosen, rejected, why), **Balance log**, **Playtest notes**, Prototype history |
 | `CHANGELOG.md` | What players got per version; `[Unreleased]` on top |
 | `docs/DEBUG.md` | Console and debug-panel recipes to reach any feature fast |
 | `docs/updates/` | One implementation plan per planned update, indexed in its `README.md`. **Open a plan only when told to work on that update** |
@@ -22,12 +22,13 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 
 > Keep this block true. Update it in the same commit as the change it describes.
 
-- **Live: 1.9.1 "Welcome Mat"** (2026-10-03; 1.9.1 fixes five bugs from a bug hunt: the Family tab after a migration, Deep Pockets, K/M/B rounding, the blackjack hint, a cabinet bet) at https://nxt549.github.io/hamster-slots/ (repo https://github.com/NXT549/hamster-slots, public, remote `origin`). Every push to `main` tests, builds and deploys (`.github/workflows/deploy.yml`, D118). `SAVE_VERSION` 15 (game.ts); data.json `schemaVersion` 15.
+- **Live: 1.9.1 "Welcome Mat"** (2026-10-03; 1.9.1 fixes five bugs from a bug hunt: the Family tab after a migration, Deep Pockets, K/M/B rounding, the blackjack hint, a cabinet bet) at https://nxt549.github.io/hamster-slots/ (repo https://github.com/NXT549/hamster-slots, public, remote `origin`). Every push to `main` tests, builds and deploys (`.github/workflows/deploy.yml`, D118). `SAVE_VERSION` 16 on this branch (game.ts; 15 live); data.json `schemaVersion` 16.
 - **1.6.1 "Fresh Coat"** = machine skins paint every machine (`painted()` in cabinet.ts, `--paint*` tokens) + 5 new machine skins (29 in the capsule pool; Arcade Neon's twist: +5% double-win), D161.
 - **1.6.0** = UI redesign parts 1–3 (DESIGN §31, D156–D160): the hamster's-room look (wood, paper, brass, enamel: `frames.ts`), the kit (`kit.ts`), purse (`hud.ts`), control deck (`deck.ts`), phone tab bar, detail sheet, rebuilt Upgrades tab (`shop.ts`), nothing under 12 px, only the open tab drawn. View only: no rules, balance or save changes.
 - **1.7.1 "Settling In"** = the balancing pass's first fix (D163, `docs/updates/balancing.md`): each colony's Family Tree costs ×3 more (`familyTree.costPerColony`), Colony Pride +30% a level (was +50%). No save change.
 - **1.7.0 "Family Room"** = UI redesign part 4 (§31, D162): the Family tab (`family.ts`: retire letter, trait chips), Colony (`colony.ts`: perk tiles, toggles) and the Big Cage's panels on the kit. View only.
 - **1.9.0 "Welcome Mat"** = UI redesign part 8 (§31, D165): the first-time guide (`guide.ts`: `guideStep()` from game state, the pointing paw), UI sounds (`playUi` in sound.ts), settings `uiSounds` and `guide` (no save change), and unlock moments (`unlock.ts`: a padlock springs open over anything new; "NEW SYMBOL!"/"NEW MACHINE!" celebrations). The user asked for "new animations for unlocking things as well as a tutorial" and left the design to Claude. Released at the user's "publish it", before a playtest; nobody has heard the UI sounds yet.
+- **Unreleased (in `[Unreleased]`, not yet in a version):** from the content brainstorm, where the user said "you decide": five more Colony Trials and Double Trouble (D166, DESIGN §29) and the Family Album with save v16 (D167, DESIGN §13). `state.album` is the family's stored history; later features (the Derby's ancestors, the Retirement Home, a stats history) read it rather than adding their own.
 - **Planned, don't build until asked:** UI redesign parts 5–7 and 9 (Capsules + Info, Casino, Menu + dialogs, polish; §31). When asked: on a branch, part by part, each leaving the game playable. The user picked restyle + restructure, the room look, a first-time guide and UI sounds.
 - **1.8.0 "Grand Opening"** = M12, the Family Casino (§32, D164): a migrated family's own casino (cabinets, guests below 100%, a till of Takings, decor and staff, chips and tokens), kept for good, never coins. Save v15. The user left every design call to Claude ("you decide everything"), then said "publish it"; the playtest questions are in §32.
 - **Next on the roadmap:** M13 Delivery depth is only an idea (if playtests say deliveries are fun); M12 is done.
@@ -35,7 +36,7 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 - **Open balance issues:** late lives short around generations 11–15 (§10); 1.4.0's seed softcap made them 2–3× longer, and 1.7.1's balancing pass (D163: each colony's tree ×3, Colony Pride +30%) made colony 2 last 3–5 h with 5–8 min late lives, but colony 3's middle lives are still 2–5 min (§29 → Balance); the wardrobe makes mid-game lives ~10–30% shorter (§25); casino boosts can cut late lives by up to a third (§27, `node tools/sim.mjs --casino`).
 - **Not yet verified:** how the M7/1.0/M9 sounds sound; a natural jackpot-wheel label, hold & spin Grand and ×10 cheese wedge in the browser (only tests/console); Epic twists in a real session; Firefox and Safari look (rays' `mask`, line trace, reel blur).
 - **Tags:** `v0.1.0 v0.2.0 v1.0.0 v1.3.0 v1.3.1` are on GitHub. Missing (the session git proxy refuses tag pushes, HTTP 403), so the user adds them as GitHub Releases: v1.1.0 `7f2fe32`, v1.2.0 `4fa56c3`, v1.3.2 `1084cb6`, v1.4.0 on its docs-only deploy commit (same game as "Release 1.4.0" `76aec6d`, D149), v1.5.0 `bb98c2d`, v1.6.0 `6558459`, v1.6.1 on the "Release 1.6.1" commit, v1.7.0 on the "Release 1.7.0" commit, v1.7.1 on the "Release 1.7.1" commit, v1.8.0 on the "Release 1.8.0" commit, v1.8.1 on the "Release 1.8.1" commit, v1.9.0 on the "Release 1.9.0" commit, v1.9.1 on the "Release 1.9.1" commit.
-- **Tests:** `npm test`, 3,042 tests, ~1.5 min.
+- **Tests:** `npm test`, 3,130 tests, ~1.5 min.
 
 ## Commands
 
@@ -155,8 +156,9 @@ src/view/        draws the game, turns input into actions
   reels.ts winshow.ts celebrate.ts fx.ts sound.ts dom.ts
   guide.ts       the first-time guide (1.9.0): guideStep() (pure, tested) and the pointing paw
   unlock.ts      unlock moments (1.9.0): the padlock over anything new, waiting until it can be seen
+  album.ts       the Family tab's Album sub-tab (1.10): a page for every hamster that retired (state.album)
   shop.ts        Upgrades tab (describeEffect is reused by colony + Big Cage)
-  family.ts      Family tab: the retire letter, planted traits; colony.ts is its Colony sub-tab
+  family.ts      Family tab: the retire letter, planted traits; colony.ts is its Colony sub-tab, album.ts its Album
   payouts.ts capsules.ts casino.ts bigcage.ts backup.ts debug.ts   the other tabs/pages
   owncasino.ts   the Casino tab's "Your casino" sub-tab (the Family Casino, M12; casino.ts creates it)
   ui.ts          creates and drives everything (only the open tab renders)

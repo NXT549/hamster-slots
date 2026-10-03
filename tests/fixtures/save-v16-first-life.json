@@ -1,0 +1,165 @@
+{
+ "saveVersion": 16,
+ "coins": "130.51",
+ "upgrades": {
+  "cheeks": 9,
+  "wheel": 1,
+  "clover": 1
+ },
+ "machines": [
+  {
+   "typeId": "clunky",
+   "upgrades": {
+    "lever": 5,
+    "newSeeds": 1,
+    "horseshoe": 2
+   },
+   "bet": 0,
+   "spinning": true,
+   "spinTimer": 2.7666666666666675,
+   "spinBet": 1,
+   "spinFree": false,
+   "spinSource": "manual",
+   "result": [
+    [
+     "seed"
+    ],
+    [
+     "blank"
+    ]
+   ],
+   "streak": 0,
+   "freeSpins": null,
+   "pots": {},
+   "bonus": null,
+   "hold": null
+  }
+ ],
+ "activeMachine": 0,
+ "delivery": {
+  "active": false,
+  "timer": 0,
+  "duration": 0
+ },
+ "autoTimer": 4.6,
+ "autoPaused": false,
+ "run": {
+  "coinsEarned": "10245.5",
+  "playTime": 3000.000000010588,
+  "bestWin": "0",
+  "trialBeaten": null
+ },
+ "generation": 1,
+ "seeds": "0",
+ "seedsEarned": "0",
+ "tree": {},
+ "stars": {},
+ "bigCage": false,
+ "helper": true,
+ "colony": 0,
+ "colonyCoins": "10245.5",
+ "whiskers": "0",
+ "perks": {},
+ "trial": null,
+ "trialsDone": {},
+ "auto": {
+  "retire": false,
+  "share": 0.25,
+  "plant": true
+ },
+ "album": [],
+ "tokens": "22",
+ "diary": {
+  "firstSpin": true,
+  "firstWin": true,
+  "wheelTraining": true,
+  "firstDelivery": true,
+  "spins100": true,
+  "newSeed": true,
+  "cardShark": true,
+  "deliveries25": true
+ },
+ "skins": {
+  "owned": {},
+  "equipped": {}
+ },
+ "capsules": {
+  "sincePity": 0
+ },
+ "casino": {
+  "chips": "0",
+  "bestIncome": "0",
+  "spinsToChip": 0,
+  "boosts": {},
+  "hand": null
+ },
+ "ownCasino": {
+  "opened": false,
+  "cabinets": {},
+  "upgrades": {},
+  "rewards": {},
+  "till": "0",
+  "takings": "0"
+ },
+ "stats": {
+  "spins": 603,
+  "manualSpins": 591,
+  "autoSpins": 12,
+  "wins": 152,
+  "coinsWon": "9745.5",
+  "coinsSpent": "2540.99",
+  "deliveries": 25,
+  "deliveryCoins": "500",
+  "coinsEarned": "10245.5",
+  "upgradesBought": 19,
+  "playTime": 3000.000000010588,
+  "goldenJackpots": 0,
+  "capsulesOpened": 0,
+  "tokensEarned": "22",
+  "biggestWin": "308.75",
+  "offlineCoins": "0",
+  "machinesBought": 0,
+  "mostLinesWon": 1,
+  "biggestBet": 1,
+  "freeSpins": 0,
+  "freeSpinTriggers": 0,
+  "freeSpinCoins": "0",
+  "wildWins": 0,
+  "bestStreak": 4,
+  "jackpotsWon": 0,
+  "grandJackpots": 0,
+  "gambleWins": 38,
+  "gambleLosses": 77,
+  "bestGambleRun": 1,
+  "symbolsUnlocked": 1,
+  "bestLuck": 30,
+  "suitWins": 13,
+  "rebuilds": 0,
+  "bestStars": 0,
+  "mostSeedsHeld": 0,
+  "bestWays": 0,
+  "holdBonuses": 0,
+  "holdGrands": 0,
+  "bestWheel": 0,
+  "casinoGames": 0,
+  "chipsBought": "0",
+  "chipsEarned": "0",
+  "biggestCasinoWin": "0",
+  "rouletteNumbers": 0,
+  "blackjacks": 0,
+  "derbyLongshots": 0,
+  "seedDropEdges": 0,
+  "prizesBought": 0,
+  "doubleWins": 0,
+  "helperBuys": 0,
+  "migrations": 0,
+  "whiskersEarned": "0",
+  "trialsCompleted": 0,
+  "autoRetires": 0,
+  "mysteryBoxes": 0,
+  "bestBoxes": 0,
+  "takingsEarned": "0",
+  "tillsEmptied": 0,
+  "cabinetsBought": 0
+ }
+}

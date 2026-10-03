@@ -13,6 +13,7 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 ### Added
 
 - **Five new Colony Trials:** From Scratch (no head start from the Family Tree), Slow Wheel (every spin takes half as long again), Bad Luck Day (no Luck at all), Thin Cheeks (your upgrades add no payouts) and Picky Eater (no new symbols on the reels). Each pays 2 Golden Whiskers, once a colony.
+- **The Family Album** (Family → Album): every hamster that retires gets a page with their portrait in the fur and hat they wore, how long they lived, what they earned, their best win, the seeds they left and the trial they played. It keeps going through every Great Migration. The album starts with the next hamster you retire.
 - **Double Trouble:** beat two trials one at a time and they come back together as a harder trial for 5 Golden Whiskers. There are four: Rainy Day, Penny Pinching, Back to Basics and Total Stranger.
 
 ## [1.9.1] - 2026-10-03 · Welcome Mat

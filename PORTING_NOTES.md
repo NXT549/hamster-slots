@@ -730,6 +730,12 @@ Headless tests can check round-trips, and a new platform only swaps the storage.
 - **Rejected:** a trial without deliveries (it could strand a broke hamster: deliveries are the safety net, §4); "only the machines you start with" (could make the goal a wall late in a colony, and the simulator can't measure trials); a trial that makes upgrades dearer (rule 3, one cost formula); colony perks off (Trailblazer and the Wise Elders would need special cases); doubles open from the start (they'd be the first thing a new colony skips).
 - **Whiskers:** 2 for each new trial, 5 for each double: 42 a colony with every trial beaten (12 before), less than one more Colony Pride level next to a migration's 65–70. Colony 3's short middle lives (D163) are still open; trials make lives longer, not shorter, while they run.
 
+**D167 — The Family Album: a stored family history, save v16** (2026-10-03; from the content brainstorm, the user's "you decide"; DESIGN §13 → The Family Album).
+- **Chosen:** a page per retired hamster in the logic (`state.album`, oldest first, written by `addAlbumPage` on retire and on a mid-life migration): name, generation, colony, time played, coins earned, best win, seeds left, the trial (and whether it was beaten), how it retired (by hand, the Wise Elders, led the migration), fur and hat. Two new run fields feed it (`run.bestWin`, `run.trialBeaten`). One list, so the brainstorm's other ideas that need the family's history (the Stats thread's family history, retired hamsters in the Derby, the Retirement Home) read it instead of each adding their own.
+- **Kept:** the newest `album.keep` (300) pages and always the founder (generation 1 of the first colony). A page is ~250 bytes, so the save grows by at most ~75 KB.
+- **Rejected:** keeping every page (an automated family retires hundreds of times a day); a stats-only summary (no portraits, nothing for later features to read); building it in the view from events (lost on reload).
+- **Save v16:** an older save starts with an empty album (the past hamsters aren't known) and this life's best win at 0. Data schema 16 (`album`, and trials' `rules`, D166). The golden run was re-recorded for the save's new fields only: with them taken out, every checkpoint is the same as before (checked by script). Fixtures v16 added.
+
 ---
 
 ## Balance log

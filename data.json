@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 15,
+  "schemaVersion": 16,
   "startCoins": 100,
   "autosaveSeconds": 10,
   "betSteps": [1, 2, 3, 5, 10],
@@ -1502,6 +1502,7 @@
       { "id": "totalStranger", "name": "Total Stranger", "description": "Double Trouble: Fresh Start and Plain Hamster at once.", "rules": ["noFamily", "noWardrobe"], "needs": ["freshStart", "plainHamster"], "goalShare": 0.25, "minSeeds": 5, "whiskers": 5 }
     ]
   },
+  "album": { "keep": 300 },
   "tokens": {
     "name": "Hamster Tokens",
     "perJackpot": 1,

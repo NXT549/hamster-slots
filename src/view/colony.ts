@@ -6,7 +6,7 @@
 // (automation); and which Colony Trials the family has beaten in this colony (a trial is picked
 // in the Big Cage, before a life starts: bigcage.ts).
 //
-// It also owns the Family tab's two sub-tabs (Family, Colony). Like the rest of the view it only
+// It also owns the Family tab's sub-tabs (Family, Colony, and 1.10's Album: album.ts). Like the rest of the view it only
 // reads game.state and calls actions (migrate, buyPerk, setAuto). family.ts creates it and calls
 // render() every frame.
 
@@ -31,6 +31,7 @@ interface Options {
   fx: Fx;
   settings: Settings;
   onSettingsChange: () => void;
+  albumShown: () => boolean; // 1.10: the Album sub-tab is showing, so the sub-tab row shows too
 }
 
 interface PerkTile {
@@ -44,12 +45,12 @@ export function perkState(game: Game, id: string): BuyState {
   return game.isPerkMaxed(id) ? 'maxed' : game.canBuyPerk(id) ? 'ready' : 'saving';
 }
 
-export function createColonyView(game: Game, { sheet, say, sound, fx, settings, onSettingsChange }: Options) {
+export function createColonyView(game: Game, { sheet, say, sound, fx, settings, onSettingsChange, albumShown }: Options) {
   const row = byId('family-subtab-row');
   const panel = byId('colony-main');
   const subtabs = createSubTabs(byId('family-subtabs'), byId('tab-family'), {
     key: 'family', settings, onSettingsChange,
-    icons: { family: 'heart', colony: 'whisker' },
+    icons: { family: 'heart', colony: 'whisker', album: 'paw' },
     // A new sub-tab starts at its top (the other one's scroll would land you mid-page).
     onChange: () => { sheet.hide(); byId('tab-family').scrollTop = 0; },
   });
@@ -183,7 +184,7 @@ export function createColonyView(game: Game, { sheet, say, sound, fx, settings, 
         say('The whole Family Tree is planted! The family could make the Great Migration to a new colony. Peek at Family → Colony.', 7000);
       }
     }
-    row.classList.toggle('hidden', !shown);
+    row.classList.toggle('hidden', !shown && !albumShown());
     subtabs.setHidden('colony', !shown);
     const canMigrate = game.canMigrate();
     subtabs.setDot('colony', canMigrate || tiles.some((t) => game.canBuyPerk(t.def.id)));
@@ -264,6 +265,7 @@ export function createColonyView(game: Game, { sheet, say, sound, fx, settings, 
   return {
     render,
     openSub: subtabs.open,
+    subtabs,
     get current() { return subtabs.current; },
   };
 }

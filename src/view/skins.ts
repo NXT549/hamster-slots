@@ -140,8 +140,11 @@ export function furColors(game: Game): Colors | null {
 
 // The hat the hamster is wearing (a name in art.ts HATS), or null.
 export function hatOf(game: Game): string | null {
-  const id = game.getEquippedSkin('hat');
-  return (id && SKIN_ART[id] && SKIN_ART[id].hat) || null;
+  return hatArt(game.getEquippedSkin('hat'));
+}
+// The hat a hat skin draws (a name in art.ts HATS), or null: the Family Album's portraits (1.10).
+export function hatArt(skinId: string | null): string | null {
+  return (skinId && SKIN_ART[skinId] && SKIN_ART[skinId].hat) || null;
 }
 
 // Put the equipped wheel / machine / room tokens on the stage element.
