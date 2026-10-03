@@ -10,6 +10,14 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+**Diary Volume 2: twenty new stickers for the Hamster Diary, five of them secret.** (The update's working name is "Dear Diary".)
+
+### Added
+
+- **Fifteen harder stickers** for long-time families: 250 deliveries, 10 wins in a row, 10 paylines in one spin, Luck 100, 10 golden jackpots, 25 jackpot pots, every hat, every capsule skin, 250 casino games, 100 tills emptied, 100,000 spins, a trillion coins, 15 Colony Trials, five Great Migrations and 60 stickers. They pay 3–10 Hamster Tokens each.
+- **Five secret stickers.** The Diary shows only a hint until you earn one, then tells you what it was for. No spoilers here!
+- **Pet your hamster.** Tap the hamster in its wheel for hearts, a happy hop and a squeak. It might even say something.
+
 ## [1.9.1] - 2026-10-03 · Welcome Mat
 
 ### Fixed

@@ -297,6 +297,7 @@ On 2 reels a cheaper spin matters most, because the profit per spin is thin. Chu
 - **Save version 10** (milestone 9) added a hold & spin in progress on a machine (`hold`: the acorns, every respin, the bet and its timer; §24) and the stats `bestWays`, `holdBonuses`, `holdGrands` and `bestWheel`. A v9 save has no hold under way and starts them at 0. A saved hold that doesn't fit the machine any more (a data change) is dropped, like a broken spin.
 - **Save version 11** (M11) added the family's casino (chips, boosts, a blackjack hand) and nine casino stats (§27). **Save version 12** (1.3.1) added the Hamster Helper's switch (`helper`) and the stats `doubleWins` and `helperBuys` (§28); an older save starts with the switch on and the stats at 0.
 - **Save version 7** (milestone 7) added **symbols you unlock** and the stats `symbolsUnlocked`, `bestLuck` and `suitWins`. Machines now start with some symbols locked, so a v6 save gives every machine every unlock it sells (maxed): an older hamster had every symbol, and nobody loses one. Luck isn't stored (it comes from upgrade levels), and neither is the gamble's card history.
+- **Save version 16** (Dear Diary, D166) added the stats `pets`, `worstDrySpell` and `lastCoinSpins` for the secret stickers. A v15 save starts them at 0 and gets the new stickers it already reached. Data schema 16.
 - The save also keeps `savedAt` (real-world time), which pays **offline earnings** on the next visit (§15).
 - Settings (sound on/off and volume, Motion, Quick reels, Numbers, the ×1/×10/Max choice, and since 1.9.0 UI sounds and the Guide) are stored separately from the save, so **Reset progress** keeps them.
 - **Menu → Reset progress** wipes the save, *including the family*. You have to tap it twice within 3 s, so it can't happen by accident. (Retiring is the "soft" reset that keeps the family.)
@@ -393,6 +394,7 @@ Web-first (PORTING_NOTES D106): one web codebase ships to GitHub Pages, then itc
 | — | 1.7.0 "Family Room" | UI redesign part 4 (the Family tab) | done (§31 part 4) |
 | — | 1.7.1 "Settling In" | Balancing pass: each new colony's Family Tree costs ×3 more, Colony Pride +30% a level | done (§29) |
 | — | 1.9.0 "Welcome Mat" | UI redesign part 8: the first-time guide (a pointing paw), UI sounds, and an unlock moment for everything new | done (§31 part 8) |
+| — | Dear Diary (candidate) | Diary Volume 2: 15 harder stickers, 5 secret ones, petting the hamster, save v16 | built, not released (§14) |
 | → | Releases | GitHub Pages from the start; then itch.io, Steam, maybe mobile, all from the same web codebase (PORTING_NOTES → The plan) | ongoing |
 
 **Particles and animations are a thread, not a milestone:** every milestone ships the effects for what it adds, and 1.0 went through the whole game (§20, §23). Every new animation needs its `.less-motion` rule (AGENTS.md → Code style).
@@ -593,6 +595,29 @@ These family traits **lower the hit rate** (fewer Sunflower pairs) but raise the
 | Sticker Book *(1.3.1)* | Earn 30 diary stickers | 5 |
 | Dynasty *(1.3.1)* | Reach generation 10 | 5 |
 | Billionaire *(1.3.1)* | Earn 1,000,000,000 coins in total | 5 |
+| New Horizons, Far Far Away, Trial by Fur, School of Hard Knocks, Wise Old Hamster, Box Full *(1.4.0)*; Grand Opening, Full Floor, Casino Mogul *(M12)* | The colony (§29) and the Family Casino (§32) | |
+| Courier of the Year *(Dear Diary)* | Finish 250 deliveries | 4 |
+| Red Hot *(Dear Diary)* | Win 10 paid spins in a row on one machine | 4 |
+| Line Party *(Dear Diary)* | Win on 10 paylines in a single spin | 4 |
+| Clover Patch *(Dear Diary)* | Reach Luck 100 on a machine | 4 |
+| Gold Rush *(Dear Diary)* | 10 golden jackpots | 5 |
+| Pot Collector *(Dear Diary)* | Win 25 jackpot pots | 4 |
+| Hat Rack *(Dear Diary)* | Every hat in the capsules (6) | 4 |
+| Full Wardrobe *(Dear Diary)* | Every skin in the capsules (29) | 10 |
+| Casino Regular *(Dear Diary)* | Play 250 games at the Hamster Casino | 3 |
+| Counting Up *(Dear Diary)* | Empty the Family Casino's till 100 times | 4 |
+| Wheel Legend *(Dear Diary)* | 100,000 spins | 8 |
+| Trillionaire *(Dear Diary)* | Earn 1,000,000,000,000 coins in total | 8 |
+| Trial Master *(Dear Diary)* | Beat 15 Colony Trials | 8 |
+| Pioneer Spirit *(Dear Diary)* | Make the Great Migration five times | 10 |
+| Scrapbook *(Dear Diary)* | Earn 60 diary stickers | 8 |
+| 🤫 Hamster Hugs *(Dear Diary, secret)* | Pet the hamster 25 times (tap it) | 2 |
+| 🤫 Dry Spell *(Dear Diary, secret)* | 20 paid spins in a row without a winning line | 2 |
+| 🤫 Rock Bottom *(Dear Diary, secret)* | A paid spin that leaves too few coins for another ×1 spin | 2 |
+| 🤫 Lucky Seven *(Dear Diary, secret)* | Win on 7 paylines in a single spin | 3 |
+| 🤫 Easy Come, Easy Go *(Dear Diary, secret)* | Lose the card gamble 25 times | 2 |
+
+**Dear Diary (Diary Volume 2, D166):** 80 stickers, 310 tokens in all. Most stickers were early-game goals, so fifteen are harder tiers of goals the family already chases, for colonies and the Family Casino. **Secret stickers** (`"secret": true` and a `"hint"` in data.json) show as "Secret sticker", their hint and "???" (no bar: the progress would give them away) until earned, then show their name and goal. **Tapping the hamster pets it** (hearts, a hop, a squeak, now and then a line); `game.petHamster()` only counts pets. Three stats: `pets`, `worstDrySpell` (the most paid spins in a row with no winning line, on any machine; the run itself isn't saved) and `lastCoinSpins`. The Sticker Album's +1% a sticker a level grows with them (late sessions in the golden run earn ~0.2% more).
 
 Goal types (data.json `goal.type`): `stat` (a lifetime stat ≥ target), `upgradeLevel` (the best level on any machine), `generation`, `treeNodes`, `skinsOwned`, `machinesOwned` (M6: how many machines you own right now), `categoryOwned` (M10: skins found in one category, e.g. hats), `stickers` (1.3.1: diary stickers earned). **Since 1.3.1 a sticker can also unlock an upgrade** (a sticker upgrade, §28): the Diary says which under the sticker. A new sticker of an existing type needs only data.json. The two M5 stickers use the new stats `machinesBought` and `mostLinesWon`; the M6 stickers use `bestStreak`, `biggestBet`, `bestGambleRun`, `wildWins`, `freeSpinTriggers`, `jackpotsWon` and `grandJackpots`; the M7 stickers `symbolsUnlocked`, `suitWins` and `bestLuck` (the most Luck any machine has had, noted just before the diary is checked); the M8 stickers `mostSeedsHeld`, `rebuilds` and `bestStars`; the M9 stickers `bestWays`, `holdGrands` and `bestWheel` (the biggest wedge, Aged Cheese included).
 
