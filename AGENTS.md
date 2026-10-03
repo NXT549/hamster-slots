@@ -22,15 +22,16 @@ The one file every agent reads (Claude Code, Codex, Cursor, Copilot…; `CLAUDE.
 
 > Keep this block true. Update it in the same commit as the change it describes.
 
-- **Live: 1.6.0 "New Digs"** (2026-10-03) at https://nxt549.github.io/hamster-slots/ (repo https://github.com/NXT549/hamster-slots, public, remote `origin`). Every push to `main` tests, builds and deploys (`.github/workflows/deploy.yml`, D118). `SAVE_VERSION` 14 (game.ts); data.json `schemaVersion` 14.
+- **Live: 1.6.1 "Fresh Coat"** (2026-10-03) at https://nxt549.github.io/hamster-slots/ (repo https://github.com/NXT549/hamster-slots, public, remote `origin`). Every push to `main` tests, builds and deploys (`.github/workflows/deploy.yml`, D118). `SAVE_VERSION` 14 (game.ts); data.json `schemaVersion` 14.
+- **1.6.1 "Fresh Coat"** = machine skins paint every machine (`painted()` in cabinet.ts, `--paint*` tokens) + 5 new machine skins (29 in the capsule pool; Arcade Neon's twist: +5% double-win), D161.
 - **1.6.0** = UI redesign parts 1–3 (DESIGN §31, D156–D160): the hamster's-room look (wood, paper, brass, enamel: `frames.ts`), the kit (`kit.ts`), purse (`hud.ts`), control deck (`deck.ts`), phone tab bar, detail sheet, rebuilt Upgrades tab (`shop.ts`), nothing under 12 px, only the open tab drawn. View only: no rules, balance or save changes.
 - **Planned, don't build until asked:** UI redesign parts 4–9 (Family, Capsules + Info, Casino, Menu + dialogs, the guide + UI sounds, polish; §31). When asked: on a branch, part by part, each leaving the game playable. The user picked restyle + restructure, the room look, a first-time guide and UI sounds (two new settings `uiSounds`, `guide`; no save change).
 - **Next on the roadmap:** M12 Your own casino (§11). A new system: plan it with the user first.
 - **Now:** waiting for playtest feedback on 1.1.0–1.6.0 (1.3.0–1.6.0 shipped without a playtest; 1.6.0 not yet seen on a real phone, Firefox or Safari). Questions in DESIGN §21–§31; feedback goes in PORTING_NOTES → Playtest notes; fixes ship as 1.6.x.
 - **Open balance issues:** late lives short around generations 11–15 (§10); 1.4.0's seed softcap made them 2–3× longer, but a migrated family's later colonies go fast again (§29 → Balance, levers in D146); the wardrobe makes mid-game lives ~10–30% shorter (§25); casino boosts can cut late lives by up to a third (§27, `node tools/sim.mjs --casino`).
 - **Not yet verified:** how the M7/1.0/M9 sounds sound; a natural jackpot-wheel label, hold & spin Grand and ×10 cheese wedge in the browser (only tests/console); Epic twists in a real session; Firefox and Safari look (rays' `mask`, line trace, reel blur).
-- **Tags:** `v0.1.0 v0.2.0 v1.0.0 v1.3.0 v1.3.1` are on GitHub. Missing (the session git proxy refuses tag pushes, HTTP 403), so the user adds them as GitHub Releases: v1.1.0 `7f2fe32`, v1.2.0 `4fa56c3`, v1.3.2 `1084cb6`, v1.4.0 on its docs-only deploy commit (same game as "Release 1.4.0" `76aec6d`, D149), v1.5.0 `bb98c2d`, v1.6.0 `6558459`.
-- **Tests:** `npm test`, 2,937 tests, ~1.5 min.
+- **Tags:** `v0.1.0 v0.2.0 v1.0.0 v1.3.0 v1.3.1` are on GitHub. Missing (the session git proxy refuses tag pushes, HTTP 403), so the user adds them as GitHub Releases: v1.1.0 `7f2fe32`, v1.2.0 `4fa56c3`, v1.3.2 `1084cb6`, v1.4.0 on its docs-only deploy commit (same game as "Release 1.4.0" `76aec6d`, D149), v1.5.0 `bb98c2d`, v1.6.0 `6558459`, v1.6.1 on the "Release 1.6.1" commit.
+- **Tests:** `npm test`, 2,980 tests, ~1.5 min.
 
 ## Commands
 

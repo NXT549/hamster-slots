@@ -10,6 +10,10 @@ All coins in the game are pretend. There's no real money in it, and nothing to b
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-10-03 · Fresh Coat
+
+**Machine skins paint every machine now, and five new ones are in the Capsule Machine.**
+
 ### Changed
 
 - **Machine skins now paint every machine**, not just Old Clunky. Each machine keeps its own shape and details (the Bonanza's grass, the Big Cheese's rind, the boxes' tape) in your skin's colours, and the signs match. They're renamed to fit: Factory Paint, Peach Paint, Sky Paint, Grape Paint and Midnight Paint.

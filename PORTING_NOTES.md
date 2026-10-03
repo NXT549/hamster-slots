@@ -693,6 +693,7 @@ Headless tests can check round-trips, and a new platform only swaps the storage.
 **D161 — Machine skins paint every machine, and five new ones ("Fresh Coat", for 1.6.1)** (the user, 2026-10-03: "add new skins since skins currently only work on the first slot machine", then "All together" on the plan's question).
 - **Chosen:** a machine skin sets one paint (`--paint`, `--paint-dark`, `--paint-light`; cabinet.ts `painted()` swaps it in for every cabinet's body tokens), plus `--paint-marquee` for every sign. Each machine keeps its shape and own details (grass, rind, tape, gold). Five new skins (2 Common, 2 Rare, 1 Epic) with the usual machine buffs; the Epic, Arcade Neon, gets a 5% double-win twist (the Lucky Pennies effect, so the EV stays exact). The old skins are renamed "… Paint" (ids kept, so saves don't change). *Rejected:* hand-picked colours per machine per skin (9 skins × 8 machines to keep in step); tinting each machine's own colours towards the skin (dark skins turned the cheese olive); setting the family tokens themselves on the stage (the Big Cheese's wheel and other UI read them too).
 - No save change. The golden run was re-recorded: its capsule pulls now draw from 29 skins (an approved content change). Collecting every capsule skin takes ~194 pulls (was ~151).
+- Released as **1.6.1 "Fresh Coat"** (the user's "aprove all", 2026-10-03), without a playtest, like 1.3.0–1.6.0. Tags can't be pushed, so the user publishes the GitHub Release **"v1.6.1 · Fresh Coat"** on the "Release 1.6.1" commit.
 
 
 ---
