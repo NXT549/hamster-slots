@@ -40,6 +40,9 @@
 .stat-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 2px dashed var(--paper-2); font-size: 14px; }
 .stat-row span { color: var(--ink-soft); font-weight: 600; }
 .stat-row b { font-family: var(--font-num); font-weight: 900; text-align: right; }
+/* Section headings (stats.ts); the first one needs no gap above it */
+.stat-head { margin: 14px 0 2px; font-family: var(--font-display); font-weight: 500; font-size: 16px; color: var(--ink); }
+.stat-head:first-child { margin-top: 0; }
 
 .welcome-body { display: flex; align-items: center; gap: 12px; }
 .welcome-body img { flex: none; }

@@ -105,6 +105,9 @@
 .diary-count { font-family: var(--font-num); font-weight: 800; font-size: 11.5px; color: var(--ink-soft); }
 .diary-reward { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-num); font-weight: 900; font-size: 14px; color: var(--token-dark); }
 .diary-row.done { opacity: 0.6; }
+/* Finished stickers, folded away below the open ones (capsules.ts diaryOrder) */
+.diary-done { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.diary-done-head { cursor: pointer; padding: 6px 4px; font-family: var(--font-display); font-weight: 500; font-size: 14px; color: var(--ink-soft); }
 
 @container tray (max-width: 560px) {
   .capsule-card { grid-template-columns: 1fr; justify-items: center; text-align: center; }

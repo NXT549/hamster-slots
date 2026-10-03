@@ -1,12 +1,13 @@
 // capsules.ts — VIEW layer. The Capsules tab, in three sub-tabs:
 //   1) the Capsule Machine: tokens, Pull button, odds, pity counter, the reveal
 //   2) the Wardrobe: every skin, grouped by category; tap one you own to wear it
-//   3) the Hamster Diary: goals that pay Hamster Tokens, with progress bars
+//   3) the Hamster Diary: goals that pay Hamster Tokens, with progress bars (nearest first,
+//      finished ones folded away at the bottom)
 // Like ui.ts, it only calls game actions (pullCapsule, equipSkin) and reads state.
 
 import { CAPSULE_SPRITES } from './art.ts';
 import { formatCoins, formatWhole, setText, setHTML, replayClass, iconHTML } from './dom.ts';
-import { createSubTabs } from './kit.ts';
+import { createSubTabs, h } from './kit.ts';
 import { skinPreview } from './skins.ts';
 import type { Sound } from './sound.ts';
 import type { Fx } from './fx.ts';
@@ -17,6 +18,15 @@ import type { Settings } from '../platform/save.ts';
 // The capsule wobbles this long before it opens. View only: the game already
 // decided what's inside the moment you pulled.
 const REVEAL_MS = 900;
+
+// The Diary's order (QoL): the stickers you're closest to finishing come first (by how
+// far along the bar is), ties keep data.json's order; finished ones go in their own list.
+// Pure, so tests/stats.test.js can check it.
+export function diaryOrder(rows: { id: string; value: number; target: number; done: boolean }[]): { open: string[]; done: string[] } {
+  const share = (r: { value: number; target: number }) => (r.target > 0 ? Math.min(1, r.value / r.target) : 0);
+  const open = rows.filter((r) => !r.done).sort((a, b) => share(b) - share(a)); // (sort is stable: ties keep their order)
+  return { open: open.map((r) => r.id), done: rows.filter((r) => r.done).map((r) => r.id) };
+}
 
 export function createCapsulesView(
   game: Game,
@@ -33,6 +43,8 @@ export function createCapsulesView(
   let reveal: { e: GameEvents['capsuleOpened']; at: number; announced?: boolean } | null = null; // the capsule being opened
   let skinTiles = new Map<string, HTMLButtonElement>(); // skin id → its tile button
   let diaryRows = new Map<string, { row: HTMLElement; fill: HTMLElement; count: HTMLElement }>(); // sticker id → its row
+  let diaryDone = h('details', 'diary-done'); // finished stickers, folded away at the bottom
+  let diaryKey = ''; // the order last drawn, so rows only move when the order changes
 
   const rarityName = (id: string) => (id === 'starter' ? 'Starter' : (game.data.capsules.rarities.find((r) => r.id === id) || { name: id }).name);
   const categoryName = (id: string) => (game.data.skinCategories.find((c) => c.id === id) || { name: id }).name;
@@ -115,6 +127,9 @@ export function createCapsulesView(
   function buildDiary() {
     el.diary.replaceChildren();
     diaryRows = new Map();
+    diaryKey = '';
+    diaryDone = h('details', 'diary-done');
+    diaryDone.append(h('summary', 'diary-done-head'));
     for (const sticker of game.data.diary || []) {
       const row = document.createElement('div');
       row.className = 'diary-row';
@@ -136,6 +151,7 @@ export function createCapsulesView(
       el.diary.appendChild(row);
       diaryRows.set(sticker.id, { row, fill: row.querySelector<HTMLElement>('.diary-fill')!, count: row.querySelector<HTMLElement>('.diary-count')! });
     }
+    el.diary.appendChild(diaryDone);
   }
 
   // What the hamster says when it puts a skin on.
@@ -308,6 +324,17 @@ export function createCapsulesView(
       r.fill.style.width = `${((value / p.target) * 100).toFixed(1)}%`;
       const fmt = (n: number) => (p.target >= 1000 ? formatCoins(n) : String(Math.floor(n)));
       setText(r.count, p.done ? 'Done!' : `${fmt(value)} / ${fmt(p.target)}`);
+    }
+    // Nearest goals first; finished stickers fold away at the bottom. Moving the rows
+    // (not rebuilding them) keeps it cheap, and it only happens when the order changes.
+    const order = diaryOrder([...diaryRows.keys()].map((id) => ({ id, ...game.getDiaryProgress(id)! })));
+    const key = `${order.open.join()}|${order.done.join()}`;
+    if (key !== diaryKey) {
+      diaryKey = key;
+      for (const id of order.open) el.diary.insertBefore(diaryRows.get(id)!.row, diaryDone);
+      for (const id of order.done) diaryDone.appendChild(diaryRows.get(id)!.row);
+      diaryDone.hidden = order.done.length === 0;
+      setText(diaryDone.firstElementChild as HTMLElement, `Finished stickers (${order.done.length})`);
     }
 
     // Dots: a pull you can afford, or stickers you haven't looked at yet.

@@ -32,7 +32,7 @@ The save backup (`src/platform/savecode.ts`, 3.8) needed no new service: it only
 
 | Service | What the game needs | Web / itch.io | Steam (Electron or Tauri) | Mobile (Capacitor) |
 |---|---|---|---|---|
-| **Storage** | Read/write the save and the settings as text, under two keys (settings survive Reset) | `localStorage` (one per site) | A file in the app's user-data folder; Steam Cloud can sync that folder | Native key-value storage (e.g. Capacitor Preferences) rather than the webview's `localStorage` (iOS may clear that when storage runs low) |
+| **Storage** | Read/write the save, the settings and the Recent wins log as text, under three keys (settings survive Reset; D166) | `localStorage` (one per site) | A file in the app's user-data folder; Steam Cloud can sync that folder | Native key-value storage (e.g. Capacitor Preferences) rather than the webview's `localStorage` (iOS may clear that when storage runs low) |
 | **Save backup** | Export the save as a text string; import one | Copy and paste the text: built (Menu → Save backup, D116). A file download/upload is optional | Same | Same (the share sheet helps) |
 | **Lifecycle** | "Going away" → save now and remember when; "back" → pay offline earnings (DESIGN §15) | `visibilitychange` + `pagehide` | Window hidden/minimised, and quitting | App pause/resume events |
 | **Clock** | Real-world time, only for offline earnings | `Date.now()` | Same | Same |
@@ -723,6 +723,11 @@ Headless tests can check round-trips, and a new platform only swaps the storage.
 - **Rejected:** a separate tutorial with its own screens or a forced walkthrough (D123: no pop-ups over the game; the guide only points); a step list saved in the save (a save change for something the stats already know); a different animation per kind of unlock (more code, and one shared look teaches players what a padlock means); a celebration for every unlock (they'd stack and cover the machine; the padlock is small and quick).
 - **Settings** `uiSounds` and `guide` (both on; older settings gain them). No logic, data, balance or save change: the golden run and fixtures are untouched. Checked in Chromium at 390×844 and 1280×800 (a fresh game through Spin, the first upgrade, a new symbol, the Family tab's padlock, a new machine, retiring and the Big Cage) and with Motion "Less", no console errors; the sounds can't be heard in a test browser, so the user listens.
 - **Released** as 1.9.0 "Welcome Mat" at the user's "publish it", before a playtest. Tag pushes are refused (403), so the user publishes the GitHub Release **"v1.9.0 · Welcome Mat"** on the "Release 1.9.0" commit.
+
+**D166 — QoL: stats in sections, the Diary nearest-first, Recent wins kept between visits** (2026-10-03; the user asked for QoL ideas and approved this batch: "tell qol yes"; DESIGN §17).
+- **Chosen:** Stats built by `statSections()` (`src/view/stats.ts`, pure, tested) in sections with *This life* first; every `Stats` field shown, and a test fails if a new one isn't. The Diary's rows are moved (not rebuilt) into nearest-first order, finished ones in a `<details>` fold (`diaryOrder()` in capsules.ts). Recent wins are written as text to a third storage key, `hamsterSlots.recentWins` (save.ts `loadWinLog`/`saveWinLog`), on every logged win, with real-world time (`platform.now()`) so "3 min ago" survives a reload; `clearSave` and loading a backup code clear it.
+- **Rejected:** Recent wins in the save (a save-version bump for something that's only for looking back, and the golden run and fixtures would change); writing the log only on autosave (ten short rows are cheap to write, and it'd lose the last wins on a crash); hiding finished stickers entirely (some players like ticking them off).
+- No logic, data, balance or save change: the golden run and fixtures are untouched.
 
 ---
 
